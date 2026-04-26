@@ -1,0 +1,6 @@
+module NewsModule {
+  interface NewsService {
+    string getLatestNews();
+    void postNews(in string content);
+  };
+};

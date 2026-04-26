@@ -1,0 +1,68 @@
+services:
+  # --- DATABASES ---
+  # Database for Node Backend (TRWM)
+  db-node:
+    image: mongo:latest
+    container_name: football-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+      - ./backend-node/database/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+
+  # Database for Java Backend (DWSC)
+  db-java:
+    image: mysql:8.0
+    container_name: football-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: football_db
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./backend-java/database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  # --- BACKENDS ---
+  backend-node:
+    build: ./backend-node
+    container_name: football-backend-node
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGO_URL=mongodb://db-node:27017/football
+      - PORT=3000
+    depends_on:
+      - db-node
+
+  backend-java:
+    build: ./backend-java
+    container_name: football-backend-java
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db-java:3306/football_db
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+    depends_on:
+      - db-java
+
+  # --- FRONTEND ---
+  frontend:
+    build: ./frontend-angular-ionic
+    container_name: football-frontend
+    ports:
+      - "8100:80"
+    depends_on:
+      - backend-node
+      - backend-java
+
+  service-corba:
+    build: ./service-corba
+    container_name: football-corba-service
+    ports:
+      - "1050:1050"
+
+volumes:
+  mongo-data:
+  mysql-data:

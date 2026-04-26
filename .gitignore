@@ -1,0 +1,43 @@
+# Node/Angular
+node_modules/
+dist/
+tmp/
+out-tsc/
+bazel-out/
+.npm
+.eslintcache
+.cache
+.angular/
+
+# Java/Maven
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+.mvn/wrapper/maven-wrapper.jar
+.metadata/
+.recommenders/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+
+# Ionic/Capacitor
+www/
+platforms/
+plugins/
+android/
+ios/
+*.p12
+*.pem
+*.jks

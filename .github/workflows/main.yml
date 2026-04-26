@@ -1,0 +1,89 @@
+name: CI/CD Pipeline - Football Project (Multi-Environment)
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # Variable dinámica para saber en qué entorno estamos
+  ENVIRONMENT: ${{ github.ref == 'refs/heads/main' && 'PRODUCTION' || 'STAGING' }}
+
+jobs:
+  # --- FRONTEND JOB ---
+  frontend:
+    runs-on: ubuntu-24.04
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Environment Info
+        run: echo "Running Build for $ENVIRONMENT environment"
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install & Build
+        run: |
+          cd frontend-angular-ionic
+          npm install --no-package-lock
+          npm run build --if-present
+
+  # --- BACKEND NODE JOB ---
+  backend-node:
+    runs-on: ubuntu-24.04
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Environment Info
+        run: echo "Running Build for $ENVIRONMENT environment"
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install & Build
+        run: |
+          cd backend-node
+          npm install --no-package-lock
+          npm run build --if-present
+
+  # --- BACKEND JAVA JOB ---
+  backend-java:
+    runs-on: ubuntu-24.04
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Environment Info
+        run: echo "Running Build for $ENVIRONMENT environment"
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Build with Maven
+        run: |
+          cd backend-java
+          mvn clean install -DskipTests
+
+  # --- CORBA SERVICE JOB ---
+  service-corba:
+    runs-on: ubuntu-24.04
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Environment Info
+        run: echo "Running Build for $ENVIRONMENT environment"
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+      - name: Build CORBA Service
+        run: |
+          cd service-corba
+          mvn clean install -DskipTests

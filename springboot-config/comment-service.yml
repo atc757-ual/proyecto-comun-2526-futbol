@@ -1,0 +1,20 @@
+openapi:
+  title: Football - Comment API
+  description: Microservicio de gestión de comentarios gestionado desde Config Server
+  version: 1.0.0
+  contact:
+    name: Alex Taquila Camasca
+    email: atc757@inlumine.ual.es
+    url: https://es.linkedin.com/in/alextaquilacamasca
+
+server:
+  port: 8082
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/football_db
+    username: root
+    password: root
+  jpa:
+    hibernate:
+      ddl-auto: update

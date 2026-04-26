@@ -1,0 +1,7 @@
+openapi:
+  title: Microservices API
+  version: 1.0.0
+
+logging:
+  level:
+    root: INFO

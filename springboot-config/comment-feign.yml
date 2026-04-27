@@ -1,0 +1,27 @@
+openapi:
+  title: Football - Comment Feign API
+  description: Microservicio Orquestador de Comentarios
+  version: 1.0.0
+  contact:
+    name: Alex Taquila Camasca
+    email: atc757@inlumine.ual.es
+    url: https://es.linkedin.com/in/alextaquilacamasca
+
+spring:
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      default:
+        slidingWindowSize: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 5s
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/

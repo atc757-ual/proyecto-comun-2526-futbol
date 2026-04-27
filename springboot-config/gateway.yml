@@ -1,0 +1,41 @@
+spring:
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+      routes:
+        # Rutas hacia los microservicios CLIENT
+        - id: player-client-route
+          uri: lb://PLAYER-CLIENT
+          predicates:
+            - Path=/api/players/**
+
+        - id: comment-client-route
+          uri: lb://COMMENT-CLIENT
+          predicates:
+            - Path=/api/comments/**
+
+        # Rutas hacia los microservicios FEIGN
+        - id: player-feign-route
+          uri: lb://PLAYER-FEIGN
+          predicates:
+            - Path=/feign/players/**
+
+        - id: comment-feign-route
+          uri: lb://COMMENT-FEIGN
+          predicates:
+            - Path=/feign/comments/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/

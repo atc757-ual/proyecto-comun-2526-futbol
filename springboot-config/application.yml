@@ -1,9 +1,25 @@
 openapi:
-  title: Microservices API
+  title: Football Microservices System
   version: 1.0.0
 
 logging:
   level:
     root: INFO
 
-test-attribute: NewValueFromSampleClientProperties
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    registryFetchIntervalSeconds: 5
+  instance:
+    prefer-ip-address: true
+    instanceId: ${spring.application.name}:${random.value}
+
+management:
+  info:
+    env:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info

@@ -5,6 +5,8 @@ spring:
     config:
       server:
         git:
-         uri: https://github.com/atc757-ual/springbootconfig
+          uri: https://github.com/atc757-ual/proyecto-comun-2526-futbol.git
+          search-paths: springboot-config
+          default-label: develop
 server:
   port: 8888

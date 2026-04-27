@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: comment-client
+  config:
+    import: "optional:configserver:http://localhost:8888"
+
+server:
+  port: ${PORT:${SERVER_PORT:0}}

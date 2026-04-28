@@ -1,6 +1,5 @@
 services:
   # --- DATABASES ---
-  # Database for Node Backend (TRWM)
   db-node:
     image: mongo:latest
     container_name: football-mongo
@@ -9,8 +8,9 @@ services:
     volumes:
       - mongo-data:/data/db
       - ./backend-node/database/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - football-network
 
-  # Database for Java Backend (DWSC)
   db-java:
     image: mysql:8.0
     container_name: football-mysql
@@ -22,8 +22,123 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
       - ./backend-java/database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - football-network
 
-  # --- BACKENDS ---
+  # --- INFRASTRUCTURE MICROSERVICES ---
+  config-server:
+    build:
+      context: ./backend-java
+      args:
+        SERVICE_NAME: config-server
+    container_name: football-config-server
+    ports:
+      - "8888:8888"
+    networks:
+      - football-network
+
+  eureka-server:
+    build:
+      context: ./backend-java
+      args:
+        SERVICE_NAME: eureka-server
+    container_name: football-eureka-server
+    ports:
+      - "8761:8761"
+    environment:
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
+    depends_on:
+      - config-server
+    networks:
+      - football-network
+
+  gateway:
+    build:
+      context: ./backend-java
+      args:
+        SERVICE_NAME: gateway
+    container_name: football-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+    depends_on:
+      - config-server
+      - eureka-server
+    networks:
+      - football-network
+
+  # --- DATA MICROSERVICES ---
+  player-client:
+    build:
+      context: ./backend-java
+      args:
+        SERVICE_NAME: player-client
+    container_name: football-player-client
+    environment:
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+      # Override DB connection to use the Docker MySQL container instead of localhost
+      SPRING_DATASOURCE_URL: "jdbc:mysql://db-java:3306/football_db"
+    depends_on:
+      - config-server
+      - eureka-server
+      - db-java
+    networks:
+      - football-network
+
+  comment-client:
+    build:
+      context: ./backend-java
+      args:
+        SERVICE_NAME: comment-client
+    container_name: football-comment-client
+    environment:
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+      SPRING_DATASOURCE_URL: "jdbc:mysql://db-java:3306/football_db"
+    depends_on:
+      - config-server
+      - eureka-server
+      - db-java
+    networks:
+      - football-network
+
+  # --- ORCHESTRATION MICROSERVICES ---
+  player-feign:
+    build:
+      context: ./backend-java
+      args:
+        SERVICE_NAME: player-feign
+    container_name: football-player-feign
+    environment:
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+    depends_on:
+      - config-server
+      - eureka-server
+      - player-client
+    networks:
+      - football-network
+
+  comment-feign:
+    build:
+      context: ./backend-java
+      args:
+        SERVICE_NAME: comment-feign
+    container_name: football-comment-feign
+    environment:
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+    depends_on:
+      - config-server
+      - eureka-server
+      - comment-client
+    networks:
+      - football-network
+
+  # --- FRONTEND & OTHERS ---
   backend-node:
     build: ./backend-node
     container_name: football-backend-node
@@ -34,20 +149,9 @@ services:
       - PORT=3000
     depends_on:
       - db-node
+    networks:
+      - football-network
 
-  backend-java:
-    build: ./backend-java
-    container_name: football-backend-java
-    ports:
-      - "8081:8081"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://db-java:3306/football_db
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=root
-    depends_on:
-      - db-java
-
-  # --- FRONTEND ---
   frontend:
     build: ./frontend-angular-ionic
     container_name: football-frontend
@@ -55,13 +159,21 @@ services:
       - "8100:80"
     depends_on:
       - backend-node
-      - backend-java
+      - gateway
+    networks:
+      - football-network
 
   service-corba:
     build: ./service-corba
     container_name: football-corba-service
     ports:
       - "1050:1050"
+    networks:
+      - football-network
+
+networks:
+  football-network:
+    driver: bridge
 
 volumes:
   mongo-data:

@@ -18,6 +18,8 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:17-jre-focal
 ARG SERVICE_NAME
 WORKDIR /app
+# Instalamos curl para los healthchecks
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 # Copiamos el JAR compilado del microservicio específico
 COPY --from=build /build/${SERVICE_NAME}/target/*.jar app.jar
 

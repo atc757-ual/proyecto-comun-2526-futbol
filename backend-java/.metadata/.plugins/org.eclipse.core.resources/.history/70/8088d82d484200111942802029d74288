@@ -1,0 +1,6 @@
+org.eclipse.wst.xml.core/DISABLE_VALIDATION_FOR_OUTLINE_ONLY=false
+org.eclipse.wst.xml.core/disallowDocTypeDecl=false
+org.eclipse.wst.xml.core/prohibitDTD=false
+org.eclipse.wst.xml.core/use-classpath-processor=true
+org.eclipse.wst.xml.core/useXMLNamespaces=true
+org.eclipse.wst.xml.core/validationSeverity=warning

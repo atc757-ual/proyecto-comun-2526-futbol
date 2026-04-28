@@ -2,7 +2,8 @@ package com.futbol.player.feign.service;
 
 import com.futbol.player.feign.client.PlayerClient;
 import com.futbol.player.feign.model.PlayerDTO;
-import com.futbol.player.feign.model.ApiResult;
+import com.futbol.player.feign.dto.ApiResult;
+import org.springframework.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.openfeign.FallbackFactory;
@@ -19,30 +20,30 @@ public class PlayerFallbackFactory implements FallbackFactory<PlayerClient> {
     public PlayerClient create(Throwable cause) {
         return new PlayerClient() {
             @Override
-            public ApiResult<List<PlayerDTO>> getAllPlayers() {
-                logger.error("Error al obtener jugadores: {}", cause.getMessage());
-                return new ApiResult<>("SERVICE_UNAVAILABLE", "Servicio no disponible", cause.getMessage());
+            public ApiResult<List<PlayerDTO>> getAllPlayers(String userId) {
+                logger.error("Error al obtener jugadores para usuario {}: {}", userId, cause.getMessage());
+                return new ApiResult<>(String.valueOf(HttpStatus.SERVICE_UNAVAILABLE.value()), cause.getMessage(), null);
             }
 
             @Override
             public ApiResult<PlayerDTO> getPlayerById(Long id) {
                 logger.error("Error al obtener jugador {}: {}", id, cause.getMessage());
-                return new ApiResult<>("SERVICE_UNAVAILABLE", "No se puede buscar el jugador", cause.getMessage());
+                return new ApiResult<>(String.valueOf(HttpStatus.SERVICE_UNAVAILABLE.value()), cause.getMessage(), null);
             }
 
             @Override
             public ApiResult<PlayerDTO> createPlayer(PlayerDTO player) {
-                return new ApiResult<>("SERVICE_UNAVAILABLE", "No se puede crear el jugador", cause.getMessage());
+                return new ApiResult<>(String.valueOf(HttpStatus.SERVICE_UNAVAILABLE.value()), cause.getMessage(), null);
             }
 
             @Override
             public ApiResult<PlayerDTO> updatePlayer(PlayerDTO player) {
-                return new ApiResult<>("SERVICE_UNAVAILABLE", "No se puede actualizar el jugador", cause.getMessage());
+                return new ApiResult<>(String.valueOf(HttpStatus.SERVICE_UNAVAILABLE.value()), cause.getMessage(), null);
             }
 
             @Override
             public ApiResult<Void> deletePlayer(Long id) {
-                return new ApiResult<>("SERVICE_UNAVAILABLE", "No se puede eliminar el jugador", cause.getMessage());
+                return new ApiResult<>(String.valueOf(HttpStatus.SERVICE_UNAVAILABLE.value()), cause.getMessage(), null);
             }
         };
     }

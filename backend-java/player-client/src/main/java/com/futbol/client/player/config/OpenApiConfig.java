@@ -30,7 +30,7 @@ public class OpenApiConfig {
 	    private String contactUrl;
 
 	    @Bean
-	    private OpenAPI customOpenAPI() {
+	    public OpenAPI customOpenAPI() {
 	        return new OpenAPI()
 	                .components(new Components())
 	                .info(new Info()

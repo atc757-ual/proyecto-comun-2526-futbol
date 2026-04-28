@@ -1,0 +1,5 @@
+package com.futbol.player.feign.controller;
+
+public class PlayerController {
+
+}

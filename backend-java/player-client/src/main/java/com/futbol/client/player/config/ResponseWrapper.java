@@ -1,0 +1,33 @@
+package com.futbol.client.player.config;
+
+import com.futbol.client.player.dto.ApiResult;
+import org.springframework.core.MethodParameter;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.server.ServerHttpRequest;
+import org.springframework.http.server.ServerHttpResponse;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
+
+@RestControllerAdvice(basePackages = "com.futbol.client.player.controller")
+public class ResponseWrapper implements ResponseBodyAdvice<Object> {
+
+    @Override
+    public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
+        return true;
+    }
+
+    @Override
+    public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType,
+                                  Class<? extends HttpMessageConverter<?>> selectedConverterType,
+                                  ServerHttpRequest request, ServerHttpResponse response) {
+
+        // Si ya es un ApiResult (ya está envuelto), lo devolvemos tal cual
+        if (body instanceof ApiResult) {
+            return body;
+        }
+
+        // Si es un objeto "suelto" (por si se nos olvida envolverlo en el controller), lo envolvemos ahora
+        return new ApiResult<>("200", "Procesamiento concluído exitosamente", body);
+    }
+}

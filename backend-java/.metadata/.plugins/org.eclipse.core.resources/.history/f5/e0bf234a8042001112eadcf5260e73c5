@@ -1,0 +1,15 @@
+package com.futbol.player.feign.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import com.futbol.player.feign.player.Player;
+
+@Service
+public class MovieService {
+	@Autowired
+	Player play;
+
+	//public String insert(String title) {
+	//	return mov.validate(title);
+	//}
+}

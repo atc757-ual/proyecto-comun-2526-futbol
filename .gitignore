@@ -1,43 +1,48 @@
-# Node/Angular
+# Build artifacts
 node_modules/
 dist/
+target/
 tmp/
 out-tsc/
 bazel-out/
-.npm
-.eslintcache
-.cache
 .angular/
-
-# Java/Maven
-target/
-*.class
-*.jar
-*.war
-*.ear
-*.log
-.mvn/wrapper/maven-wrapper.jar
-.metadata/
-.recommenders/
-
-# IDEs
-.vscode/
-.idea/
-*.swp
-*.swo
-.DS_Store
-Thumbs.db
-
-# Environment variables
-.env
-.env.local
-
-# Ionic/Capacitor
 www/
 platforms/
 plugins/
 android/
 ios/
+
+# Compiled files
+*.class
+*.jar
+*.war
+*.ear
+
+# Secrets and Environment
+.env
+.env.*
 *.p12
 *.pem
 *.jks
+serviceAccountKey.json
+firebase-auth.json
+
+# Docker data
+*-data/
+data/
+.docker/
+
+# IDEs and OS
+.vscode/
+.idea/
+.settings/
+.project
+.classpath
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/

@@ -12,5 +12,5 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findByPlayerId(Long playerId);
     
     // Get all comments from a specific user
-    List<Comment> findByUserId(Long userId);
+    List<Comment> findByUserId(String userId);
 }

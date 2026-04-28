@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workingSetManager>
+<workingSet editPageId="org.eclipse.jdt.internal.ui.DynamicSourcesWorkingSet" factoryID="org.eclipse.ui.internal.WorkingSetFactory" id="1777301470757_0" label="Java Main Sources" name="Java Main Sources"/>
+<workingSet editPageId="org.eclipse.jdt.internal.ui.DynamicSourcesWorkingSet" factoryID="org.eclipse.ui.internal.WorkingSetFactory" id="1777301470772_1" label="Java Test Sources" name="Java Test Sources"/>
+<workingSet editPageId="org.eclipse.ui.resourceWorkingSetPage" factoryID="org.eclipse.ui.internal.WorkingSetFactory" id="1777307974784_3" label="backend-java-parent" name="backend-java-parent">
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/config-server" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/eureka-server" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/comment-feign" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/player-feign" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/comment-client" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/player-client" type="4"/>
+</workingSet>
+<workingSet aggregate="true" factoryID="org.eclipse.ui.internal.WorkingSetFactory" id="1777301472000_2" label="Window Working Set" name="Aggregate for window 1777237164550"/>
+</workingSetManager>

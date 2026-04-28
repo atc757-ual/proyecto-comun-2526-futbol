@@ -7,7 +7,8 @@ import com.futbol.player.feign.client.CommentClient;
 import com.futbol.player.feign.model.PlayerDTO;
 import com.futbol.player.feign.model.CommentDTO;
 import com.futbol.player.feign.model.PlayerFullDTO;
-import com.futbol.player.feign.model.ApiResult;
+import com.futbol.player.feign.dto.ApiResult;
+import org.springframework.http.HttpStatus;
 import java.util.List;
 
 @Service
@@ -19,8 +20,8 @@ public class PlayerService {
     @Autowired
     private CommentClient commentClient;
 
-    public ApiResult<List<PlayerDTO>> getTodosLosJugadores() {
-        return playerClient.getAllPlayers();
+    public ApiResult<List<PlayerDTO>> getTodosLosJugadores(String userId) {
+        return playerClient.getAllPlayers(userId);
     }
 
     public ApiResult<PlayerDTO> getJugador(Long id) {
@@ -31,8 +32,9 @@ public class PlayerService {
         // 1. Buscamos el jugador
         ApiResult<PlayerDTO> playerRes = playerClient.getPlayerById(id);
         
-        if (!"SUCCESS".equals(playerRes.getCode())) {
-            return new ApiResult<>(playerRes.getCode(), "No se pudo obtener el jugador", playerRes.getDetail());
+        // Validamos si el código empieza por 2 (éxito)
+        if (playerRes.getResult() != null && !playerRes.getResult().getCode().startsWith("2")) {
+            return new ApiResult<>(playerRes.getResult().getCode(), playerRes.getResult().getDescriptionDetail(), null);
         }
 
         // 2. Buscamos sus comentarios
@@ -42,7 +44,7 @@ public class PlayerService {
         List<CommentDTO> comments = commentRes.getData();
         PlayerFullDTO full = new PlayerFullDTO(playerRes.getData(), comments);
         
-        return new ApiResult<>("SUCCESS", "Jugador y comentarios obtenidos", full);
+        return new ApiResult<>(String.valueOf(HttpStatus.OK.value()), "Procesamiento concluído exitosamente", full);
     }
 
     public ApiResult<PlayerDTO> nuevoJugador(PlayerDTO dto) {

@@ -1,9 +1,11 @@
 package com.futbol.comment.feign.controller;
 
-import com.futbol.comment.feign.model.ApiResult;
+import com.futbol.comment.feign.dto.ApiResult;
 import com.futbol.comment.feign.model.CommentDTO;
 import com.futbol.comment.feign.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,8 +28,8 @@ public class CommentController {
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @GetMapping
-    public ApiResult<List<CommentDTO>> getAll() {
-        return commentService.listarTodos();
+    public ResponseEntity<ApiResult<List<CommentDTO>>> getAll(@RequestParam(required = false) String userId) {
+        return ResponseEntity.ok(commentService.listarTodos(userId));
     }
 
     @Operation(summary = "Obtener comentarios de un jugador", description = "Busca a través de comment-client los comentarios asociados a un ID de jugador")
@@ -35,8 +37,8 @@ public class CommentController {
         @ApiResponse(responseCode = "200", description = "Comentarios obtenidos correctamente")
     })
     @GetMapping("/player/{playerId}")
-    public ApiResult<List<CommentDTO>> getByPlayer(@PathVariable Long playerId) {
-        return commentService.listarPorJugador(playerId);
+    public ResponseEntity<ApiResult<List<CommentDTO>>> getByPlayer(@PathVariable Long playerId) {
+        return ResponseEntity.ok(commentService.listarPorJugador(playerId));
     }
 
     @Operation(summary = "Crear un comentario", description = "Envía los datos a comment-client para crear un comentario nuevo")
@@ -45,8 +47,8 @@ public class CommentController {
         @ApiResponse(responseCode = "400", description = "Datos inválidos")
     })
     @PostMapping
-    public ApiResult<CommentDTO> create(@RequestBody CommentDTO dto) {
-        return commentService.guardar(dto);
+    public ResponseEntity<ApiResult<CommentDTO>> create(@RequestBody CommentDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(commentService.guardar(dto));
     }
 
     @Operation(summary = "Eliminar un comentario", description = "Elimina un comentario usando comment-client")
@@ -55,7 +57,7 @@ public class CommentController {
         @ApiResponse(responseCode = "404", description = "Comentario no encontrado")
     })
     @DeleteMapping("/{id}")
-    public ApiResult<Void> delete(@PathVariable Long id) {
-        return commentService.eliminar(id);
+    public ResponseEntity<ApiResult<Void>> delete(@PathVariable Long id) {
+        return ResponseEntity.ok(commentService.eliminar(id));
     }
 }

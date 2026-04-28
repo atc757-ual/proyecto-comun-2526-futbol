@@ -1,0 +1,13 @@
+package com.futbol.player.feign.service;
+
+import org.springframework.stereotype.Component;
+import dwsc.sampleproject.eureka.client.movie.feign.movie.Movie;
+
+@Component
+public class PlayerFallback implements Movie{
+
+	  @Override
+	    public String validate(String title) {
+	        return "NO_AVAILABLE: Servicio de validación no disponible en este momento";
+	   }
+}

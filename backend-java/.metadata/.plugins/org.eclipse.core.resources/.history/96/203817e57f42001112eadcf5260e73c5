@@ -1,0 +1,15 @@
+package dwsc.sampleproject.eureka.client.movie.feign.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import dwsc.sampleproject.eureka.client.movie.feign.movie.Movie;
+
+@Service
+public class MovieService {
+	@Autowired
+	Movie mov;
+
+	public String insert(String title) {
+		return mov.validate(title);
+	}
+}

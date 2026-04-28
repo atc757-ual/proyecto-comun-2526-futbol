@@ -2,9 +2,11 @@ package com.futbol.player.feign.controller;
 
 import com.futbol.player.feign.model.PlayerDTO;
 import com.futbol.player.feign.model.PlayerFullDTO;
-import com.futbol.player.feign.model.ApiResult;
+import com.futbol.player.feign.dto.ApiResult;
 import com.futbol.player.feign.service.PlayerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,8 +29,8 @@ public class PlayerController {
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @GetMapping
-    public ApiResult<List<PlayerDTO>> getAll() {
-        return playerService.getTodosLosJugadores();
+    public ResponseEntity<ApiResult<List<PlayerDTO>>> getAll(@RequestParam(required = false) String userId) {
+        return ResponseEntity.ok(playerService.getTodosLosJugadores(userId));
     }
 
     @Operation(summary = "Obtener jugador por ID", description = "Llama a player-client para buscar un jugador específico")
@@ -37,8 +39,8 @@ public class PlayerController {
         @ApiResponse(responseCode = "404", description = "Jugador no encontrado")
     })
     @GetMapping("/{id}")
-    public ApiResult<PlayerDTO> getById(@PathVariable Long id) {
-        return playerService.getJugador(id);
+    public ResponseEntity<ApiResult<PlayerDTO>> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(playerService.getJugador(id));
     }
 
     @Operation(summary = "Obtener jugador completo (con comentarios)", description = "Llama a player-client y comment-client para devolver la información orquestada")
@@ -46,8 +48,8 @@ public class PlayerController {
         @ApiResponse(responseCode = "200", description = "Datos combinados obtenidos con éxito")
     })
     @GetMapping("/{id}/full")
-    public ApiResult<PlayerFullDTO> getFullById(@PathVariable Long id) {
-        return playerService.getJugadorCompleto(id);
+    public ResponseEntity<ApiResult<PlayerFullDTO>> getFullById(@PathVariable Long id) {
+        return ResponseEntity.ok(playerService.getJugadorCompleto(id));
     }
 
     @Operation(summary = "Crear un jugador", description = "Envía los datos a player-client para su creación")
@@ -56,8 +58,8 @@ public class PlayerController {
         @ApiResponse(responseCode = "400", description = "Datos inválidos")
     })
     @PostMapping
-    public ApiResult<PlayerDTO> create(@RequestBody PlayerDTO dto) {
-        return playerService.nuevoJugador(dto);
+    public ResponseEntity<ApiResult<PlayerDTO>> create(@RequestBody PlayerDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(playerService.nuevoJugador(dto));
     }
 
     @Operation(summary = "Actualizar un jugador", description = "Envía los datos modificados a player-client")
@@ -66,8 +68,8 @@ public class PlayerController {
         @ApiResponse(responseCode = "404", description = "Jugador no encontrado")
     })
     @PutMapping
-    public ApiResult<PlayerDTO> update(@RequestBody PlayerDTO dto) {
-        return playerService.actualizarJugador(dto);
+    public ResponseEntity<ApiResult<PlayerDTO>> update(@RequestBody PlayerDTO dto) {
+        return ResponseEntity.ok(playerService.actualizarJugador(dto));
     }
 
     @Operation(summary = "Eliminar un jugador", description = "Elimina un jugador a través de player-client")
@@ -76,7 +78,7 @@ public class PlayerController {
         @ApiResponse(responseCode = "404", description = "Jugador no encontrado")
     })
     @DeleteMapping("/{id}")
-    public ApiResult<Void> delete(@PathVariable Long id) {
-        return playerService.borrarJugador(id);
+    public ResponseEntity<ApiResult<Void>> delete(@PathVariable Long id) {
+        return ResponseEntity.ok(playerService.borrarJugador(id));
     }
 }

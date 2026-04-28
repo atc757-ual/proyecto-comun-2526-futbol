@@ -1,0 +1,28 @@
+1777306580482	Delete element
+1777306619394	Rename package 'com.futbol.player.service'
+1777306710214	Rename type 'PlayerServiceApplication'
+1777308191336	Rename package 'com.futbol.player.service'
+1777308349505	Delete element
+1777308383419	Copy package
+1777308389514	Delete element
+1777308392004	Delete element
+1777308443096	Copy package
+1777308446805	Delete element
+1777308579070	Copy compilation unit
+1777308712903	Move compilation unit
+1777308983409	Rename package 'config'
+1777309309915	Rename package 'com.futbol.client.player.model'
+1777310021083	Delete element
+1777310047036	Rename package 'com.futbol.player.domain'
+1777310058624	Rename package 'com.futbol.player.dto'
+1777310116867	Delete element
+1777310132595	Delete element
+1777310143318	Move package
+1777310159696	Copy package
+1777310169139	Copy package
+1777310184625	Copy package
+1777310201021	Rename type 'PlayerServiceApplicationTests'
+1777310764039	Rename type 'PlayerService'
+1777310872433	Delete element
+1777311102833	Rename type 'PlayerServiceApplication'
+1777311105138	Rename type 'PlayerServiceApplicationTests'

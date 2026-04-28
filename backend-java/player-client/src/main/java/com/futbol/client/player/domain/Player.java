@@ -35,6 +35,9 @@ public class Player {
 
     private Double longitude;
 
+    @Column(name = "user_id", nullable = false)
+    private String userId;
+
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -44,6 +47,14 @@ public class Player {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getName() {

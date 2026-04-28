@@ -1,0 +1,13 @@
+package com.futbol.player_feign;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class PlayerFeignApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(PlayerFeignApplication.class, args);
+	}
+
+}

@@ -1,0 +1,14 @@
+package dwsc.sampleproject.eureka.client.movie.feign.movie;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import dwsc.sampleproject.eureka.client.movie.feign.service.MovieFallback;
+
+
+@FeignClient(name="CLIENT-MOVIE",fallback = MovieFallback.class, configuration = FeignConfig.class)
+
+public interface Movie {
+	@GetMapping("/validate")
+    String validate(@RequestParam String title);
+}

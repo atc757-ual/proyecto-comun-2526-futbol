@@ -1,0 +1,37 @@
+package com.futbol.comment_feign.controller;
+
+import com.futbol.comment_feign.model.ApiResult;
+import com.futbol.comment_feign.model.CommentDTO;
+import com.futbol.comment_feign.service.CommentService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/feign/comments")
+public class CommentController {
+
+    @Autowired
+    private CommentService commentService;
+
+    @GetMapping
+    public ApiResult<List<CommentDTO>> getAll() {
+        return commentService.listarTodos();
+    }
+
+    @GetMapping("/player/{playerId}")
+    public ApiResult<List<CommentDTO>> getByPlayer(@PathVariable Long playerId) {
+        return commentService.listarPorJugador(playerId);
+    }
+
+    @PostMapping
+    public ApiResult<CommentDTO> create(@RequestBody CommentDTO dto) {
+        return commentService.guardar(dto);
+    }
+
+    @DeleteMapping("/{id}")
+    public ApiResult<Void> delete(@PathVariable Long id) {
+        return commentService.eliminar(id);
+    }
+}

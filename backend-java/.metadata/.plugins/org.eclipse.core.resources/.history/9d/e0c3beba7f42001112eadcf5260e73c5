@@ -1,0 +1,13 @@
+package dwsc.sampleproject.eureka.client.movie.feign.service;
+
+import org.springframework.stereotype.Component;
+import dwsc.sampleproject.eureka.client.movie.feign.movie.Movie;
+
+@Component
+public class MovieFallback implements Movie{
+
+	  @Override
+	    public String validate(String title) {
+	        return "NO_AVAILABLE: Servicio de validación no disponible en este momento";
+	   }
+}

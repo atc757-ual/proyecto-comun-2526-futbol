@@ -21,7 +21,7 @@ public class Comment {
 
     @NotNull(message = "El ID del usuario es obligatorio")
     @Column(name = "user_id", nullable = false)
-    private Long userId;
+    private String userId;
 
     @NotBlank(message = "El contenido del comentario no puede estar vacío")
     @Column(nullable = false, length = 1000)
@@ -41,8 +41,8 @@ public class Comment {
     public Long getPlayerId() { return playerId; }
     public void setPlayerId(Long playerId) { this.playerId = playerId; }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }

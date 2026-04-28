@@ -4,6 +4,7 @@ import com.futbol.client.player.domain.Player;
 import com.futbol.client.player.repository.PlayerRepository;
 import com.futbol.client.player.exceptions.NotFoundException;
 import com.futbol.client.player.dto.ApiResult;
+import org.springframework.http.HttpStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -22,9 +23,14 @@ public class PlayerController {
     private PlayerRepository playerRepository;
 
     @GetMapping
-    public ResponseEntity<ApiResult<List<Player>>> getAllPlayers() {
-        List<Player> players = playerRepository.findAll();
-        ApiResult<List<Player>> response = new ApiResult<>("SUCCESS", "Lista de jugadores obtenida", players);
+    public ResponseEntity<ApiResult<List<Player>>> getAllPlayers(@RequestParam(required = false) String userId) {
+        List<Player> players;
+        if (userId != null && !userId.isEmpty()) {
+            players = playerRepository.findByUserId(userId);
+        } else {
+            players = playerRepository.findAll();
+        }
+        ApiResult<List<Player>> response = new ApiResult<>(String.valueOf(HttpStatus.OK.value()), "Procesamiento concluído exitosamente", players);
         return ResponseEntity.ok(response);
     }
 
@@ -33,34 +39,31 @@ public class PlayerController {
         Player player = playerRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Jugador no encontrado con ID: " + id));
         
-        ApiResult<Player> response = new ApiResult<>("SUCCESS", "Jugador encontrado", player);
+        ApiResult<Player> response = new ApiResult<>(String.valueOf(HttpStatus.OK.value()), "Procesamiento concluído exitosamente", player);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping
     public ResponseEntity<ApiResult<Player>> createPlayer(@Valid @RequestBody Player player) {
         Player savedPlayer = playerRepository.save(player);
-        ApiResult<Player> response = new ApiResult<>("SUCCESS", "Jugador creado con éxito", savedPlayer);
-        return ResponseEntity.status(201).body(response);
+        ApiResult<Player> response = new ApiResult<>(String.valueOf(HttpStatus.CREATED.value()), "Procesamiento concluído exitosamente", savedPlayer);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping
-    public ResponseEntity<ApiResult<Player>> updatePlayer(@Valid @RequestBody Player player) {
+    public Player updatePlayer(@Valid @RequestBody Player player) {
         if (!playerRepository.existsById(player.getId())) {
             throw new NotFoundException("No se puede actualizar. Jugador no encontrado con ID: " + player.getId());
         }
-        Player updatedPlayer = playerRepository.save(player);
-        ApiResult<Player> response = new ApiResult<>("SUCCESS", "Jugador actualizado con éxito", updatedPlayer);
-        return ResponseEntity.ok(response);
+        return playerRepository.save(player);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResult<Void>> deletePlayer(@PathVariable Long id) {
+    @ResponseStatus(HttpStatus.OK)
+    public void deletePlayer(@PathVariable Long id) {
         if (!playerRepository.existsById(id)) {
             throw new NotFoundException("Jugador no encontrado con ID: " + id);
         }
         playerRepository.deleteById(id);
-        ApiResult<Void> response = new ApiResult<>("SUCCESS", "Jugador eliminado con éxito", null);
-        return ResponseEntity.ok(response);
     }
 }

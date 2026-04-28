@@ -1,7 +1,7 @@
 package com.futbol.comment.feign.service;
 
 import com.futbol.comment.feign.client.CommentClient;
-import com.futbol.comment.feign.model.ApiResult;
+import com.futbol.comment.feign.dto.ApiResult;
 import com.futbol.comment.feign.model.CommentDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,8 +14,8 @@ public class CommentService {
     @Autowired
     private CommentClient commentClient;
 
-    public ApiResult<List<CommentDTO>> listarTodos() {
-        return commentClient.getAllComments();
+    public ApiResult<List<CommentDTO>> listarTodos(String userId) {
+        return commentClient.getAllComments(userId);
     }
 
     public ApiResult<List<CommentDTO>> listarPorJugador(Long playerId) {

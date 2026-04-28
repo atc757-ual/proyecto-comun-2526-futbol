@@ -12,7 +12,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/football_db
+    url: jdbc:postgresql://localhost:5432/football_db
     username: root
     password: root
   jpa:

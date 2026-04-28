@@ -4,14 +4,14 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 import com.futbol.player.feign.service.PlayerFallbackFactory;
 import com.futbol.player.feign.model.PlayerDTO;
-import com.futbol.player.feign.model.ApiResult;
+import com.futbol.player.feign.dto.ApiResult;
 import java.util.List;
 
 @FeignClient(name="PLAYER-CLIENT", fallbackFactory = PlayerFallbackFactory.class)
 public interface PlayerClient {
 
     @GetMapping("/api/players")
-    ApiResult<List<PlayerDTO>> getAllPlayers();
+    ApiResult<List<PlayerDTO>> getAllPlayers(@RequestParam("userId") String userId);
 
     @GetMapping("/api/players/{id}")
     ApiResult<PlayerDTO> getPlayerById(@PathVariable("id") Long id);

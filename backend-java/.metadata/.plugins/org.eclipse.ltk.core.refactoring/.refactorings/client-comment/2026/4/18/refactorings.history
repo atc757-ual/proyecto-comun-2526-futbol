@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename package &apos;com.futbol.comment.service&apos; to &apos;com.futbol.client.comment&apos;&#x0D;&#x0A;- Original project: &apos;client-comment&apos;&#x0D;&#x0A;- Original element: &apos;client-comment/src/main/java/com.futbol.comment.service&apos;&#x0D;&#x0A;- Renamed element: &apos;client-comment/src/main/java/com.futbol.client.comment&apos;&#x0D;&#x0A;- Update references to refactored element&#x0D;&#x0A;- Update textual occurrences in comments and strings&#x0D;&#x0A;- Rename subpackages of the package" description="Rename package &apos;com.futbol.comment.service&apos;" flags="589830" hierarchical="true" id="org.eclipse.jdt.ui.rename.package" input="/src\/main\/java=/optional=/true=/=/maven.pomderived=/true=/&lt;com.futbol.comment.service" name="com.futbol.client.comment" qualified="false" references="true" stamp="1777308225254" textual="false" version="1.0"/>
+</session>

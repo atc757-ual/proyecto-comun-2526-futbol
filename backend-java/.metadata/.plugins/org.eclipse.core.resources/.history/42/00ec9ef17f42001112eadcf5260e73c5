@@ -1,0 +1,11 @@
+package com.futbol.player.feign.player;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import com.futbol.player.feign.service.PlayerFallback;
+
+@FeignClient(name="CLIENT-PLAYER",fallback = PlayerFallback.class, configuration = FeignConfig.class)
+
+public interface Player {
+
+}

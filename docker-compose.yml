@@ -12,15 +12,17 @@ services:
       - football-network
 
   db-java:
-    image: mysql:8.0
-    container_name: football-mysql
+    image: postgres:15
+    container_name: football-postgres
+    restart: always
     ports:
-      - "3306:3306"
+      - "5432:5432"
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: football_db
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: football_db
     volumes:
-      - mysql-data:/var/lib/mysql
+      - postgres-data:/var/lib/postgresql/data
       - ./backend-java/database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
       - football-network
@@ -32,10 +34,26 @@ services:
       args:
         SERVICE_NAME: config-server
     container_name: football-config-server
+    # --- DESACTIVAR MODO 'native' EN PRODUCCIÓN ---
+    # El modo 'native' es ideal para desarrollo local ya que lee los archivos de /config
+    # sin necesidad de hacer Git Push. Para PRODUCCIÓN, se recomienda cambiar a 'git'
+    # para tener trazabilidad, auditoría y seguridad de las configuraciones.
+    environment:
+      JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
+      SPRING_PROFILES_ACTIVE: native
+      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: file:/config
+    volumes:
+      - ./springboot-config:/config # Eliminar este volumen en producción si usas Git
     ports:
       - "8888:8888"
     networks:
       - football-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8888/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
 
   eureka-server:
     build:
@@ -46,11 +64,18 @@ services:
     ports:
       - "8761:8761"
     environment:
+      JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
     depends_on:
       - config-server
     networks:
       - football-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
 
   gateway:
     build:
@@ -61,13 +86,22 @@ services:
     ports:
       - "8080:8080"
     environment:
+      JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
     depends_on:
-      - config-server
-      - eureka-server
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
     networks:
       - football-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
 
   # --- DATA MICROSERVICES ---
   player-client:
@@ -77,16 +111,25 @@ services:
         SERVICE_NAME: player-client
     container_name: football-player-client
     environment:
+      JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
-      # Override DB connection to use the Docker MySQL container instead of localhost
-      SPRING_DATASOURCE_URL: "jdbc:mysql://db-java:3306/football_db"
+      # Override DB connection to use the Docker PostgreSQL container instead of localhost
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://db-java:5432/football_db"
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "root"
+      SERVER_PORT: 8081
     depends_on:
-      - config-server
-      - eureka-server
-      - db-java
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      db-java:
+        condition: service_started
     networks:
       - football-network
+    ports:
+      - "8081:8081"
 
   comment-client:
     build:
@@ -95,15 +138,24 @@ services:
         SERVICE_NAME: comment-client
     container_name: football-comment-client
     environment:
+      JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
-      SPRING_DATASOURCE_URL: "jdbc:mysql://db-java:3306/football_db"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://db-java:5432/football_db"
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "root"
+      SERVER_PORT: 8082
     depends_on:
-      - config-server
-      - eureka-server
-      - db-java
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      db-java:
+        condition: service_started
     networks:
       - football-network
+    ports:
+      - "8082:8082"
 
   # --- ORCHESTRATION MICROSERVICES ---
   player-feign:
@@ -113,12 +165,19 @@ services:
         SERVICE_NAME: player-feign
     container_name: football-player-feign
     environment:
+      JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+      SERVER_PORT: 8083
+    ports:
+      - "8083:8083"
     depends_on:
-      - config-server
-      - eureka-server
-      - player-client
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      player-client:
+        condition: service_started
     networks:
       - football-network
 
@@ -129,12 +188,19 @@ services:
         SERVICE_NAME: comment-feign
     container_name: football-comment-feign
     environment:
+      JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+      SERVER_PORT: 8084
+    ports:
+      - "8084:8084"
     depends_on:
-      - config-server
-      - eureka-server
-      - comment-client
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      comment-client:
+        condition: service_started
     networks:
       - football-network
 
@@ -158,8 +224,10 @@ services:
     ports:
       - "8100:80"
     depends_on:
-      - backend-node
-      - gateway
+      backend-node:
+        condition: service_started
+      gateway:
+        condition: service_healthy
     networks:
       - football-network
 
@@ -177,4 +245,4 @@ networks:
 
 volumes:
   mongo-data:
-  mysql-data:
+  postgres-data:

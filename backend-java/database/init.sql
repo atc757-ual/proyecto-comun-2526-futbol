@@ -1,10 +1,10 @@
--- Borrar tablas si existen para reiniciar limpiamente
+-- Borrar tablas si existen para reiniciar limpiamente (Postgres syntax)
 DROP TABLE IF EXISTS comments;
 DROP TABLE IF EXISTS players;
 
 -- Tabla de Jugadores
 CREATE TABLE players (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     team VARCHAR(100),
     league VARCHAR(100),
@@ -17,16 +17,16 @@ CREATE TABLE players (
 
 -- Tabla de Comentarios
 CREATE TABLE comments (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    player_id INT NOT NULL,
+    id SERIAL PRIMARY KEY,
+    player_id INTEGER NOT NULL,
     user_id VARCHAR(128) NOT NULL, -- UID de Firebase
     user_name VARCHAR(100),         -- Nombre para mostrar (opcional)
     content VARCHAR(1000) NOT NULL,
-    rating INT CHECK (rating >= 0 AND rating <= 5),
+    rating INTEGER CHECK (rating >= 0 AND rating <= 5),
     latitude DECIMAL(10, 8),
     longitude DECIMAL(11, 8),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE
 );
 

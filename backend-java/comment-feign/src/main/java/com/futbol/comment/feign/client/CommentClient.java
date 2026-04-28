@@ -1,6 +1,6 @@
 package com.futbol.comment.feign.client;
 
-import com.futbol.comment.feign.model.ApiResult;
+import com.futbol.comment.feign.dto.ApiResult;
 import com.futbol.comment.feign.model.CommentDTO;
 import com.futbol.comment.feign.service.CommentFallbackFactory;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -12,7 +12,7 @@ import java.util.List;
 public interface CommentClient {
 
     @GetMapping("/api/comments")
-    ApiResult<List<CommentDTO>> getAllComments();
+    ApiResult<List<CommentDTO>> getAllComments(@RequestParam("userId") String userId);
 
     @GetMapping("/api/comments/player/{playerId}")
     ApiResult<List<CommentDTO>> getCommentsByPlayer(@PathVariable("playerId") Long playerId);

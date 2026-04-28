@@ -1,0 +1,8 @@
+package com.futbol.player.feign.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+public class PlayerController {
+	@Autowired
+    PlayerService player;
+}

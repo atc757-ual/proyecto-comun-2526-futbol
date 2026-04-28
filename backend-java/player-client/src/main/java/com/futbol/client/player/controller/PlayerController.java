@@ -22,11 +22,19 @@ public class PlayerController {
     @Autowired
     private PlayerRepository playerRepository;
 
+    @Operation(summary = "Listar jugadores", description = "Obtiene todos los jugadores o filtra por userId, nombre o equipo")
     @GetMapping
-    public ResponseEntity<ApiResult<List<Player>>> getAllPlayers(@RequestParam(required = false) String userId) {
+    public ResponseEntity<ApiResult<List<Player>>> getAllPlayers(
+            @RequestParam(required = false) String userId,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String team) {
         List<Player> players;
         if (userId != null && !userId.isEmpty()) {
             players = playerRepository.findByUserId(userId);
+        } else if (name != null && !name.isEmpty()) {
+            players = playerRepository.findByNameContainingIgnoreCase(name);
+        } else if (team != null && !team.isEmpty()) {
+            players = playerRepository.findByTeamIgnoreCase(team);
         } else {
             players = playerRepository.findAll();
         }

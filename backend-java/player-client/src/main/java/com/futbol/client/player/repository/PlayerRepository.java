@@ -8,6 +8,6 @@ import java.util.List;
 @Repository
 public interface PlayerRepository extends JpaRepository<Player, Long> {
     List<Player> findByUserId(String userId);
-    // Add custom queries here, for example:
-    // List<Player> findByTeam(String team);
+    List<Player> findByNameContainingIgnoreCase(String name);
+    List<Player> findByTeamIgnoreCase(String team);
 }

@@ -1,0 +1,196 @@
+const express = require('express');
+const router = express.Router();
+const ctrlPlayers = require('../controllers/players');
+const ctrlComments = require('../controllers/comments');
+
+// --- SERVICIO DE CARGA (Desactivado temporalmente) ---
+// router.get('/db-load', ctrlOthers.dbLoad);
+
+/**
+ * @openapi
+ * /players:
+ *   get:
+ *     summary: Obtiene la lista de jugadores
+ *     description: Retorna todos los jugadores o filtra por nombre, equipo o userId
+ *     parameters:
+ *       - in: query
+ *         name: name
+ *         schema:
+ *           type: string
+ *         description: Filtrar por nombre (LIKE)
+ *       - in: query
+ *         name: team
+ *         schema:
+ *           type: string
+ *         description: Filtrar por equipo
+ *       - in: query
+ *         name: userId
+ *         schema:
+ *           type: string
+ *         description: Filtrar por creador
+ *     responses:
+ *       200:
+ *         description: Lista de jugadores encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Player'
+ *   post:
+ *     summary: Crea un nuevo jugador
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Player'
+ *     responses:
+ *       201:
+ *         description: Jugador creado exitosamente
+ */
+router.route('/players')
+    .get(ctrlPlayers.playersList)
+    .post(ctrlPlayers.playersCreate);
+
+/**
+ * @openapi
+ * /players/{playerid}:
+ *   get:
+ *     summary: Obtiene un jugador por ID
+ *     parameters:
+ *       - in: path
+ *         name: playerid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Datos del jugador
+ *       404:
+ *         description: Jugador no encontrado
+ *   put:
+ *     summary: Actualiza un jugador existente
+ *     parameters:
+ *       - in: path
+ *         name: playerid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Player'
+ *     responses:
+ *       200:
+ *         description: Jugador actualizado
+ *   delete:
+ *     summary: Elimina un jugador
+ *     parameters:
+ *       - in: path
+ *         name: playerid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: Jugador eliminado
+ */
+router.route('/players/:playerid')
+    .get(ctrlPlayers.playersReadOne)
+    .put(ctrlPlayers.playersUpdateOne)
+    .delete(ctrlPlayers.playersDeleteOne);
+
+/**
+ * @openapi
+ * /players/{playerid}/comments:
+ *   post:
+ *     summary: Añade un comentario a un jugador
+ *     parameters:
+ *       - in: path
+ *         name: playerid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Comment'
+ *     responses:
+ *       201:
+ *         description: Comentario añadido
+ */
+router.route('/players/:playerid/comments')
+    .post(ctrlComments.commentsCreate);
+
+/**
+ * @openapi
+ * /players/{playerid}/comments/{commentid}:
+ *   get:
+ *     summary: Obtiene un comentario específico
+ *     parameters:
+ *       - in: path
+ *         name: playerid
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: commentid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Datos del comentario
+ *   put:
+ *     summary: Actualiza un comentario
+ *     parameters:
+ *       - in: path
+ *         name: playerid
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: commentid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Comment'
+ *     responses:
+ *       200:
+ *         description: Comentario actualizado
+ *   delete:
+ *     summary: Elimina un comentario
+ *     parameters:
+ *       - in: path
+ *         name: playerid
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: commentid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: Comentario eliminado
+ */
+router.route('/players/:playerid/comments/:commentid')
+    .get(ctrlComments.commentsReadOne)
+    .put(ctrlComments.commentsUpdateOne)
+    .delete(ctrlComments.commentsDeleteOne);
+
+module.exports = router;

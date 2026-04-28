@@ -20,8 +20,8 @@ public class PlayerFallbackFactory implements FallbackFactory<PlayerClient> {
     public PlayerClient create(Throwable cause) {
         return new PlayerClient() {
             @Override
-            public ApiResult<List<PlayerDTO>> getAllPlayers(String userId) {
-                logger.error("Error al obtener jugadores para usuario {}: {}", userId, cause.getMessage());
+            public ApiResult<List<PlayerDTO>> getAllPlayers(String userId, String name, String team) {
+                logger.error("Error al obtener jugadores (User:{}, Name:{}, Team:{}): {}", userId, name, team, cause.getMessage());
                 return new ApiResult<>(String.valueOf(HttpStatus.SERVICE_UNAVAILABLE.value()), cause.getMessage(), null);
             }
 

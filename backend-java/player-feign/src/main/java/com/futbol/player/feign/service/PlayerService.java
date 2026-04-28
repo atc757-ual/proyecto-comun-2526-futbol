@@ -20,8 +20,8 @@ public class PlayerService {
     @Autowired
     private CommentClient commentClient;
 
-    public ApiResult<List<PlayerDTO>> getTodosLosJugadores(String userId) {
-        return playerClient.getAllPlayers(userId);
+    public ApiResult<List<PlayerDTO>> getTodosLosJugadores(String userId, String name, String team) {
+        return playerClient.getAllPlayers(userId, name, team);
     }
 
     public ApiResult<PlayerDTO> getJugador(Long id) {

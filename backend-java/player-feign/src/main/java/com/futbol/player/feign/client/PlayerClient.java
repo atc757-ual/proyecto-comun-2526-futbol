@@ -11,7 +11,11 @@ import java.util.List;
 public interface PlayerClient {
 
     @GetMapping("/api/players")
-    ApiResult<List<PlayerDTO>> getAllPlayers(@RequestParam("userId") String userId);
+    ApiResult<List<PlayerDTO>> getAllPlayers(
+        @RequestParam(value = "userId", required = false) String userId,
+        @RequestParam(value = "name", required = false) String name,
+        @RequestParam(value = "team", required = false) String team
+    );
 
     @GetMapping("/api/players/{id}")
     ApiResult<PlayerDTO> getPlayerById(@PathVariable("id") Long id);

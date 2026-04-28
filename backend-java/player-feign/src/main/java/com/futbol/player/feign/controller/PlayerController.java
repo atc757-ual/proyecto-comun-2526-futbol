@@ -23,14 +23,17 @@ public class PlayerController {
     @Autowired
     private PlayerService playerService;
 
-    @Operation(summary = "Obtener todos los jugadores", description = "Llama a player-client para listar los jugadores")
+    @Operation(summary = "Obtener jugadores", description = "Lista todos los jugadores o filtra por userId, nombre (LIKE) o equipo")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Lista obtenida correctamente o Fallback ejecutado"),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @GetMapping
-    public ResponseEntity<ApiResult<List<PlayerDTO>>> getAll(@RequestParam(required = false) String userId) {
-        return ResponseEntity.ok(playerService.getTodosLosJugadores(userId));
+    public ResponseEntity<ApiResult<List<PlayerDTO>>> getAll(
+            @RequestParam(required = false) String userId,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String team) {
+        return ResponseEntity.ok(playerService.getTodosLosJugadores(userId, name, team));
     }
 
     @Operation(summary = "Obtener jugador por ID", description = "Llama a player-client para buscar un jugador específico")

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <xsd:element name="noticia">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="id"       type="id_valid"/>
+                <xsd:element name="date"     type="fecha_valid"/>
+                <xsd:element name="title"    type="titulo_valid"/>
+                <xsd:element name="author"   type="author_valid"/>
+                <xsd:element name="content"  type="contenido_valid"/>
+                <xsd:element name="imageUrl" type="url_valid"/>
+                <xsd:element name="category" type="categoria_valid"/>
+                <xsd:element name="tags"     type="tipoTags"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+    <!-- ID: no vacío, solo letras/números/guiones, 1-50 chars -->
+    <xsd:simpleType name="id_valid">
+        <xsd:restriction base="xsd:string">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="50"/>
+            <xsd:pattern value="[a-zA-Z0-9\-_]+"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Fecha: formato DD/MM/YYYY -->
+    <xsd:simpleType name="fecha_valid">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="\d{2}/\d{2}/\d{4}"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Título: entre 5 y 30 palabras/tokens (sin espacios en blanco solos) -->
+    <xsd:simpleType name="titulo_valid">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="(\S\s*){5,100}"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Author: entre 5 y 30 caracteres sin contar espacios en blanco -->
+    <xsd:simpleType name="author_valid">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="(\S\s*){5,100}"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Contenido: entre 20 y 250 tokens -->
+    <xsd:simpleType name="contenido_valid">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="(\S\s*){20,5000}"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- URL de imagen: debe empezar por http:// o https:// -->
+    <xsd:simpleType name="url_valid">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="https?://\S+"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Categoría: solo valores válidos de fútbol -->
+    <xsd:simpleType name="categoria_valid">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="Fichajes"/>
+            <xsd:enumeration value="Resultados"/>
+            <xsd:enumeration value="Crónica"/>
+            <xsd:enumeration value="Opinión"/>
+            <xsd:enumeration value="Internacional"/>
+            <xsd:enumeration value="General"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Tags: entre 1 y 6 etiquetas -->
+    <xsd:complexType name="tipoTags">
+        <xsd:sequence>
+            <xsd:element name="tag" type="xsd:string"
+                         minOccurs="1" maxOccurs="6"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+</xsd:schema>

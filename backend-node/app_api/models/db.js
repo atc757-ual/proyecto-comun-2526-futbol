@@ -57,3 +57,4 @@ process.on('SIGTERM', () => {
 
 // Registrar modelos
 require('./players');
+require('./users');

@@ -1,0 +1,26 @@
+# ==========================================
+# Dockerfile para el servidor CORBA (BufferServer)
+# ==========================================
+
+FROM maven:3.9-eclipse-temurin-11 AS builder
+
+WORKDIR /app
+COPY service-corba/ ./service-corba/
+
+# Compilar y extraer dependencias
+RUN cd service-corba && mvn clean compile dependency:copy-dependencies -DoutputDirectory=target/dependency
+
+# --- Runtime ---
+FROM eclipse-temurin:11-jre
+
+WORKDIR /app
+
+# Copiar las clases compiladas y las dependencias (glassfish-corba-orb)
+COPY --from=builder /app/service-corba/target/classes/ ./classes/
+COPY --from=builder /app/service-corba/target/dependency/ ./dependency/
+
+# Script de arranque (simplificado, ya no arranca orbd)
+COPY service-corba/docker-entrypoint.sh ./
+RUN chmod +x docker-entrypoint.sh
+
+ENTRYPOINT ["./docker-entrypoint.sh"]

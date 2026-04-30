@@ -26,6 +26,13 @@ ios/
 *.jks
 serviceAccountKey.json
 firebase-auth.json
+firebase-credentials.json
+.metadata/
+.eclipse/
+RemoteSystemsTempFiles/
+.env
+*.json.key
+secrets/
 
 # Docker data
 *-data/

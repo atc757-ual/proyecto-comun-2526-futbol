@@ -34,16 +34,12 @@ services:
       args:
         SERVICE_NAME: config-server
     container_name: football-config-server
-    # --- DESACTIVAR MODO 'native' EN PRODUCCIÓN ---
-    # El modo 'native' es ideal para desarrollo local ya que lee los archivos de /config
-    # sin necesidad de hacer Git Push. Para PRODUCCIÓN, se recomienda cambiar a 'git'
-    # para tener trazabilidad, auditoría y seguridad de las configuraciones.
     environment:
       JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       SPRING_PROFILES_ACTIVE: native
       SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: file:/config
     volumes:
-      - ./springboot-config:/config # Eliminar este volumen en producción si usas Git
+      - ./springboot-config:/config
     ports:
       - "8888:8888"
     networks:
@@ -89,19 +85,19 @@ services:
       JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+      FIREBASE_SERVICE_ACCOUNT: "/app/firebase-credentials.json"
+      GOOGLE_API_KEY: "${GOOGLE_API_KEY}"
+      SPRING_AI_GEMINI_API_KEY: "${GOOGLE_API_KEY}"
+      # Forzamos la propiedad de Spring para LangChain4j
+      SPRING_APPLICATION_JSON: '{"google":{"api":{"key":"${GOOGLE_API_KEY}"}}}'
+      JWT_SECRET: "${JWT_SECRET:-esta-es-una-clave-secreta-muy-larga-y-segura-para-el-futbol-2526}"
+    volumes:
+      - ./firebase-credentials.json:/app/firebase-credentials.json
     depends_on:
-      config-server:
-        condition: service_healthy
-      eureka-server:
-        condition: service_healthy
+      - config-server
+      - eureka-server
     networks:
       - football-network
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 40s
 
   # --- DATA MICROSERVICES ---
   player-client:
@@ -114,8 +110,7 @@ services:
       JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
-      # Override DB connection to use the Docker PostgreSQL container instead of localhost
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://db-java:5432/football_db"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://football-postgres:5432/football_db"
       SPRING_DATASOURCE_USERNAME: "root"
       SPRING_DATASOURCE_PASSWORD: "root"
       SERVER_PORT: 8081
@@ -141,7 +136,7 @@ services:
       JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://db-java:5432/football_db"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://football-postgres:5432/football_db"
       SPRING_DATASOURCE_USERNAME: "root"
       SPRING_DATASOURCE_PASSWORD: "root"
       SERVER_PORT: 8082
@@ -211,8 +206,13 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - MONGO_URL=mongodb://db-node:27017/football
+      - MONGO_URL=mongodb://football-mongo:27017/football
       - PORT=3000
+      - FIREBASE_SERVICE_ACCOUNT=/app/firebase-credentials.json
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - JWT_SECRET=${JWT_SECRET:-esta-es-una-clave-secreta-muy-larga-y-segura-para-el-futbol-2526}
+    volumes:
+      - ./firebase-credentials.json:/app/firebase-credentials.json
     depends_on:
       - db-node
     networks:
@@ -227,15 +227,45 @@ services:
       backend-node:
         condition: service_started
       gateway:
-        condition: service_healthy
+        condition: service_started
+
+  # 1. Servicio de Nombres CORBA
+  corba-naming:
+    image: eclipse-temurin:8-jre
+    container_name: football-corba-naming
+    command: orbd -ORBInitialPort 1050 -ORBInitialHost 0.0.0.0
     networks:
       - football-network
 
-  service-corba:
-    build: ./service-corba
-    container_name: football-corba-service
+  # 2. Servidor CORBA
+  corba-server:
+    build:
+      context: ./backend-corba
+      dockerfile: Dockerfile.corba
+    container_name: football-corba-server
+    environment:
+      - ORB_HOST=corba-naming
+    depends_on:
+      - corba-naming
+    networks:
+      - football-network
+
+  # 3. Bridge HTTP-CORBA
+  corba-bridge:
+    build:
+      context: ./backend-corba
+      dockerfile: Dockerfile.bridge
+    container_name: football-corba-bridge
     ports:
-      - "1050:1050"
+      - "8089:8080"
+    environment:
+      - ORB_HOST=corba-naming
+      - FIREBASE_SERVICE_ACCOUNT=/app/firebase-credentials.json
+    volumes:
+      - ./firebase-credentials.json:/app/firebase-credentials.json
+    depends_on:
+      - corba-naming
+      - corba-server
     networks:
       - football-network
 

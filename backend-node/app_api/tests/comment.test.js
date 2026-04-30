@@ -2,7 +2,11 @@ const mongoose = require("mongoose");
 const request = require("supertest");
 const app = require("../../server");
 const Player = mongoose.model("Player");
+const User = mongoose.model("User");
 const { reqAddPlayer, reqAddComment, reqUpdateComment } = require("./utils/testfixtures/player.test.data");
+const { generateJWT } = require("../utils/jwt.util");
+
+let adminToken;
 
 jest.setTimeout(30000);
 
@@ -16,8 +20,23 @@ describe("CRUD de Comentarios", () => {
             await new Promise(resolve => mongoose.connection.once('connected', resolve));
         }
         await Player.deleteMany({});
+        await User.deleteMany({});
+        
+        // Crear usuario admin para que el middleware lo encuentre
+        await User.create({
+            firebaseUid: "admin_uid",
+            name: "Admin Test",
+            email: "admin@test.com",
+            role: "admin",
+            is_active: true,
+            blocked: false
+        });
+
         const player = await Player.create(reqAddPlayer);
         playerId = player._id;
+        
+        // Generar un token para las pruebas
+        adminToken = generateJWT("admin_uid", "admin");
     });
 
     afterAll(async () => {
@@ -27,6 +46,7 @@ describe("CRUD de Comentarios", () => {
     test("Debería añadir un comentario (POST /api/players/:playerid/comments)", async () => {
         const response = await request(app)
             .post(`/api/players/${playerId}/comments`)
+            .set('Authorization', `Bearer ${adminToken}`)
             .send(reqAddComment)
             .expect(201);
             
@@ -56,6 +76,7 @@ describe("CRUD de Comentarios", () => {
 
         const response = await request(app)
             .put(`/api/players/${playerId}/comments/${commentId}`)
+            .set('Authorization', `Bearer ${adminToken}`)
             .send(reqUpdateComment)
             .expect(200);
             
@@ -71,6 +92,7 @@ describe("CRUD de Comentarios", () => {
 
         await request(app)
             .delete(`/api/players/${playerId}/comments/${commentId}`)
+            .set('Authorization', `Bearer ${adminToken}`)
             .expect(204);
             
         const updatedPlayer = await Player.findById(playerId);

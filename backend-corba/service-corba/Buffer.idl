@@ -1,0 +1,9 @@
+module BufferApp {
+    interface Buffer {
+        boolean put(in string noticia);
+        boolean get(out string noticia);
+        boolean read(out string noticia);
+ 	    boolean fijarLimiteNoticias(in short numero_maximo);
+        oneway void shutdown();
+    };
+};

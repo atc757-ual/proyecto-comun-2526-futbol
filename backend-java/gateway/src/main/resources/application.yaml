@@ -2,7 +2,38 @@ spring:
   application:
     name: gateway
   config:
-    import: "optional:configserver:http://localhost:8888"
+    import: "optional:configserver:http://football-config-server:8888"
+  cloud:
+    gateway:
+      grpc:
+        enabled: false
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://football-postgres:5432/football_db}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:root}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://securetoken.google.com/proyecto-final-8f184
+          jwk-set-uri: https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com
 
 server:
   port: 8080
+
+# Configuración de Seguridad Personalizada
+jwt:
+  secret: ${JWT_SECRET:esta-es-una-clave-secreta-muy-larga-y-segura-para-el-futbol-2526}
+  expiration: 36000 # 10 horas
+
+firebase:
+  service-account:
+    path: ${FIREBASE_SERVICE_ACCOUNT:./firebase-credentials.json}
+
+google:
+  api:
+    key: ${GOOGLE_API_KEY:tu-clave-aqui}

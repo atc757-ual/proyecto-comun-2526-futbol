@@ -1,7 +1,29 @@
 db = db.getSiblingDB('football');
 
 db.players.drop();
-db.comments.drop(); // Ya no usaremos esta colección por separado
+db.users.drop();
+
+// Inicializar Usuarios (Nuevos para JWT/Firebase)
+db.users.insertMany([
+  {
+    firebaseUid: "admin_uid",
+    name: "Administrador Sistema",
+    email: "admin@futbol.com",
+    role: "admin",
+    is_active: true,
+    blocked: false,
+    created_at: new Date()
+  },
+  {
+    firebaseUid: "firebase_uid_1",
+    name: "Alex User",
+    email: "alex@test.com",
+    role: "user",
+    is_active: true,
+    blocked: false,
+    created_at: new Date()
+  }
+]);
 
 // Inicializar Jugadores con sus comentarios embebidos (Patrón de subdocumentos TRWM)
 db.players.insertMany([

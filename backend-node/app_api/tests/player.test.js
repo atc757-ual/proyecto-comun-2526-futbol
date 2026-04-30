@@ -2,7 +2,11 @@ const mongoose = require("mongoose");
 const request = require("supertest");
 const app = require("../../server"); // Al importar server, ya se ejecuta db.js y se conecta
 const Player = mongoose.model("Player");
+const User = mongoose.model("User");
 const { reqAddPlayer, reqUpdatePlayer } = require("./utils/testfixtures/player.test.data");
+const { generateJWT } = require("../utils/jwt.util");
+
+let adminToken = generateJWT("admin_uid", "admin");
 
 
 
@@ -12,6 +16,17 @@ jest.setTimeout(30000); // 30 segundos de margen global
 beforeEach(async () => {
     if (mongoose.connection.readyState === 1) {
         await Player.deleteMany({});
+        await User.deleteMany({});
+
+        // Crear usuario admin para que el middleware lo encuentre
+        await User.create({
+            firebaseUid: "admin_uid",
+            name: "Admin Test",
+            email: "admin@test.com",
+            role: "admin",
+            is_active: true,
+            blocked: false
+        });
     }
 });
 
@@ -28,6 +43,7 @@ describe("CRUD de Jugadores", () => {
     test("Debería crear un nuevo jugador (POST /api/players)", async () => {
         const response = await request(app)
             .post("/api/players")
+            .set('Authorization', `Bearer ${adminToken}`)
             .send(reqAddPlayer)
             .expect(201);
             
@@ -72,6 +88,7 @@ describe("CRUD de Jugadores", () => {
         const invalidPlayer = { name: "" }; // Sin equipo ni userId
         const response = await request(app)
             .post("/api/players")
+            .set('Authorization', `Bearer ${adminToken}`)
             .send(invalidPlayer)
             .expect(400); // Bad Request
             
@@ -84,6 +101,7 @@ describe("CRUD de Jugadores", () => {
         
         const response = await request(app)
             .put(`/api/players/${newPlayer._id}`)
+            .set('Authorization', `Bearer ${adminToken}`)
             .send(reqUpdatePlayer)
             .expect(200);
             
@@ -97,6 +115,7 @@ describe("CRUD de Jugadores", () => {
         
         await request(app)
             .delete(`/api/players/${newPlayer._id}`)
+            .set('Authorization', `Bearer ${adminToken}`)
             .expect(204);
             
         const deletedPlayer = await Player.findById(newPlayer._id);

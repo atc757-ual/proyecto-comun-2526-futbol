@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+                             http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+         version="4.0">
+
+    <display-name>CORBA Bridge - Gestor de Noticias de Fútbol</display-name>
+
+    <!-- ==================== FILTRO JWT ==================== -->
+    <filter>
+        <filter-name>JWTFilter</filter-name>
+        <filter-class>com.futbol.security.JWTFilter</filter-class>
+        <!-- Clave secreta para firmar/verificar tokens -->
+        <init-param>
+            <param-name>secret</param-name>
+            <param-value>mi-clave-secreta-futbol-2026</param-value>
+        </init-param>
+    </filter>
+
+    <!-- Aplicar JWT a todas las rutas protegidas -->
+    <filter-mapping>
+        <filter-name>JWTFilter</filter-name>
+        <url-pattern>/api/*</url-pattern>
+    </filter-mapping>
+
+    <!-- ==================== SERVLETS ==================== -->
+
+    <!-- API REST Unificada para Noticias -->
+    <servlet>
+        <servlet-name>NoticiasRestServlet</servlet-name>
+        <servlet-class>com.futbol.servlet.NoticiasRestServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>NoticiasRestServlet</servlet-name>
+        <!-- Importante: el /* permite leer PathInfo como /api/noticias/123 -->
+        <url-pattern>/api/noticias/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Documentación: Accesible SIN JWT -->
+    <servlet>
+        <servlet-name>ApiDocsServlet</servlet-name>
+        <servlet-class>com.futbol.servlet.ApiDocsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ApiDocsServlet</servlet-name>
+        <url-pattern>/docs</url-pattern>
+    </servlet-mapping>
+
+</web-app>

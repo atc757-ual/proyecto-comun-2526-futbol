@@ -2,6 +2,12 @@ const express = require('express');
 const router = express.Router();
 const ctrlPlayers = require('../controllers/players');
 const ctrlComments = require('../controllers/comments');
+const ctrlAuth = require('../controllers/auth');
+const ctrlAI = require('../controllers/ai'); // Nuevo controlador de IA
+const { authorizeRequest } = require('../middleware/auth.middleware');
+
+// --- RUTAS DE AUTENTICACIÓN ---
+router.post('/auth/signin', ctrlAuth.loginFirebase);
 
 // --- SERVICIO DE CARGA (Desactivado temporalmente) ---
 // router.get('/db-load', ctrlOthers.dbLoad);
@@ -54,7 +60,7 @@ const ctrlComments = require('../controllers/comments');
  */
 router.route('/players')
     .get(ctrlPlayers.playersList)
-    .post(ctrlPlayers.playersCreate);
+    .post(authorizeRequest, ctrlPlayers.playersCreate);
 
 /**
  * @openapi
@@ -103,8 +109,8 @@ router.route('/players')
  */
 router.route('/players/:playerid')
     .get(ctrlPlayers.playersReadOne)
-    .put(ctrlPlayers.playersUpdateOne)
-    .delete(ctrlPlayers.playersDeleteOne);
+    .put(authorizeRequest, ctrlPlayers.playersUpdateOne)
+    .delete(authorizeRequest, ctrlPlayers.playersDeleteOne);
 
 /**
  * @openapi
@@ -128,7 +134,7 @@ router.route('/players/:playerid')
  *         description: Comentario añadido
  */
 router.route('/players/:playerid/comments')
-    .post(ctrlComments.commentsCreate);
+    .post(authorizeRequest, ctrlComments.commentsCreate);
 
 /**
  * @openapi
@@ -190,7 +196,10 @@ router.route('/players/:playerid/comments')
  */
 router.route('/players/:playerid/comments/:commentid')
     .get(ctrlComments.commentsReadOne)
-    .put(ctrlComments.commentsUpdateOne)
-    .delete(ctrlComments.commentsDeleteOne);
+    .put(authorizeRequest, ctrlComments.commentsUpdateOne)
+    .delete(authorizeRequest, ctrlComments.commentsDeleteOne);
+
+// --- RUTA DE IA (Análisis de Equipo) ---
+router.post('/ai/analyze', authorizeRequest, ctrlAI.analyzeMyTeam);
 
 module.exports = router;

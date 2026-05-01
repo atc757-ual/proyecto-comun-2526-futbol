@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "cross-env NODE_ENV=test node -r dotenv/config ./node_modules/jest/bin/jest.js --testTimeout=30000 --runInBand",
+    "test": "cross-env NODE_ENV=test node -r dotenv/config ./node_modules/jest/bin/jest.js --testTimeout=30000 --runInBand --coverage",
     "lint": "eslint ."
   },
   "keywords": [],

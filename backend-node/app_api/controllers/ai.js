@@ -14,7 +14,7 @@ const analyzeMyTeam = async (req, res) => {
         // 2. Buscar los jugadores en MongoDB que pertenezcan a este usuario
         // Nota: Asegúrate de que el modelo Player tenga el campo 'firebaseUid' 
         // o similar para filtrar por dueño.
-        const players = await Player.find({ createdBy: firebaseUid });
+        const players = await Player.find({ user_id: firebaseUid });
 
         if (!players || players.length === 0) {
             return res.status(404).json({
@@ -25,9 +25,14 @@ const analyzeMyTeam = async (req, res) => {
         // 3. Llamar al servicio de IA
         const analysis = await aiService.analyzePlayers(players);
 
-        // 4. Responder con el formato estándar
-        res.status(200).json({
-            result: { status: "OK" },
+        return res.status(200).json({
+            result: {
+                transactionId: require('crypto').randomUUID(),
+                code: "200",
+                description: "OK",
+                descriptionDetail: "Análisis de IA generado exitosamente",
+                responseTimestamp: new Date().toISOString()
+            },
             data: analysis
         });
 

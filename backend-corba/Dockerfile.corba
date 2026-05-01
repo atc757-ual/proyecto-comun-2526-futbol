@@ -6,7 +6,7 @@ FROM maven:3.9-eclipse-temurin-11 AS builder
 
 WORKDIR /app
 # Copiamos desde el contexto raíz
-COPY backend-corba/service-corba/ ./service-corba/
+COPY service-corba/ ./service-corba/
 
 # Compilar y extraer dependencias
 RUN cd service-corba && mvn clean compile dependency:copy-dependencies -DoutputDirectory=target/dependency
@@ -20,8 +20,6 @@ WORKDIR /app
 COPY --from=builder /app/service-corba/target/classes/ ./classes/
 COPY --from=builder /app/service-corba/target/dependency/ ./dependency/
 
-# Script de arranque (ruta relativa al contexto raíz)
-COPY backend-corba/service-corba/docker-entrypoint.sh ./
-RUN chmod +x docker-entrypoint.sh
-
-ENTRYPOINT ["./docker-entrypoint.sh"]
+# Comando de arranque directo (Sin scripts externos)
+# Usamos el classpath que apunta a classes y a todas las libs en dependency/
+ENTRYPOINT ["java", "-cp", "classes:dependency/*", "BufferApp.NewsServer"]

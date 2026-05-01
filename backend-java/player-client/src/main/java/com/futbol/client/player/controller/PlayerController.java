@@ -3,7 +3,8 @@ package com.futbol.client.player.controller;
 import com.futbol.client.player.domain.Player;
 import com.futbol.client.player.repository.PlayerRepository;
 import com.futbol.client.player.exceptions.NotFoundException;
-import com.futbol.client.player.dto.ApiResult;
+import com.futbol.common.dto.ApiResult;
+import com.futbol.player.feign.dto.PlayerPublicDTO;
 import org.springframework.http.HttpStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,6 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.stream.Collectors;
 
 @Tag(name = "Jugadores", description = "Gestión de jugadores del sistema")
 @RestController
@@ -21,6 +25,23 @@ public class PlayerController {
 
     @Autowired
     private PlayerRepository playerRepository;
+
+    @Operation(summary = "Listar jugadores (Vista Pública)", description = "Obtiene 10 jugadores aleatorios con información mínima (Nombre, Foto) sin necesidad de token")
+    @GetMapping("/public")
+    public ResponseEntity<ApiResult<List<PlayerPublicDTO>>> getAllPlayersPublic() {
+        List<Player> allPlayers = new ArrayList<>(playerRepository.findAll());
+        Collections.shuffle(allPlayers);
+
+        List<PlayerPublicDTO> publicPlayers = allPlayers.stream()
+                .limit(10)
+                .map(p -> PlayerPublicDTO.builder()
+                        .name(p.getName())
+                        .photo(p.getImageUrl())
+                        .build())
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(ApiResult.success("Vista pública aleatoria recuperada", publicPlayers));
+    }
 
     @Operation(summary = "Listar jugadores", description = "Obtiene todos los jugadores o filtra por userId, nombre o equipo")
     @GetMapping
@@ -38,8 +59,7 @@ public class PlayerController {
         } else {
             players = playerRepository.findAll();
         }
-        ApiResult<List<Player>> response = new ApiResult<>(String.valueOf(HttpStatus.OK.value()), "Procesamiento concluído exitosamente", players);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResult.success("Procesamiento concluído exitosamente", players));
     }
 
     @GetMapping("/{id}")
@@ -47,31 +67,31 @@ public class PlayerController {
         Player player = playerRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Jugador no encontrado con ID: " + id));
         
-        ApiResult<Player> response = new ApiResult<>(String.valueOf(HttpStatus.OK.value()), "Procesamiento concluído exitosamente", player);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResult.success("Procesamiento concluído exitosamente", player));
     }
 
     @PostMapping
     public ResponseEntity<ApiResult<Player>> createPlayer(@Valid @RequestBody Player player) {
         Player savedPlayer = playerRepository.save(player);
-        ApiResult<Player> response = new ApiResult<>(String.valueOf(HttpStatus.CREATED.value()), "Procesamiento concluído exitosamente", savedPlayer);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResult.success("Procesamiento concluído exitosamente", savedPlayer));
     }
 
     @PutMapping
-    public Player updatePlayer(@Valid @RequestBody Player player) {
+    public ResponseEntity<ApiResult<Player>> updatePlayer(@Valid @RequestBody Player player) {
         if (!playerRepository.existsById(player.getId())) {
             throw new NotFoundException("No se puede actualizar. Jugador no encontrado con ID: " + player.getId());
         }
-        return playerRepository.save(player);
+        Player updated = playerRepository.save(player);
+        return ResponseEntity.ok(ApiResult.success("Jugador actualizado exitosamente", updated));
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public void deletePlayer(@PathVariable Long id) {
+    public ResponseEntity<ApiResult<Void>> deletePlayer(@PathVariable Long id) {
         if (!playerRepository.existsById(id)) {
             throw new NotFoundException("Jugador no encontrado con ID: " + id);
         }
         playerRepository.deleteById(id);
+        return ResponseEntity.ok(ApiResult.success("Jugador eliminado exitosamente", null));
     }
 }

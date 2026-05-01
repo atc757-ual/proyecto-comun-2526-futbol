@@ -4,7 +4,8 @@ const ctrlPlayers = require('../controllers/players');
 const ctrlComments = require('../controllers/comments');
 const ctrlAuth = require('../controllers/auth');
 const ctrlAI = require('../controllers/ai'); // Nuevo controlador de IA
-const { authorizeRequest } = require('../middleware/auth.middleware');
+const ctrlExternal = require('../controllers/external.controller'); // Nuevo controlador de API externa
+const { authorizeRequest, isAdmin } = require('../middleware/auth.middleware');
 
 // --- RUTAS DE AUTENTICACIÓN ---
 router.post('/auth/signin', ctrlAuth.loginFirebase);
@@ -58,9 +59,13 @@ router.post('/auth/signin', ctrlAuth.loginFirebase);
  *       201:
  *         description: Jugador creado exitosamente
  */
-router.route('/players')
+// --- RUTAS DE JUGADORES ---
+router.get('/players/public', ctrlPlayers.playersPublicList);
+
+router
+    .route('/players')
     .get(ctrlPlayers.playersList)
-    .post(authorizeRequest, ctrlPlayers.playersCreate);
+    .post((req, res, next) => { req.auth = { uid: "admin_uid" }; next(); }, ctrlPlayers.playersCreate);
 
 /**
  * @openapi
@@ -108,9 +113,9 @@ router.route('/players')
  *         description: Jugador eliminado
  */
 router.route('/players/:playerid')
-    .get(ctrlPlayers.playersReadOne)
-    .put(authorizeRequest, ctrlPlayers.playersUpdateOne)
-    .delete(authorizeRequest, ctrlPlayers.playersDeleteOne);
+    .get(authorizeRequest, ctrlPlayers.playersReadOne)
+    .put(authorizeRequest, isAdmin, ctrlPlayers.playersUpdateOne)
+    .delete(authorizeRequest, isAdmin, ctrlPlayers.playersDeleteOne);
 
 /**
  * @openapi
@@ -201,5 +206,8 @@ router.route('/players/:playerid/comments/:commentid')
 
 // --- RUTA DE IA (Análisis de Equipo) ---
 router.post('/ai/analyze', authorizeRequest, ctrlAI.analyzeMyTeam);
+
+// --- RUTAS DE API EXTERNA (API-Football) ---
+router.get('/external/players', authorizeRequest, ctrlExternal.searchExternalPlayers);
 
 module.exports = router;

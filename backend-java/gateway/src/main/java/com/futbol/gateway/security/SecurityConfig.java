@@ -11,16 +11,30 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 @EnableWebFluxSecurity
 public class SecurityConfig {
 
+    private final JsonAuthenticationEntryPoint authenticationEntryPoint;
+    private final JsonAccessDeniedHandler accessDeniedHandler;
+
+    public SecurityConfig(JsonAuthenticationEntryPoint authenticationEntryPoint, JsonAccessDeniedHandler accessDeniedHandler) {
+        this.authenticationEntryPoint = authenticationEntryPoint;
+        this.accessDeniedHandler = accessDeniedHandler;
+    }
+
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
             .csrf().disable()
+            .exceptionHandling()
+                .authenticationEntryPoint(authenticationEntryPoint)
+                .accessDeniedHandler(accessDeniedHandler)
+            .and()
             .authorizeExchange()
             // Rutas Públicas
             .pathMatchers("/api/auth/**").permitAll()
-            .pathMatchers(HttpMethod.GET, "/api/players/**").permitAll()
+            .pathMatchers(HttpMethod.GET, "/api/players/public").permitAll()
             // Rutas Protegidas (Requieren Login)
             .pathMatchers(HttpMethod.POST, "/api/players/*/comments").authenticated()
+            .pathMatchers(HttpMethod.POST, "/api/ai/analyze").authenticated()
+            .pathMatchers(HttpMethod.GET, "/api/external/players").authenticated()
             // Rutas de Admin
             .pathMatchers(HttpMethod.POST, "/api/players").hasAuthority("ROLE_admin")
             .pathMatchers(HttpMethod.PUT, "/api/players/**").hasAuthority("ROLE_admin")
@@ -29,7 +43,7 @@ public class SecurityConfig {
             .anyExchange().authenticated()
             .and()
             .oauth2ResourceServer()
-            .jwt(); // Configuraremos esto para que use nuestro JWTUtil
+            .jwt();
 
         return http.build();
     }

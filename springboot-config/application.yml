@@ -9,7 +9,7 @@ logging:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://football-eureka-server:8761/eureka/
     registryFetchIntervalSeconds: 5
   instance:
     prefer-ip-address: true

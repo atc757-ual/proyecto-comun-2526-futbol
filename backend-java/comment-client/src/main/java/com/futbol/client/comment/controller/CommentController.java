@@ -3,7 +3,7 @@ package com.futbol.client.comment.controller;
 import com.futbol.client.comment.domain.Comment;
 import com.futbol.client.comment.repository.CommentRepository;
 import com.futbol.client.comment.exceptions.NotFoundException;
-import com.futbol.client.comment.dto.ApiResult;
+import com.futbol.common.dto.ApiResult;
 import org.springframework.http.HttpStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -33,16 +33,14 @@ public class CommentController {
         } else {
             comments = commentRepository.findAll();
         }
-        ApiResult<List<Comment>> response = new ApiResult<>(String.valueOf(HttpStatus.OK.value()), "Procesamiento concluído exitosamente", comments);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResult.success("Procesamiento concluído exitosamente", comments));
     }
 
     @Operation(summary = "Obtener comentarios por jugador", description = "Busca todos los comentarios asociados a un ID de jugador")
     @GetMapping("/player/{playerId}")
     public ResponseEntity<ApiResult<List<Comment>>> getCommentsByPlayer(@PathVariable Long playerId) {
         List<Comment> comments = commentRepository.findByPlayerId(playerId);
-        ApiResult<List<Comment>> response = new ApiResult<>(String.valueOf(HttpStatus.OK.value()), "Procesamiento concluído exitosamente", comments);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResult.success("Procesamiento concluído exitosamente", comments));
     }
 
     @Operation(summary = "Añadir un comentario", description = "Guarda un nuevo comentario en el sistema")
@@ -53,17 +51,25 @@ public class CommentController {
     @PostMapping
     public ResponseEntity<ApiResult<Comment>> createComment(@Valid @RequestBody Comment comment) {
         Comment savedComment = commentRepository.save(comment);
-        ApiResult<Comment> response = new ApiResult<>(String.valueOf(HttpStatus.CREATED.value()), "Procesamiento concluído exitosamente", savedComment);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResult.success("Procesamiento concluído exitosamente", savedComment));
     }
 
     @Operation(summary = "Eliminar un comentario", description = "Borra permanentemente un comentario por su ID")
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public void deleteComment(@PathVariable Long id) {
-        if (!commentRepository.existsById(id)) {
+    public ResponseEntity<ApiResult<Void>> deleteComment(@PathVariable Long id) {
+        if (!commentRepository.existsById(id) ) {
             throw new NotFoundException("Comentario no encontrado con ID: " + id);
         }
         commentRepository.deleteById(id);
+        return ResponseEntity.ok(ApiResult.success("Comentario eliminado exitosamente", null));
+    }
+
+    @Operation(summary = "Eliminar comentarios por jugador", description = "Borra todos los comentarios asociados a un ID de jugador")
+    @DeleteMapping("/player/{playerId}")
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<ApiResult<Void>> deleteByPlayer(@PathVariable Long playerId) {
+        commentRepository.deleteByPlayerId(playerId);
+        return ResponseEntity.ok(ApiResult.success("Comentarios del jugador eliminados exitosamente", null));
     }
 }

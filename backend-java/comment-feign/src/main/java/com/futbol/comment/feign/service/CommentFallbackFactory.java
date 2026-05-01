@@ -40,6 +40,12 @@ public class CommentFallbackFactory implements FallbackFactory<CommentClient> {
             public ApiResult<Void> deleteComment(Long id) {
                 return new ApiResult<>(String.valueOf(HttpStatus.SERVICE_UNAVAILABLE.value()), cause.getMessage(), null);
             }
+
+            @Override
+            public ApiResult<Void> deleteByPlayerId(Long playerId) {
+                logger.error("Error al borrar comentarios del jugador {}: {}", playerId, cause.getMessage());
+                return new ApiResult<>(String.valueOf(HttpStatus.SERVICE_UNAVAILABLE.value()), cause.getMessage(), null);
+            }
         };
     }
 }

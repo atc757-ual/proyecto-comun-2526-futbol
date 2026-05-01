@@ -35,6 +35,7 @@ public class Player {
 
     private Double longitude;
 
+    @NotBlank(message = "El user_id es obligatorio")
     @Column(name = "user_id", nullable = false)
     private String userId;
 

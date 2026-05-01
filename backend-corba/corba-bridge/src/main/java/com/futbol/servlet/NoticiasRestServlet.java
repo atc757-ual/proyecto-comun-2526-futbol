@@ -27,6 +27,8 @@ public class NoticiasRestServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        if (!validarAutorizacion(request, response)) return;
+
         response.setContentType("application/json;charset=UTF-8");
         PrintWriter out = response.getWriter();
         String pathInfo = request.getPathInfo(); // Devuelve null o "/" o "/123"
@@ -72,6 +74,8 @@ public class NoticiasRestServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        if (!validarAutorizacion(request, response)) return;
+
         response.setContentType("application/json;charset=UTF-8");
         
         try {
@@ -113,6 +117,8 @@ public class NoticiasRestServlet extends HttpServlet {
     protected void doDelete(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        if (!validarAutorizacion(request, response)) return;
+
         response.setContentType("application/json;charset=UTF-8");
         String pathInfo = request.getPathInfo();
         String id = (pathInfo != null && pathInfo.length() > 1) ? pathInfo.substring(1) : null;
@@ -143,37 +149,30 @@ public class NoticiasRestServlet extends HttpServlet {
 
     // --- Métodos de utilidad ---
 
+    private boolean validarAutorizacion(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            enviarRespuesta(response, HttpServletResponse.SC_UNAUTHORIZED, false, "Acceso no autorizado", null);
+            return false;
+        }
+        return true;
+    }
+
     private void enviarRespuesta(HttpServletResponse response, int statusCode, boolean success, String mensaje, java.lang.Object data) throws IOException {
         response.setStatus(statusCode);
-        PrintWriter out = response.getWriter();
         
-        String code = success ? "0" : String.valueOf(statusCode);
-        String timestamp = java.time.Instant.now().toString();
-        String transactionId = java.util.UUID.randomUUID().toString();
-        
-        // Formato estándar solicitado por el usuario
-        StringBuilder json = new StringBuilder();
-        json.append("{");
-        json.append("\"result\": {");
-        json.append("\"transactionId\": \"").append(transactionId).append("\",");
-        json.append("\"code\": \"").append(code).append("\",");
-        json.append("\"description\": \"").append(success ? "OK" : "NOK").append("\",");
-        json.append("\"descriptionDetail\": \"").append(mensaje.replace("\"", "\\\"")).append("\",");
-        json.append("\"responseTimestamp\": \"").append(timestamp).append("\"");
-        json.append("}");
-        
-        if (data != null) {
-            if (data instanceof List || data.getClass().isArray()) {
-                json.append(", \"data\": ").append(mapper.writeValueAsString(data));
-            } else {
-                json.append(", \"data\": [").append(mapper.writeValueAsString(data)).append("]");
-            }
-        } else {
-            json.append(", \"data\": []");
-        }
-        
-        json.append("}");
-        out.println(json.toString());
+        java.util.Map<String, java.lang.Object> result = new java.util.LinkedHashMap<>();
+        result.put("transactionId", java.util.UUID.randomUUID().toString());
+        result.put("code", success ? "0" : String.valueOf(statusCode));
+        result.put("description", success ? "OK" : "NOK");
+        result.put("descriptionDetail", mensaje);
+        result.put("responseTimestamp", java.time.Instant.now().toString());
+
+        java.util.Map<String, java.lang.Object> fullResponse = new java.util.LinkedHashMap<>();
+        fullResponse.put("result", result);
+        fullResponse.put("data", data != null ? data : new java.util.ArrayList<>());
+
+        response.getWriter().println(mapper.writeValueAsString(fullResponse));
     }
 
     private NewsService getCorbaService() throws Exception {

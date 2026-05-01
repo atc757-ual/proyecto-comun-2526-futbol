@@ -5,37 +5,40 @@ spring:
         cors-configurations:
           '[/**]':
             allowedOrigins: "*"
-            allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - OPTIONS
+            allowedMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
             allowedHeaders: "*"
       routes:
-        # Rutas hacia los microservicios CLIENT
+        # Java Player Microservice
         - id: player-client-route
           uri: lb://PLAYER-CLIENT
           predicates:
             - Path=/api/players/**
 
+        # Java Comment Microservice
         - id: comment-client-route
           uri: lb://COMMENT-CLIENT
           predicates:
             - Path=/api/comments/**
 
-        # Rutas hacia los microservicios FEIGN
-        - id: player-feign-route
-          uri: lb://PLAYER-FEIGN
+        # Java External AI Orquestrator (Gemini Java)
+        - id: external-client-route
+          uri: lb://EXTERNAL-CLIENT
           predicates:
-            - Path=/feign/players/**
+            - Path=/api/external/ai/**
 
-        - id: comment-feign-route
-          uri: lb://COMMENT-FEIGN
+        # Java External Football Proxy (Feign)
+        - id: external-feign-route
+          uri: lb://EXTERNAL-FEIGN
           predicates:
-            - Path=/feign/comments/**
+            - Path=/api/external/football/**
+          filters:
+            - RewritePath=/api/external/football/(?<segment>.*), /api/external/players/${segment}
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://football-eureka-server:8761/eureka/
+
+google:
+  api:
+    key: ${GOOGLE_API_KEY}

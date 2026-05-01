@@ -1,6 +1,7 @@
 package com.futbol.player.feign.model;
 
 import java.util.List;
+import com.futbol.comment.feign.model.CommentDTO;
 
 public class PlayerFullDTO {
     private PlayerDTO player;

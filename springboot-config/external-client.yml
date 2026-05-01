@@ -1,0 +1,32 @@
+openapi:
+  title: Football - External Client API
+  description: Microservicio Orquestador de Datos Externos
+  version: 1.0.0
+  contact:
+    name: Alex Taquila Camasca
+    email: atc757@inlumine.ual.es
+    url: https://es.linkedin.com/in/alextaquilacamasca
+
+server:
+  port: 8085
+
+spring:
+  application:
+    name: external-client
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+football:
+  api:
+    key: ${FOOTBALL_API_KEY}
+
+google:
+  api:
+    key: ${GOOGLE_API_KEY}
+
+logging:
+  level:
+    com.futbol.externalfeign.client: DEBUG

@@ -133,7 +133,7 @@ jobs:
 
       - name: Docker Build & Push (Microservices)
         run: |
-          services=("config-server" "eureka-server" "gateway" "player-client" "comment-client")
+          services=("config-server" "eureka-server" "gateway" "player-client" "comment-client" "external-client" "external-feign")
           for service in "${services[@]}"; do
             echo "Building and pushing $service..."
             docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PREFIX }}-$service:latest --build-arg SERVICE_NAME=$service ./backend-java

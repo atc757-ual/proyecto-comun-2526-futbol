@@ -13,4 +13,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     
     // Get all comments from a specific user
     List<Comment> findByUserId(String userId);
+
+    // Delete all comments for a specific player
+    void deleteByPlayerId(Long playerId);
 }

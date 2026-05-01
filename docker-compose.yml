@@ -18,9 +18,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: root
-      POSTGRES_DB: football_db
+      POSTGRES_USER: ${DB_USER:-root}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-root}
+      POSTGRES_DB: ${DB_NAME:-football_db}
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./backend-java/database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
@@ -86,11 +86,10 @@ services:
       SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
       FIREBASE_SERVICE_ACCOUNT: "/app/firebase-credentials.json"
-      GOOGLE_API_KEY: "${GOOGLE_API_KEY}"
-      SPRING_AI_GEMINI_API_KEY: "${GOOGLE_API_KEY}"
-      # Forzamos la propiedad de Spring para LangChain4j
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+      SPRING_AI_GEMINI_API_KEY: ${GOOGLE_API_KEY}
       SPRING_APPLICATION_JSON: '{"google":{"api":{"key":"${GOOGLE_API_KEY}"}}}'
-      JWT_SECRET: "${JWT_SECRET:-esta-es-una-clave-secreta-muy-larga-y-segura-para-el-futbol-2526}"
+      JWT_SECRET: ${JWT_SECRET}
     volumes:
       - ./firebase-credentials.json:/app/firebase-credentials.json
     depends_on:
@@ -110,9 +109,9 @@ services:
       JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://football-postgres:5432/football_db"
-      SPRING_DATASOURCE_USERNAME: "root"
-      SPRING_DATASOURCE_PASSWORD: "root"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://football-postgres:5432/${DB_NAME:-football_db}"
+      SPRING_DATASOURCE_USERNAME: "${DB_USER:-root}"
+      SPRING_DATASOURCE_PASSWORD: "${DB_PASSWORD:-root}"
       SERVER_PORT: 8081
     depends_on:
       config-server:
@@ -136,9 +135,9 @@ services:
       JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://football-postgres:5432/football_db"
-      SPRING_DATASOURCE_USERNAME: "root"
-      SPRING_DATASOURCE_PASSWORD: "root"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://football-postgres:5432/${DB_NAME:-football_db}"
+      SPRING_DATASOURCE_USERNAME: "${DB_USER:-root}"
+      SPRING_DATASOURCE_PASSWORD: "${DB_PASSWORD:-root}"
       SERVER_PORT: 8082
     depends_on:
       config-server:
@@ -153,48 +152,27 @@ services:
       - "8082:8082"
 
   # --- ORCHESTRATION MICROSERVICES ---
-  player-feign:
+  external-client:
     build:
       context: ./backend-java
       args:
-        SERVICE_NAME: player-feign
-    container_name: football-player-feign
+        SERVICE_NAME: external-client
+    container_name: football-external-client
     environment:
       JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
-      SERVER_PORT: 8083
+      FOOTBALL_API_KEY: "${FOOTBALL_API_KEY}"
+      GOOGLE_API_KEY: "${GOOGLE_API_KEY}"
+      SERVER_PORT: 8085
     ports:
-      - "8083:8083"
+      - "8085:8085"
     depends_on:
       config-server:
         condition: service_healthy
       eureka-server:
         condition: service_healthy
       player-client:
-        condition: service_started
-    networks:
-      - football-network
-
-  comment-feign:
-    build:
-      context: ./backend-java
-      args:
-        SERVICE_NAME: comment-feign
-    container_name: football-comment-feign
-    environment:
-      JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
-      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
-      SERVER_PORT: 8084
-    ports:
-      - "8084:8084"
-    depends_on:
-      config-server:
-        condition: service_healthy
-      eureka-server:
-        condition: service_healthy
-      comment-client:
         condition: service_started
     networks:
       - football-network
@@ -210,7 +188,7 @@ services:
       - PORT=3000
       - FIREBASE_SERVICE_ACCOUNT=/app/firebase-credentials.json
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
-      - JWT_SECRET=${JWT_SECRET:-esta-es-una-clave-secreta-muy-larga-y-segura-para-el-futbol-2526}
+      - JWT_SECRET=${JWT_SECRET}
     volumes:
       - ./firebase-credentials.json:/app/firebase-credentials.json
     depends_on:
@@ -229,7 +207,6 @@ services:
       gateway:
         condition: service_started
 
-  # 1. Servicio de Nombres CORBA
   corba-naming:
     image: eclipse-temurin:8-jre
     container_name: football-corba-naming
@@ -237,7 +214,6 @@ services:
     networks:
       - football-network
 
-  # 2. Servidor CORBA
   corba-server:
     build:
       context: ./backend-corba
@@ -250,7 +226,6 @@ services:
     networks:
       - football-network
 
-  # 3. Bridge HTTP-CORBA
   corba-bridge:
     build:
       context: ./backend-corba

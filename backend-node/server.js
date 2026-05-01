@@ -16,6 +16,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Middleware de Tracing Correlacionado
+const tracingMiddleware = require('./app_api/middleware/tracing');
+app.use(tracingMiddleware);
+
 // Ruta para la documentación Swagger (Registrar ANTES que la API)
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
@@ -30,8 +34,9 @@ app.get('/', (req, res) => {
 });
 
 // Captura de errores 404
+const { sendApiResult } = require('./app_api/controllers/apiResult');
 app.use((req, res) => {
-  res.status(404).json({ message: "Endpoint no encontrado" });
+  sendApiResult(res, "404", "Endpoint no encontrado");
 });
 
 if (process.env.NODE_ENV !== 'test') {

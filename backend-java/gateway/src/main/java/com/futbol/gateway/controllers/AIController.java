@@ -1,30 +1,27 @@
 package com.futbol.gateway.controllers;
 
+import com.futbol.gateway.dto.ApiResult;
 import com.futbol.gateway.models.PlayerAnalysisResponse;
 import com.futbol.gateway.services.PlayerAIService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @RestController
 @RequestMapping("/api/ai")
+@Tag(name = "AI Analysis", description = "Servicios de Inteligencia Artificial para Fútbol")
 public class AIController {
 
     @Autowired
     private PlayerAIService aiService;
 
-    // TODO: Inyectar Repositorio de Jugadores para leer datos reales
-    // @Autowired
-    // private PlayerRepository playerRepository;
-
     @PostMapping("/analyze")
-    public ResponseEntity<?> analyzeTeam() {
+    @Operation(summary = "Realiza un análisis táctico del equipo usando Gemini AI")
+    public ResponseEntity<ApiResult<PlayerAnalysisResponse>> analyzeTeam() {
         try {
-            // 1. Aquí buscaríamos los jugadores del usuario en Postgres
-            // Por ahora simularemos el envío de datos para verificar que el LLM responde
+            // 1. Datos simulados (pendiente inyectar repo real)
             String mockPlayersData = "- Lionel Messi: Delantero, Habilidad 99\n" +
                                      "- Sergio Busquets: Medio, Habilidad 85\n" +
                                      "- Jordi Alba: Defensa, Habilidad 82";
@@ -32,17 +29,11 @@ public class AIController {
             // 2. Llamar a la IA
             PlayerAnalysisResponse analysis = aiService.analyze(mockPlayersData);
 
-            // 3. Responder
-            Map<String, Object> response = new HashMap<>();
-            response.put("result", Map.of("status", "OK"));
-            response.put("data", analysis);
-
-            return ResponseEntity.ok(response);
+            // 3. Responder con ApiResult
+            return ResponseEntity.ok(new ApiResult<>("200", "Análisis táctico completado", analysis));
 
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of(
-                "result", Map.of("status", "NOK", "description", e.getMessage())
-            ));
+            return ResponseEntity.status(500).body(new ApiResult<>("500", "Error en el análisis de IA: " + e.getMessage(), null));
         }
     }
 }

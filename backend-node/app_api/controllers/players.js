@@ -2,6 +2,20 @@ const mongoose = require('mongoose');
 const Player = mongoose.model('Player');
 const { sendApiResult } = require('./apiResult');
 
+// GET /api/players/public
+const playersPublicList = async (req, res) => {
+    try {
+        // Usamos $sample para aleatoriedad y $project para limitar campos
+        const players = await Player.aggregate([
+            { $sample: { size: 10 } },
+            { $project: { _id: 0, name: 1, photo: 1 } }
+        ]);
+        sendApiResult(res, 200, "Vista pública aleatoria recuperada", players);
+    } catch (err) {
+        sendApiResult(res, 500, "Error en vista pública: " + err.message);
+    }
+};
+
 // GET /api/players
 const playersList = async (req, res) => {
     try {
@@ -79,6 +93,7 @@ const playersDeleteOne = async (req, res) => {
 
 module.exports = {
     playersList,
+    playersPublicList,
     playersCreate,
     playersReadOne,
     playersUpdateOne,

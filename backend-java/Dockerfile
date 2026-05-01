@@ -10,9 +10,12 @@ COPY player-client ./player-client
 COPY comment-client ./comment-client
 COPY player-feign ./player-feign
 COPY comment-feign ./comment-feign
+COPY external-client ./external-client
+COPY external-feign ./external-feign
+COPY common-futbol ./common-futbol
 
 # Compilamos todos los microservicios de una vez
-RUN mvn clean package -DskipTests
+RUN mvn clean install -DskipTests
 
 # Stage 2: Imagen final para ejecutar un microservicio específico
 FROM eclipse-temurin:17-jre-focal
@@ -20,7 +23,7 @@ ARG SERVICE_NAME
 WORKDIR /app
 # Instalamos curl para los healthchecks
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
-# Copiamos el JAR compilado del microservicio específico
+# Copiamos el JAR compilado desde la etapa de construcción
 COPY --from=build /build/${SERVICE_NAME}/target/*.jar app.jar
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

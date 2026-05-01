@@ -17,6 +17,7 @@ const authorizeRequest = async (req, res, next) => {
                 name: 'Test User',
                 email: 'test@example.com',
                 firebaseUid: 'test-user-id',
+                role: 'admin',
                 is_active: true
             });
         }
@@ -29,7 +30,7 @@ const authorizeRequest = async (req, res, next) => {
 
     // Comprobar si la cabecera existe y comienza con 'Bearer'
     if (!header || !header.startsWith("Bearer ")) {
-        return sendApiResult(res, 401, "No autorizado: Petición sin cabecera de autenticación válida");
+        return sendApiResult(res, 401, "Acceso no autorizado");
     }
 
     const token = header.split(" ")[1];
@@ -66,4 +67,14 @@ const authorizeRequest = async (req, res, next) => {
     });
 };
 
-module.exports = { authorizeRequest };
+/**
+ * Middleware para comprobar si el usuario es Admin.
+ */
+const isAdmin = (req, res, next) => {
+    if (req.user && req.user.role === 'admin') {
+        return next();
+    }
+    return sendApiResult(res, 403, "Acceso denegado: Se requiere rol de Administrador");
+};
+
+module.exports = { authorizeRequest, isAdmin };

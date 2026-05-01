@@ -3,9 +3,9 @@ package com.futbol.player.feign.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.futbol.player.feign.client.PlayerClient;
-import com.futbol.player.feign.client.CommentClient;
+import com.futbol.comment.feign.client.CommentClient;
 import com.futbol.player.feign.model.PlayerDTO;
-import com.futbol.player.feign.model.CommentDTO;
+import com.futbol.comment.feign.model.CommentDTO;
 import com.futbol.player.feign.model.PlayerFullDTO;
 import com.futbol.player.feign.dto.ApiResult;
 import org.springframework.http.HttpStatus;
@@ -24,7 +24,7 @@ public class PlayerService {
         return playerClient.getAllPlayers(userId, name, team);
     }
 
-    public ApiResult<PlayerDTO> getJugador(Long id) {
+    public ApiResult<PlayerDTO> getJugadorPorId(Long id) {
         return playerClient.getPlayerById(id);
     }
 
@@ -32,22 +32,21 @@ public class PlayerService {
         // 1. Buscamos el jugador
         ApiResult<PlayerDTO> playerRes = playerClient.getPlayerById(id);
         
-        // Validamos si el código empieza por 2 (éxito)
-        if (playerRes.getResult() != null && !playerRes.getResult().getCode().startsWith("2")) {
+        if (playerRes.getData() == null) {
             return new ApiResult<>(playerRes.getResult().getCode(), playerRes.getResult().getDescriptionDetail(), null);
         }
 
         // 2. Buscamos sus comentarios
-        ApiResult<List<CommentDTO>> commentRes = commentClient.getCommentsByPlayer(id);
+        // IMPORTANTE: Obtenemos la data directamente para evitar conflicto de tipos de ApiResult
+        com.futbol.comment.feign.dto.ApiResult<List<CommentDTO>> commentRes = commentClient.getCommentsByPlayer(id);
+        List<CommentDTO> comments = (commentRes != null) ? commentRes.getData() : null;
         
-        // 3. Combinamos (aunque los comentarios fallen, devolvemos el jugador con lista vacía si es necesario)
-        List<CommentDTO> comments = commentRes.getData();
         PlayerFullDTO full = new PlayerFullDTO(playerRes.getData(), comments);
         
         return new ApiResult<>(String.valueOf(HttpStatus.OK.value()), "Procesamiento concluído exitosamente", full);
     }
 
-    public ApiResult<PlayerDTO> nuevoJugador(PlayerDTO dto) {
+    public ApiResult<PlayerDTO> crearJugador(PlayerDTO dto) {
         return playerClient.createPlayer(dto);
     }
 
@@ -55,7 +54,16 @@ public class PlayerService {
         return playerClient.updatePlayer(dto);
     }
 
-    public ApiResult<Void> borrarJugador(Long id) {
+    public ApiResult<Void> eliminarJugador(Long id) {
+        // 1. Eliminamos sus comentarios en el microservicio de comentarios
+        try {
+            commentClient.deleteByPlayerId(id);
+        } catch (Exception e) {
+            // Logueamos pero continuamos para no bloquear el borrado del jugador si el servicio de comentarios falla
+            System.err.println("Error eliminando comentarios para el jugador " + id + ": " + e.getMessage());
+        }
+
+        // 2. Eliminamos el jugador
         return playerClient.deletePlayer(id);
     }
 }

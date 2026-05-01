@@ -22,4 +22,7 @@ public interface CommentClient {
 
     @DeleteMapping("/api/comments/{id}")
     ApiResult<Void> deleteComment(@PathVariable("id") Long id);
+
+    @DeleteMapping("/api/comments/player/{playerId}")
+    ApiResult<Void> deleteByPlayerId(@PathVariable("playerId") Long playerId);
 }

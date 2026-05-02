@@ -83,12 +83,13 @@ services:
       - "8080:8080"
     environment:
       JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
-      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://football-config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://football-eureka-server:8761/eureka/"
       FIREBASE_SERVICE_ACCOUNT: "/app/firebase-credentials.json"
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
       SPRING_AI_GEMINI_API_KEY: ${GOOGLE_API_KEY}
       SPRING_APPLICATION_JSON: '{"google":{"api":{"key":"${GOOGLE_API_KEY}"}}}'
+      SPRING_CLOUD_GATEWAY_GRPC_ENABLED: "false"
       JWT_SECRET: ${JWT_SECRET}
     volumes:
       - ./firebase-credentials.json:/app/firebase-credentials.json

@@ -21,6 +21,10 @@ spring:
         jwt:
           issuer-uri: https://securetoken.google.com/proyecto-final-8f184
           jwk-set-uri: https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://football-eureka-server:8761/eureka/}
 
 server:
   port: 8080

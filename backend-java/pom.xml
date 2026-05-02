@@ -55,6 +55,17 @@
                 <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
                 <version>2.2.0</version>
             </dependency>
+            <!-- Centralized AI Version (Manual Bean config recommended for Spring Boot 3.1.x) -->
+            <dependency>
+                <groupId>dev.langchain4j</groupId>
+                <artifactId>langchain4j-google-ai-gemini</artifactId>
+                <version>0.34.0</version>
+            </dependency>
+            <dependency>
+                <groupId>dev.langchain4j</groupId>
+                <artifactId>langchain4j</artifactId>
+                <version>0.34.0</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

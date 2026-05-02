@@ -22,4 +22,4 @@ COPY --from=builder /app/service-corba/target/dependency/ ./dependency/
 
 # Comando de arranque directo (Sin scripts externos)
 # Usamos el classpath que apunta a classes y a todas las libs en dependency/
-ENTRYPOINT ["java", "-cp", "classes:dependency/*", "BufferApp.NewsServer"]
+ENTRYPOINT ["java", "-cp", "classes:dependency/*", "com.futbol.server.BufferServer", "-ORBInitialPort", "1050", "-ORBInitialHost", "corba-naming"]

@@ -1,0 +1,72 @@
+<ion-content>
+  <div class="auth-page-wrapper animate-fade-in">
+
+    <div class="auth-split-container">
+
+      <!-- LADO IZQUIERDO: FORMULARIO -->
+      <div class="auth-form-side">
+        <div class="form-wrapper">
+          <!-- Back Link (Simple & Blue) -->
+          <a *ngIf="showBackButton" [routerLink]="backHref" class="back-link-minimal animate-fade-in">
+            <ion-icon name="arrow-back-outline"></ion-icon>
+          </a>
+
+          <!-- Logo superior -->
+          <div class="margin-top-xl text-center margin-bottom-l">
+            <div class="logo-circle margin-x-auto">
+              <ion-icon name="football-outline" class="text-primary fs-56"></ion-icon>
+            </div>
+            <h1 class="f-bold text-primary margin-top-s fs-24">Football App</h1>
+          </div>
+
+          <!-- Cabecera de texto dinámica -->
+          <div class="text-left margin-bottom-m">
+            <h2 class="f-bold text-neutral-9 fs-22">{{ authTitle }}</h2>
+            <span class="f-medium text-neutral-7 fs-16">{{ authSubtitle }}</span>
+          </div>
+
+          <!-- ÁREA DE CONTENIDO -->
+          <div class="dynamic-content-area">
+            <ng-content></ng-content>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- LADO DERECHO: IMAGEN -->
+      <div class="auth-image-side hide-on-mobile">
+        <div class="image-overlay">
+          <div class="overlay-content">
+            <h2 class="f-bold">Vive la<br>experiencia<br>real del fútbol.</h2>
+            <p>Gestiona tus jugadores y obtén tu once ideal.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- FOOTER GLOBAL -->
+    <footer class="auth-global-footer">
+      <div class="footer-container padding-x-xl display-flex fl-justify-between fl-align-center">
+
+        <div class="display-flex fl-align-center">
+          <span class="text-neutral-7 fs-14">© 2026 Football App. By Alex Taquila.</span>
+        </div>
+
+        <div class="display-flex fl-align-center gap-s margin-left-base">
+          <span class="text-neutral-7 fs-14 hide-on-phone">Puedes contactarme en:</span>
+          <div class="footer-socials display-flex gap-s">
+            <a href="https://www.linkedin.com/in/alextaquilacamasca/" target="_blank" class="text-neutral-7">
+              <ion-icon name="logo-linkedin" class="cursor-pointer"></ion-icon>
+            </a>
+            <a href="https://github.com/atc757-ual/proyecto-comun-2526-futbol" target="_blank" class="text-neutral-7">
+              <ion-icon name="logo-github" class="cursor-pointer"></ion-icon>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </footer>
+
+  </div>
+</ion-content>

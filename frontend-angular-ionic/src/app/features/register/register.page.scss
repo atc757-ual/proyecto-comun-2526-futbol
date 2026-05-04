@@ -1,0 +1,25 @@
+.register-form {
+    width: 100% !important;
+    max-width: 100%;
+    margin: 0;
+}
+
+.animate-fade-in {
+    animation: fadeIn var(--transition-fast);
+}
+
+.display-flex {
+    display: flex;
+}
+
+.fl-align-center {
+    align-items: center;
+}
+
+.fl-column {
+    flex-direction: column;
+}
+
+.gap-s {
+    gap: var(--space-s);
+}

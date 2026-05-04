@@ -1,0 +1,43 @@
+.login-form-container {
+    width: 100% !important;
+    max-width: 100%;
+    margin: 0;
+}
+
+// ESTILO PARA EL BOTÓN "VER JUGADORES" (Optimizado)
+.btn-offers {
+    --border-color: var(--color-primary);
+    --color: var(--color-primary);
+    font-size: var(--fs-14);
+    font-weight: var(--fw-semibold); 
+    margin-top: var(--space-base);
+    transition: all var(--transition-smooth);
+
+    --border-color-hover: var(--color-primary);
+    --color-hover: var(--color-primary);
+    --background-hover: rgba(var(--ion-color-primary-rgb), 0.08);
+
+    ion-icon {
+        font-size: 20px;
+        margin-right: var(--space-s);
+        color: inherit;
+    }
+
+    &:hover {
+        transform: translateY(-2px);
+        --box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.15);
+    }
+
+    &:active {
+        transform: translateY(0) scale(0.98);
+    }
+}
+
+.no-underline {
+    text-decoration: none;
+    transition: opacity var(--transition-fast);
+
+    &:hover {
+        opacity: var(--opacity-high);
+    }
+}

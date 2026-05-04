@@ -1,37 +1,322 @@
-/*
- * App Global CSS
- * ----------------------------------------------------------------------------
- * Put style rules here that you want to apply globally. These styles are for
- * the entire app and not just one component. Additionally, this file can be
- * used as an entry point to import other CSS/Sass files to be included in the
- * output CSS.
- * For more information on global stylesheets, visit the documentation:
- * https://ionicframework.com/docs/layout/global-stylesheets
- */
-
-/* Core CSS required for Ionic components to work properly */
 @import "@ionic/angular/css/core.css";
-
-/* Basic CSS for apps built with Ionic */
 @import "@ionic/angular/css/normalize.css";
 @import "@ionic/angular/css/structure.css";
 @import "@ionic/angular/css/typography.css";
 @import "@ionic/angular/css/display.css";
-
-/* Optional CSS utils that can be commented out */
 @import "@ionic/angular/css/padding.css";
 @import "@ionic/angular/css/float-elements.css";
 @import "@ionic/angular/css/text-alignment.css";
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import "@ionic/angular/css/palettes/dark.system.css";
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden !important;
+  font-family: var(--font-secondary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+ion-content {
+  --overflow: hidden; // Desactiva scroll nativo lateral
+  &::part(scroll) {
+    overflow-x: hidden !important;
+  }
+}
+
+/* --- GOOGLE FONTS --- */
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+/* --- ANIMACIONES GLOBALES --- */
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0.5); }
+  70% { transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- UTILIDADES DE ESTRUCTURA (FLEXBOX) --- */
+.display-flex { display: flex !important; }
+.fl-column { flex-direction: column !important; }
+.fl-justify-between { justify-content: space-between !important; }
+.fl-align-center { align-items: center !important; }
+.fl-justify-center { justify-content: center !important; }
+.gap-xs { gap: var(--space-xs) !important; }
+.gap-s { gap: var(--space-s) !important; }
+.gap-base { gap: var(--space-base) !important; }
+
+/* --- UTILIDADES DE TEXTO --- */
+.cursor-pointer { cursor: pointer; }
+.no-underline { text-decoration: none; }
+.text-primary { color: var(--color-primary); }
+.text-neutral-7 { color: var(--color-neutral-7); }
+.f-bold { font-weight: 700; }
+.f-semibold { font-weight: 600; }
+.f-medium { font-weight: 500; }
+.text-center { text-align: center; }
+
+/* Tamaños de fuente extendidos */
+.fs-12 { font-size: var(--fs-12) !important; }
+.fs-14 { font-size: var(--fs-14) !important; }
+.fs-16 { font-size: var(--fs-16) !important; }
+.fs-22 { font-size: 22px !important; }
+.fs-24 { font-size: 24px !important; }
+.fs-48 { font-size: var(--fs-48) !important; }
+.fs-56 { font-size: var(--fs-56) !important; }
+.fs-96 { font-size: var(--fs-96) !important; }
+
+/* Márgenes y Espaciados Completos */
+.margin-x-auto { margin-left: auto !important; margin-right: auto !important; }
+
+.margin-top-xs { margin-top: var(--space-xs) !important; }
+.margin-top-s { margin-top: var(--space-s) !important; }
+.margin-top-base { margin-top: var(--space-base) !important; }
+.margin-top-m { margin-top: var(--space-m) !important; }
+.margin-top-l { margin-top: var(--space-l) !important; }
+.margin-top-xl { margin-top: var(--space-xl) !important; }
+
+.margin-bottom-xs { margin-bottom: var(--space-xs) !important; }
+.margin-bottom-s { margin-bottom: var(--space-s) !important; }
+.margin-bottom-base { margin-bottom: var(--space-base) !important; }
+.margin-bottom-m { margin-bottom: var(--space-m) !important; }
+.margin-bottom-l { margin-bottom: var(--space-l) !important; }
+.margin-bottom-xl { margin-bottom: var(--space-xl) !important; }
+
+.padding-x-xl { padding-left: var(--space-xl) !important; padding-right: var(--space-xl) !important; }
+.padding-y-m { padding-top: var(--space-m) !important; padding-bottom: var(--space-m) !important; }
+
+/* --- RESPONSIVE UTILS --- */
+@media (max-width: 768px) {
+  .hide-on-mobile { display: none !important; }
+  .hide-on-phone { display: none !important; }
+}
+
+/** --- MODALES PREMIUM (Reference: ReportApp) --- **/
+ion-modal#modal {
+  --width: fit-content;
+  --min-width: 280px;
+  --height: fit-content;
+  --border-radius: var(--border-radius-large);
+  --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4);
+  text-align: center;
+
+  img {
+    height: 140px;
+    width: 140px;
+    margin-bottom: var(--space-m);
+  }
+
+  h4 {
+    font-family: var(--font-primary);
+    font-weight: 700;
+    color: var(--color-neutral-9);
+    margin-bottom: var(--space-s);
+  }
+
+  p {
+    color: var(--color-neutral-7);
+    font-size: var(--fs-14);
+    margin-bottom: var(--space-m);
+    padding: 0 var(--space-base);
+  }
+}
+
+ion-modal#modal .wrapper {
+  padding: var(--space-xl) var(--space-base);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/** --- ALERTAS DE ÉXITO --- **/
+ion-item.alert {
+  --border-radius: var(--border-radius-soft);
+  margin-bottom: var(--space-base);
+  
+  &.success::part(native) {
+    background: rgba(var(--ion-color-primary-rgb), 0.1) !important;
+    border: 1px solid var(--color-primary);
+  }
+
+  ion-icon {
+    color: var(--color-primary);
+    font-size: 24px;
+  }
+}
+
+ion-backdrop {
+  --background: rgba(0, 0, 0, 0.5) !important;
+}
+
+/** --- INPUTS ESTILO FOOTBALL APP --- **/
+.futbol-input {
+  --background: var(--color-neutral-1);
+  --border-radius: var(--border-radius-soft);
+  --border-color: var(--color-neutral-3);
+  --border-width: 1px;
+  --padding-start: var(--space-s);
+  --color: var(--color-neutral-9);
+  --placeholder-color: var(--color-neutral-5);
+  --label-color: var(--color-neutral-7);
+  font-family: var(--font-primary);
+  margin-bottom: var(--space-base);
+  transition: all var(--transition-fast) ease;
+
+  &.input-error,
+  &.ion-invalid.ion-touched {
+    --border-color: var(--color-error) !important;
+    --label-color: var(--color-error) !important;
+    background: rgba(var(--ion-color-danger-rgb), 0.05) !important;
+  }
+
+  // EL FOCO SIEMPRE GANA (Puesto al final para prioridad de cascada)
+  &.is-focused,
+  &.is-focused.input-error,
+  &.is-focused.ion-invalid.ion-touched {
+    --border-color: var(--color-primary) !important;
+    --label-color: var(--color-primary) !important;
+    --highlight-color-focused: var(--color-primary) !important;
+    --highlight-color: var(--color-primary) !important;
+    --border-width: 2px !important;
+    background: rgba(var(--ion-color-primary-rgb), 0.05) !important;
+    box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.1) !important;
+  }
+
+  ion-icon {
+    font-size: 20px;
+    margin-right: var(--space-xs);
+  }
+}
+
+// --- ESTILO ESPECIAL PARA ION-INPUT-OTP (IONIC 8) ---
+ion-input-otp.futbol-otp {
+  gap: 8px;
+  --height: 54px;
+  
+  &::part(input) {
+    --background: var(--color-neutral-1);
+    --border-radius: var(--border-radius-soft);
+    --border-color: var(--color-neutral-3);
+    --border-width: 1px;
+    --color: var(--color-primary);
+    font-size: 20px;
+    font-weight: 700;
+    transition: all var(--transition-fast) ease;
+    text-transform: uppercase;
+  }
+
+  &.is-focused::part(input) {
+    --border-color: var(--color-primary) !important;
+    --border-width: 2px !important;
+    background: rgba(var(--ion-color-primary-rgb), 0.05) !important;
+  }
+
+  &.input-error::part(input) {
+    --border-color: var(--color-error) !important;
+    --border-width: 1px !important;
+    background: rgba(var(--ion-color-danger-rgb), 0.05) !important;
+  }
+}
+
+.error-container {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--color-error);
+  font-size: var(--fs-12);
+  margin-top: -8px;
+  margin-bottom: var(--space-m);
+  padding-left: var(--space-xs);
+  animation: fadeIn var(--transition-fast);
+}
+
+/** --- BOTÓN PRIMARIO FOOTBALL APP --- **/
+.futbol-btn-primary {
+  --background: var(--color-primary);
+  --color: var(--color-white);
+  --box-shadow: 0 8px 25px rgba(var(--ion-color-primary-rgb), 0.25);
+  margin-top: var(--space-base);
+  font-size: var(--fs-16);
+  font-weight: var(--fw-semibold);
+  transition: all var(--transition-smooth);
+/** --- TOASTS PREMIUM --- **/
+.toast-success {
+  --background: #f0fdf4;
+  --color: #166534;
+  --button-color: #166534;
+  font-weight: 600;
+  --border-radius: var(--border-radius-soft);
+  --border-width: 1px;
+  --border-style: solid;
+  --border-color: #bbf7d0;
+}
+
+.toast-error {
+  --background: #fef2f2;
+  --color: #991b1b;
+  --button-color: #991b1b;
+  font-weight: 600;
+  --border-radius: var(--border-radius-soft);
+  --border-width: 1px;
+  --border-style: solid;
+  --border-color: #fecaca;
+}
+
+  &:hover:not([disabled]) {
+    --box-shadow: 0 10px 20px rgba(var(--ion-color-primary-rgb), 0.3);
+    transform: translateY(-1.5px);
+    filter: brightness(1.05);
+  }
+
+  &:active:not([disabled]) {
+    transform: translateY(0) scale(0.98);
+  }
+
+  &[disabled] {
+    --opacity: 0.5;
+    --box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  ion-spinner {
+    margin-right: 12px;
+  }
+}
+
+/** --- ANIMACIONES REUTILIZABLES --- **/
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0.5); }
+  70% { transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}

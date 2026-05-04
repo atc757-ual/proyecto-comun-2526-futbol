@@ -1,0 +1,212 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+ion-content {
+  --background: var(--color-neutral-0);
+  height: 100%;
+
+  &::part(scroll) {
+    // Quitamos el flex para que el scroll sea totalmente natural
+    display: block; 
+  }
+}
+
+.auth-page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  width: 100%;
+  max-width: 100vw; // Blindaje contra el ancho extra
+  overflow-x: hidden; // Blindaje contra el scroll lateral
+  background: var(--color-neutral-0);
+  box-sizing: border-box;
+}
+
+.auth-split-container {
+  flex: 1; // Esto empuja al footer hacia abajo en desktop
+  display: flex;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+// --- LADO FORMULARIO ---
+.auth-form-side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-neutral-0);
+  min-width: 0;
+  box-sizing: border-box;
+  position: relative; // Para el botón float
+
+  .form-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; // Cambiado de center para permitir scroll natural
+    align-items: stretch;
+    padding: var(--space-xl) var(--space-l); // Un poco más de espacio arriba
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+
+  .logo-circle {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--space-s) auto;
+  }
+
+  .dynamic-content-area {
+    width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.back-link-minimal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  margin-top: var(--space-s); // Bajamos un poco para que no pegue arriba
+  margin-left: -6px; // Ajuste solicitado por Alex
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  width: fit-content;
+  cursor: pointer;
+
+  &:hover {
+    filter: brightness(1.2);
+  }
+
+  &:active {
+    transform: scale(0.9);
+  }
+
+  ion-icon {
+    font-size: 32px;
+    font-weight: bold;
+  }
+}
+
+// --- LADO IMAGEN ---
+.auth-image-side {
+  flex: 1.5;
+  background-image: url('https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=2000&auto=format&fit=crop');
+  background-size: cover;
+  background-position: 100% center;
+  position: relative;
+  min-width: 0;
+
+  .image-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(var(--ion-color-primary-rgb), 0.4), rgba(var(--ion-color-primary-rgb), 0.8));
+    display: flex;
+    align-items: flex-end;
+    padding: var(--space-2xl) var(--space-xl) 100px var(--space-xl); // 100px abajo para subir el texto
+  }
+
+  .overlay-content {
+    color: var(--color-white);
+    padding: 0 0 24px 24px;
+    max-width: 550px;
+
+    h2 {
+      font-size: var(--fs-48);
+      line-height: 1.1;
+      margin-bottom: var(--space-m);
+      letter-spacing: -0.5px;
+    }
+
+    p {
+      font-size: var(--fs-16);
+      opacity: var(--opacity-high);
+    }
+  }
+}
+
+// --- FOOTER GLOBAL ---
+.auth-global-footer {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  min-height: 80px;
+  padding: var(--space-base) 0;
+  background: var(--color-footer);
+  border-top: 1px solid var(--color-neutral-2);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+
+  .footer-container {
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+  }
+
+  ion-icon {
+    font-size: 24px;
+    color: var(--color-neutral-7) !important;
+    transition: color var(--transition-fast);
+
+    &:hover {
+      color: var(--color-primary);
+    }
+  }
+}
+
+// --- RESPONSIVE ---
+@media (max-width: 1024px) {
+  .auth-image-side {
+    display: none !important;
+  }
+
+  .auth-form-side {
+    width: 100%;
+  }
+
+  .auth-form-side .form-wrapper {
+    padding: var(--space-m);
+  }
+
+  .auth-split-container {
+    min-height: 100vh; // En móvil ocupa todo, ya que no hay footer
+    flex-direction: column;
+  }
+
+  .auth-global-footer {
+    display: none !important; // Oculto en móvil para ahorrar espacio
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn var(--transition-smooth);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -1,0 +1,132 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.ion-page {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-neutral-1);
+}
+
+// --- HEADER ---
+.main-header-futbol {
+    box-shadow: none !important;
+    border-bottom: 1px solid var(--color-neutral-2);
+    --background: #FFFFFF;
+}
+
+ion-toolbar {
+    --background: #FFFFFF;
+    --border-width: 0;
+}
+
+.nav-toolbar-border {
+    border-top: 1px solid var(--color-neutral-1);
+    --min-height: 50px;
+}
+
+.nav-link-futbol {
+    --color: var(--color-neutral-6);
+    font-family: var(--font-primary);
+    font-size: 0.95rem;
+    text-transform: none;
+    height: 50px;
+    width: 140px;
+    margin: 0;
+    --padding-start: 0;
+    --padding-end: 0;
+    position: relative;
+    display: flex;
+    justify-content: center;
+
+    &.active-nav {
+      --color: var(--color-primary);
+      font-weight: var(--fw-bold);
+      &::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: 3px;
+          background: var(--color-primary);
+          border-radius: 3px 3px 0 0;
+      }
+    }
+}
+
+// --- CONTENEDOR DE CONTENIDO ---
+ion-content {
+  flex: 1;
+}
+
+.main-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.page-content {
+  flex: 1;
+  padding-top: var(--space-l);
+  padding-bottom: var(--space-xl);
+}
+
+// --- FOOTER GLOBAL ---
+ion-footer {
+  background: #FFFFFF;
+  border-top: 1px solid var(--color-neutral-2);
+  --background: #FFFFFF;
+  --border-width: 0;
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.02);
+}
+
+.auth-global-footer {
+  width: 100%;
+  height: 50px; // Un poco más fino para que sea sutil
+  background: var(--color-footer);
+  display: flex;
+  align-items: center;
+  
+  .container {
+    width: 100%;
+  }
+
+  p { color: var(--color-neutral-5); margin: 0; }
+  a { 
+    color: var(--color-neutral-5); 
+    text-decoration: none;
+    &:hover { color: var(--color-primary); }
+  }
+}
+
+// --- TAB BAR (Móvil) ---
+.tab-bar-clean {
+  height: 65px;
+  --background: #FFFFFF;
+  --border: 0;
+  border: 0 !important;
+  
+  ion-tab-button {
+    --color: var(--color-neutral-5);
+    --color-selected: var(--color-primary);
+    
+    &.active-tab {
+      color: var(--color-primary) !important;
+    }
+  }
+}
+
+// --- UTILIDADES ---
+.hide-on-desktop { @media (min-width: 1024px) { display: none !important; } }
+.hide-on-mobile { @media (max-width: 1023px) { display: none !important; } }
+
+// Forzar desaparición del menú en escritorio para evitar que se quede abierto al redimensionar
+@media (min-width: 1024px) {
+    ion-menu {
+        display: none !important;
+    }
+}

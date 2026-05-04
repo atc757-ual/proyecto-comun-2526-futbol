@@ -1,0 +1,112 @@
+<!-- MENÚ LATERAL -->
+<ion-menu contentId="main-content" type="overlay">
+  <ion-content>
+    <div class="display-flex direction-column full-height">
+      <div class="menu-header-futbol display-flex fl-justify-between fl-align-center padding-base">
+        <ion-menu-toggle>
+          <ion-icon name="close-outline" class="fs-32 text-primary cursor-pointer"></ion-icon>
+        </ion-menu-toggle>
+        <div class="display-flex fl-align-center">
+          <span class="f-bold text-primary margin-right-s fs-16">Football App</span>
+          <ion-icon name="football-outline" class="text-primary fs-24"></ion-icon>
+        </div>
+      </div>
+      <div class="fl-grow-1"></div>
+      <ion-list lines="none" class="padding-bottom-base">
+        <ion-menu-toggle auto-hide="false">
+          <ion-item class="futbol-menu-item">
+            <ion-icon slot="start" name="person-outline"></ion-icon>
+            <ion-label class="f-medium">Mi cuenta</ion-label>
+          </ion-item>
+          <ion-item (click)="logout()" class="futbol-menu-item">
+            <ion-icon slot="start" name="log-out-outline"></ion-icon>
+            <ion-label class="f-medium">Salir</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+      </ion-list>
+    </div>
+  </ion-content>
+</ion-menu>
+
+<!-- CONTENIDO PRINCIPAL -->
+<div class="ion-page" id="main-content">
+  <ion-header mode="md" class="main-header-futbol">
+    
+    <!-- Desktop Header: Fila 1 -->
+    <ion-toolbar class="hide-on-mobile" style="--min-height: 70px;">
+      <div class="container display-flex fl-justify-between fl-align-center">
+        <div class="display-flex fl-align-center cursor-pointer">
+          <ion-icon name="football-outline" class="text-primary fs-32 margin-right-s"></ion-icon>
+          <span class="f-bold text-primary fs-22">Football App</span>
+        </div>
+        <div class="display-flex gap-large fl-align-center">
+          <ion-button fill="none" class="btn-account text-neutral-8">
+            <ion-icon slot="start" name="person-outline" class="text-primary"></ion-icon>
+            <span class="f-medium fs-14">Mi cuenta</span>
+          </ion-button>
+          <ion-button fill="none" (click)="logout()" class="btn-account text-neutral-8">
+            <ion-icon slot="start" name="log-out-outline" class="text-primary"></ion-icon>
+            <span class="f-medium fs-14">Salir</span>
+          </ion-button>
+        </div>
+      </div>
+    </ion-toolbar>
+
+    <!-- Desktop Header: Fila 2 -->
+    <ion-toolbar class="hide-on-mobile nav-toolbar-border" style="--min-height: 50px;">
+      <div class="container display-flex fl-justify-center">
+        <div class="nav-links-wrapper display-flex">
+          <ion-button *ngFor="let p of appPages" [routerLink]="[p.url]" routerLinkActive="active-nav" class="nav-link-futbol" fill="none">
+            {{ p.title }}
+          </ion-button>
+        </div>
+      </div>
+    </ion-toolbar>
+
+    <!-- Mobile Header -->
+    <ion-toolbar class="hide-on-desktop">
+      <ion-buttons slot="start">
+        <ion-menu-button color="primary"></ion-menu-button>
+      </ion-buttons>
+      <div class="display-flex fl-justify-center fl-align-center full-width">
+        <span class="f-bold text-primary margin-right-s fs-16">Football App</span>
+        <ion-icon name="football-outline" class="text-primary fs-20"></ion-icon>
+      </div>
+      <ion-buttons slot="end">
+        <ion-button fill="none" color="medium">
+          <ion-icon name="settings-outline" class="fs-20"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-content [fullscreen]="true">
+    <div class="main-container">
+      <div class="page-content container">
+        <ng-content></ng-content>
+      </div>
+    </div>
+  </ion-content>
+
+  <!-- FOOTER GLOBAL (Desktop y Móvil) -->
+  <ion-footer>
+    <!-- Escritorio -->
+    <div class="auth-global-footer hide-on-mobile">
+      <div class="container display-flex fl-justify-between fl-align-center">
+        <p class="text-neutral-5 fs-12 margin-none">© 2026 Football App. By Alex Taquila.</p>
+        <div class="display-flex gap-m">
+          <a class="text-neutral-5 fs-12 no-underline">Términos</a>
+          <a class="text-neutral-5 fs-12 no-underline">Privacidad</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Móvil (Bottom Bar) -->
+    <ion-tab-bar slot="bottom" class="tab-bar-clean hide-on-desktop">
+      <ion-tab-button *ngFor="let p of appPages" [tab]="p.title" [routerLink]="[p.url]" routerLinkActive="active-tab">
+        <ion-icon [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
+        <ion-label class="fs-10">{{ p.title }}</ion-label>
+      </ion-tab-button>
+    </ion-tab-bar>
+  </ion-footer>
+</div>

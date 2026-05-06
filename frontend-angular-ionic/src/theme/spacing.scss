@@ -1,0 +1,366 @@
+/* --- UTILIDADES DE ESPACIADO RESPONSIVO (T-SHIRT SCALE) --- */
+
+/* 
+   PADDING LATERAL 
+   -------------------------------------------------------------------------- 
+*/
+.pl-0 {
+   padding-left: 0 !important;
+}
+
+.pl-xxs {
+   padding-left: var(--space-xxs) !important;
+}
+
+.pl-xs {
+   padding-left: var(--space-xs) !important;
+}
+
+.pl-s {
+   padding-left: var(--space-s) !important;
+}
+
+.pl-base {
+   padding-left: var(--space-base) !important;
+}
+
+.pl-m {
+   padding-left: var(--space-m) !important;
+}
+
+.pl-l {
+   padding-left: var(--space-l) !important;
+}
+
+.pl-xl {
+   padding-left: var(--space-xl) !important;
+}
+
+.pl-xxl {
+   padding-left: var(--space-xxl) !important;
+}
+
+.pl-xxxl {
+   padding-left: var(--space-xxxl) !important;
+}
+
+.pr-0 {
+   padding-right: 0 !important;
+}
+
+.pr-xxs {
+   padding-right: var(--space-xxs) !important;
+}
+
+.pr-xs {
+   padding-right: var(--space-xs) !important;
+}
+
+.pr-s {
+   padding-right: var(--space-s) !important;
+}
+
+.pr-base {
+   padding-right: var(--space-base) !important;
+}
+
+.pr-m {
+   padding-right: var(--space-m) !important;
+}
+
+.pr-l {
+   padding-right: var(--space-l) !important;
+}
+
+.pr-xl {
+   padding-right: var(--space-xl) !important;
+}
+
+.pr-xxl {
+   padding-right: var(--space-xxl) !important;
+}
+
+.pr-xxxl {
+   padding-right: var(--space-xxxl) !important;
+}
+
+/* --- PADDING EJES (X e Y) --- */
+.px-0 {
+   padding-left: 0 !important;
+   padding-right: 0 !important;
+}
+
+.px-xs {
+   padding-left: var(--space-xs) !important;
+   padding-right: var(--space-xs) !important;
+}
+
+.px-s {
+   padding-left: var(--space-s) !important;
+   padding-right: var(--space-s) !important;
+}
+
+.px-base {
+   padding-left: var(--space-base) !important;
+   padding-right: var(--space-base) !important;
+}
+
+.px-m {
+   padding-left: var(--space-m) !important;
+   padding-right: var(--space-m) !important;
+}
+
+.px-l {
+   padding-left: var(--space-l) !important;
+   padding-right: var(--space-l) !important;
+}
+
+.px-xl {
+   padding-left: var(--space-xl) !important;
+   padding-right: var(--space-xl) !important;
+}
+
+.py-0 {
+   padding-top: 0 !important;
+   padding-bottom: 0 !important;
+}
+
+.py-xs {
+   padding-top: var(--space-xs) !important;
+   padding-bottom: var(--space-xs) !important;
+}
+
+.py-s {
+   padding-top: var(--space-s) !important;
+   padding-bottom: var(--space-s) !important;
+}
+
+.py-base {
+   padding-top: var(--space-base) !important;
+   padding-bottom: var(--space-base) !important;
+}
+
+.py-m {
+   padding-top: var(--space-m) !important;
+   padding-bottom: var(--space-m) !important;
+}
+
+.py-l {
+   padding-top: var(--space-l) !important;
+   padding-bottom: var(--space-l) !important;
+}
+
+.py-xl {
+   padding-top: var(--space-xl) !important;
+   padding-bottom: var(--space-xl) !important;
+}
+
+/* --- PADDING GLOBAL (Todos los lados) --- */
+.p-0 {
+   padding: 0 !important;
+}
+
+.p-xxs {
+   padding: var(--space-xxs) !important;
+}
+
+.p-xs {
+   padding: var(--space-xs) !important;
+}
+
+.p-s {
+   padding: var(--space-s) !important;
+}
+
+.p-base {
+   padding: var(--space-base) !important;
+}
+
+.p-m {
+   padding: var(--space-m) !important;
+}
+
+.p-l {
+   padding: var(--space-l) !important;
+}
+
+.p-xl {
+   padding: var(--space-xl) !important;
+}
+
+.p-xxl {
+   padding: var(--space-xxl) !important;
+}
+
+.p-xxxl {
+   padding: var(--space-xxxl) !important;
+}
+
+/* 
+   MARGIN 
+   -------------------------------------------------------------------------- 
+*/
+.m-0 {
+   margin: 0 !important;
+}
+
+.mx-auto {
+   margin-left: auto !important;
+   margin-right: auto !important;
+}
+
+.my-auto {
+   margin-top: auto !important;
+   margin-bottom: auto !important;
+}
+
+.mt-0 {
+   margin-top: 0 !important;
+}
+
+.mt-xs {
+   margin-top: var(--space-xs) !important;
+}
+
+.mt-s {
+   margin-top: var(--space-s) !important;
+}
+
+.mt-base {
+   margin-top: var(--space-base) !important;
+}
+
+.mt-m {
+   margin-top: var(--space-m) !important;
+}
+
+.mt-l {
+   margin-top: var(--space-l) !important;
+}
+
+.mt-xl {
+   margin-top: var(--space-xl) !important;
+}
+
+.mt-xxl {
+   margin-top: var(--space-xxl) !important;
+}
+
+.mt-xxxl {
+   margin-top: var(--space-xxxl) !important;
+}
+
+.mb-0 {
+   margin-bottom: 0 !important;
+}
+
+.mb-xs {
+   margin-bottom: var(--space-xs) !important;
+}
+
+.mb-s {
+   margin-bottom: var(--space-s) !important;
+}
+
+.mb-base {
+   margin-bottom: var(--space-base) !important;
+}
+
+.mb-m {
+   margin-bottom: var(--space-m) !important;
+}
+
+.mb-l {
+   margin-bottom: var(--space-l) !important;
+}
+
+.mb-xl {
+   margin-bottom: var(--space-xl) !important;
+}
+
+.ml-0 {
+   margin-left: 0 !important;
+}
+
+.ml-base {
+   margin-left: var(--space-base) !important;
+}
+
+.mr-0 {
+   margin-right: 0 !important;
+}
+
+.mr-base {
+   margin-right: var(--space-base) !important;
+}
+
+/* 
+   RESPONSIVE (Móvil hasta 767px) 
+   -------------------------------------------------------------------------- 
+*/
+@media (max-width: 767px) {
+
+   /* Padding Global Móvil */
+   .p-sm-0 {
+      padding: 0 !important;
+   }
+
+   .p-sm-xs {
+      padding: var(--space-xs) !important;
+   }
+
+   .p-sm-s {
+      padding: var(--space-s) !important;
+   }
+
+   .p-sm-base {
+      padding: var(--space-base) !important;
+   }
+
+   .p-sm-m {
+      padding: var(--space-m) !important;
+   }
+
+   .p-sm-l {
+      padding: var(--space-l) !important;
+   }
+
+   /* Padding Ejes Móvil */
+   .px-sm-0 {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+   }
+
+   .px-sm-xs {
+      padding-left: var(--space-xs) !important;
+      padding-right: var(--space-xs) !important;
+   }
+
+   .px-sm-base {
+      padding-left: var(--space-base) !important;
+      padding-right: var(--space-base) !important;
+   }
+
+   .py-sm-0 {
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+   }
+
+   .py-sm-base {
+      padding-top: var(--space-base) !important;
+      padding-bottom: var(--space-base) !important;
+   }
+
+   /* Margin Móvil */
+   .m-sm-0 {
+      margin: 0 !important;
+   }
+
+   .mt-sm-0 {
+      margin-top: 0 !important;
+   }
+
+   .mb-sm-0 {
+      margin-bottom: 0 !important;
+   }
+}

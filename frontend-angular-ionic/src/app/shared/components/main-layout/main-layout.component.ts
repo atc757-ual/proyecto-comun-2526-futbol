@@ -1,17 +1,21 @@
-import { Component, Input } from '@angular/core';
-import { 
-  IonMenu, IonContent, IonList, IonMenuToggle, IonItem, IonIcon, 
-  IonLabel, IonHeader, IonToolbar, IonButtons, IonMenuButton, 
-  IonTabBar, IonTabButton, IonFooter, IonButton 
-} from '@ionic/angular/standalone';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { IonicModule } from '@ionic/angular';
+import { RouterModule } from '@angular/router';
 import { addIcons } from 'ionicons';
-import { 
-  footballOutline, personOutline, logOutOutline, settingsOutline,
-  starOutline, calendarOutline, trophyOutline, statsChartOutline, 
-  gridOutline, closeOutline, homeOutline, clipboardOutline, 
-  cashOutline, helpCircleOutline, cartOutline
+import {
+  home,
+  people,
+  sparkles,
+  cart,
+  newspaper,
+  menuOutline,
+  football,
+  personCircleOutline,
+  logOutOutline,
+  logoLinkedin,
+  logoGithub,
+  closeOutline
 } from 'ionicons/icons';
 
 @Component({
@@ -19,34 +23,40 @@ import {
   templateUrl: './main-layout.component.html',
   styleUrls: ['./main-layout.component.scss'],
   standalone: true,
-  imports: [
-    CommonModule, RouterLink, RouterLinkActive, IonMenu, 
-    IonContent, IonList, IonMenuToggle, IonItem, IonIcon, IonLabel, 
-    IonHeader, IonToolbar, IonButtons, IonMenuButton, 
-    IonTabBar, IonTabButton, IonFooter, IonButton
-  ]
+  imports: [CommonModule, IonicModule, RouterModule]
 })
-export class MainLayoutComponent {
-  @Input() title: string = 'Football App';
+export class MainLayoutComponent implements OnInit {
+  @Input() title: string = 'mainSystem';
 
   public appPages = [
     { title: 'Inicio', url: '/home', icon: 'home' },
-    { title: 'Partidos', url: '/partidos', icon: 'football' },
-    { title: 'Estadísticas', url: '/estadisticas', icon: 'stats-chart' },
-    { title: 'Perfil', url: '/perfil', icon: 'person' },
+    { title: 'Jugadores', url: '/players', icon: 'people' },
+    { title: 'IA', url: '/ai-team', icon: 'sparkles' },
+    { title: 'Mercado', url: '/player-add', icon: 'cart' },
+    { title: 'Noticias', url: '/news', icon: 'newspaper' }
   ];
 
   constructor() {
-    addIcons({ 
-      footballOutline, personOutline, logOutOutline, settingsOutline,
-      starOutline, calendarOutline, trophyOutline, statsChartOutline, 
-      gridOutline, closeOutline, homeOutline, clipboardOutline, 
-      cashOutline, helpCircleOutline, cartOutline
+    addIcons({
+      home,
+      people,
+      cart,
+      newspaper,
+      menuOutline,
+      football,
+      personCircleOutline,
+      logOutOutline,
+      sparkles,
+      logoLinkedin,
+      logoGithub,
+      closeOutline
     });
   }
 
+  ngOnInit() { }
+
   logout() {
     console.log('Cerrando sesión...');
-    // Aquí iría la lógica con AuthService
+    // Aquí podrías añadir la lógica de navegación al login o borrar el token
   }
 }

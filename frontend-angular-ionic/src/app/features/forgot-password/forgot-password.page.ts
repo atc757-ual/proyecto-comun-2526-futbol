@@ -1,17 +1,17 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
-import { IonInput, IonButton, IonIcon, IonSpinner, ToastController, NavController } from '@ionic/angular/standalone';
+import { IonInput, IonButton, IonIcon, IonSpinner, ToastController, NavController, IonInputPasswordToggle } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
   mailOutline, atOutline, alertCircleOutline,
-  checkmarkCircle, arrowBackOutline,
+  checkmarkCircleOutline, arrowBackOutline,
   lockClosedOutline, shieldCheckmarkOutline,
   paperPlaneOutline, sparklesOutline,
-  logInOutline
+  logInOutline, closeCircleOutline
 } from 'ionicons/icons';
-import { AuthLayoutComponent } from '../../shared/components/auth-layout/auth-layout.component';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-forgot-password',
@@ -22,11 +22,12 @@ import { AuthLayoutComponent } from '../../shared/components/auth-layout/auth-la
     CommonModule,
     FormsModule,
     RouterModule,
-    AuthLayoutComponent,
+
     IonInput,
     IonButton,
     IonIcon,
-    IonSpinner
+    IonSpinner,
+    IonInputPasswordToggle
   ]
 })
 export class ForgotPasswordPage implements OnInit {
@@ -59,6 +60,8 @@ export class ForgotPasswordPage implements OnInit {
   confirmTouched: boolean = false;
   confirmFocused: boolean = false;
 
+  private authService = inject(AuthService);
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -67,10 +70,11 @@ export class ForgotPasswordPage implements OnInit {
   ) {
     addIcons({
       mailOutline, atOutline, alertCircleOutline,
-      checkmarkCircle, arrowBackOutline,
+      checkmarkCircleOutline, arrowBackOutline,
       lockClosedOutline, shieldCheckmarkOutline,
       paperPlaneOutline, sparklesOutline,
-      logInOutline
+      logInOutline,
+      closeCircleOutline
     });
   }
 
@@ -90,13 +94,19 @@ export class ForgotPasswordPage implements OnInit {
   }
 
   // --- TOASTS ---
-  async showToast(message: string, color: 'success' | 'error') {
+  private async showToast(message: string, color: 'success' | 'danger') {
     const toast = await this.toastCtrl.create({
       message: message,
       duration: 3000,
       position: 'top',
       cssClass: color === 'success' ? 'toast-success' : 'toast-error',
-      buttons: [{ icon: 'close', role: 'cancel' }]
+      buttons: [
+        { 
+          icon: color === 'success' ? 'checkmark-circle-outline' : 'close-circle-outline', 
+          side: 'start', 
+          handler: () => {} 
+        }
+      ]
     });
     await toast.present();
   }
@@ -104,7 +114,7 @@ export class ForgotPasswordPage implements OnInit {
   // --- VALIDACIONES ---
 
   isEmailValid(): boolean {
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const emailRegex = /^[a-zA-Z0-9\._%\+\-]+@[a-zA-Z0-9\.\-]+\.[a-zA-Z]{2,}$/;
     return emailRegex.test(this.userEmail) && this.userEmail.length >= 5;
   }
 
@@ -114,6 +124,10 @@ export class ForgotPasswordPage implements OnInit {
 
   doPasswordsMatch(): boolean {
     return this.newPass === this.confirmPass && this.isPasswordValid() && this.confirmPass.length > 0;
+  }
+
+  isFormValid(): boolean {
+    return this.isPasswordValid() && this.doPasswordsMatch();
   }
 
   // --- EVENTOS DE FOCO ---
@@ -133,19 +147,22 @@ export class ForgotPasswordPage implements OnInit {
     if (!this.isEmailValid()) return;
 
     this.isLoading = true;
-
-    // Simulación de envío
-    setTimeout(() => {
-      this.isLoading = false;
+    try {
+      await this.authService.sendResetPasswordEmail(this.userEmail);
       this.isEmailSent = true;
       this.currentStep = 2;
       this.startCountdown(); // Iniciar cuenta atrás
       this.showToast('¡Enlace enviado! Revisa tu correo.', 'success');
-    }, 1500);
+    } catch (error: any) {
+      console.error('Error Reset Link:', error);
+      this.showToast('Error al enviar el email. Inténtalo de nuevo.', 'danger');
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   goToLogin() {
-    this.navCtrl.navigateRoot('/login');
+    this.navCtrl.navigateRoot('/auth/login');
   }
 
   startCountdown() {
@@ -160,14 +177,21 @@ export class ForgotPasswordPage implements OnInit {
     }, 1000);
   }
 
-  resetPassword() {
+  async resetPassword() {
+    if (!this.isFormValid() || !this.oobCode) return;
+
     this.isLoading = true;
-    setTimeout(() => {
-      this.isLoading = false;
+    try {
+      await this.authService.confirmReset(this.oobCode, this.newPass);
       this.isPasswordChanged = true;
       this.currentStep = 2; // Cambiamos al paso 2: ÉXITO
       this.showToast('Contraseña actualizada correctamente', 'success');
-    }, 2000);
+    } catch (error: any) {
+      console.error('Error Reset Confirm:', error);
+      this.showToast('El enlace ha expirado o es inválido.', 'danger');
+    } finally {
+      this.isLoading = false;
+    }
   }
 
 }

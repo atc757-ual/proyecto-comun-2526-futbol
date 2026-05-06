@@ -1,0 +1,101 @@
+/* --- UTILIDADES DE TIPOGRAFÍA RESPONSIVA --- */
+
+/* Tamaños Generales (Desktop por defecto o base) */
+.fs-8 { font-size: var(--fs-8) !important; }
+.fs-10 { font-size: var(--fs-10) !important; }
+.fs-12 { font-size: var(--fs-12) !important; }
+.fs-14 { font-size: var(--fs-14) !important; }
+.fs-16 { font-size: var(--fs-16) !important; }
+.fs-18 { font-size: var(--fs-18) !important; }
+.fs-20 { font-size: var(--fs-20) !important; }
+.fs-22 { font-size: var(--fs-22) !important; }
+.fs-24 { font-size: var(--fs-24) !important; }
+.fs-26 { font-size: var(--fs-26) !important; }
+.fs-28 { font-size: var(--fs-28) !important; }
+.fs-30 { font-size: var(--fs-30) !important; }
+.fs-32 { font-size: var(--fs-32) !important; }
+.fs-36 { font-size: var(--fs-36) !important; }
+.fs-40 { font-size: var(--fs-40) !important; }
+.fs-48 { font-size: var(--fs-48) !important; }
+.fs-56 { font-size: var(--fs-56) !important; }
+.fs-64 { font-size: var(--fs-64) !important; }
+.fs-72 { font-size: var(--fs-72) !important; }
+.fs-80 { font-size: var(--fs-80) !important; }
+.fs-96 { font-size: var(--fs-96) !important; }
+
+/* Tamaños Específicos para Móvil (Hasta 767px) - Sobrescriben al base */
+@media (max-width: 767px) {
+    .fs-sm-8 { font-size: var(--fsm-8) !important; }
+    .fs-sm-10 { font-size: var(--fsm-10) !important; }
+    .fs-sm-12 { font-size: var(--fsm-12) !important; }
+    .fs-sm-14 { font-size: var(--fsm-14) !important; }
+    .fs-sm-16 { font-size: var(--fsm-16) !important; }
+    .fs-sm-18 { font-size: var(--fsm-18) !important; }
+    .fs-sm-20 { font-size: var(--fsm-20) !important; }
+    .fs-sm-22 { font-size: var(--fsm-22) !important; }
+    .fs-sm-24 { font-size: var(--fsm-24) !important; }
+    .fs-sm-26 { font-size: var(--fsm-26) !important; }
+    .fs-sm-28 { font-size: var(--fsm-28) !important; }
+    .fs-sm-30 { font-size: var(--fsm-30) !important; }
+    .fs-sm-32 { font-size: var(--fsm-32) !important; }
+    .fs-sm-36 { font-size: var(--fsm-36) !important; }
+    .fs-sm-40 { font-size: var(--fsm-40) !important; }
+    .fs-sm-48 { font-size: var(--fsm-48) !important; }
+    .fs-sm-56 { font-size: var(--fsm-56) !important; }
+    .fs-sm-60 { font-size: var(--fsm-60) !important; }
+    .fs-sm-64 { font-size: var(--fsm-64) !important; }
+    .fs-sm-72 { font-size: var(--fsm-72) !important; }
+    .fs-sm-80 { font-size: var(--fsm-80) !important; }
+    .fs-sm-96 { font-size: var(--fsm-96) !important; }
+}
+
+/* Pesos de Fuente Reutilizables (Heredan Barlow por defecto) */
+.f-light { font-weight: var(--fw-light) !important; }
+.f-regular { font-weight: var(--fw-regular) !important; }
+.f-medium { font-weight: var(--fw-medium) !important; }
+.f-semibold { font-weight: var(--fw-semibold) !important; }
+.f-bold { font-weight: var(--fw-bold) !important; }
+
+/* --- UTILIDADES ESPECÍFICAS DE BARLOW (FUENTE PRINCIPAL) --- */
+.f-barlow-light {
+    font-family: var(--font-primary) !important;
+    font-weight: var(--fw-light) !important;
+}
+.f-barlow-regular {
+    font-family: var(--font-primary) !important;
+    font-weight: var(--fw-regular) !important;
+}
+.f-barlow-medium {
+    font-family: var(--font-primary) !important;
+    font-weight: var(--fw-medium) !important;
+}
+.f-barlow-semibold {
+    font-family: var(--font-primary) !important;
+    font-weight: var(--fw-semibold) !important;
+}
+.f-barlow-bold {
+    font-family: var(--font-primary) !important;
+    font-weight: var(--fw-bold) !important;
+}
+
+/* --- UTILIDADES ESPECÍFICAS DE INTER (FUENTE SECUNDARIA) --- */
+.f-inter-light {
+    font-family: var(--font-secondary) !important;
+    font-weight: var(--fw-light) !important;
+}
+.f-inter-regular {
+    font-family: var(--font-secondary) !important;
+    font-weight: var(--fw-regular) !important;
+}
+.f-inter-medium {
+    font-family: var(--font-secondary) !important;
+    font-weight: var(--fw-medium) !important;
+}
+.f-inter-semibold {
+    font-family: var(--font-secondary) !important;
+    font-weight: var(--fw-semibold) !important;
+}
+.f-inter-bold {
+    font-family: var(--font-secondary) !important;
+    font-weight: var(--fw-bold) !important;
+}

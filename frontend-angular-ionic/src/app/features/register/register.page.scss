@@ -23,3 +23,104 @@
 .gap-s {
     gap: var(--space-s);
 }
+
+// Estilos para el Input de Nombre
+.capitalize-input {
+    text-transform: capitalize;
+}
+
+// Estilos para el Modal de Éxito
+#success-modal {
+    --height: auto;
+    --width: 90%;
+    --max-width: 450px;
+    --border-radius: 24px;
+    --box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    --backdrop-opacity: 1;
+    align-items: center;
+
+    &::part(backdrop) {
+        background: rgb(101 98 145 / 79%);
+        opacity: 1;
+    }
+
+    &::part(content) {
+        border-radius: 24px;
+    }
+
+    // AJUSTE MÓVIL: Estilo "Bottom Sheet"
+    @media (max-width: 767px) {
+        --width: 100%;
+        --border-radius: 24px 24px 0 0;
+        align-items: flex-end;
+
+        &::part(content) {
+            border-radius: 24px 24px 0 0;
+            margin-bottom: 0;
+        }
+
+        .modal-wrapper {
+            padding: 30px 20px 40px 20px;
+        }
+    }
+
+    .modal-wrapper {
+        padding: 40px 24px;
+    }
+
+    .success-header {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 24px;
+
+        .success-icon-bg {
+            width: 90px;
+            height: 90px;
+            background: var(--blue-primary-010);
+            border-radius: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            ion-icon {
+                font-size: 56px;
+                color: var(--blue-primary-100);
+            }
+        }
+    }
+
+    .modal-body {
+        margin-bottom: 32px;
+
+        h2 {
+            font-size: 22px;
+            margin-bottom: 12px;
+            color: var(--color-neutral-9);
+        }
+
+        p {
+            line-height: 1.6;
+        }
+    }
+
+    .modal-footer {
+        width: 100%;
+    }
+}
+
+// Animación simple para el icono
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.animate-bounce {
+    animation: bounce 2s infinite ease-in-out;
+}

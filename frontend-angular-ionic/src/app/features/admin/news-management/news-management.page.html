@@ -1,0 +1,44 @@
+  <div class="margin-bottom-l">
+
+    <ion-back-button defaultHref="/news" text="Volver al Feed" mode="ios" class="margin-bottom-s"></ion-back-button>
+    <h1 class="f-bold text-neutral-9 fs-32 margin-none">Redactar Noticia</h1>
+    <p class="text-neutral-6 fs-16 margin-top-xs">Utiliza este panel para enviar noticias al sistema CORBA central.</p>
+  </div>
+
+  <div class="glass-card shadow-s padding-l">
+    <div class="form-grid">
+      <div class="form-item margin-bottom-m">
+        <ion-input label="Título de la Noticia *" labelPlacement="stacked" [(ngModel)]="newsData.title"
+          placeholder="Escribe un titular impactante" class="custom-input-futbol"></ion-input>
+      </div>
+
+      <div class="display-flex gap-base margin-bottom-m responsive-flex">
+        <div class="form-item fl-grow-1">
+          <ion-select label="Categoría" labelPlacement="stacked" [(ngModel)]="newsData.category"
+            class="custom-input-futbol">
+            <ion-select-option value="Fútbol">Fútbol</ion-select-option>
+            <ion-select-option value="Mercado">Mercado</ion-select-option>
+            <ion-select-option value="Tecnología">Tecnología (IA)</ion-select-option>
+          </ion-select>
+        </div>
+        <div class="form-item fl-grow-1">
+          <ion-input label="URL de la Imagen de Portada" labelPlacement="stacked" [(ngModel)]="newsData.image"
+            placeholder="https://..." class="custom-input-futbol"></ion-input>
+        </div>
+      </div>
+
+      <div class="form-item margin-bottom-l">
+        <ion-textarea label="Contenido de la Noticia *" labelPlacement="stacked" [(ngModel)]="newsData.content"
+          placeholder="Escribe aquí el cuerpo de la noticia..." rows="12" class="custom-input-futbol text-area-large">
+        </ion-textarea>
+      </div>
+    </div>
+
+    <div class="display-flex fl-justify-end">
+      <ion-button (click)="onPublish()" class="f-bold" shape="round" size="large" [disabled]="!newsData.title || !newsData.content">
+        <ion-icon name="send-outline" slot="start"></ion-icon>
+        Publicar Noticia
+      </ion-button>
+    </div>
+  </div>
+

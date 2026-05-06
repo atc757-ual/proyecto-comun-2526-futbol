@@ -1,0 +1,70 @@
+/* ==========================================================================
+   LAYOUT & GRID SYSTEM
+   ========================================================================== */
+
+/* Contenedor Principal */
+.container {
+  padding-left: var(--container-padding-mobile);
+  padding-right: var(--container-padding-mobile);
+  margin: 0 auto;
+  width: 100%;
+  max-width: var(--container-max-width);
+  box-sizing: border-box;
+
+  @media (min-width: 768px) {
+    padding-left: var(--container-padding-desktop);
+    padding-right: var(--container-padding-desktop);
+  }
+}
+
+/* Fila (Wrapper de Columnas) */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-base);
+  width: 100%;
+
+  &.reverse {
+    flex-direction: row-reverse;
+
+    @media (max-width: 767px) {
+      flex-direction: column;
+    }
+  }
+}
+
+/* 
+   Grid Dinámico de 12 Columnas
+   --------------------------------------------------------------------------
+   Genera clases .col-1 a .col-12 calculando el ancho restando el gap.
+*/
+@for $i from 1 through 12 {
+  .col-#{$i} {
+    width: calc((100% * #{$i} / 12) - (16px * (1 - #{$i} / 12)));
+  }
+}
+
+/* 
+   Grid Responsivo (Móvil/Tablet) 
+   --------------------------------------------------------------------------
+*/
+@media (max-width: 767px) {
+  @for $i from 1 through 12 {
+    .col-sm-#{$i} {
+      width: calc((100% * #{$i} / 12) - (16px * (1 - #{$i} / 12)));
+    }
+  }
+}
+
+/* --- RESPONSIVE --- */
+.hide-on-desktop {
+  @media (min-width: 768px) {
+    display: none !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .hide-on-phone {
+    display: none !important;
+  }
+}

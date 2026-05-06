@@ -1,0 +1,65 @@
+<div class="margin-y-l">
+
+
+  <!-- CABECERA -->
+  <div class="news-header display-flex fl-justify-between fl-align-center mb-base">
+    <div>
+      <h1 class="f-bold text-neutral-8 fs-28 fsm-18 m-none">Central de Noticias</h1>
+      <p class="text-neutral-7 fs-16 fsm-14">Toda la actualidad del fútbol a tu alcance.</p>
+    </div>
+  </div>
+  <div class="row">
+    <!-- COLUMNA 8: DETALLE (Primero en HTML -> Izquierda en Desktop) -->
+    <div class="col-8 col-sm-12 pr-base p-sm-0">
+      <ion-card class="main-article animate-fade-in m-0 shadow-none" *ngIf="selectedNews">
+        <!-- 1. Imagen -->
+        <div class="article-image-container">
+          <img [src]="selectedNews.image" [alt]="selectedNews.title">
+          <div class="article-badge">#Destacado</div>
+        </div>
+
+        <ion-card-content class="p-base ">
+          <!-- 2. Tags (mantener arriba) -->
+          <div class="mt-s mb-m">
+            <span class="news-tag fs-12" *ngFor="let tag of selectedNews.tags">#{{ tag }}</span>
+          </div>
+
+          <!-- 3. Título y 4. Detalle -->
+          <div class="article-content mt-m">
+            <h1 class="article-title">{{ selectedNews.title }}</h1>
+            <div class="article-full-text">
+              <p class="article-excerpt">{{ selectedNews.excerpt }}</p>
+              {{ selectedNews.content }}
+            </div>
+
+            <!-- Metadata al final (Autor y Fecha con prefijo) -->
+            <div class="article-footer mt-l pt-m d-flex ai-center gap-s text-neutral-5 f-bold fs-12 border-top">
+              <span class="article-author text-primary">{{ selectedNews.author }}</span>
+              <span class="article-dot">•</span>
+              <span class="article-date">Publicado {{ selectedNews.date }}</span>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- COLUMNA 4: LISTADO (Después en HTML -> Derecha en Desktop) -->
+    <div class="col-4 col-sm-12 pl-base p-sm-0">
+      <div class="f-bold mb-base fs-20">Noticias recientes</div>
+      <div class="side-news-list">
+        <ion-card class="side-news-item clickable m-0 shadow-none" *ngFor="let news of newsList"
+          [class.active]="news.id === selectedNews?.id" (click)="selectNews(news)">
+          <div class="side-news-thumb">
+            <img [src]="news.image" [alt]="news.title">
+          </div>
+          <div class="side-news-info">
+            <div class="side-news-title">{{ news.title }}</div>
+            <div class="side-news-excerpt">{{ news.excerpt }}</div>
+            <div class="side-news-date">Publicado {{ news.date }}</div>
+          </div>
+        </ion-card>
+      </div>
+    </div>
+
+  </div>
+</div>

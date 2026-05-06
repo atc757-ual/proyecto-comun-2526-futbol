@@ -1,130 +1,131 @@
-<app-auth-layout authTitle="Crea tu cuenta" authSubtitle="Únete a la mayor comunidad de fútbol real." [showBackButton]="true">
+<form (ngSubmit)="onRegister()" class="register-form">
 
-  <form (ngSubmit)="onRegister()" class="register-form">
 
-    <!-- INPUT: Nombre Completo -->
-    <div class="margin-bottom-m">
-      <ion-input mode="md" type="text" label="Nombre Completo" label-placement="stacked" fill="outline" required name="fullName"
-        minlength="5" maxlength="250" placeholder="Tu nombre completo" class="futbol-input f-medium" [(ngModel)]="userName" 
-        (ionBlur)="onBlurName()" (ionFocus)="onFocusName()" [class.input-error]="nameTouched && !isNameValid()" 
-        [class.is-focused]="nameFocused">
+  <!-- INPUT: Nombre Completo -->
+  <div class="mb-m">
+    <ion-input mode="md" type="text" label="Nombre Completo" label-placement="stacked" fill="outline" required
+      name="fullName" minlength="3" maxlength="250" placeholder="Tu nombre completo"
+      class="futbol-input f-medium capitalize-input" [(ngModel)]="userName" (ionBlur)="onBlurName()"
+      (ionFocus)="onFocusName()" [class.input-error]="nameTouched && !isNameValid()" [class.is-focused]="nameFocused">
 
-        <ion-icon [color]="nameFocused ? 'primary' : (nameTouched && !isNameValid() ? 'danger' : 'medium')"
-          slot="start" name="person-outline" aria-hidden="true">
-        </ion-icon>
+      <ion-icon [color]="nameFocused ? 'primary' : (nameTouched && !isNameValid() ? 'danger' : 'medium')" slot="start"
+        name="person-outline" aria-hidden="true">
+      </ion-icon>
 
-        <ion-icon *ngIf="isNameValid()" slot="end" name="checkmark-circle" color="primary" class="checkmark-icon">
-        </ion-icon>
-      </ion-input>
+      <ion-icon *ngIf="isNameValid()" slot="end" name="checkmark-circle-outline" color="primary" class="fs-20">
+      </ion-icon>
+    </ion-input>
 
-      <div class="error-container" *ngIf="nameTouched && !isNameValid()">
-        <ion-icon name="alert-circle-outline"></ion-icon>
-        <span class="f-medium">Solo letras (Mín. 5 caracteres)</span>
-      </div>
+    <div class="error-container" *ngIf="nameTouched && !isNameValid()">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      <span class="f-medium">Solo letras (Mín. 3 carácteres)</span>
     </div>
+  </div>
 
-    <!-- INPUT: Email -->
-    <div class="margin-bottom-m">
-      <ion-input mode="md" type="email" label="Email" inputmode="email" label-placement="stacked" fill="outline" required name="email"
-        placeholder="tu@email.com" class="futbol-input f-medium" [(ngModel)]="userEmail" (ionBlur)="onBlurEmail()"
-        (ionFocus)="onFocusEmail()" [class.input-error]="emailTouched && !isEmailValid()"
-        [class.is-focused]="emailFocused">
+  <!-- INPUT: Email -->
+  <div class="mb-m">
+    <ion-input mode="md" type="email" label="Email" inputmode="email" label-placement="stacked" fill="outline" required
+      name="email" placeholder="tu@email.com" class="futbol-input f-medium" [(ngModel)]="userEmail"
+      (ionBlur)="onBlurEmail()" (ionFocus)="onFocusEmail()" [class.input-error]="emailTouched && !isEmailValid()"
+      [class.is-focused]="emailFocused">
 
-        <ion-icon [color]="emailFocused ? 'primary' : (emailTouched && !isEmailValid() ? 'danger' : 'medium')"
-          slot="start" name="at-outline" aria-hidden="true">
-        </ion-icon>
+      <ion-icon [color]="emailFocused ? 'primary' : (emailTouched && !isEmailValid() ? 'danger' : 'medium')"
+        slot="start" name="at-outline" aria-hidden="true">
+      </ion-icon>
 
-        <ion-icon *ngIf="isEmailValid()" slot="end" name="checkmark-circle" color="primary" class="checkmark-icon">
-        </ion-icon>
-      </ion-input>
+      <ion-icon *ngIf="isEmailValid()" slot="end" name="checkmark-circle-outline" color="primary" class="fs-20">
+      </ion-icon>
+    </ion-input>
 
-      <div class="error-container" *ngIf="emailTouched && !isEmailValid()">
-        <ion-icon name="alert-circle-outline"></ion-icon>
-        <span class="f-medium">Ingresa un email válido</span>
-      </div>
+    <div class="error-container" *ngIf="emailTouched && !isEmailValid()">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      <span class="f-medium">Ingresa un email válido</span>
     </div>
+  </div>
 
-    <!-- INPUT: Contraseña -->
-    <div class="margin-bottom-m">
-      <ion-input mode="md" type="password" label="Contraseña" label-placement="stacked" fill="outline" required name="password"
-        minlength="8" placeholder="Mínimo 8 caracteres" class="futbol-input f-medium" [(ngModel)]="userPass" (ionBlur)="onBlurPass()"
-        (ionFocus)="onFocusPass()" [class.input-error]="passTouched && !isPasswordValid()"
-        [class.is-focused]="passFocused">
+  <!-- INPUT: Contraseña -->
+  <div class="mb-m">
+    <ion-input mode="md" type="password" label="Contraseña" label-placement="stacked" fill="outline" required
+      name="password" minlength="8" placeholder="Mínimo 8 caracteres" class="futbol-input f-medium"
+      [(ngModel)]="userPass" (ionBlur)="onBlurPass()" (ionFocus)="onFocusPass()"
+      [class.input-error]="passTouched && !isPasswordValid()" [class.is-focused]="passFocused" clear-on-edit="true">
 
-        <ion-icon slot="start"
-          [color]="passFocused ? 'primary' : (passTouched && !isPasswordValid() ? 'danger' : 'medium')"
-          name="lock-closed-outline" aria-hidden="true">
-        </ion-icon>
+      <ion-icon slot="start"
+        [color]="passFocused ? 'primary' : (passTouched && !isPasswordValid() ? 'danger' : 'medium')"
+        name="lock-closed-outline" aria-hidden="true">
+      </ion-icon>
 
-        <ion-icon *ngIf="isPasswordValid()" slot="end" name="checkmark-circle" color="primary" class="checkmark-icon">
-        </ion-icon>
-      </ion-input>
+      <!-- TOGGLE DE CONTRASEÑA -->
+      <ion-input-password-toggle slot="end" mode="ios"></ion-input-password-toggle>
 
-      <div class="error-container" *ngIf="passTouched && !isPasswordValid()">
-        <ion-icon name="alert-circle-outline"></ion-icon>
-        <span class="f-medium">Debe tener al menos 8 caracteres</span>
-      </div>
+      <ion-icon *ngIf="isPasswordValid()" slot="end" name="checkmark-circle-outline" color="primary" class="fs-20">
+      </ion-icon>
+    </ion-input>
+
+    <div class="error-container" *ngIf="passTouched && !isPasswordValid()">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      <span class="f-medium">Debe tener al menos 8 caracteres</span>
     </div>
+  </div>
 
-    <!-- INPUT: Confirmar Contraseña -->
-    <div class="margin-bottom-base">
-      <ion-input mode="md" type="password" label="Confirmar Contraseña" label-placement="stacked" fill="outline" required name="confirmPassword"
-        minlength="8" placeholder="Repite tu contraseña" class="futbol-input f-medium" [(ngModel)]="confirmPass"
-        (ionBlur)="onBlurConfirm()" (ionFocus)="onFocusConfirm()" [class.input-error]="confirmTouched && !doPasswordsMatch()"
-        [class.is-focused]="confirmFocused">
+  <!-- INPUT: Confirmar Contraseña -->
+  <div class="mb-base">
+    <ion-input mode="md" type="password" label="Confirmar Contraseña" label-placement="stacked" fill="outline" required
+      name="confirmPassword" minlength="8" placeholder="Repite tu contraseña" class="futbol-input f-medium"
+      [(ngModel)]="confirmPass" (ionBlur)="onBlurConfirm()" (ionFocus)="onFocusConfirm()"
+      [class.input-error]="confirmTouched && !doPasswordsMatch()" [class.is-focused]="confirmFocused"
+      clear-on-edit="false">
 
-        <ion-icon slot="start"
-          [color]="confirmFocused ? 'primary' : (confirmTouched && !doPasswordsMatch() ? 'danger' : 'medium')"
-          name="shield-checkmark-outline" aria-hidden="true">
-        </ion-icon>
+      <ion-icon slot="start"
+        [color]="confirmFocused ? 'primary' : (confirmTouched && !doPasswordsMatch() ? 'danger' : 'medium')"
+        name="shield-checkmark-outline" aria-hidden="true">
+      </ion-icon>
 
-        <ion-icon *ngIf="doPasswordsMatch()" slot="end" name="checkmark-circle" color="primary" class="checkmark-icon">
-        </ion-icon>
-      </ion-input>
+      <!-- TOGGLE DE CONTRASEÑA -->
+      <ion-input-password-toggle slot="end" mode="ios"></ion-input-password-toggle>
 
-      <div class="error-container" *ngIf="confirmTouched && !doPasswordsMatch()">
-        <ion-icon name="alert-circle-outline"></ion-icon>
-        <span class="f-medium">Las contraseñas deben coincidir</span>
-      </div>
+      <ion-icon *ngIf="doPasswordsMatch()" slot="end" name="checkmark-circle-outline" color="primary" class="fs-20">
+      </ion-icon>
+    </ion-input>
+
+    <div class="error-container" *ngIf="confirmTouched && !doPasswordsMatch()">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      <span class="f-medium">Las contraseñas deben coincidir</span>
     </div>
+  </div>
 
-    <!-- Botón Registro -->
-    <ion-button type="submit" expand="block" shape="round" class="futbol-btn-primary f-bold fs-16 margin-top-xl" mode="ios"
-      [disabled]="!isFormValid() || isLoading">
-      <ion-spinner *ngIf="isLoading" name="crescent" slot="start" size="small"></ion-spinner>
-      <span *ngIf="!isLoading">Crear mi cuenta</span>
-      <span *ngIf="isLoading">Creando cuenta...</span>
-    </ion-button>
+  <!-- Botón Registro -->
+  <ion-button type="submit" expand="block" shape="round" class="futbol-btn-primary f-bold fs-16 mt-xl" mode="ios"
+    [disabled]="!isFormValid() || isLoading">
+    <ion-spinner *ngIf="isLoading" name="crescent" slot="start" size="small"></ion-spinner>
+    <span *ngIf="!isLoading">Crear mi cuenta</span>
+    <span *ngIf="isLoading">Creando cuenta...</span>
+  </ion-button>
 
-  </form>
+</form>
 
-  <!-- MODAL DE ÉXITO -->
-  <ion-modal id="modal" #modal>
-    <ng-template>
-      <div class="wrapper">
-        <ion-item lines="none" class="alert success">
-          <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
-          <ion-label class="f-medium">Registro procesado con éxito</ion-label>
-        </ion-item>
-        
-        <div class="margin-y-m text-center">
-          <ion-icon name="checkmark-circle" color="primary" style="font-size: 80px;"></ion-icon>
-        </div>
-
-        <h4 class="f-bold">¡Bienvenido, {{ userName }}!</h4>
-        <p>Tu cuenta de Football App ha sido creada correctamente. Prepárate para vivir la experiencia real del fútbol.</p>
-        
-        <div class="display-flex fl-column gap-s margin-top-base full-width">
-          <ion-button mode="ios" expand="block" class="futbol-btn-primary" (click)="closeModal()">
-            Ir al Inicio
-            <ion-icon slot="end" name="arrow-forward-outline"></ion-icon>
-          </ion-button>
-          <ion-button mode="ios" expand="block" fill="clear" color="medium" (click)="closeModal()">
-            Cerrar
-          </ion-button>
+<!-- Modal de Éxito Premium -->
+<ion-modal #modal id="success-modal">
+  <ng-template>
+    <div class="modal-wrapper ion-padding t-center">
+      <div class="success-header">
+        <div class="success-icon-bg animate-bounce">
+          <ion-icon name="checkmark-circle-outline"></ion-icon>
         </div>
       </div>
-    </ng-template>
-  </ion-modal>
 
-</app-auth-layout>
+      <div class="modal-body">
+        <h2 class="f-bold">¡Bienvenido/a, {{ capitalizedName }}!</h2>
+        <p class="f-medium text-neutral-7">
+          Tu cuenta ha sido creada correctamente. Prepárate para vivir la experiencia real del fútbol.
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <ion-button mode="ios" expand="block" shape="round" class="futbol-btn-primary" (click)="closeModal()">
+          Ir a Inicio
+        </ion-button>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>

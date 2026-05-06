@@ -1,153 +1,63 @@
-<app-main-layout title="Mi Dashboard">
-  
-  <div class="container margin-top-medium">
-    
-    <!-- SALUDO -->
-    <div class="margin-bottom-base">
-      <h1 class="f-bold text-neutral-9 fs-32 margin-none">¡Hola, Alex!</h1>
-      <p class="text-neutral-6 fs-16 margin-top-xs">Esto es lo que está pasando hoy en tu liga.</p>
-    </div>
-
-    <!-- HERO BANNER (Estilo Futbol) -->
-    <div class="hero-banner-futbol border-radius-large margin-bottom-medium overflow-hidden shadow-m">
-      <div class="hero-content padding-xl display-flex direction-column fl-justify-center">
-        <div class="badge-exclusive margin-bottom-s">PRÓXIMO PARTIDO</div>
-        <h2 class="text-white f-bold fs-40 margin-none">Final de Copa</h2>
-        <p class="text-white opacity-high fs-18 margin-top-s">Real Madrid vs FC Barcelona</p>
-        <div class="margin-top-medium">
-          <ion-button class="f-bold" color="light" shape="round">
-            Comprar Entradas
-          </ion-button>
+<!-- SALUDO -->
+<div class="">
+  <h1 class="f-bold text-neutral-8 fs-28 fs-sm-18">¡Hola, Alex!</h1>
+  <p class="text-neutral-7 f-medium fs-sm-16 mb-base">Bienvenido a tu aplicación de fútbol</p>
+</div>
+<!-- CARRUSEL DE NOTICIAS (SWIPER) -->
+<div class="news-swiper-wrapper">
+  <swiper-container #swiperRef navigation-prev-el=".custom-prev" navigation-next-el=".custom-next" loop="true"
+    pagination="true" pagination-clickable="true" observer="true" observe-parents="true" autoplay="true"
+    autoplay-delay="3000" autoplay-disable-on-interaction="false" slides-per-view="1" space-between="0"
+    class="featured-swiper">
+    <swiper-slide *ngFor="let news of featuredNews" (click)="goToNewsDetail(news)">
+      <div class="slide-content" [style.background-image]="'url(' + news.image + ')'">
+        <div class="overlay-gradient"></div>
+        <div class="news-info-overlay">
+          <div class="news-badge-small">FÚTBOL</div>
+          <div class="news-meta-overlay">
+            <span class="source">{{ news.author }}</span>
+            <span class="date">• {{ news.date }}</span>
+          </div>
+          <h2 class="news-title-overlay">{{ news.title }}</h2>
+          <p class="news-excerpt-overlay">{{ news.excerpt }}</p>
+          <div class="read-more-button">
+            <span>Ver noticia</span>
+            <ion-icon name="chevron-forward"></ion-icon>
+          </div>
         </div>
       </div>
-    </div>
+    </swiper-slide>
+  </swiper-container>
 
-    <!-- ACCESOS RÁPIDOS -->
-    <div class="quick-actions-bar margin-bottom-medium">
-      <div class="display-flex fl-justify-between gap-base">
-        <div class="action-item text-center cursor-pointer">
-          <div class="icon-circle shadow-s bg-white margin-x-auto">
-            <ion-icon name="star-outline" color="primary"></ion-icon>
-          </div>
-          <span class="fs-12 f-medium text-neutral-7 margin-top-s display-block">Favoritos</span>
-        </div>
-        <div class="action-item text-center cursor-pointer">
-          <div class="icon-circle shadow-s bg-white margin-x-auto">
-            <ion-icon name="calendar-outline" color="primary"></ion-icon>
-          </div>
-          <span class="fs-12 f-medium text-neutral-7 margin-top-s display-block">Calendario</span>
-        </div>
-        <div class="action-item text-center cursor-pointer">
-          <div class="icon-circle shadow-s bg-white margin-x-auto">
-            <ion-icon name="trophy-outline" color="primary"></ion-icon>
-          </div>
-          <span class="fs-12 f-medium text-neutral-7 margin-top-s display-block">Torneos</span>
-        </div>
-        <div class="action-item text-center cursor-pointer">
-          <div class="icon-circle shadow-s bg-white margin-x-auto">
-            <ion-icon name="stats-chart-outline" color="primary"></ion-icon>
-          </div>
-          <span class="fs-12 f-medium text-neutral-7 margin-top-s display-block">Estadísticas</span>
-        </div>
-        <div class="action-item text-center cursor-pointer">
-          <div class="icon-circle shadow-s bg-white margin-x-auto">
-            <ion-icon name="grid-outline" color="primary"></ion-icon>
-          </div>
-          <span class="fs-12 f-medium text-neutral-7 margin-top-s display-block">Más</span>
-        </div>
-      </div>
-    </div>
+  <!-- Navegación Externa Garantizada -->
+  <div class="custom-swiper-button custom-prev">
+    <ion-icon name="chevron-back"></ion-icon>
+  </div>
+  <div class="custom-swiper-button custom-next">
+    <ion-icon name="chevron-forward"></ion-icon>
+  </div>
+</div>
 
-    <!-- GRID 8 / 4 -->
-    <div class="reactive reverse">
-      
-      <!-- LADO IZQUIERDO (8): Partidos Recientes -->
-      <div class="col-8 col-md-12">
-        <div class="glass-card padding-base border-radius-medium shadow-s bg-white">
-          <div class="display-flex fl-justify-between fl-align-center margin-bottom-base">
-            <h3 class="f-bold margin-none fs-20">Partidos en Directo</h3>
-            <ion-button fill="clear" size="small" class="f-bold">Ver todo</ion-button>
+<div class="row">
+  <!-- COLUMNA 8: DETALLE (Primero en HTML -> Izquierda en Desktop) -->
+  <div class="col-8 col-sm-12 pr-base p-sm-0">
+    <ion-card class="card-acceso">
+      <ion-card-content>
+        <div class="card-acceso-item">
+          <div>
+            <ion-icon class="fs-32" name="newspaper-outline" color="primary"></ion-icon>
           </div>
-
-          <div class="match-card-clean border-bottom-neutral-2 padding-y-base display-flex fl-align-center">
-            <div class="col-5 text-right f-semibold">Real Madrid</div>
-            <div class="col-2 text-center">
-              <span class="score-badge">2 - 1</span>
-            </div>
-            <div class="col-5 text-left f-semibold">FC Barcelona</div>
-          </div>
-
-          <div class="match-card-clean padding-y-base display-flex fl-align-center">
-            <div class="col-5 text-right f-semibold">Atlético Madrid</div>
-            <div class="col-2 text-center">
-              <span class="score-badge">0 - 0</span>
-            </div>
-            <div class="col-5 text-left f-semibold">Sevilla FC</div>
+          <div>
+            <ion-label class="f-medium text-primary fs-14">Gestionar Noticias</ion-label>
           </div>
         </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
 
-        <!-- Banner Inferior (Estilo Promo) -->
-        <div class="promo-banner margin-top-medium border-radius-medium padding-base display-flex fl-align-center fl-justify-between">
-            <div>
-                <h4 class="text-white f-bold margin-none">¡Suscríbete al canal Premium!</h4>
-                <p class="text-white opacity-high fs-12">No te pierdas ni un solo gol esta temporada.</p>
-            </div>
-            <ion-button color="light" size="small" shape="round" class="f-bold">Saber más</ion-button>
-        </div>
-      </div>
-
-      <!-- LADO DERECHO (4): Perfil y Próximos -->
-      <div class="col-4 col-md-12">
-        
-        <div class="glass-card padding-base border-radius-medium shadow-s bg-white margin-bottom-base">
-          <h3 class="f-bold margin-none fs-16 margin-bottom-base">Tu Perfil</h3>
-          <div class="display-flex fl-align-center gap-base">
-            <div class="avatar-circle bg-neutral-2 display-flex fl-justify-center fl-align-center">
-                <ion-icon name="person" class="text-neutral-6 fs-24"></ion-icon>
-            </div>
-            <div>
-                <p class="f-bold margin-none fs-14">Alex Taquila</p>
-                <p class="text-neutral-5 fs-12">Socio desde 2024</p>
-            </div>
-          </div>
-          <ion-button expand="block" fill="outline" class="margin-top-base f-bold fs-12" size="small">
-            Ver mi ficha
-          </ion-button>
-        </div>
-
-        <div class="glass-card padding-base border-radius-medium shadow-s bg-white">
-          <div class="display-flex fl-justify-between fl-align-center margin-bottom-base">
-            <h3 class="f-bold margin-none fs-16">Próximos Eventos</h3>
-            <ion-icon name="chevron-forward-outline" class="text-primary"></ion-icon>
-          </div>
-          
-          <div class="event-item display-flex gap-s margin-bottom-base">
-            <div class="date-box bg-blue-primary-010 border-radius-soft padding-xs text-center">
-                <span class="display-block f-bold fs-14 text-primary">15</span>
-                <span class="display-block fs-10 text-primary">MAY</span>
-            </div>
-            <div class="fl-grow-1">
-                <p class="f-bold fs-12 margin-none">Derbi Madrileño</p>
-                <p class="text-neutral-5 fs-10">Wanda Metropolitano</p>
-            </div>
-          </div>
-
-          <div class="event-item display-flex gap-s">
-            <div class="date-box bg-blue-primary-010 border-radius-soft padding-xs text-center">
-                <span class="display-block f-bold fs-14 text-primary">22</span>
-                <span class="display-block fs-10 text-primary">MAY</span>
-            </div>
-            <div class="fl-grow-1">
-                <p class="f-bold fs-12 margin-none">Final UCL</p>
-                <p class="text-neutral-5 fs-10">Wembley Stadium</p>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-    </div>
+  <!-- COLUMNA 4: LISTADO (Después en HTML -> Derecha en Desktop) -->
+  <div class="col-4 col-sm-12 pl-base p-sm-0">
 
   </div>
 
-</app-main-layout>
+</div>

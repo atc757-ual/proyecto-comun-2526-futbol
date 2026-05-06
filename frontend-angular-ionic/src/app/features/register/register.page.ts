@@ -1,19 +1,19 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
-import { 
-  IonInput, IonButton, IonIcon, IonModal, 
-  IonSpinner, IonItem, IonLabel, ToastController 
+import { RouterModule } from '@angular/router';
+import {
+  IonInput, IonButton, IonIcon, IonModal,
+  IonSpinner, ToastController, IonInputPasswordToggle, NavController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { 
-  personOutline, atOutline, lockClosedOutline, 
-  shieldCheckmarkOutline, alertCircleOutline, 
-  checkmarkCircle, arrowForwardOutline,
-  checkmarkCircleOutline
+import {
+  personOutline, atOutline, lockClosedOutline,
+  shieldCheckmarkOutline, alertCircleOutline,
+  checkmarkCircleOutline, arrowForwardOutline,
+  closeCircleOutline, checkmarkCircle
 } from 'ionicons/icons';
-import { AuthLayoutComponent } from '../../shared/components/auth-layout/auth-layout.component';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -21,17 +21,16 @@ import { AuthLayoutComponent } from '../../shared/components/auth-layout/auth-la
   styleUrls: ['./register.page.scss'],
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
+    CommonModule,
+    FormsModule,
     RouterModule,
-    AuthLayoutComponent,
+
     IonInput,
     IonButton,
     IonIcon,
     IonModal,
     IonSpinner,
-    IonItem,
-    IonLabel
+    IonInputPasswordToggle
   ]
 })
 export class RegisterPage implements OnInit {
@@ -58,28 +57,36 @@ export class RegisterPage implements OnInit {
   passFocused: boolean = false;
   confirmFocused: boolean = false;
 
+  private authService = inject(AuthService);
+
   constructor(
-    private router: Router,
+    private navCtrl: NavController,
     private toastCtrl: ToastController
   ) {
-    addIcons({ 
-      personOutline, atOutline, lockClosedOutline, 
-      shieldCheckmarkOutline, alertCircleOutline, 
-      checkmarkCircle, arrowForwardOutline,
-      checkmarkCircleOutline
+    addIcons({
+      personOutline, atOutline, lockClosedOutline,
+      shieldCheckmarkOutline, alertCircleOutline,
+      checkmarkCircleOutline, arrowForwardOutline,
+      closeCircleOutline, checkmarkCircle
     });
   }
 
-  ngOnInit() {}
+  ngOnInit() { }
 
   // --- TOASTS ---
-  async showToast(message: string, color: 'success' | 'error') {
+  private async showToast(message: string, color: 'success' | 'danger') {
     const toast = await this.toastCtrl.create({
-      message: message,
+      message,
       duration: 3000,
       position: 'top',
       cssClass: color === 'success' ? 'toast-success' : 'toast-error',
-      buttons: [{ icon: 'close', role: 'cancel' }]
+      buttons: [
+        {
+          icon: color === 'success' ? 'checkmark-circle-outline' : 'close-circle-outline',
+          side: 'start',
+          handler: () => { }
+        }
+      ]
     });
     await toast.present();
   }
@@ -88,11 +95,11 @@ export class RegisterPage implements OnInit {
 
   isNameValid(): boolean {
     const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
-    return nameRegex.test(this.userName) && this.userName.length >= 5 && this.userName.length <= 250;
+    return nameRegex.test(this.userName) && this.userName.length >= 3 && this.userName.length <= 250;
   }
 
   isEmailValid(): boolean {
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const emailRegex = /^[a-zA-Z0-9\._%\+\-]+@[a-zA-Z0-9\.\-]+\.[a-zA-Z]{2,}$/;
     return emailRegex.test(this.userEmail) && this.userEmail.length >= 5;
   }
 
@@ -123,23 +130,42 @@ export class RegisterPage implements OnInit {
   onBlurConfirm() { this.confirmFocused = false; this.confirmTouched = true; }
 
   async onRegister() {
-    if (this.isFormValid()) {
-      this.isLoading = true;
-      
-      // Simulación de registro
-      setTimeout(() => {
-        this.isLoading = false;
-        this.showToast('¡Registro completado con éxito! Bienvenido.', 'success');
-        this.modal.present();
-      }, 2000);
-    } else {
-      this.showToast('Por favor, revisa los campos con errores.', 'error');
+    if (!this.isFormValid()) {
+      this.showToast('Por favor, revisa los campos con errores.', 'danger');
+      return;
+    }
+
+    this.isLoading = true;
+    try {
+      await this.authService.register(this.userEmail, this.userPass);
+      this.showToast('¡Registro completado con éxito!', 'success');
+      this.modal.present();
+    } catch (error: any) {
+      console.error('Error Register:', error);
+      this.showToast(this.getErrorMessage(error.code), 'danger');
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  private getErrorMessage(code: string): string {
+    switch (code) {
+      case 'auth/email-already-in-use': return 'El email ya está registrado.';
+      case 'auth/invalid-email': return 'El formato del email no es válido.';
+      case 'auth/weak-password': return 'La contraseña es muy débil.';
+      default: return 'Error al registrar. Inténtalo de nuevo.';
     }
   }
 
   closeModal() {
     this.modal.dismiss();
-    this.router.navigate(['/login']);
+    this.navCtrl.navigateRoot('/home', { animated: true, animationDirection: 'forward' });
+  }
+
+  get capitalizedName(): string {
+    if (!this.userName) return '';
+    const firstName = this.userName.trim().split(' ')[0];
+    return firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
   }
 
 }

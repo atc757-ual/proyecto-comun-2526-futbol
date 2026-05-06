@@ -1,132 +1,627 @@
-:host {
-  display: block;
-  height: 100%;
-}
+/* ==========================================================================
+   MAIN LAYOUT COMPONENT STYLES (Refactored with Variables)
+   ========================================================================== */
 
-.ion-page {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
+.main-wrapper {
   display: flex;
   flex-direction: column;
-  background-color: var(--color-neutral-1);
+  height: 100vh;
+  background-color: var(--color-neutral-0);
 }
 
-// --- HEADER ---
-.main-header-futbol {
-    box-shadow: none !important;
-    border-bottom: 1px solid var(--color-neutral-2);
-    --background: #FFFFFF;
+.main-content {
+  width: 100%;
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  animation: none;
 }
 
-ion-toolbar {
-    --background: #FFFFFF;
-    --border-width: 0;
-}
+// HEADER PREMIUM (DOS FILAS)
+.main-header {
+  background: var(--color-white);
+  border-bottom: 1px solid var(--color-neutral-2);
+  z-index: var(--z-index-sticky);
 
-.nav-toolbar-border {
-    border-top: 1px solid var(--color-neutral-1);
-    --min-height: 50px;
-}
-
-.nav-link-futbol {
-    --color: var(--color-neutral-6);
-    font-family: var(--font-primary);
-    font-size: 0.95rem;
-    text-transform: none;
-    height: 50px;
-    width: 140px;
-    margin: 0;
-    --padding-start: 0;
-    --padding-end: 0;
-    position: relative;
+  // FILA 1: Branding y Perfil
+  .top-header-row {
+    height: var(--header-height);
     display: flex;
-    justify-content: center;
+    align-items: center;
 
-    &.active-nav {
-      --color: var(--color-primary);
-      font-weight: var(--fw-bold);
-      &::after {
-          content: '';
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          height: 3px;
-          background: var(--color-primary);
-          border-radius: 3px 3px 0 0;
+    .main-content.header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-direction: row;
+      padding-left: var(--container-padding-desktop);
+      padding-right: var(--container-padding-desktop);
+
+      @media (max-width: 767px) {
+        padding-left: var(--container-padding-mobile);
+        padding-right: var(--container-padding-mobile);
       }
     }
-}
 
-// --- CONTENEDOR DE CONTENIDO ---
-ion-content {
-  flex: 1;
-}
+    .logo-box {
+      display: flex;
+      align-items: center;
+      gap: var(--space-s);
 
-.main-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
-}
+      .main-logo-text {
+        font-size: var(--fs-20);
+        font-weight: var(--fw-bold);
+        color: var(--color-primary);
+      }
 
-.page-content {
-  flex: 1;
-  padding-top: var(--space-l);
-  padding-bottom: var(--space-xl);
-}
+      .logo-ball-blue {
+        width: 28px;
+        height: 28px;
+        background: rgba(var(--ion-color-primary-rgb), 0.05);
+        border-radius: var(--border-radius-circle);
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
-// --- FOOTER GLOBAL ---
-ion-footer {
-  background: #FFFFFF;
-  border-top: 1px solid var(--color-neutral-2);
-  --background: #FFFFFF;
-  --border-width: 0;
-  box-shadow: 0 -4px 12px rgba(0,0,0,0.02);
-}
+        ion-icon {
+          font-size: var(--fs-26);
+          color: var(--color-primary);
+        }
+      }
 
-.auth-global-footer {
-  width: 100%;
-  height: 50px; // Un poco más fino para que sea sutil
-  background: var(--color-footer);
-  display: flex;
-  align-items: center;
-  
-  .container {
-    width: 100%;
+      .burger-icon {
+        font-size: var(--fs-28);
+        color: var(--color-primary);
+      }
+    }
+
+    .header-center-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+
+      .central-ball-wrapper {
+        width: 30px;
+        height: 30px;
+        background: rgba(var(--ion-color-primary-rgb), 0.05);
+        border-radius: var(--border-radius-circle);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        ion-icon {
+          font-size: var(--fs-26);
+          color: var(--color-primary);
+        }
+      }
+
+      .central-text-wrapper {
+        font-weight: var(--fw-semibold);
+        font-size: var(--fs-12);
+        color: var(--color-primary);
+        margin-left: 4px;
+      }
+    }
+
+    .auth-actions {
+      display: flex;
+      gap: var(--space-s);
+
+      @media (min-width: 768px) {
+        gap: var(--space-base);
+      }
+
+      .auth-btn {
+        display: flex;
+        align-items: center;
+        gap: var(--space-xs);
+        text-decoration: none;
+        color: var(--color-primary);
+        font-weight: var(--fw-medium);
+        font-size: var(--fs-14);
+        transition: opacity var(--transition-fast);
+
+        &:hover {
+          opacity: 0.8;
+        }
+
+        ion-icon {
+          font-size: var(--fs-28);
+        }
+      }
+    }
   }
 
-  p { color: var(--color-neutral-5); margin: 0; }
-  a { 
-    color: var(--color-neutral-5); 
-    text-decoration: none;
-    &:hover { color: var(--color-primary); }
+
+
+  // FILA 2: Navegación Central (Desktop)
+  .nav-header-row {
+    display: none;
+
+    @media (min-width: 768px) {
+      display: flex;
+      height: var(--nav-height);
+      align-items: center;
+
+      .nav-links-centered {
+        list-style: none;
+        padding: 0;
+        margin: 0 auto;
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: 1fr;
+        justify-content: center;
+        width: fit-content;
+        gap: 0;
+
+        li {
+          font-size: var(--fs-14);
+          font-weight: var(--fw-medium);
+          color: var(--color-neutral-6);
+          cursor: pointer;
+          position: relative;
+          padding: var(--space-12) var(--space-m);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: var(--space-xs);
+          transition: color var(--transition-fast);
+          text-align: center;
+          white-space: nowrap;
+
+          .nav-icon-mini {
+            font-size: var(--fs-16);
+          }
+
+          &:hover {
+            color: var(--color-primary);
+          }
+
+          &.active {
+            color: var(--color-primary);
+            font-weight: var(--fw-bold);
+
+            &::after {
+              content: '';
+              position: absolute;
+              bottom: 0;
+              left: 0;
+              width: 100%;
+              height: 3px;
+              background: var(--color-primary);
+              border-radius: 4px 4px 0 0;
+            }
+          }
+
+          &.nav-item-ai.active {
+            color: var(--color-primary) !important;
+            text-shadow: 0 0 15px rgba(var(--ion-color-primary-rgb), 0.4);
+
+            ion-icon {
+              color: var(--color-primary) !important;
+              font-size: var(--fs-18) !important;
+              animation: ai-pulse-blue 2s infinite ease-in-out;
+            }
+
+            &::after {
+              background: var(--color-primary) !important;
+              box-shadow: 0 0 12px rgba(var(--ion-color-primary-rgb), 0.6);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// MAIN CONTENT
+.main-main-bg {
+  --background: var(--bg-main-layout);
+  --overflow: auto;
+  flex: 1;
+  height: 100%;
+
+  &::part(scroll) {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+  }
+
+  .main-content.content {
+    flex: 1 0 auto;
+    padding: var(--space-m) var(--container-padding-desktop) var(--container-padding-desktop);
+    overflow: clip;
+    animation: slide-in-right 0.3s ease-out;
+
+    >* {
+      display: block;
+      width: 100%;
+    }
+
+    @media (max-width: 767px) {
+      padding: 0 var(--container-padding-mobile) var(--tab-bar-height) var(--container-padding-mobile);
+    }
+  }
+}
+
+// FOOTER GRIS SLIM
+.main-footer-gray {
+  flex: 0 0 auto;
+  display: block;
+  position: relative;
+  width: 100%;
+  background: var(--color-footer) !important;
+  border-top: 1px solid var(--color-neutral-2);
+  z-index: 100;
+
+  .main-content.footer {
+    padding: 0 var(--container-padding-desktop);
+
+    @media (max-width: 767px) {
+      padding-bottom: var(--tab-bar-height);
+    }
+  }
+}
+
+.footer-slim-content {
+  height: var(--header-height);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .footer-socials {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+
+    .social-icon {
+      color: var(--color-neutral-6);
+      font-size: var(--fs-22);
+      transition: color var(--transition-fast);
+      display: flex;
+      align-items: center;
+
+      &:hover,
+      &:active {
+        color: var(--color-neutral-7);
+      }
+
+      &:active {
+        transform: scale(0.9);
+      }
+
+      ion-icon {
+        color: inherit !important;
+      }
+    }
   }
 }
 
 // --- TAB BAR (Móvil) ---
+ion-footer.main-app-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: transparent !important;
+  z-index: 100000 !important;
+  contain: none !important;
+  overflow: visible !important;
+}
+
 .tab-bar-clean {
-  height: 65px;
-  --background: #FFFFFF;
-  --border: 0;
-  border: 0 !important;
-  
+  height: var(--tab-bar-height);
+  background: var(--color-neutral-0);
+  --background: var(--color-neutral-0);
+  border-top: 1px solid var(--color-neutral-2) !important;
+  box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.05);
+  padding: 0 var(--space-s);
+  overflow: visible !important;
+  contain: none !important;
+
+  &::part(container) {
+    overflow: visible !important;
+    contain: none !important;
+  }
+
   ion-tab-button {
-    --color: var(--color-neutral-5);
+    --color: var(--color-neutral-7);
     --color-selected: var(--color-primary);
-    
-    &.active-tab {
-      color: var(--color-primary) !important;
+    overflow: visible !important;
+    contain: none !important;
+
+    &::part(native) {
+      overflow: visible !important;
+      contain: none !important;
+    }
+
+    ion-icon {
+      font-size: var(--fs-18);
+      padding: var(--space-s);
+      border-radius: var(--border-radius-circle);
+    }
+
+    ion-label {
+      font-size: var(--fs-12);
+    }
+
+    &.tab-selected {
+      ion-icon {
+        background: var(--color-tab-active-bubble);
+        color: var(--color-primary);
+        transform: translateY(-1.5px) scale(1.1);
+        animation: pulse-active 2s infinite ease-in-out;
+      }
+
+      ion-label {
+        color: var(--color-primary);
+        font-weight: var(--fw-bold);
+      }
+    }
+
+    &:nth-child(3) {
+      overflow: visible !important;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      --background: transparent !important;
+      --background-focused: transparent !important;
+      --ripple-color: transparent !important;
+      contain: none !important;
+      position: relative;
+
+      ion-icon {
+        position: absolute;
+        top: -18px;
+        left: 50%;
+        transform: translateX(-50%) scale(1.25);
+        font-size: var(--fs-28);
+        padding: 12px;
+        color: var(--color-primary);
+        background: var(--color-neutral-0);
+        border-radius: var(--border-radius-circle);
+        border: 1px solid var(--color-tab-active-bubble);
+        transition: all var(--transition-fast);
+        box-shadow: 0 4px 16px rgba(var(--ion-color-primary-rgb), 0.2);
+        z-index: 101;
+        animation: pulse-active-absolute-light 2s infinite ease-in-out;
+      }
+
+      ion-label {
+        font-size: var(--fs-12);
+        font-weight: var(--fw-bold);
+        color: var(--color-neutral-7);
+        z-index: 101;
+        margin-bottom: 13px;
+      }
+
+      &.tab-selected {
+        ion-icon {
+          background: var(--color-primary);
+          color: var(--color-neutral-0);
+          border: 1px solid var(--color-primary);
+          box-shadow: 0 4px 16px rgba(var(--ion-color-primary-rgb), 0.2);
+          animation: pulse-active-absolute 1.5s infinite ease-in-out;
+        }
+
+        ion-label {
+          color: var(--color-primary);
+        }
+      }
     }
   }
 }
 
-// --- UTILIDADES ---
-.hide-on-desktop { @media (min-width: 1024px) { display: none !important; } }
-.hide-on-mobile { @media (max-width: 1023px) { display: none !important; } }
+// --- ANIMACIONES ---
+@keyframes pulse-active {
+  0% {
+    opacity: 1;
+    transform: translateY(-1.5px) scale(1.1);
+  }
 
-// Forzar desaparición del menú en escritorio para evitar que se quede abierto al redimensionar
-@media (min-width: 1024px) {
-    ion-menu {
-        display: none !important;
+  50% {
+    opacity: 0.7;
+    transform: translateY(-1.5px) scale(1.05);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(-1.5px) scale(1.1);
+  }
+}
+
+@keyframes pulse-active-absolute {
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--ion-color-primary-rgb), 0.4);
+    transform: translateX(-50%) scale(1.1);
+  }
+
+  70% {
+    box-shadow: 0 0 0 12px rgba(var(--ion-color-primary-rgb), 0);
+    transform: translateX(-50%) scale(1.15);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--ion-color-primary-rgb), 0);
+    transform: translateX(-50%) scale(1.1);
+  }
+}
+
+@keyframes pulse-active-absolute-light {
+  0% {
+    box-shadow: 0 0 0 0 var(--color-tab-active-bubble);
+    transform: translateX(-50%) scale(1.25);
+  }
+
+  50% {
+    box-shadow: 0 0 0 12px rgba(var(--ion-color-primary-rgb), 0);
+    transform: translateX(-50%) scale(1.27);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 var(--color-tab-active-bubble);
+    transform: translateX(-50%) scale(1.25);
+  }
+}
+
+// --- MENU MÓVIL REFINADO ---
+.mobile-only-menu {
+  --width: 300px;
+
+  &::part(backdrop) {
+    background: rgb(101 98 145 / 79%);
+    opacity: 1;
+  }
+
+  ion-content {
+    --height: 100%;
+    height: 100%;
+
+    &::part(scroll) {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
     }
+  }
+
+  .menu-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 100%;
+    background: var(--color-neutral-0);
+    padding-top: var(--space-s);
+  }
+
+  .menu-header {
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--space-base);
+    border-bottom: 1px solid var(--color-neutral-2);
+    background: var(--color-neutral-0);
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      .logo-text {
+        font-size: var(--fs-18);
+        color: var(--color-primary);
+        font-weight: var(--fw-bold);
+      }
+    }
+
+    .close-menu-btn {
+      --color: var(--color-neutral-7);
+    }
+  }
+
+  .menu-options-container {
+    margin-top: auto;
+    padding: var(--space-s) var(--space-base);
+    background: var(--color-neutral-0);
+  }
+
+  .menu-items-list {
+    display: flex;
+    flex-direction: column;
+    color: var(--color-primary);
+    width: 100%;
+  }
+
+  .nav-item {
+    --background: transparent;
+    --padding-start: var(--space-s);
+    --inner-padding-end: var(--space-s);
+    --min-height: 48px;
+    border-radius: var(--border-radius-medium);
+    transition: all var(--transition-fast);
+
+    &:hover {
+      --background-focused: transparent;
+    }
+
+    &.profile-item:hover {
+      --background: var(--blue-primary-010);
+    }
+
+    &.logout-item:hover {
+      --background: var(--color-error-010);
+    }
+
+    ion-icon[slot="start"] {
+      font-size: var(--fs-20);
+      color: var(--color-primary);
+      margin-right: var(--space-s);
+    }
+
+    ion-label {
+      font-size: var(--fs-14);
+      font-weight: var(--fw-medium);
+      color: var(--color-primary);
+    }
+
+    &.logout-item {
+
+      ion-icon[slot="start"],
+      ion-label {
+        color: var(--color-error);
+      }
+    }
+  }
+
+  .menu-divider {
+    height: 1px;
+    background: var(--color-neutral-2);
+    margin: var(--space-s) 0;
+    opacity: 0.6;
+  }
+}
+
+// --- UTILIDADES DE COMPATIBILIDAD (PARA EL HTML ACTUAL) ---
+.display-flex {
+  display: flex !important;
+}
+
+.fl-align-center {
+  align-items: center !important;
+}
+
+.fl-justify-between {
+  justify-content: space-between !important;
+}
+
+.padding-x-base {
+  padding: 0 var(--space-base) !important;
+}
+
+.clickable {
+  cursor: pointer !important;
+}
+
+.gap-s {
+  gap: var(--space-s) !important;
+}
+
+.logo-circle-wrapper {
+  width: 28px;
+  height: 28px;
+  background: var(--blue-primary-010);
+  border-radius: var(--border-radius-circle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  ion-icon {
+    font-size: var(--fs-20);
+    color: var(--color-primary);
+  }
 }

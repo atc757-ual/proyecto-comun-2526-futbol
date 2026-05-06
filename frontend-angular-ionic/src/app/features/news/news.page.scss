@@ -75,21 +75,21 @@ ion-card.main-article {
     margin-bottom: var(--space-m);
 
     @media (max-width: 767px) {
-      font-size: var(--fs-28);
+      font-size: var(--fs-20);
     }
   }
 
   .article-excerpt {
-    font-size: var(--fs-18);
+    font-size: var(--fs-16);
     color: var(--color-neutral-6);
     font-weight: var(--fw-medium);
     margin-bottom: var(--space-l);
     border-left: 4px solid var(--color-primary);
-    padding-left: var(--space-m);
+    padding-left: var(--space-base);
   }
 
   .article-full-text {
-    font-size: var(--fs-16);
+    font-size: var(--fs-14);
     color: var(--color-neutral-8);
     white-space: pre-line;
   }

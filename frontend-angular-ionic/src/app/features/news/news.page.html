@@ -4,8 +4,8 @@
   <!-- CABECERA -->
   <div class="news-header display-flex fl-justify-between fl-align-center mb-base">
     <div>
-      <h1 class="f-bold text-neutral-8 fs-28 fsm-18 m-none">Central de Noticias</h1>
-      <p class="text-neutral-7 fs-16 fsm-14">Toda la actualidad del fútbol a tu alcance.</p>
+      <h1 class="f-bold text-neutral-8 fs-28 fs-sm-18 m-none">Central de Noticias</h1>
+      <p class="text-neutral-7 fs-16 fs-sm-14">Toda la actualidad del fútbol a tu alcance.</p>
     </div>
   </div>
   <div class="row">
@@ -15,7 +15,7 @@
         <!-- 1. Imagen -->
         <div class="article-image-container">
           <img [src]="selectedNews.image" [alt]="selectedNews.title">
-          <div class="article-badge">#Destacado</div>
+          <div class="article-badge">Destacado</div>
         </div>
 
         <ion-card-content class="p-base ">
@@ -28,7 +28,7 @@
           <div class="article-content mt-m">
             <h1 class="article-title">{{ selectedNews.title }}</h1>
             <div class="article-full-text">
-              <p class="article-excerpt">{{ selectedNews.excerpt }}</p>
+              <p class="article-excerpt ">{{ selectedNews.excerpt }}</p>
               {{ selectedNews.content }}
             </div>
 

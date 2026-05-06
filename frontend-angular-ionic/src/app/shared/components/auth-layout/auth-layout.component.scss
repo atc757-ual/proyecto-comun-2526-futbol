@@ -62,9 +62,6 @@
   .dynamic-content-area {
     width: 100%;
     flex: 1;
-    /* ESTO EMPUJA TODO LO QUE VIENE DESPUÉS (FOOTER) HACIA ABAJO */
-    min-height: 600px;
-    /* Evita que el contenedor colapse y salte durante la navegación */
 
     >* {
       display: block;

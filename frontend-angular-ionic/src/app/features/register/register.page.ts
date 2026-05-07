@@ -137,7 +137,7 @@ export class RegisterPage implements OnInit {
 
     this.isLoading = true;
     try {
-      await this.authService.register(this.userEmail, this.userPass);
+      await this.authService.register(this.userEmail, this.userPass, this.userName);
       this.showToast('¡Registro completado con éxito!', 'success');
       this.modal.present();
     } catch (error: any) {

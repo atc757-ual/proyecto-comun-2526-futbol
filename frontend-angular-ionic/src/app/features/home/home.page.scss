@@ -45,7 +45,7 @@
       right: var(--space-base);
     }
 
-    @media (max-width: 1023px) {
+    @media (max-width: 767px) {
       display: none !important;
     }
   }
@@ -63,7 +63,7 @@
 
   height: 250px;
 
-  @media (min-width: 1024px) {
+  @media (min-width: 768px) {
     height: 300px;
   }
 
@@ -127,7 +127,6 @@
   position: relative;
   z-index: 2;
   padding: var(--space-m) 84px;
-  ;
   color: var(--color-white);
   width: 100%;
   height: 100%;

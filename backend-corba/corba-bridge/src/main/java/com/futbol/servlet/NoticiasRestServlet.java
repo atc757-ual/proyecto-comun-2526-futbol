@@ -69,7 +69,7 @@ public class NoticiasRestServlet extends HttpServlet {
         }
     }
 
-    // POST /api/noticias -> Crea una noticia (enviando XML en el body)
+    // POST /api/noticias -> Crea una noticia (recibiendo JSON desde el Frontend)
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -79,36 +79,37 @@ public class NoticiasRestServlet extends HttpServlet {
         response.setContentType("application/json;charset=UTF-8");
         
         try {
-            // Leer el XML del body
-            StringBuilder xmlBuilder = new StringBuilder();
-            String line;
-            BufferedReader reader = request.getReader();
-            while ((line = reader.readLine()) != null) {
-                xmlBuilder.append(line);
-            }
-            String xmlData = xmlBuilder.toString();
+            // 1. Recibir JSON desde el Frontend y mapear a objeto CORBA NewsItem
+            NewsItem noticiaRecibida = mapper.readValue(request.getReader(), NewsItem.class);
 
-            if (xmlData.trim().isEmpty()) {
-                enviarRespuesta(response, HttpServletResponse.SC_BAD_REQUEST, false, "El body no puede estar vacío", null);
+            if (noticiaRecibida == null) {
+                enviarRespuesta(response, HttpServletResponse.SC_BAD_REQUEST, false, "El body JSON no puede estar vacío", null);
                 return;
             }
 
-            // Pipeline de validación XML
+            // 2. Convertir a XML para pasar el Pipeline de validación (Requisito de sintaxis/semántica)
+            String xmlData = XMLCoder.toXML(noticiaRecibida);
             String xsdPath = getXsdPath();
+            
+            // 3. Validar sintaxis y semántica contra el XSD
             XMLValidator.validar(xmlData, xsdPath);
-            org.w3c.dom.Document doc = XMLParser.parse(xmlData);
-            NewsItem nuevoItem = XMLDecoder.decode(xmlData);
+            
+            // 4. Decodificar de nuevo desde el XML validado (Garantiza integridad total)
+            NewsItem itemParaCorba = XMLDecoder.decode(xmlData);
 
-            // Enviar a CORBA
+            // 5. Enviar al servidor CORBA central
             NewsService newsService = getCorbaService();
-            newsService.addNews(nuevoItem);
+            newsService.addNews(itemParaCorba);
 
-            enviarRespuesta(response, HttpServletResponse.SC_CREATED, true, "Noticia creada con éxito en CORBA", nuevoItem);
+            enviarRespuesta(response, HttpServletResponse.SC_CREATED, true, 
+                "Noticia procesada (JSON -> XML -> XSD VALID -> CORBA) con éxito", itemParaCorba);
 
         } catch (org.xml.sax.SAXException vex) {
-            enviarRespuesta(response, HttpServletResponse.SC_BAD_REQUEST, false, "XML Inválido según el esquema (XSD): " + vex.getMessage(), null);
+            enviarRespuesta(response, HttpServletResponse.SC_BAD_REQUEST, false, 
+                "Error: El JSON enviado genera un XML inválido según el esquema (XSD): " + vex.getMessage(), null);
         } catch (Exception e) {
-            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, "Error interno: " + e.getMessage(), null);
+            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, 
+                "Error interno en el bridge: " + e.getMessage(), null);
         }
     }
 

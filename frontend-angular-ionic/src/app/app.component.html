@@ -1,3 +1,14 @@
 <ion-app>
   <ion-router-outlet></ion-router-outlet>
+
+  <!-- Splash Overlay: encima del router, se desvanece al terminar -->
+  <div class="splash-overlay" [class.hidden]="!showSplash" *ngIf="showSplash">
+    <div class="splash-center">
+      <div class="splash-logo-circle">
+        <ion-icon name="football-outline"></ion-icon>
+      </div>
+      <h1 class="splash-title">Football App</h1>
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
+    </div>
+  </div>
 </ion-app>

@@ -3,10 +3,13 @@
 
   <!-- CABECERA -->
   <div class="news-header display-flex fl-justify-between fl-align-center mb-base">
-    <div>
-      <h1 class="f-bold text-neutral-8 fs-28 fs-sm-18 m-none">Central de Noticias</h1>
-      <p class="text-neutral-7 fs-16 fs-sm-14">Toda la actualidad del fútbol a tu alcance.</p>
-    </div>
+
+    <!--<div *ngIf="isAdmin">
+      <ion-button [routerLink]="['/add-news']" shape="round" color="primary">
+        <ion-icon name="add-outline" slot="start"></ion-icon>
+        Redactar Noticia
+      </ion-button>
+    </div>-->
   </div>
   <div class="row">
     <!-- COLUMNA 8: DETALLE (Primero en HTML -> Izquierda en Desktop) -->
@@ -14,8 +17,8 @@
       <ion-card class="main-article animate-fade-in m-0 shadow-none" *ngIf="selectedNews">
         <!-- 1. Imagen -->
         <div class="article-image-container">
-          <img [src]="selectedNews.image" [alt]="selectedNews.title">
-          <div class="article-badge">Destacado</div>
+          <img [src]="selectedNews.imageUrl" [alt]="selectedNews.title">
+          <div class="article-badge">{{ selectedNews.category }}</div>
         </div>
 
         <ion-card-content class="p-base ">
@@ -28,7 +31,9 @@
           <div class="article-content mt-m">
             <h1 class="article-title">{{ selectedNews.title }}</h1>
             <div class="article-full-text">
-              <p class="article-excerpt ">{{ selectedNews.excerpt }}</p>
+              <p class="article-excerpt f-bold text-neutral-8 mb-m" *ngIf="selectedNews.summary">
+                {{ selectedNews.summary }}
+              </p>
               {{ selectedNews.content }}
             </div>
 
@@ -36,26 +41,51 @@
             <div class="article-footer mt-l pt-m d-flex ai-center gap-s text-neutral-5 f-bold fs-12 border-top">
               <span class="article-author text-primary">{{ selectedNews.author }}</span>
               <span class="article-dot">•</span>
-              <span class="article-date">Publicado {{ selectedNews.date }}</span>
+              <span class="article-date">Publicado {{ selectedNews.date | date:'short' }}</span>
             </div>
           </div>
         </ion-card-content>
       </ion-card>
+
+      <div *ngIf="!selectedNews && newsList.length > 0" class="padding-l text-center">
+        <p class="text-neutral-6">Selecciona una noticia para leerla</p>
+      </div>
+
+      <!-- Cargando -->
+      <div *ngIf="isLoading" class="padding-l text-center">
+        <ion-spinner name="crescent" color="primary"></ion-spinner>
+        <p class="text-neutral-6 margin-top-m">Conectando con el servidor CORBA...</p>
+      </div>
+
+      <!-- No hay noticias -->
+      <div *ngIf="!isLoading && newsList.length === 0" class="padding-l text-center animate-fade-in">
+        <div class="mb-m">
+          <ion-icon name="newspaper-outline" style="font-size: 64px; color: var(--ion-color-medium);"></ion-icon>
+        </div>
+        <h2 class="f-bold text-neutral-8">No hay noticias todavía</h2>
+        <p class="text-neutral-6">El servidor CORBA está listo pero no tiene artículos publicados.</p>
+        <div *ngIf="isAdmin" class="mt-l">
+          <ion-button [routerLink]="['/add-news']" fill="clear">
+            <ion-icon name="add-outline" slot="start"></ion-icon>
+            Publicar la primera noticia
+          </ion-button>
+        </div>
+      </div>
     </div>
 
     <!-- COLUMNA 4: LISTADO (Después en HTML -> Derecha en Desktop) -->
     <div class="col-4 col-sm-12 pl-base p-sm-0">
-      <div class="f-bold mb-base fs-20">Noticias recientes</div>
+      <div *ngIf="!isLoading && newsList.length > 0" class="f-bold mb-base fs-20">Noticias recientes</div>
       <div class="side-news-list">
         <ion-card class="side-news-item clickable m-0 shadow-none" *ngFor="let news of newsList"
           [class.active]="news.id === selectedNews?.id" (click)="selectNews(news)">
           <div class="side-news-thumb">
-            <img [src]="news.image" [alt]="news.title">
+            <img [src]="news.imageUrl" [alt]="news.title">
           </div>
           <div class="side-news-info">
             <div class="side-news-title">{{ news.title }}</div>
-            <div class="side-news-excerpt">{{ news.excerpt }}</div>
-            <div class="side-news-date">Publicado {{ news.date }}</div>
+            <div class="side-news-excerpt">{{ news.summary || news.content | slice:0:80 }}...</div>
+            <div class="side-news-date">{{ news.date | date:'shortDate' }}</div>
           </div>
         </ion-card>
       </div>

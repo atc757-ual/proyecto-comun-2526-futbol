@@ -15,9 +15,11 @@ public class XMLCoder {
         xml.append("    <date>").append(noticia.date).append("</date>\n");
         xml.append("    <title>").append(noticia.title).append("</title>\n");
         xml.append("    <author>").append(noticia.author).append("</author>\n");
+        xml.append("    <summary>").append(noticia.summary).append("</summary>\n");
         xml.append("    <content>").append(noticia.content).append("</content>\n");
         xml.append("    <imageUrl>").append(noticia.imageUrl).append("</imageUrl>\n");
         xml.append("    <category>").append(noticia.category).append("</category>\n");
+        xml.append("    <isActive>").append(noticia.isActive).append("</isActive>\n");
         
         xml.append("    <tags>\n");
         if (noticia.tags != null) {

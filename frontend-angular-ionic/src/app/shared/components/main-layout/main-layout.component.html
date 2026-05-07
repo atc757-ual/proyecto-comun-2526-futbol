@@ -1,5 +1,5 @@
-<ion-menu contentId="main-content" class="mobile-only-menu" side="start" mode="ios">
-  <ion-content class="ion-no-padding">
+<ion-menu *ngIf="!isMobileApp" contentId="main-content" class="mobile-only-menu" side="start" mode="ios">
+  <ion-content class="ion-no-padding" scroll-y="false">
     <div class="menu-wrapper">
       <div class="menu-header d-flex align-center justify-between px-base">
         <div class="logo-container">
@@ -16,18 +16,38 @@
       </div>
 
       <div class="menu-options-container">
-        <div class="menu-items-list">
-          <ion-item lines="none" class="nav-item profile-item pointer" routerLink="/profile">
-            <ion-icon slot="start" name="person-circle-outline"></ion-icon>
-            <ion-label>Mi Perfil</ion-label>
-          </ion-item>
+        <!-- SECCIÓN SUPERIOR: NAVEGACIÓN -->
+        <div class="menu-items-top">
+          <ion-menu-toggle auto-hide="false" *ngFor="let p of appPages">
+            <ion-item lines="none" class="nav-item pointer" [routerLink]="p.url" routerLinkActive="active-item"
+              [routerLinkActiveOptions]="{exact: true}">
+              <ion-icon slot="start" [name]="p.icon"></ion-icon>
+              <ion-label>{{ p.title }}</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+        </div>
 
+        <!-- ESPACIADOR (Empuja lo de abajo hacia el final) -->
+        <div class="menu-spacer"></div>
+
+        <!-- SECCIÓN INFERIOR: CUENTA -->
+        <div class="menu-items-bottom">
           <div class="menu-divider"></div>
 
-          <ion-item lines="none" class="nav-item logout-item pointer" (click)="logout()">
-            <ion-icon slot="start" name="log-out-outline"></ion-icon>
-            <ion-label>Cerrar Sesión</ion-label>
-          </ion-item>
+          <ion-menu-toggle auto-hide="false">
+            <ion-item lines="none" class="nav-item profile-item pointer" routerLink="/profile"
+              routerLinkActive="active-item">
+              <ion-icon slot="start" name="person-circle-outline"></ion-icon>
+              <ion-label>Mi Perfil</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+
+          <ion-menu-toggle auto-hide="false">
+            <ion-item lines="none" class="nav-item logout-item pointer" (click)="logout()">
+              <ion-icon slot="start" name="log-out-outline"></ion-icon>
+              <ion-label>Cerrar Sesión</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
         </div>
       </div>
     </div>
@@ -36,28 +56,27 @@
 
 <div class="main-wrapper" id="main-content">
   <!-- HEADER PREMIUM (DOS FILAS) -->
-  <header class="main-header">
+  <header class="main-header" [class.no-border]="showHero">
     <!-- FILA 1: Top Branding & Actions -->
     <div class="top-header-row">
       <div class="main-content header">
         <div class="header-left">
-          <div class="logo-box clickable" routerLink="/dashboard">
-            <!-- Activador del Menú -->
-            <ion-menu-toggle>
-              <ion-icon name="menu-outline" class="burger-icon hide-on-desktop"></ion-icon>
-            </ion-menu-toggle>
-
-            <div class="hide-on-phone d-flex gap-s fl-align-center">
-              <span class="main-logo-text">Football App</span>
+          <!-- Botón Menú (Hamburguesa) - FUERA del logo para que no navegue solo -->
+          <ion-menu-toggle *ngIf="isWebMobile">
+            <ion-icon name="menu-outline" class="burger-icon hide-on-desktop clickable mr-s"></ion-icon>
+          </ion-menu-toggle>
+          <div class="logo-box clickable" routerLink="/home">
+            <div class="d-flex gap-s fl-align-center">
               <span class="logo-ball-blue">
                 <ion-icon name="football"></ion-icon>
               </span>
+              <span class="main-logo-text">Football App</span>
             </div>
           </div>
         </div>
 
         <!-- Balón Azul Centrado -->
-        <div class="header-center-icon hide-on-desktop">
+        <div *ngIf="isWebMobile" class="header-center-icon">
           <div class="central-ball-wrapper">
             <ion-icon name="football"></ion-icon>
           </div>
@@ -65,7 +84,7 @@
         </div>
 
         <div class="header-right">
-          <div class="auth-actions">
+          <div *ngIf="!isWebMobile" class="auth-actions">
             <a class="auth-btn clickable" routerLink="/profile">
               <ion-icon name="person-circle-outline"></ion-icon>
               <span class="hide-on-phone">Mi Perfil</span>
@@ -79,8 +98,8 @@
       </div>
     </div>
 
-    <!-- FILA 2: Navegación Central (Desktop) -->
-    <nav class="nav-header-row hide-on-phone">
+    <!-- FILA 2: Navegación Central (Solo en Desktop) -->
+    <nav *ngIf="isDesktop" class="nav-header-row">
       <div class="main-content content">
         <ul class="nav-links-centered">
           <li routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Inicio</li>
@@ -99,12 +118,21 @@
 
   <!-- MAIN CONTENT -->
   <ion-content class="main-main-bg" [scrollY]="true">
+
+    <!-- SECCIÓN HERO FULL WIDTH (Re-integrado en el Layout) -->
+    <section *ngIf="showHero" class="layout-hero-banner">
+      <div class="main-content">
+        <div class="hero-title">{{ heroTitle }}</div>
+        <div class="hero-subtitle" *ngIf="heroSubtitle">{{ heroSubtitle }}</div>
+      </div>
+    </section>
+
     <div class="main-content content">
       <router-outlet></router-outlet>
     </div>
 
-    <!-- DESKTOP FOOTER SLIM (80px) -->
-    <footer class="main-footer-gray hide-on-phone">
+    <!-- DESKTOP FOOTER (Se ve en Web, incluso móvil) -->
+    <footer *ngIf="!isMobileApp" class="main-footer-gray">
       <div class="main-content footer">
         <div class="footer-slim-content">
           <div class="footer-left">
@@ -112,7 +140,7 @@
           </div>
           <div class="footer-right">
             <div class="footer-socials">
-              <span class="fs-14 text-neutral-7">Sígueme en:</span>
+              <span class="fs-14 text-neutral-7 hide-on-phone">Sígueme en:</span>
               <a href="https://www.linkedin.com/in/alextaquilacamasca/" target="_blank" class="social-icon">
                 <ion-icon name="logo-linkedin"></ion-icon>
               </a>
@@ -126,8 +154,8 @@
     </footer>
   </ion-content>
 
-  <!-- MOBILE BOTTOM BAR -->
-  <ion-footer class="hide-on-desktop main-app-footer ion-no-border">
+  <!-- MOBILE BOTTOM BAR (Solo se ve en App Móvil) -->
+  <ion-footer *ngIf="isMobileApp" class="hide-on-desktop main-app-footer ion-no-border">
     <ion-tab-bar slot="bottom" class="tab-bar-clean">
 
       <ion-tab-button *ngFor="let p of appPages; let i = index" [tab]="p.title" [routerLink]="p.url"

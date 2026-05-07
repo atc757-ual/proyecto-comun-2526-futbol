@@ -1,12 +1,12 @@
-import { Routes, UrlSegment } from '@angular/router';
-
-
+import { Routes } from '@angular/router';
+import { MainLayoutComponent } from './shared/components/main-layout/main-layout.component';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
     path: '',
     redirectTo: 'home',
-    pathMatch: 'full',
+    pathMatch: 'full'
   },
   {
     path: 'login',
@@ -46,11 +46,20 @@ export const routes: Routes = [
   },
   {
     path: '',
-    loadComponent: () => import('./shared/components/main-layout/main-layout.component').then((m) => m.MainLayoutComponent),
+    component: MainLayoutComponent,
+    canActivate: [authGuard],
     children: [
       {
         path: 'home',
         loadComponent: () => import('./features/home/home.page').then((m) => m.HomePage),
+        data: {
+          heroTitle: '¡Hola, Alex!',
+          heroSubtitle: 'Bienvenido a tu aplicación de fútbol'
+        }
+      },
+      {
+        path: 'add-news',
+        loadComponent: () => import('./features/admin/add-news/add-news.page').then((m) => m.AddNewsPage),
       },
       {
         path: 'players',
@@ -63,14 +72,14 @@ export const routes: Routes = [
       {
         path: 'news',
         loadComponent: () => import('./features/news/news.page').then((m) => m.NewsPage),
+        data: {
+          heroTitle: 'Central de Noticias',
+          heroSubtitle: 'Toda la actualidad del fútbol a tu alcance'
+        }
       },
       {
         path: 'news/:id',
         loadComponent: () => import('./features/news/news.page').then((m) => m.NewsPage),
-      },
-      {
-        path: 'admin/news-management',
-        loadComponent: () => import('./features/admin/news-management/news-management.page').then((m) => m.NewsManagementPage),
       },
       {
         path: 'ai-team',

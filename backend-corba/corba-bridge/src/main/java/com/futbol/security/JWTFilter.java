@@ -3,28 +3,52 @@ package com.futbol.security;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
 /**
  * Filtro JWT para proteger las rutas /api/*.
  * Verifica el token del header "Authorization: Bearer <token>".
- * Usa HMAC-SHA256 (sin dependencias externas).
+ * Usa RSA (RS256) con llave pública.
  */
 public class JWTFilter implements Filter {
 
-    private String secret;
+    private PublicKey publicKey;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        this.secret = filterConfig.getInitParameter("secret");
-        if (this.secret == null || this.secret.isEmpty()) {
-            this.secret = "clave-por-defecto-cambiar-en-produccion";
+        String publicKeyPath = filterConfig.getInitParameter("publicKeyPath");
+        if (publicKeyPath == null || publicKeyPath.isEmpty()) {
+            publicKeyPath = "/app/public.key";
         }
-        System.out.println("[JWT] Filtro de seguridad inicializado");
+        
+        try {
+            System.out.println("[JWT-RS256] Cargando llave pública desde: " + publicKeyPath);
+            String keyContent = new String(Files.readAllBytes(Paths.get(publicKeyPath)), StandardCharsets.UTF_8);
+            
+            // Limpiar cabeceras del PEM
+            keyContent = keyContent
+                .replace("-----BEGIN PUBLIC KEY-----", "")
+                .replace("-----END PUBLIC KEY-----", "")
+                .replaceAll("\\s", "");
+            
+            byte[] keyBytes = Base64.getDecoder().decode(keyContent);
+            X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            this.publicKey = kf.generatePublic(spec);
+            
+            System.out.println("[JWT-RS256] Llave pública cargada correctamente");
+        } catch (Exception e) {
+            System.err.println("[JWT-RS256] ERROR crítico al cargar la llave pública: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -57,7 +81,7 @@ public class JWTFilter implements Filter {
         try {
             // Verificar el token JWT
             if (!verificarToken(token)) {
-                enviarError(httpResponse, HttpServletResponse.SC_UNAUTHORIZED, "NOK", "No autorizado: Token inválido");
+                enviarError(httpResponse, HttpServletResponse.SC_UNAUTHORIZED, "NOK", "No autorizado: Token o firma inválida");
                 return;
             }
 
@@ -65,7 +89,7 @@ public class JWTFilter implements Filter {
             String payload = extraerPayload(token);
             httpRequest.setAttribute("jwt_payload", payload);
 
-            System.out.println("[JWT] Token válido. Acceso permitido a: " + httpRequest.getRequestURI());
+            System.out.println("[JWT-RS256] Token válido. Acceso permitido a: " + httpRequest.getRequestURI());
 
             // Token válido: continuar con el servlet
             chain.doFilter(request, response);
@@ -77,47 +101,26 @@ public class JWTFilter implements Filter {
     }
 
     /**
-     * Verifica que la firma HMAC-SHA256 del token es correcta.
-     * Formato JWT: header.payload.signature (Base64URL cada parte)
+     * Verifica la firma RSA (SHA256withRSA) del token.
      */
     private boolean verificarToken(String token) throws Exception {
+        if (publicKey == null) return false;
+        
         String[] partes = token.split("\\.");
-        if (partes.length != 3) {
-            return false;
-        }
+        if (partes.length != 3) return false;
 
         String headerPayload = partes[0] + "." + partes[1];
-        String firmaRecibida = partes[2];
+        String firmaRecibidaStr = partes[2];
+        
+        // Decodificar la firma de Base64URL
+        byte[] firmaRecibida = Base64.getUrlDecoder().decode(firmaRecibidaStr);
 
-        // Recalcular la firma con nuestra clave secreta
-        Mac mac = Mac.getInstance("HmacSHA256");
-        SecretKeySpec keySpec = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-        mac.init(keySpec);
-        byte[] firmaCalculada = mac.doFinal(headerPayload.getBytes(StandardCharsets.UTF_8));
-
-        String firmaEsperada = Base64.getUrlEncoder().withoutPadding().encodeToString(firmaCalculada);
-
-        // Verificar expiración
-        String payload = extraerPayload(token);
-        if (payload.contains("\"exp\"")) {
-            try {
-                // Extraer exp del JSON de forma simple
-                int expIdx = payload.indexOf("\"exp\"");
-                int colonIdx = payload.indexOf(":", expIdx);
-                int endIdx = payload.indexOf(",", colonIdx);
-                if (endIdx == -1) endIdx = payload.indexOf("}", colonIdx);
-                long exp = Long.parseLong(payload.substring(colonIdx + 1, endIdx).trim());
-                long ahora = System.currentTimeMillis() / 1000;
-                if (ahora > exp) {
-                    System.out.println("[JWT] Token expirado");
-                    return false;
-                }
-            } catch (NumberFormatException e) {
-                // Si no podemos parsear exp, ignoramos la verificación de expiración
-            }
-        }
-
-        return firmaEsperada.equals(firmaRecibida);
+        // Verificar usando RSA
+        Signature sig = Signature.getInstance("SHA256withRSA");
+        sig.initVerify(publicKey);
+        sig.update(headerPayload.getBytes(StandardCharsets.UTF_8));
+        
+        return sig.verify(firmaRecibida);
     }
 
     /**
@@ -126,7 +129,6 @@ public class JWTFilter implements Filter {
     private String extraerPayload(String token) {
         String[] partes = token.split("\\.");
         if (partes.length < 2) return "{}";
-        // Añadir padding si es necesario
         String payload = partes[1];
         int padding = 4 - (payload.length() % 4);
         if (padding != 4) {
@@ -173,6 +175,6 @@ public class JWTFilter implements Filter {
 
     @Override
     public void destroy() {
-        System.out.println("[JWT] Filtro de seguridad destruido");
+        System.out.println("[JWT-RS256] Filtro de seguridad destruido");
     }
 }

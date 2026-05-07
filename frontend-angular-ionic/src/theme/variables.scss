@@ -155,11 +155,14 @@
     --container-max-width: 1440px;
     --container-padding-mobile: 1rem;
     --container-padding-desktop: 4rem;
-    --header-height: 64px;
-    --nav-height: 50px;
-    --footer-height: 64px;
-    --footer-desktop-height: 80px;
-    --tab-bar-height: 75px;
+    --header-height: 72px;
+    /* Web Header */
+    --header-mobile-height: 56px;
+    /* Mobile Header */
+    --footer-height: 48px;
+    /* Web Footer */
+    --tab-bar-height: 72px;
+    /* Mobile Bottom Bar (Optimized) */
 
     /* --- BORDER RADIUS --- */
     --border-radius-small: 0.375rem;

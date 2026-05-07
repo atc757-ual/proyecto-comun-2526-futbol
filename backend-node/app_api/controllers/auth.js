@@ -9,8 +9,9 @@ const { sendApiResult } = require('./apiResult');
  * Recibe el idToken de Ionic y devuelve el JWT del backend.
  */
 const loginFirebase = async (req, res) => {
+    console.log('>>> PETICIÓN RECIBIDA EN /auth/signin');
     const { idToken } = req.body;
-
+    console.log("token:" + idToken)
     if (!idToken) {
         return sendApiResult(res, 400, "Falta el idToken de Firebase");
     }
@@ -20,25 +21,46 @@ const loginFirebase = async (req, res) => {
         // (Si no hay Service Account configurado, esto fallará - para desarrollo podemos simularlo si lo deseas)
         let firebaseUser;
 
-        if (process.env.NODE_ENV === 'development' && !process.env.FIREBASE_SERVICE_ACCOUNT) {
-            console.log('--- MODO DESARROLLO SIN FIREBASE ADMIN ---');
-            // Simulación para que puedas probar el flujo sin el JSON de Google por ahora
-            firebaseUser = {
-                uid: 'simulated_uid_123',
-                email: 'admin@test.com',
-                name: 'Usuario Test Admin',
-                picture: ''
-            };
-        } else {
-            const decodedToken = await admin.auth().verifyIdToken(idToken);
-            firebaseUser = {
-                uid: decodedToken.uid,
-                email: decodedToken.email,
-                name: decodedToken.name || decodedToken.email.split('@')[0],
-                picture: decodedToken.picture || '',
-                isAdmin: decodedToken.admin === true // Leemos el Custom Claim de Firebase
-            };
+        let decodedToken;
+        try {
+            // Solo intentar validar si Firebase Admin está inicializado
+            if (admin.apps.length > 0) {
+                decodedToken = await admin.auth().verifyIdToken(idToken);
+                console.log("decode " + decodedToken)
+            } else {
+                throw new Error("Firebase Admin no inicializado");
+            }
+        } catch (error) {
+            console.log("decode error " + error)
+            // Si falla y estamos en desarrollo, usamos simulación
+            if (process.env.NODE_ENV === 'development') {
+                console.log('!!! SIMULACIÓN ACTIVA !!!');
+                console.log('EMAIL DEL ENV:', process.env.INITIAL_ADMIN_EMAIL);
+                decodedToken = {
+                    uid: 'simulated_uid_123',
+                    email: process.env.INITIAL_ADMIN_EMAIL,
+                    name: 'Admin Simulado'
+                };
+            } else {
+                throw error;
+            }
         }
+
+        console.log('--- DEBUG LOGIN ---');
+        console.log('Email detectado:', decodedToken.email);
+        console.log('Email Admin en .env:', process.env.INITIAL_ADMIN_EMAIL);
+
+        const isInitialAdmin = decodedToken.email === process.env.INITIAL_ADMIN_EMAIL;
+        console.log('¿Coinciden los emails?:', isInitialAdmin);
+
+        firebaseUser = {
+            uid: decodedToken.uid,
+            email: decodedToken.email,
+            name: decodedToken.name || decodedToken.email.split('@')[0],
+            isAdmin: decodedToken.admin === true || isInitialAdmin
+        };
+        console.log('Resultado isAdmin final:', firebaseUser.isAdmin);
+        console.log('-------------------');
 
         // 2. Sincronizar con MongoDB
         let user = await User.findOne({ firebaseUid: firebaseUser.uid });
@@ -52,14 +74,13 @@ const loginFirebase = async (req, res) => {
                 firebaseUid: firebaseUser.uid,
                 name: firebaseUser.name,
                 email: firebaseUser.email,
-                picture: firebaseUser.picture,
                 role: isAdmin ? 'admin' : 'user'
             });
             console.log(`Nuevo usuario creado: ${user.email} con rol ${user.role}`);
         } else {
-            // Usuario existente: Actualizar datos básicos por si cambiaron en Google
+            // Usuario existente: Actualizar datos básicos y ROL por si cambió
             user.name = firebaseUser.name;
-            user.picture = firebaseUser.picture;
+            user.role = firebaseUser.isAdmin ? 'admin' : 'user'; // <--- ACTUALIZAMOS EL ROL
             await user.save();
         }
 
@@ -71,8 +92,7 @@ const loginFirebase = async (req, res) => {
             user: {
                 name: user.name,
                 email: user.email,
-                role: user.role,
-                picture: user.picture
+                role: user.role
             }
         });
 

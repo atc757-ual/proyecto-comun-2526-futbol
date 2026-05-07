@@ -239,6 +239,7 @@ services:
       - FIREBASE_SERVICE_ACCOUNT=/app/firebase-credentials.json
     volumes:
       - ./firebase-credentials.json:/app/firebase-credentials.json
+      - ./public_key.pem:/app/public.key
     depends_on:
       - corba-naming
       - corba-server

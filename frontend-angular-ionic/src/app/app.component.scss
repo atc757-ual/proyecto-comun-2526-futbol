@@ -1,0 +1,66 @@
+.splash-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--color-neutral-0);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: splashFadeIn var(--transition-fast);
+}
+
+.splash-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-base);
+}
+
+.splash-logo-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: var(--border-radius-circle);
+  background: var(--blue-primary-010);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 1.2s ease-in-out infinite;
+
+  ion-icon {
+    font-size: var(--fs-96);
+    color: var(--color-primary);
+  }
+}
+
+.splash-title {
+  font-size: var(--fs-24);
+  font-weight: var(--fw-bold);
+  font-family: var(--font-primary);
+  color: var(--color-primary);
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.08);
+    opacity: 0.55;
+  }
+}
+
+@keyframes splashFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}

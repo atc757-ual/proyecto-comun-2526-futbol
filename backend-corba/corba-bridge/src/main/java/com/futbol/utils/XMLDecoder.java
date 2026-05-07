@@ -30,9 +30,12 @@ public class XMLDecoder {
         noticia.date     = XMLParser.getText(doc, "date");
         noticia.title    = XMLParser.getText(doc, "title");
         noticia.author   = XMLParser.getText(doc, "author");
+        noticia.summary  = XMLParser.getText(doc, "summary");
         noticia.content  = XMLParser.getText(doc, "content");
         noticia.imageUrl = XMLParser.getText(doc, "imageUrl");
         noticia.category = XMLParser.getText(doc, "category");
+        String isActiveStr = XMLParser.getText(doc, "isActive");
+        noticia.isActive = isActiveStr != null && isActiveStr.equalsIgnoreCase("true");
 
         // 3. Extraer los tags (lista de elementos <tag>)
         NodeList tagNodes = doc.getElementsByTagName("tag");

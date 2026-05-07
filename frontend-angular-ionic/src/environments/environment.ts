@@ -4,6 +4,8 @@
 
 export const environment = {
   production: false,
+  nodeApiUrl: 'http://127.0.0.1:3000/api',
+  corbaApiUrl: 'http://127.0.0.1:8089/corba-bridge/api',
   firebaseConfig: {
     apiKey: "AIzaSyAC7hh8gwRLaqdfHCN04DSDBiv8nsLWx30",
     authDomain: "proyecto-final-8f184.firebaseapp.com",

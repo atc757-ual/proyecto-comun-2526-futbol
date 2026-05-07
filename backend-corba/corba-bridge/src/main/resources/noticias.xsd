@@ -8,9 +8,11 @@
                 <xsd:element name="date"     type="fecha_valid"/>
                 <xsd:element name="title"    type="titulo_valid"/>
                 <xsd:element name="author"   type="author_valid"/>
+                <xsd:element name="summary"  type="summary_valid"/>
                 <xsd:element name="content"  type="contenido_valid"/>
                 <xsd:element name="imageUrl" type="url_valid"/>
                 <xsd:element name="category" type="categoria_valid"/>
+                <xsd:element name="isActive" type="xsd:boolean"/>
                 <xsd:element name="tags"     type="tipoTags"/>
             </xsd:sequence>
         </xsd:complexType>
@@ -43,6 +45,13 @@
     <xsd:simpleType name="author_valid">
         <xsd:restriction base="xsd:string">
             <xsd:pattern value="(\S\s*){5,100}"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    
+    <!-- Summary: entre 10 y 500 caracteres -->
+    <xsd:simpleType name="summary_valid">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="(\S\s*){10,500}"/>
         </xsd:restriction>
     </xsd:simpleType>
 

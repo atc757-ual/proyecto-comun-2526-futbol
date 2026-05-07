@@ -7,10 +7,12 @@ module BufferApp {
         string title;     
         string author;
         string content;   
+        string summary;
         string imageUrl;
         string category;
         TagList tags;     
         string date;      
+        boolean isActive;
     };
 
     typedef sequence<NewsItem> NewsList;

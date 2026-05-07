@@ -8,7 +8,7 @@ const playersPublicList = async (req, res) => {
         // Usamos $sample para aleatoriedad y $project para limitar campos
         const players = await Player.aggregate([
             { $sample: { size: 10 } },
-            { $project: { _id: 0, name: 1, photo: 1 } }
+            { $project: { _id: 0, name: 1, image_url: 1 } }
         ]);
         sendApiResult(res, 200, "Vista pública aleatoria recuperada", players);
     } catch (err) {

@@ -71,6 +71,9 @@ jobs:
         run: |
           cd backend-node
           npm install --no-package-lock
+          # Generar clave RSA temporal para los tests (private_key.pem está en .gitignore)
+          openssl genrsa -out private_key.pem 2048
+          openssl rsa -in private_key.pem -pubout -out public_key.pem
           npm test
           
       - name: Log in to Registry

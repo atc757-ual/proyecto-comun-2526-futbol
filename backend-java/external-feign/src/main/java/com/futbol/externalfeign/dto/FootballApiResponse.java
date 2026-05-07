@@ -21,6 +21,7 @@ public class FootballApiResponse {
         private Integer age;
         private Birth birth;
         private String nationality;
+        private String photo;
     }
 
     @Data

@@ -54,7 +54,7 @@ public class ExternalController {
             return new ApiResult<>("200", "Búsqueda externa (Java) realizada con éxito", players);
 
         } catch (Exception e) {
-            return new ApiResult<>("500", "Error en servicio externo Java: " + e.getMessage(), null);
+            return new ApiResult<List<ExternalPlayerDTO>>("500", "Error en servicio externo Java: " + e.getMessage(), null);
         }
     }
 }

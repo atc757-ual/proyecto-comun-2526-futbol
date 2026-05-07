@@ -1,5 +1,7 @@
 export const environment = {
   production: true,
+  nodeApiUrl: '/node-api',
+  corbaApiUrl: '/corba-api',
   firebaseConfig: {
     apiKey: "AIzaSyAC7hh8gwRLaqdfHCN04DSDBiv8nsLWx30",
     authDomain: "proyecto-final-8f184.firebaseapp.com",

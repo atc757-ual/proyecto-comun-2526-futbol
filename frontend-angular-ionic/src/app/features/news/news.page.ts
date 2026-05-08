@@ -1,26 +1,29 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { IonicModule, LoadingController } from '@ionic/angular';
-import { RouterModule, ActivatedRoute } from '@angular/router';
+import { IonicModule, LoadingController, NavController } from '@ionic/angular';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { NewsService, NewsItem } from '../../core/services/news.service';
 import { AuthService } from '../../core/services/auth.service';
-
+import { PlatformService } from 'src/app/core/services/platform.service';
+import { LayoutService } from 'src/app/core/services/layout.service';
 import { addIcons } from 'ionicons';
-import { addOutline, newspaperOutline } from 'ionicons/icons';
+import { addCircleOutline, newspaperOutline, homeOutline, settingsOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-news',
   templateUrl: './news.page.html',
   styleUrls: ['./news.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterModule]
+  imports: [CommonModule, IonicModule, RouterModule]
 })
 export class NewsPage implements OnInit {
-  private authService = inject(AuthService);
   private newsService = inject(NewsService);
+  private authService = inject(AuthService); // Inyectado correctamente aquí
   private route = inject(ActivatedRoute);
   private loadingCtrl = inject(LoadingController);
+  public platformService = inject(PlatformService);
+  public layoutService = inject(LayoutService);
+  private navCtrl = inject(NavController);
 
   newsList: NewsItem[] = [];
   selectedNews: NewsItem | null = null;
@@ -28,51 +31,60 @@ export class NewsPage implements OnInit {
   isLoading = true;
 
   constructor() {
-    addIcons({ addOutline, newspaperOutline });
+    addIcons({ addCircleOutline, newspaperOutline, homeOutline, settingsOutline });
   }
 
   async ngOnInit() {
-    this.isAdmin = this.authService.isAdmin();
-    const loading = await this.loadingCtrl.create({
-      message: 'Cargando noticias desde CORBA...',
-      mode: 'ios'
+    // Configurar Layout
+    this.layoutService.setHeader({
+      title: 'Noticias de Fútbol',
+      subtitle: 'Mantente al día con la actualidad deportiva',
+      showHero: true,
+      isHome: false
     });
-    await loading.present();
 
-    this.newsService.getNews().subscribe({
+    this.layoutService.setBreadcrumbs([
+      { label: '', url: '/home', icon: 'home-outline' },
+      { label: 'Noticias' }
+    ]);
+
+    this.isAdmin = this.authService.isAdmin(); // Usamos la instancia inyectada
+    this.loadNews();
+  }
+
+  loadNews() {
+    this.isLoading = true;
+    
+    // Si es admin pide todo, si no pide el feed público (ya filtrado por el back)
+    const newsObservable = this.isAdmin ? this.newsService.getNews() : this.newsService.getFeed();
+
+    newsObservable.subscribe({
       next: (news) => {
-        // Si no es admin, filtrar solo las activas
-        if (!this.isAdmin) {
-          this.newsList = news.filter(n => n.isActive);
+        this.newsList = news;
+
+        const newsId = this.route.snapshot.paramMap.get('id');
+        if (newsId) {
+          this.selectedNews = this.newsList.find(n => n.id === newsId) || this.newsList[0];
         } else {
-          this.newsList = news;
+          this.selectedNews = this.newsList[0];
         }
-        
+
         this.isLoading = false;
-        
-        // Manejar selección inicial por ID de ruta
-        this.route.params.subscribe(params => {
-          const newsId = params['id'];
-          if (newsId) {
-            this.selectedNews = this.newsList.find(n => n.id === newsId) || this.newsList[0];
-          } else if (this.newsList.length > 0) {
-            this.selectedNews = this.newsList[0];
-          }
-        });
-        
-        loading.dismiss();
       },
       error: (err) => {
-        console.error('Error al cargar noticias:', err);
+        console.error('Error cargando noticias:', err);
         this.isLoading = false;
-        loading.dismiss();
       }
     });
   }
 
-  selectNews(news: any) {
+  selectNews(news: NewsItem) {
     this.selectedNews = news;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  goToDetail(id: string | undefined) {
+    if (id) {
+      this.navCtrl.navigateForward(['/news', id]);
+    }
+  }
 }

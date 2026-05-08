@@ -1,5 +1,5 @@
 <!-- CARRUSEL DE NOTICIAS (SWIPER) -->
-<div class="news-swiper-wrapper">
+<div class="news-swiper-wrapper mt-base mb-base">
   <swiper-container #swiperRef navigation-prev-el=".custom-prev" navigation-next-el=".custom-next" loop="true"
     pagination="true" pagination-clickable="true" observer="true" observe-parents="true" autoplay="true"
     autoplay-delay="3000" autoplay-disable-on-interaction="false" slides-per-view="1" space-between="0"
@@ -33,21 +33,21 @@
   </div>
 </div>
 
-<div class="row">
+<div class="row ">
   <!-- COLUMNA 8: DETALLE (Primero en HTML -> Izquierda en Desktop) -->
-  <div class="col-8 col-sm-12 pr-base p-sm-0">
+  <div class="col-8 col-sm-12 pr-base px-0-sm">
     <ion-card class="card-acceso">
       <ion-card-content>
-        <div class="card-acceso-item">
+        <div class="card-acceso-item" [routerLink]="['/add-news']">
           <ion-icon class="fs-28" name="newspaper-outline" color="primary"></ion-icon>
-          <ion-label class="f-regular text-neutral-8 fs-12">Gestionar Noticias</ion-label>
+          <ion-label class="f-regular text-neutral-8 fs-12">Crear Noticia</ion-label>
         </div>
       </ion-card-content>
     </ion-card>
   </div>
 
   <!-- COLUMNA 4: LISTADO (Después en HTML -> Derecha en Desktop) -->
-  <div class="col-4 col-sm-12 pl-base p-sm-0">
+  <div class="col-4 col-sm-12 pl-base px-0-sm">
 
   </div>
 

@@ -18,10 +18,15 @@ module BufferApp {
     typedef sequence<NewsItem> NewsList;
 
     interface NewsService {
+        // Métodos de Administración
         void addNews(in NewsItem noticia);
         boolean updateNews(in NewsItem noticia);
         boolean deleteNews(in string id);
         NewsList getAllNews();
+        
+        // Métodos de Usuario / Públicos
+        NewsList getVisibleNews();
+        NewsList getRecentNews();
         NewsItem getNewsById(in string id);
         
         oneway void shutdown();

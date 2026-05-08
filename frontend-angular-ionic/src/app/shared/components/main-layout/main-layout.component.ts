@@ -1,24 +1,18 @@
-import { Component, inject, Input, OnInit, HostListener } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, Platform } from '@ionic/angular';
-import { RouterModule, ActivatedRoute, Router, NavigationEnd } from '@angular/router';
-import { AuthService } from '../../../core/services/auth.service';
-import { filter } from 'rxjs/operators';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
+import { IonicModule } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
-  home,
-  people,
-  sparkles,
-  cart,
-  newspaper,
-  menuOutline,
-  football,
-  personCircleOutline,
-  logOutOutline,
-  logoLinkedin,
-  logoGithub,
-  closeOutline
+  home, people, cart, newspaper, menuOutline, football,
+  personCircleOutline, logOutOutline, sparkles,
+  logoLinkedin, logoGithub, closeOutline, arrowBack, chevronBack,
+  homeOutline, chevronForwardOutline
 } from 'ionicons/icons';
+import { filter } from 'rxjs/operators';
+import { AuthService } from 'src/app/core/services/auth.service';
+import { PlatformService } from 'src/app/core/services/platform.service';
+import { LayoutService } from 'src/app/core/services/layout.service';
 
 @Component({
   selector: 'app-main-layout',
@@ -28,24 +22,10 @@ import {
   imports: [CommonModule, IonicModule, RouterModule]
 })
 export class MainLayoutComponent implements OnInit {
-  @Input() title: string = 'mainSystem';
-
-  private authService = inject(AuthService);
-  private platform = inject(Platform);
-  private route = inject(ActivatedRoute);
   private router = inject(Router);
-
-  userName: string = '';
-  userEmail: string = '';
-  isAdmin: boolean = false;
-  isMobileApp: boolean = false;
-  isWebMobile: boolean = false;
-  isDesktop: boolean = false;
-
-  // Propiedades Hero (ahora se cargan de la ruta)
-  showHero: boolean = false;
-  heroTitle: string = '';
-  heroSubtitle: string = '';
+  private authService = inject(AuthService);
+  public platformService = inject(PlatformService);
+  public layoutService = inject(LayoutService); // Inyectamos el nuevo servicio
 
   public appPages = [
     { title: 'Inicio', url: '/home', icon: 'home' },
@@ -57,79 +37,37 @@ export class MainLayoutComponent implements OnInit {
 
   constructor() {
     addIcons({
-      home,
-      people,
-      cart,
-      newspaper,
-      menuOutline,
-      football,
-      personCircleOutline,
-      logOutOutline,
-      sparkles,
-      logoLinkedin,
-      logoGithub,
-      closeOutline
+      home, people, cart, newspaper, menuOutline, football,
+      personCircleOutline, logOutOutline, sparkles,
+      logoLinkedin, logoGithub, closeOutline, arrowBack, chevronBack,
+      homeOutline, chevronForwardOutline
     });
-  }
-
-  // ESCUCHADOR DE REDIMENSIÓN
-  @HostListener('window:resize', ['$event'])
-  onResize() {
-    this.updatePlatformInfo();
   }
 
   ngOnInit() {
-    this.updatePlatformInfo();
-
-    // ESCUCHAR CAMBIOS DE RUTA PARA EL HERO
-    this.updateHeroData();
+    // Escuchamos cambios de ruta solo para resetear o manejar estados globales si fuera necesario
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
-      this.updateHeroData();
-    });
-
-    this.authService.user$.subscribe(user => {
-      this.userName = user?.displayName || user?.email?.split('@')[0] || 'Usuario';
-      this.userEmail = user?.email || '';
-      this.isAdmin = this.authService.isAdmin();
+      // Opcional: resetear al cambiar de página para evitar que una página
+      // herede el título de la anterior si se olvida de poner el suyo.
+      // this.layoutService.resetLayout(); 
     });
   }
 
+  /* 
+  COMENTADO: Ya no leemos de la ruta, usamos LayoutService
   private updateHeroData() {
-    let currentRoute = this.route.root;
-    while (currentRoute.firstChild) {
-      currentRoute = currentRoute.firstChild;
-    }
-
-    // Seguridad: Si por alguna razón el snapshot o data no existen, no rompemos la App
-    const data = currentRoute?.snapshot?.data;
-
-    if (data) {
-      this.showHero = !!data['heroTitle'];
-      this.heroTitle = data['heroTitle'] || '';
-      this.heroSubtitle = data['heroSubtitle'] || '';
-    } else {
-      this.showHero = false;
-      this.heroTitle = '';
-      this.heroSubtitle = '';
-    }
+    try {
+      let route = this.router.routerState.root;
+      while (route.firstChild) route = route.firstChild;
+      const data = route.snapshot?.data;
+      ...
+    } catch (e) { }
   }
+  */
 
-  private updatePlatformInfo() {
-    const width = window.innerWidth;
-
-    // FORZADO TEMPORAL PARA VALIDACIÓN:
-    this.isMobileApp = true;
-
-    this.isWebMobile = width < 768 && !this.isMobileApp;
-    this.isDesktop = width >= 768;
-    console.log(`[LAYOUT] Fluid Check -> WebMobile: ${this.isWebMobile}, Desktop: ${this.isDesktop}, App: ${this.isMobileApp}`);
-  }
-
-  async logout() {
-    console.log('Cerrando sesión...');
-    await this.authService.logout();
-    this.router.navigate(['/auth/login']);
+  logout() {
+    this.authService.logout().then(() => this.router.navigate(['/login']));
   }
 }

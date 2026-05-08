@@ -1,0 +1,166 @@
+<form (ngSubmit)="onPublish()" #newsForm="ngForm">
+  <div class="row ">
+    <div class="col-8 col-sm-12 pr-base px-0-sm">
+      <ion-card>
+        <ion-card-content>
+          <h2 class="f-semibold text-neutral-9 mb-s fs-22 fs-sm-18 margin-none">Formulario de Noticia</h2>
+          <div class="divider mb-base"></div>
+          <!-- Title -->
+          <div class="form-item mb-m">
+            <ion-input #titleModel="ngModel" mode="md" fill="outline" label="Título de la Noticia"
+              labelPlacement="stacked" [(ngModel)]="newsData.title" name="title" required minlength="5" maxlength="250"
+              counter="true" [counterFormatter]="titleCounterFormatter"
+              placeholder="Ej: El fichaje bomba de la temporada" class="futbol-input f-medium"
+              (ionFocus)="setFocus('title')" (ionBlur)="setFocus(null)" [class.is-focused]="focusedField === 'title'"
+              [class.input-error]="titleModel.invalid && titleModel.touched"
+              helperText="Ingresa el título de la noticia (Máx. 250)"
+              errorText="El título debe tener entre 5 y 250 caracteres">
+              <ion-icon slot="start" name="newspaper-outline" class="fs-20 mr-s"
+                [color]="focusedField === 'title' ? 'primary' : (titleModel.invalid && titleModel.touched ? 'danger' : 'medium')"></ion-icon>
+              <ion-icon *ngIf="titleModel.valid && titleModel.value" slot="end" name="checkmark-circle-outline"
+                color="primary" class="fs-20"></ion-icon>
+            </ion-input>
+          </div>
+          <!-- Author and Pseudonym in same row -->
+          <!-- Author/Editorial -->
+          <div class="form-item mb-m">
+            <ion-input mode="md" fill="outline" label="Autor/Editorial" labelPlacement="stacked"
+              [(ngModel)]="newsData.author" name="author" class="futbol-input f-medium " placeholder="Juan Pérez"
+              helperText="Puedes modificar tu nombre por un pseudonimo o de un equipo (Editorial)"
+              errorText="Este campo debe tener un valor válido">
+              <ion-icon slot="start" name="person-outline" class="fs-20 mr-s" color="medium"></ion-icon>
+            </ion-input>
+          </div>
+
+          <!-- Summary -->
+          <div class="form-item mb-m">
+            <ion-textarea #summaryModel="ngModel" mode="md" fill="outline" label="Resumen (Sumary)"
+              labelPlacement="stacked" [(ngModel)]="newsData.summary" name="summary" required minlength="10"
+              maxlength="500" counter="true" [counterFormatter]="summaryCounterFormatter"
+              placeholder="Un breve resumen que enganche al lector..." class="futbol-input f-medium"
+              helperText="Escribe un resumen atractivo para la noticia"
+              errorText="El resumen debe tener entre 10 y 500 caracteres" (ionFocus)="setFocus('summary')"
+              (ionBlur)="setFocus(null)" [class.is-focused]="focusedField === 'summary'"
+              [class.input-error]="summaryModel.invalid && summaryModel.touched"
+              style="min-height: 100px;"></ion-textarea>
+          </div>
+
+          <!-- Content -->
+          <div class="form-item mb-m">
+            <ion-textarea #contentModel="ngModel" mode="md" fill="outline" label="Contenido Completo"
+              labelPlacement="stacked" [(ngModel)]="newsData.content" name="content" required minlength="20"
+              maxlength="5000" counter="true" [counterFormatter]="contentCounterFormatter"
+              placeholder="Escribe aquí el cuerpo completo de la noticia..." class="futbol-input f-medium"
+              [autoGrow]="true" helperText="Cuerpo principal de la noticia"
+              errorText="El contenido debe tener al menos 20 caracteres" (ionFocus)="setFocus('content')"
+              (ionBlur)="setFocus(null)" [class.is-focused]="focusedField === 'content'"
+              [class.input-error]="contentModel.invalid && contentModel.touched" style="min-height: 200px;">
+            </ion-textarea>
+          </div>
+
+          <!-- Tags -->
+          <div class="form-item mb-m">
+            <ion-input mode="md" fill="outline" label="Tags (Pulsa Enter o usa Coma)" labelPlacement="stacked"
+              [(ngModel)]="tagInput" (ionChange)="updateTags()" (keyup.enter)="addTag()" name="tags"
+              placeholder="fichajes, laliga..." class="futbol-input f-medium" (ionFocus)="setFocus('tags')"
+              (ionBlur)="setFocus(null)" [class.is-focused]="focusedField === 'tags'"
+              helperText="Los tags deben ser relevantes para la noticia y empezar por #"
+              errorText="Se debe ingresar al menos un tag válido">
+              <ion-icon slot="start" name="pricetags-outline" class="fs-20 mr-s"
+                [color]="focusedField === 'tags' ? 'primary' : 'medium'"></ion-icon>
+            </ion-input>
+
+            <!-- Contador de Tags y Lista de Chips -->
+            <div class="display-flex fl-align-center fl-justify-between mt-s px-s">
+              <div class="tag-chips-wrapper">
+                <ion-chip *ngFor="let tag of newsData.tags" color="primary" mode="ios" outline="true">
+                  <ion-label>{{ tag }}</ion-label>
+                  <ion-icon name="close-circle" (click)="removeTag(tag)"></ion-icon>
+                </ion-chip>
+              </div>
+              <span class="fs-12 text-neutral-5 f-medium">{{ newsData.tags.length }}/6 tags</span>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <div class="col-4 col-sm-12 pl-base px-0-sm">
+      <ion-card>
+        <ion-card-content>
+          <!-- Category -->
+          <div class="form-item mb-m">
+            <ion-select #catModel="ngModel" interface="popover" [interfaceOptions]="{ cssClass: 'category-popover' }"
+              mode="md" fill="outline" label="Categoría" labelPlacement="stacked" [(ngModel)]="newsData.category"
+              name="category" class="futbol-input f-medium" (ionFocus)="setFocus('category')" (ionBlur)="setFocus(null)"
+              [class.is-focused]="focusedField === 'category'">
+              <ion-icon slot="start" name="list-outline" class="fs-20 mr-s"
+                [color]="focusedField === 'category' ? 'primary' : 'medium'"></ion-icon>
+              <ion-select-option *ngFor="let cat of categories" [value]="cat.value">
+                {{ cat.label }}
+              </ion-select-option>
+            </ion-select>
+          </div>
+
+          <!-- Publication Date -->
+          <div class="form-item mb-m">
+            <ion-input mode="md" fill="outline" label="Fecha de Publicación" labelPlacement="stacked"
+              [(ngModel)]="newsData.date" name="date" type="date" class="futbol-input f-medium"
+              (ionFocus)="setFocus('date')" (ionBlur)="setFocus(null)" [class.is-focused]="focusedField === 'date'">
+              <ion-icon slot="start" name="calendar-outline" class="fs-20 mr-s"
+                [color]="focusedField === 'date' ? 'primary' : 'medium'"></ion-icon>
+            </ion-input>
+          </div>
+
+          <!-- Active Status Toggle -->
+          <div class="status-container mb-m display-flex fl-align-center fl-justify-between" style="padding: 4px 8px;">
+            <div class="display-flex fl-align-center">
+              <ion-icon *ngIf="newsData.isActive" name="eye-outline" color="primary" class="fs-24 mr-s"></ion-icon>
+              <ion-icon *ngIf="!newsData.isActive" name="eye-off-outline" color="medium" class="fs-24 mr-s"></ion-icon>
+              <div>
+                <p class="margin-none f-bold fs-14" [class.text-primary]="newsData.isActive">
+                  {{ newsData.isActive ? 'Noticia Activa' : 'Borrador / Inactiva' }}
+                </p>
+                <p class="margin-none fs-12 text-neutral-5">Visible para los usuarios</p>
+              </div>
+            </div>
+            <ion-toggle [(ngModel)]="newsData.isActive" name="isActive" color="primary" mode="ios"></ion-toggle>
+          </div>
+          <!-- Image Upload Placeholder -->
+          <div class="image-upload-container" (click)="fileInput.click()">
+            <div class="image-preview-wrapper">
+              <img *ngIf="previewImage" [src]="previewImage" alt="Preview">
+              <div *ngIf="!previewImage" class="upload-placeholder">
+                <ion-icon name="cloud-upload-outline"></ion-icon>
+                <span>Pulsa para cargar la imagen de portada</span>
+                <p class="fs-12 text-neutral-5">Recomendado: 1920x1080px</p>
+              </div>
+              <ion-button *ngIf="previewImage" fill="clear" class="change-image-btn"
+                (click)="$event.stopPropagation(); fileInput.click()">
+                <ion-icon name="camera-outline" slot="start"></ion-icon>
+                Cambiar
+              </ion-button>
+            </div>
+            <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;">
+          </div>
+          <div class="action-footer fl-align-center">
+            <a class="cancel-link clickable" (click)="onCancel()">
+              <ion-icon name="arrow-back-outline" class="mr-xs"></ion-icon>
+              Volver atrás
+            </a>
+            <ion-button mode="ios" shape="round" class="futbol-btn-primary" (click)="onPublish()"
+              [disabled]="!newsForm.valid || isPublishing">
+              <ion-icon slot="start"
+                [name]="isPublishing ? '' : (isEditMode ? 'save-outline' : 'send-outline')"></ion-icon>
+              <ion-spinner slot="start" name="crescent" *ngIf="isPublishing"></ion-spinner>
+              {{ isPublishing ? (isEditMode ? 'Guardando...' : 'Publicando...') : (isEditMode ? 'Guardar Cambios' :
+              'Publicar Noticia') }}
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+  </div>
+
+</form>

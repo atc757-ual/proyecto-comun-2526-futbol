@@ -1,0 +1,92 @@
+<div class="row ">
+  <!-- COLUMNA 8: DETALLE -->
+  <div class="col-8 col-sm-12 pr-base px-0-sm">
+    <ion-card class="main-article animate-fade-in m-0 shadow-none border-none">
+      <!-- SKELETON DETALLE -->
+      <div *ngIf="isLoading && !selectedNew">
+        <ion-skeleton-text animated class="sk-banner"></ion-skeleton-text>
+        <div class="mt-m">
+          <ion-skeleton-text animated class="sk-tag"></ion-skeleton-text>
+          <ion-skeleton-text animated class="sk-title mt-m"></ion-skeleton-text>
+          <div class="mt-l">
+            <ion-skeleton-text animated class="sk-line"></ion-skeleton-text>
+            <ion-skeleton-text animated class="sk-line"></ion-skeleton-text>
+            <ion-skeleton-text animated class="sk-line short"></ion-skeleton-text>
+          </div>
+        </div>
+      </div>
+
+      <!-- DETALLE REAL -->
+      <div *ngIf="selectedNew">
+        <div class="article-image-container">
+          <img [src]="selectedNew.imageUrl" [alt]="selectedNew.title">
+          <div class="article-badge">{{ selectedNew.category }}</div>
+        </div>
+
+        <ion-card-content>
+          <div class="mt-s mb-m">
+            <span class="news-tag fs-12" *ngFor="let tag of selectedNew.tags">#{{ tag }}</span>
+          </div>
+
+          <div class="article-content mt-m">
+            <h1 class="article-title">{{ selectedNew.title }}</h1>
+            <div class="article-full-text">
+              <p class="article-excerpt f-bold text-neutral-8 mb-m" *ngIf="selectedNew.summary">
+                {{ selectedNew.summary }}
+              </p>
+              {{ selectedNew.content }}
+            </div>
+
+            <div class="article-footer mt-l pt-m d-flex ai-center gap-s text-neutral-5 f-bold fs-12 border-top">
+              <span class="article-author text-primary">{{ selectedNew.author }}</span>
+              <span class="article-dot">•</span>
+              <span class="article-date">Publicado {{ selectedNew.date | date:'short' }}</span>
+            </div>
+          </div>
+        </ion-card-content>
+      </div>
+
+      <!-- ERROR 404 -->
+      <div *ngIf="!isLoading && !selectedNew" class="p-base">
+        <div class="display-flex fl-align-center fl-justify-center fl-column gap-s t-center">
+          <h2 class="f-bold text-neutral-3 fs-40 fs-sm-36">404</h2>
+          <h4 class="f-semibold text-neutral-8 fs-22 fs-sm-18">No se ha encontrado la noticia</h4>
+          <p class="text-neutral-6 fs-16 fs-sm-14">La noticia que buscas no existe o ha sido eliminada.</p>
+        </div>
+      </div>
+    </ion-card>
+  </div>
+
+<!-- COLUMNA 4: LATERAL -->
+<div class="col-4 col-sm-12 pl-base px-0-sm">
+  <div *ngIf="!isLoading && newsList.length > 0" class="f-bold mb-base fs-20 text-neutral-8">
+    Últimas noticias
+  </div>
+
+  <div class="side-news-list">
+    <!-- SKELETON LATERAL -->
+    <div *ngIf="isLoading && newsList.length === 0">
+      <div *ngFor="let i of [1,2,3,4,5]" class="mb-base d-flex gap-s" style="height: 100px;">
+        <ion-skeleton-text animated class="sk-thumb"></ion-skeleton-text>
+        <div style="flex: 1; padding: 10px 0;">
+          <ion-skeleton-text animated style="width: 90%; height: 16px; margin-bottom: 10px;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 70%; height: 14px;"></ion-skeleton-text>
+        </div>
+      </div>
+    </div>
+
+    <!-- LISTA REAL -->
+    <ion-card class="side-news-item clickable m-0 shadow-none" *ngFor="let news of newsList"
+      [class.active]="news.id === selectedNew?.id" (click)="selectNews(news)">
+      <div class="side-news-thumb">
+        <img [src]="news.imageUrl" [alt]="news.title">
+      </div>
+      <div class="side-news-info">
+        <div class="side-news-title">{{ news.title }}</div>
+        <div class="side-news-excerpt">{{ news.summary || news.content | slice:0:60 }}...</div>
+        <div class="side-news-date">{{ news.date | date:'shortDate' }}</div>
+      </div>
+    </ion-card>
+  </div>
+</div>
+</div>

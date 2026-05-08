@@ -1,0 +1,82 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="white">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title class="f-bold fs-20">Gestionar Noticias</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="loadNews()" [disabled]="isLoading">
+        <ion-icon slot="icon-only" name="newspaper-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  
+  <ion-toolbar color="white" class="px-s">
+    <ion-searchbar 
+      mode="ios" 
+      placeholder="Buscar por título, autor o categoría..." 
+      [(ngModel)]="searchTerm" 
+      (ionInput)="applyFilter()"
+      class="custom-searchbar">
+    </ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding-horizontal">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Lista de Noticias -->
+  <ion-list lines="none" class="news-admin-list mt-m">
+    
+    <!-- Skeleton Loading -->
+    <ng-container *ngIf="isLoading && news.length === 0">
+      <ion-item *ngFor="let item of [1,2,3,4,5]" class="skeleton-item mb-s">
+        <ion-thumbnail slot="start">
+          <ion-skeleton-text [animated]="true"></ion-skeleton-text>
+        </ion-thumbnail>
+        <ion-label>
+          <h3><ion-skeleton-text [animated]="true" style="width: 80%"></ion-skeleton-text></h3>
+          <p><ion-skeleton-text [animated]="true" style="width: 40%"></ion-skeleton-text></p>
+        </ion-label>
+      </ion-item>
+    </ng-container>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && filteredNews.length === 0" class="empty-state">
+      <ion-icon name="alertCircleOutline"></ion-icon>
+      <h3>No se encontraron noticias</h3>
+      <p>Intenta con otro término de búsqueda o añade una nueva noticia.</p>
+    </div>
+
+    <!-- Items Reales -->
+    <ion-item *ngFor="let item of filteredNews" class="admin-news-item mb-s animate-fade-in">
+      <ion-thumbnail slot="start" class="news-thumb">
+        <img [src]="item.imageUrl || 'assets/imgs/placeholder.png'" onerror="this.src='assets/imgs/placeholder.png'" />
+      </ion-thumbnail>
+      
+      <ion-label class="ion-text-wrap">
+        <div class="category-row">
+          <ion-badge color="primary" mode="ios" class="f-medium">{{ item.category }}</ion-badge>
+          <span class="news-date ml-s">{{ item.date | date:'dd/MM/yyyy' }}</span>
+        </div>
+        <h2 class="news-title f-bold mt-xs">{{ item.title }}</h2>
+        <p class="news-author f-medium">Por: {{ item.author }}</p>
+      </ion-label>
+
+      <div slot="end" class="action-buttons">
+        <ion-button fill="clear" color="medium" (click)="viewNews(item)" class="action-btn">
+          <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" color="primary" (click)="editNews(item)" class="action-btn">
+          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" color="danger" (click)="deleteNews(item)" class="action-btn">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-button>
+      </div>
+    </ion-item>
+
+  </ion-list>
+</ion-content>

@@ -1,14 +1,14 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, HostListener, ViewChild, ElementRef } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { addIcons } from 'ionicons';
 import {
-  star, calendar, trophy,
-  statsChart, grid, person,
-  chevronForward, football,
-  chevronBack, newspaperOutline
+  star, calendar, trophy, statsChart, grid, person,
+  chevronForward, football, chevronBack, newspaperOutline
 } from 'ionicons/icons';
 import { RouterModule, Router } from '@angular/router';
+import { LayoutService } from 'src/app/core/services/layout.service';
 
 @Component({
   selector: 'app-home',
@@ -18,20 +18,10 @@ import { RouterModule, Router } from '@angular/router';
   imports: [CommonModule, IonicModule, RouterModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class HomePage {
-  @ViewChild('swiperRef') swiperRef?: ElementRef;
+export class HomePage implements OnInit {
+  private router = inject(Router);
+  private layoutService = inject(LayoutService); // Inyectamos el servicio
 
-  @HostListener('window:resize')
-  onResize() {
-    if (this.swiperRef?.nativeElement) {
-      // Forzar a Swiper a recalcular dimensiones
-      const swiperEl = this.swiperRef.nativeElement;
-      if (swiperEl.swiper) {
-        swiperEl.swiper.update();
-      }
-    }
-  }
-  // ... (featuredNews remains the same)
   featuredNews = [
     {
       id: 1,
@@ -59,13 +49,27 @@ export class HomePage {
     }
   ];
 
-  constructor(private router: Router) {
+  constructor() {
     addIcons({
       star, calendar, trophy,
       statsChart, grid, person,
       chevronForward, football,
       chevronBack, newspaperOutline
     });
+  }
+
+  ngOnInit() {
+    // Configurar Layout para la Home
+    this.layoutService.setHeader({
+      title: '¡Bienvenido, Alex!',
+      subtitle: 'Toda la emoción del fútbol en tu mano',
+      showHero: true,
+      isHome: true // Muy importante para mostrar el Logo en el Header móvil
+    });
+
+    // Limpiar breadcrumbs al volver a Home
+    this.layoutService.setBreadcrumbs([]);
+
   }
 
   goToNewsDetail(news: any) {

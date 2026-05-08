@@ -70,17 +70,21 @@ public class JWTFilter implements Filter {
 
         // Extraer el token del header Authorization
         String authHeader = httpRequest.getHeader("Authorization");
+        System.out.println("[DEBUG-JWT] Header Authorization recibido: " + (authHeader != null ? "SI" : "NO"));
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            System.err.println("[DEBUG-JWT] ERROR: Token faltante o formato invalido");
             enviarError(httpResponse, HttpServletResponse.SC_UNAUTHORIZED, "NOK", "No autorizado: Token faltante");
             return;
         }
 
         String token = authHeader.substring(7); // Quitar "Bearer "
+        System.out.println("[DEBUG-JWT] Intentando verificar firma RSA del token...");
 
         try {
             // Verificar el token JWT
             if (!verificarToken(token)) {
+                System.err.println("[DEBUG-JWT] ERROR: Firma RSA INVALIDA");
                 enviarError(httpResponse, HttpServletResponse.SC_UNAUTHORIZED, "NOK", "No autorizado: Token o firma inválida");
                 return;
             }
@@ -89,12 +93,14 @@ public class JWTFilter implements Filter {
             String payload = extraerPayload(token);
             httpRequest.setAttribute("jwt_payload", payload);
 
-            System.out.println("[JWT-RS256] Token válido. Acceso permitido a: " + httpRequest.getRequestURI());
+            System.out.println("[DEBUG-JWT] !!! TOKEN VALIDO !!! Acceso permitido.");
 
             // Token válido: continuar con el servlet
             chain.doFilter(request, response);
 
         } catch (Exception e) {
+            System.err.println("[DEBUG-JWT] EXCEPCION durante la verificacion: " + e.getMessage());
+            e.printStackTrace();
             enviarError(httpResponse, HttpServletResponse.SC_UNAUTHORIZED, "NOK",
                     "No autorizado: Error al verificar el token: " + e.getMessage());
         }
@@ -143,7 +149,7 @@ public class JWTFilter implements Filter {
     private void setCorsHeaders(HttpServletResponse response) {
         response.setHeader("Access-Control-Allow-Origin", "*");
         response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
+        response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, X-User-Role");
         response.setHeader("Access-Control-Max-Age", "3600");
     }
 

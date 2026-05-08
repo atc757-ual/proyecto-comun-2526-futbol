@@ -11,25 +11,34 @@ public class XMLCoder {
         StringBuilder xml = new StringBuilder();
         xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         xml.append("<noticia>\n");
-        xml.append("    <id>").append(noticia.id).append("</id>\n");
-        xml.append("    <date>").append(noticia.date).append("</date>\n");
-        xml.append("    <title>").append(noticia.title).append("</title>\n");
-        xml.append("    <author>").append(noticia.author).append("</author>\n");
-        xml.append("    <summary>").append(noticia.summary).append("</summary>\n");
-        xml.append("    <content>").append(noticia.content).append("</content>\n");
-        xml.append("    <imageUrl>").append(noticia.imageUrl).append("</imageUrl>\n");
-        xml.append("    <category>").append(noticia.category).append("</category>\n");
+        xml.append("    <id>").append(escapeXML(noticia.id)).append("</id>\n");
+        xml.append("    <date>").append(escapeXML(noticia.date)).append("</date>\n");
+        xml.append("    <title>").append(escapeXML(noticia.title)).append("</title>\n");
+        xml.append("    <author>").append(escapeXML(noticia.author)).append("</author>\n");
+        xml.append("    <summary>").append(escapeXML(noticia.summary)).append("</summary>\n");
+        xml.append("    <content>").append(escapeXML(noticia.content)).append("</content>\n");
+        xml.append("    <imageUrl>").append(escapeXML(noticia.imageUrl)).append("</imageUrl>\n");
+        xml.append("    <category>").append(escapeXML(noticia.category)).append("</category>\n");
         xml.append("    <isActive>").append(noticia.isActive).append("</isActive>\n");
         
         xml.append("    <tags>\n");
         if (noticia.tags != null) {
             for (String t : noticia.tags) {
-                xml.append("        <tag>").append(t).append("</tag>\n");
+                xml.append("        <tag>").append(escapeXML(t)).append("</tag>\n");
             }
         }
         xml.append("    </tags>\n");
         xml.append("</noticia>");
         
         return xml.toString();
+    }
+
+    private static String escapeXML(String text) {
+        if (text == null) return "";
+        return text.replace("&", "&amp;")
+                   .replace("<", "&lt;")
+                   .replace(">", "&gt;")
+                   .replace("\"", "&quot;")
+                   .replace("'", "&apos;");
     }
 }

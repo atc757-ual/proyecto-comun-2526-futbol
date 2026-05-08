@@ -54,8 +54,9 @@
   <!-- BOTÓN DE ACCIÓN -->
   <ion-button mode="ios" type="submit" expand="block" shape="round" class="futbol-btn-primary f-bold fs-16"
     [disabled]="!isFormValid() || isLoading">
+    <ion-spinner *ngIf="isLoading" name="crescent" slot="start" size="small" class="mr-s"></ion-spinner>
     <span *ngIf="!isLoading">Iniciar Sesión</span>
-    <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+    <span *ngIf="isLoading">Iniciando sesión...</span>
   </ion-button>
 
   <!-- OPCIONES EXTRA -->

@@ -1,4 +1,5 @@
-<ion-menu *ngIf="!isMobileApp" contentId="main-content" class="mobile-only-menu" side="start" mode="ios">
+<ion-menu *ngIf="!platformService.isMobileApp" contentId="main-content" class="mobile-only-menu" side="start"
+  mode="ios">
   <ion-content class="ion-no-padding" scroll-y="false">
     <div class="menu-wrapper">
       <div class="menu-header d-flex align-center justify-between px-base">
@@ -56,16 +57,24 @@
 
 <div class="main-wrapper" id="main-content">
   <!-- HEADER PREMIUM (DOS FILAS) -->
-  <header class="main-header" [class.no-border]="showHero">
+  <header class="main-header" [class.no-border]="layoutService.showHero()">
     <!-- FILA 1: Top Branding & Actions -->
     <div class="top-header-row">
       <div class="main-content header">
         <div class="header-left">
           <!-- Botón Menú (Hamburguesa) - FUERA del logo para que no navegue solo -->
-          <ion-menu-toggle *ngIf="isWebMobile">
+          <ion-menu-toggle *ngIf="platformService.isWebMobile">
             <ion-icon name="menu-outline" class="burger-icon hide-on-desktop clickable mr-s"></ion-icon>
           </ion-menu-toggle>
-          <div class="logo-box clickable" routerLink="/home">
+
+          <!---puedes poner aqui back button-->
+          <!-- Botón de atrás personalizado -->
+          <ion-back-button *ngIf="platformService.isMobileApp && !layoutService.isHome()" defaultHref="/home" text=""
+            icon="arrow-back" class="back-link-minimal hide-on-desktop">
+          </ion-back-button>
+
+          <div *ngIf="platformService.isDesktop  || (platformService.isMobileApp && layoutService.isHome())"
+            class="logo-box clickable" routerLink="/home">
             <div class="d-flex gap-s fl-align-center">
               <span class="logo-ball-blue">
                 <ion-icon name="football"></ion-icon>
@@ -76,15 +85,16 @@
         </div>
 
         <!-- Balón Azul Centrado -->
-        <div *ngIf="isWebMobile" class="header-center-icon">
-          <div class="central-ball-wrapper">
+        <div *ngIf="platformService.isWebMobile || (!layoutService.isHome() && platformService.isMobileApp)"
+          class="header-center-icon hide-on-desktop">
+          <div routerLink="/home" class="central-ball-wrapper">
             <ion-icon name="football"></ion-icon>
           </div>
           <ion-label class="central-text-wrapper">Football App</ion-label>
         </div>
 
         <div class="header-right">
-          <div *ngIf="!isWebMobile" class="auth-actions">
+          <div *ngIf="!platformService.isWebMobile" class="auth-actions">
             <a class="auth-btn clickable" routerLink="/profile">
               <ion-icon name="person-circle-outline"></ion-icon>
               <span class="hide-on-phone">Mi Perfil</span>
@@ -99,7 +109,7 @@
     </div>
 
     <!-- FILA 2: Navegación Central (Solo en Desktop) -->
-    <nav *ngIf="isDesktop" class="nav-header-row">
+    <nav *ngIf="platformService.isDesktop" class="nav-header-row">
       <div class="main-content content">
         <ul class="nav-links-centered">
           <li routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Inicio</li>
@@ -119,20 +129,34 @@
   <!-- MAIN CONTENT -->
   <ion-content class="main-main-bg" [scrollY]="true">
 
-    <!-- SECCIÓN HERO FULL WIDTH (Re-integrado en el Layout) -->
-    <section *ngIf="showHero" class="layout-hero-banner">
-      <div class="main-content">
-        <div class="hero-title">{{ heroTitle }}</div>
-        <div class="hero-subtitle" *ngIf="heroSubtitle">{{ heroSubtitle }}</div>
+    <!-- SECCIÓN HERO FULL WIDTH (Dinámica con Signals) -->
+    <section>
+      <div *ngIf="layoutService.showHero()" class="layout-hero-banner animate-fade-in">
+        <div class="main-content">
+          <h1 class="hero-title">{{ layoutService.title() }}</h1>
+          <p class="hero-subtitle" *ngIf="layoutService.subtitle()">{{ layoutService.subtitle() }}</p>
+        </div>
+      </div> <!-- BREADCRUMBS CENTRALIZADOS -->
+      <div *ngIf="!platformService.isMobileApp && layoutService.breadcrumbs().length > 0"
+        class="layout-hero-breadcrumbs">
+        <div class="main-content">
+          <ion-breadcrumbs>
+            <ion-breadcrumb *ngFor="let item of layoutService.breadcrumbs(); let last = last" [routerLink]="item.url"
+              [class.active-breadcrumb]="last">
+              <ion-icon *ngIf="item.icon" slot="start" [name]="item.icon"></ion-icon>
+              {{ item.label }}
+              <span slot="separator" class="fs-14 text-neutral-4">/</span>
+            </ion-breadcrumb>
+          </ion-breadcrumbs>
+        </div>
       </div>
     </section>
-
     <div class="main-content content">
       <router-outlet></router-outlet>
     </div>
 
     <!-- DESKTOP FOOTER (Se ve en Web, incluso móvil) -->
-    <footer *ngIf="!isMobileApp" class="main-footer-gray">
+    <footer *ngIf="!platformService.isMobileApp" class="main-footer-gray">
       <div class="main-content footer">
         <div class="footer-slim-content">
           <div class="footer-left">
@@ -155,7 +179,7 @@
   </ion-content>
 
   <!-- MOBILE BOTTOM BAR (Solo se ve en App Móvil) -->
-  <ion-footer *ngIf="isMobileApp" class="hide-on-desktop main-app-footer ion-no-border">
+  <ion-footer *ngIf="platformService.isMobileApp" class="hide-on-desktop main-app-footer ion-no-border">
     <ion-tab-bar slot="bottom" class="tab-bar-clean">
 
       <ion-tab-button *ngFor="let p of appPages; let i = index" [tab]="p.title" [routerLink]="p.url"

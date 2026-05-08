@@ -1,95 +1,64 @@
-<div class="margin-y-l">
+<div class="row">
+  <!-- COLUMNA PRINCIPAL: Ahora ocupa más espacio para estirarse -->
+  <div class="col-8 col-sm-12 pr-base px-0-sm">
 
-
-  <!-- CABECERA -->
-  <div class="news-header display-flex fl-justify-between fl-align-center mb-base">
-
-    <!--<div *ngIf="isAdmin">
-      <ion-button [routerLink]="['/add-news']" shape="round" color="primary">
-        <ion-icon name="add-outline" slot="start"></ion-icon>
-        Redactar Noticia
-      </ion-button>
-    </div>-->
-  </div>
-  <div class="row">
-    <!-- COLUMNA 8: DETALLE (Primero en HTML -> Izquierda en Desktop) -->
-    <div class="col-8 col-sm-12 pr-base p-sm-0">
-      <ion-card class="main-article animate-fade-in m-0 shadow-none" *ngIf="selectedNews">
-        <!-- 1. Imagen -->
-        <div class="article-image-container">
-          <img [src]="selectedNews.imageUrl" [alt]="selectedNews.title">
-          <div class="article-badge">{{ selectedNews.category }}</div>
+    <!-- Cargando / Skeletons -->
+    <div *ngIf="isLoading" class="news-grid">
+      <ion-card *ngFor="let i of [1,2,3,4,5,6]" class="side-news-item skeleton-item">
+        <ion-skeleton-text animated style="height: 160px; width: 100%;"></ion-skeleton-text>
+        <div class="p-base">
+          <ion-skeleton-text animated style="width: 80%; height: 20px;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 60%; height: 16px;"></ion-skeleton-text>
         </div>
-
-        <ion-card-content class="p-base ">
-          <!-- 2. Tags (mantener arriba) -->
-          <div class="mt-s mb-m">
-            <span class="news-tag fs-12" *ngFor="let tag of selectedNews.tags">#{{ tag }}</span>
-          </div>
-
-          <!-- 3. Título y 4. Detalle -->
-          <div class="article-content mt-m">
-            <h1 class="article-title">{{ selectedNews.title }}</h1>
-            <div class="article-full-text">
-              <p class="article-excerpt f-bold text-neutral-8 mb-m" *ngIf="selectedNews.summary">
-                {{ selectedNews.summary }}
-              </p>
-              {{ selectedNews.content }}
-            </div>
-
-            <!-- Metadata al final (Autor y Fecha con prefijo) -->
-            <div class="article-footer mt-l pt-m d-flex ai-center gap-s text-neutral-5 f-bold fs-12 border-top">
-              <span class="article-author text-primary">{{ selectedNews.author }}</span>
-              <span class="article-dot">•</span>
-              <span class="article-date">Publicado {{ selectedNews.date | date:'short' }}</span>
-            </div>
-          </div>
-        </ion-card-content>
       </ion-card>
-
-      <div *ngIf="!selectedNews && newsList.length > 0" class="padding-l text-center">
-        <p class="text-neutral-6">Selecciona una noticia para leerla</p>
-      </div>
-
-      <!-- Cargando -->
-      <div *ngIf="isLoading" class="padding-l text-center">
-        <ion-spinner name="crescent" color="primary"></ion-spinner>
-        <p class="text-neutral-6 margin-top-m">Conectando con el servidor CORBA...</p>
-      </div>
-
-      <!-- No hay noticias -->
-      <div *ngIf="!isLoading && newsList.length === 0" class="padding-l text-center animate-fade-in">
-        <div class="mb-m">
-          <ion-icon name="newspaper-outline" style="font-size: 64px; color: var(--ion-color-medium);"></ion-icon>
-        </div>
-        <h2 class="f-bold text-neutral-8">No hay noticias todavía</h2>
-        <p class="text-neutral-6">El servidor CORBA está listo pero no tiene artículos publicados.</p>
-        <div *ngIf="isAdmin" class="mt-l">
-          <ion-button [routerLink]="['/add-news']" fill="clear">
-            <ion-icon name="add-outline" slot="start"></ion-icon>
-            Publicar la primera noticia
-          </ion-button>
-        </div>
-      </div>
     </div>
 
-    <!-- COLUMNA 4: LISTADO (Después en HTML -> Derecha en Desktop) -->
-    <div class="col-4 col-sm-12 pl-base p-sm-0">
-      <div *ngIf="!isLoading && newsList.length > 0" class="f-bold mb-base fs-20">Noticias recientes</div>
-      <div class="side-news-list">
-        <ion-card class="side-news-item clickable m-0 shadow-none" *ngFor="let news of newsList"
-          [class.active]="news.id === selectedNews?.id" (click)="selectNews(news)">
-          <div class="side-news-thumb">
-            <img [src]="news.imageUrl" [alt]="news.title">
+    <!-- Grid de Noticias Estirado -->
+    <div *ngIf="!isLoading && newsList.length > 0" class="news-grid animate-fade-in">
+      <ion-card class="side-news-item clickable m-0 shadow-none" *ngFor="let news of newsList"
+        (click)="goToDetail(news.id)">
+        <div class="side-news-thumb">
+          <img [src]="news.imageUrl" [alt]="news.title">
+          <div class="category-pill">{{ news.category }}</div>
+        </div>
+        <div class="side-news-info">
+          <h3 class="side-news-title">{{ news.title }}</h3>
+          <p class="side-news-excerpt">{{ news.summary || news.content | slice:0:100 }}...</p>
+          <div class="side-news-footer">
+            <span class="side-news-author">{{ news.author }}</span>
+            <span class="side-news-date">{{ news.date | date:'mediumDate' }}</span>
           </div>
-          <div class="side-news-info">
-            <div class="side-news-title">{{ news.title }}</div>
-            <div class="side-news-excerpt">{{ news.summary || news.content | slice:0:80 }}...</div>
-            <div class="side-news-date">{{ news.date | date:'shortDate' }}</div>
-          </div>
-        </ion-card>
-      </div>
+        </div>
+      </ion-card>
     </div>
 
+    <!-- No hay noticias -->
+    <div *ngIf="!isLoading && newsList.length === 0" class="empty-container">
+      <ion-icon name="newspaper-outline"></ion-icon>
+      <h2>No hay noticias todavía</h2>
+      <p>Vuelve pronto para las últimas novedades del fútbol.</p>
+    </div>
   </div>
+  <!-- COLUMNA 4: LISTADO (Después en HTML -> Derecha en Desktop) -->
+  <div class="col-4 col-sm-12 pl-base px-0-sm">
+    <ion-card *ngIf="isAdmin">
+      <ion-card-header>
+        <ion-card-title class="fs-20 fs-sm-18 f-semibold">Opciones de administrador</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item [button]="true" lines="none" detail="true" class="action-item mb-s" [routerLink]="['/add-news']">
+          <ion-icon aria-hidden="true" size="large" name="add-circle-outline" color="primary"></ion-icon>
+          <ion-label class="ml-s">Crear noticia</ion-label>
+        </ion-item>
+
+        <div class="separator my-s"></div>
+
+        <ion-item [button]="true" lines="none" detail="true" class="action-item" [routerLink]="['/manage-news']">
+          <ion-icon aria-hidden="true" size="large" name="settings-outline" color="primary"></ion-icon>
+          <ion-label class="ml-s">Gestionar noticias</ion-label>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
 </div>

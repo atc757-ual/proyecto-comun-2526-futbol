@@ -29,30 +29,26 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Duración mínima del splash (1.2s) + comprobación de sesión
-    const minSplash = new Promise<void>(resolve => setTimeout(resolve, 1200));
+    // Duración mínima del splash + comprobación de sesión
+    const minSplash = new Promise<void>(resolve => setTimeout(resolve, 1500));
 
-    const destino = this.auth.currentUser ? '/home' : null;
+    // Esperar al observable de Firebase para tener la certeza del estado del usuario
+    const authCheck = new Promise<string>(resolve => {
+      this.authService.user$.pipe(take(1)).subscribe(user => {
+        resolve(user ? '/home' : '/auth/login');
+      });
+    });
 
-    if (destino) {
-      // Ya sabemos el destino de forma síncrona
-      minSplash.then(() => {
-        this.showSplash = false;
-        this.router.navigate([destino]);
-      });
-    } else {
-      // Esperar al observable de Firebase
-      const authCheck = new Promise<string>(resolve => {
-        this.authService.user$.pipe(take(1)).subscribe(user => {
-          resolve(user ? '/home' : '/auth/login');
-        });
-      });
-
-      Promise.all([minSplash, authCheck]).then(([, ruta]) => {
-        this.showSplash = false;
-        this.router.navigate([ruta]);
-      });
-    }
+    Promise.all([minSplash, authCheck]).then(([, ruta]) => {
+      this.showSplash = false;
+      
+      const currentUrl = this.router.url;
+      // Solo redirigir si el usuario está en la página de inicio o raíz
+      // Esto evita que el router intente activar un outlet que ya está cargando una URL profunda
+      if (currentUrl === '/' || currentUrl === '' || currentUrl.includes('start')) {
+        this.router.navigate([ruta], { replaceUrl: true });
+      }
+    });
   }
 
   private initDeepLinks() {

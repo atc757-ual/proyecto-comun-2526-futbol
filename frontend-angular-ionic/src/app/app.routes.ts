@@ -30,17 +30,14 @@ export const routes: Routes = [
       {
         path: 'login',
         loadComponent: () => import('./features/login/login.page').then((m) => m.LoginPage),
-        data: { authTitle: '¡Bienvenido!', authSubtitle: 'Inicia sesión para gestionar tus jugadores.', isLogin: true }
       },
       {
         path: 'register',
         loadComponent: () => import('./features/register/register.page').then((m) => m.RegisterPage),
-        data: { authTitle: 'Crear Cuenta', authSubtitle: 'Únete para crear tu liga perfecta.', isLogin: false, showBackButton: true, backHref: '/auth/login' }
       },
       {
         path: 'forgot-password',
         loadComponent: () => import('./features/forgot-password/forgot-password.page').then((m) => m.ForgotPasswordPage),
-        data: { authTitle: 'Recuperar Contraseña', authSubtitle: 'Te enviaremos un enlace de recuperación.', isLogin: false, showBackButton: true, backHref: '/auth/login' }
       }
     ]
   },
@@ -51,15 +48,19 @@ export const routes: Routes = [
     children: [
       {
         path: 'home',
-        loadComponent: () => import('./features/home/home.page').then((m) => m.HomePage),
-        data: {
-          heroTitle: '¡Hola, Alex!',
-          heroSubtitle: 'Bienvenido a tu aplicación de fútbol'
-        }
+        loadComponent: () => import('./features/home/home.page').then((m) => m.HomePage)
       },
       {
         path: 'add-news',
-        loadComponent: () => import('./features/admin/add-news/add-news.page').then((m) => m.AddNewsPage),
+        loadComponent: () => import('./features/admin/add-edit-news/add-edit-news.page').then((m) => m.AddEditNewsPage),
+      },
+      {
+        path: 'edit-news/:id',
+        loadComponent: () => import('./features/admin/add-edit-news/add-edit-news.page').then((m) => m.AddEditNewsPage),
+      },
+      {
+        path: 'manage-news',
+        loadComponent: () => import('./features/admin/manage-news/manage-news.page').then((m) => m.ManageNewsPage),
       },
       {
         path: 'players',
@@ -72,14 +73,12 @@ export const routes: Routes = [
       {
         path: 'news',
         loadComponent: () => import('./features/news/news.page').then((m) => m.NewsPage),
-        data: {
-          heroTitle: 'Central de Noticias',
-          heroSubtitle: 'Toda la actualidad del fútbol a tu alcance'
-        }
+        pathMatch: 'full'
       },
       {
         path: 'news/:id',
-        loadComponent: () => import('./features/news/news.page').then((m) => m.NewsPage),
+        loadComponent: () => import('./features/news-detail/news-detail.page').then(m => m.NewsDetailPage),
+        pathMatch: 'full'
       },
       {
         path: 'ai-team',

@@ -14,6 +14,7 @@ import {
   closeCircleOutline, checkmarkCircle
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
+import { LayoutService } from '../../core/services/layout.service';
 
 @Component({
   selector: 'app-register',
@@ -58,6 +59,7 @@ export class RegisterPage implements OnInit {
   confirmFocused: boolean = false;
 
   private authService = inject(AuthService);
+  private layoutService = inject(LayoutService);
 
   constructor(
     private navCtrl: NavController,
@@ -71,22 +73,22 @@ export class RegisterPage implements OnInit {
     });
   }
 
-  ngOnInit() { }
+  ngOnInit() {
+    this.layoutService.setAuth({
+      title: 'Únete al equipo',
+      subtitle: 'Crea tu cuenta para empezar a gestionar jugadores.',
+      isLogin: false
+    });
+  }
 
-  // --- TOASTS ---
   private async showToast(message: string, color: 'success' | 'danger') {
     const toast = await this.toastCtrl.create({
       message,
       duration: 3000,
       position: 'top',
       cssClass: color === 'success' ? 'toast-success' : 'toast-error',
-      buttons: [
-        {
-          icon: color === 'success' ? 'checkmark-circle-outline' : 'close-circle-outline',
-          side: 'start',
-          handler: () => { }
-        }
-      ]
+      icon: color === 'success' ? 'checkmark-circle-outline' : 'alert-circle-outline',
+      buttons: [{ role: 'cancel' }]
     });
     await toast.present();
   }

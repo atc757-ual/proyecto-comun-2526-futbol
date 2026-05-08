@@ -97,7 +97,7 @@
   <!-- Botón Registro -->
   <ion-button type="submit" expand="block" shape="round" class="futbol-btn-primary f-bold fs-16 mt-xl" mode="ios"
     [disabled]="!isFormValid() || isLoading">
-    <ion-spinner *ngIf="isLoading" name="crescent" slot="start" size="small"></ion-spinner>
+    <ion-spinner *ngIf="isLoading" name="crescent" slot="start" size="small" class="mr-s"></ion-spinner>
     <span *ngIf="!isLoading">Crear mi cuenta</span>
     <span *ngIf="isLoading">Creando cuenta...</span>
   </ion-button>
@@ -105,7 +105,7 @@
 </form>
 
 <!-- Modal de Éxito Premium -->
-<ion-modal #modal id="success-modal">
+<ion-modal #modal id="success-modal" [backdropDismiss]="false">
   <ng-template>
     <div class="modal-wrapper ion-padding t-center">
       <div class="success-header">

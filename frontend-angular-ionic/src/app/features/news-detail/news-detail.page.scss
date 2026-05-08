@@ -1,7 +1,10 @@
 ion-card.main-article {
   background: var(--color-neutral-0);
   overflow: hidden;
+  --border-radius: var(--border-radius-large);
+  border-radius: var(--border-radius-large);
   margin: 0;
+  box-shadow: none;
 
   .article-image-container {
     position: relative;
@@ -92,159 +95,123 @@ ion-card.main-article {
   }
 }
 
-.news-grid {
+/* LISTADO LATERAL (COL 4) */
+.side-news-list {
   display: flex;
   flex-direction: column;
   gap: var(--space-base);
-  padding: 0;
 }
 
 ion-card.side-news-item {
-  --border-radius: var(--border-radius-large);
-  border-radius: var(--border-radius-large);
+  --border-radius: var(--border-radius-medium);
+  border-radius: var(--border-radius-medium);
   display: flex;
-  flex-direction: row;
-  /* Imagen a la izquierda, info a la derecha */
   padding: 0;
   gap: 0;
-  min-height: 220px;
-  background: var(--color-white);
+  height: 130px;
+  background: var(--color-neutral-0);
   cursor: pointer;
   margin: 0;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--color-neutral-2);
-  transition: all var(--transition-normal);
-  overflow: hidden;
-
-  @media (max-width: 767px) {
-    flex-direction: column;
-    /* En móvil vuelve a vertical */
-    height: auto;
-  }
+  box-shadow: none;
 
   &:hover {
-    transform: translateX(8px);
-    /* Desplazamiento lateral sutil */
-    box-shadow: var(--shadow-lg);
+    background: var(--blue-primary-010);
+  }
 
-    .side-news-thumb img {
-      transform: scale(1.05);
+  &.active {
+    background: var(--blue-primary-010);
+    border: 2px solid var(--color-primary);
+
+    .side-news-title {
+      color: var(--color-primary);
     }
   }
 
   .side-news-thumb {
-    flex: 0 0 35%;
-    /* La imagen ocupa el 35% del ancho */
-    align-self: stretch;
-    /* Se estira al alto del padre */
-    display: flex;
+    flex: 0 0 100px;
+    height: 100%;
     overflow: hidden;
     position: relative;
-
-    @media (max-width: 767px) {
-      width: 100%;
-      height: 200px;
-    }
 
     img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.8s ease;
-    }
-
-    .category-pill {
-      position: absolute;
-      top: 16px;
-      left: 16px;
-      background: var(--color-primary);
-      color: white;
-      padding: 6px 14px;
-      border-radius: 8px;
-      font-size: 10px;
-      font-weight: 800;
-      text-transform: uppercase;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      object-position: top center;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     }
   }
+
 
   .side-news-info {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     padding: var(--space-base);
     flex: 1;
-    justify-content: center;
+  }
 
-    @media (max-width: 767px) {
-      padding: var(--space-base);
-    }
+  .side-news-source {
+    font-size: var(--fs-10);
+    font-weight: var(--fw-bold);
+    color: var(--color-neutral-5);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
   }
 
   .side-news-title {
-    font-size: var(--fs-24);
-    font-weight: 800;
+    font-size: var(--fs-16);
+    font-weight: var(--fw-bold);
     color: var(--color-neutral-9);
-    margin-bottom: var(--space-m);
-    line-height: 1.2;
-
-    @media (max-width: 767px) {
-      font-size: var(--fs-18);
-    }
+    margin-bottom: var(--space-xs);
   }
 
   .side-news-excerpt {
-    font-size: var(--fs-16);
-    color: var(--color-neutral-6);
-    margin-bottom: var(--space-base);
-    line-height: 1.6;
+    font-size: var(--fs-14);
+    color: var(--color-neutral-7);
+    margin-bottom: var(--space-xs);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-
-    @media (max-width: 767px) {
-      font-size: var(--fs-14);
-    }
   }
 
-  .side-news-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: var(--space-m);
-    border-top: 1px solid var(--color-neutral-1);
-    margin-top: auto;
-
-    .side-news-author {
-      font-size: var(--fs-14);
-      font-weight: 700;
-      color: var(--color-primary);
-    }
-
-    .side-news-date {
-      font-size: var(--fs-12);
-      color: var(--color-neutral-4);
-      font-weight: 600;
-    }
+  .side-news-date {
+    font-size: var(--fs-12);
+    color: var(--color-neutral-6);
   }
 }
 
-.empty-container {
-  text-align: center;
-  padding: 100px 20px;
+/* SKELETON CLASSES */
+.sk-banner {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--border-radius-large);
+}
 
-  ion-icon {
-    font-size: 64px;
-    color: var(--color-neutral-3);
-    margin-bottom: 20px;
-  }
+.sk-tag {
+  width: 25%;
+  height: 20px;
+  border-radius: var(--border-radius-small);
+}
 
-  h2 {
-    font-weight: 700;
-    color: var(--color-neutral-8);
-  }
+.sk-title {
+  width: 90%;
+  height: 36px;
+  border-radius: var(--border-radius-small);
+}
 
-  p {
-    color: var(--color-neutral-5);
-  }
+.sk-line {
+  width: 100%;
+  height: 14px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  &.short { width: 70%; }
+}
+
+.sk-thumb {
+  flex: 0 0 100px;
+  height: 100%;
+  border-radius: var(--border-radius-medium);
 }

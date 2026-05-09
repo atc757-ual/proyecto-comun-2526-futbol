@@ -2,19 +2,20 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { IonicModule, ToastController, LoadingController, NavController } from '@ionic/angular';
+import { IonicModule, ToastController, NavController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
-  cloudUploadOutline, cameraOutline, sendOutline, arrowBackOutline,
+  cloudUploadOutline, sendOutline, arrowBackOutline,
   homeOutline, newspaperOutline, listOutline, personOutline, pricetagsOutline,
-  fingerPrintOutline, calendarOutline, eyeOutline, eyeOffOutline, closeCircle, starOutline,
+  calendarOutline, eyeOutline, closeCircle, starOutline,
   saveOutline, checkmarkCircleOutline, alertCircleOutline, close, trashOutline, syncOutline,
-  chevronBackOutline, imageOutline
+  chevronDownOutline
 } from 'ionicons/icons';
 import { NewsService, NewsItem } from '../../../core/services/news.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { LayoutService } from 'src/app/core/services/layout.service';
 import { PlatformService } from 'src/app/core/services/platform.service';
+import { StorageService } from '../../../core/services/storage.service';
 
 @Component({
   selector: 'app-add-edit-news',
@@ -26,11 +27,18 @@ import { PlatformService } from 'src/app/core/services/platform.service';
 export class AddEditNewsPage implements OnInit {
   private newsService = inject(NewsService);
   private authService = inject(AuthService);
+  private storageService = inject(StorageService);
   private toastCtrl = inject(ToastController);
   private navCtrl = inject(NavController);
   private layoutService = inject(LayoutService);
   private route = inject(ActivatedRoute);
   public platformService = inject(PlatformService);
+
+  // Iconos para lógica de intercambio
+  public calendarOutline = calendarOutline;
+  public checkmarkCircleOutline = checkmarkCircleOutline;
+  public chevronDownOutline = chevronDownOutline;
+  public pricetagsOutline = pricetagsOutline;
 
   isEditMode = false;
   newsId: string | null = null;
@@ -44,11 +52,11 @@ export class AddEditNewsPage implements OnInit {
   newsData: NewsItem = {
     title: '',
     summary: '',
-    category: 'General',
+    category: '',
     author: '',
     content: '',
     imageUrl: '',
-    date: new Date().toISOString(),
+    date: new Date().toISOString().split('T')[0],
     tags: [],
     isActive: false,
     isFeatured: false
@@ -71,6 +79,12 @@ export class AddEditNewsPage implements OnInit {
     { value: 'General', label: 'General' }
   ];
 
+  categoryPopoverOptions = {
+    subHeader: 'Selecciona el tema principal',
+    cssClass: 'futbol-popover'
+  };
+
+
   // Estados de foco para los iconos (Estilo Auth)
   focusedField: string | null = null;
 
@@ -78,12 +92,6 @@ export class AddEditNewsPage implements OnInit {
     this.focusedField = field;
   }
 
-  // Formateador de contador que ignora espacios en blanco
-  customCounterFormatter = (inputLength: number, maxLength: number) => {
-    // Nota: Aunque Ionic nos pasa inputLength, nosotros calculamos el real sin espacios
-    // Necesitamos acceder al valor actual del modelo
-    return ``; // Se completará en el HTML o con una lógica más directa
-  };
 
   get hasChanges(): boolean {
     // Si no estamos en edición, cualquier dato válido es un "cambio" respecto a nada
@@ -98,6 +106,25 @@ export class AddEditNewsPage implements OnInit {
   getNonWhitespaceLength(value: string | undefined): number {
     if (!value) return 0;
     return value.replace(/\s/g, '').length;
+  }
+
+  // Métodos de validación para el feedback visual (Checkmarks)
+  isTitleValid(): boolean {
+    return (this.newsData.title?.trim().length || 0) >= 5;
+  }
+
+  isSummaryValid(): boolean {
+    const len = this.getNonWhitespaceLength(this.newsData.summary);
+    return len >= 10;
+  }
+
+  isAuthorValid(): boolean {
+    return (this.newsData.author?.trim().length || 0) >= 3;
+  }
+
+  isContentValid(): boolean {
+    const len = this.getNonWhitespaceLength(this.newsData.content);
+    return len >= 20;
   }
 
   // Formateadores específicos para cada campo para asegurar el contexto
@@ -117,16 +144,29 @@ export class AddEditNewsPage implements OnInit {
   };
 
   tagCounterFormatter = (inputLength: number, maxLength: number) => {
-    return `${this.newsData.tags.length} / 6`;
+    return `${inputLength} / ${maxLength} carac. | ${this.newsData.tags.length} / 6 tags`;
   };
+
+  tagsTouched = false;
+
+  get shouldShowTagBorderError(): boolean {
+    // El borde solo se pone rojo si está vacío y el usuario ya salió del campo
+    return this.tagsTouched && this.newsData.tags.length === 0 && this.focusedField !== 'tags';
+  }
+
+  get tagErrorText(): string {
+    if (this.tagError) return this.tagError;
+    if (this.shouldShowTagBorderError) return 'Se requiere al menos una etiqueta';
+    return '';
+  }
 
   constructor() {
     addIcons({
-      cloudUploadOutline, cameraOutline, sendOutline, arrowBackOutline,
+      cloudUploadOutline, sendOutline, arrowBackOutline,
       homeOutline, newspaperOutline, listOutline, personOutline, pricetagsOutline,
-      fingerPrintOutline, calendarOutline, eyeOutline, eyeOffOutline, closeCircle, starOutline,
-      saveOutline, checkmarkCircleOutline, alertCircleOutline, close, trashOutline, syncOutline, chevronBackOutline,
-      imageOutline
+      calendarOutline, eyeOutline, closeCircle, starOutline,
+      saveOutline, checkmarkCircleOutline, alertCircleOutline, close, trashOutline, syncOutline,
+      chevronDownOutline
     });
   }
 
@@ -166,6 +206,10 @@ export class AddEditNewsPage implements OnInit {
     this.newsService.getNewsById(this.newsId).subscribe({
       next: (news) => {
         this.newsData = { ...news };
+        // Asegurar formato yyyy-MM-dd para el input nativo
+        if (this.newsData.date && this.newsData.date.includes('T')) {
+          this.newsData.date = this.newsData.date.split('T')[0];
+        }
         this.previewImage = news.imageUrl;
 
         // Guardar estado inicial para detección de cambios reales
@@ -209,16 +253,20 @@ export class AddEditNewsPage implements OnInit {
     this.newsData.imageUrl = '';
   }
 
+  tagError: string = '';
+
   addTag() {
+    this.tagError = ''; // Limpiar error previo
     let tag = this.tagInput.trim().replace(/,/g, '');
     if (!tag) return;
 
-    // Quitar el # inicial si ya lo trae para no duplicarlo, luego lo pondremos en el HTML
+    // Quitar el # inicial si ya lo trae
     tag = tag.startsWith('#') ? tag.substring(1) : tag;
 
+    // Ya no hace falta recortar ni avisar aquí, el HTML se encarga con maxlength="15"
     if (tag) {
       if (this.newsData.tags.includes(tag)) {
-        this.showToast('Esta etiqueta ya ha sido añadida', 'warning');
+        this.tagError = 'Esta etiqueta ya ha sido añadida';
         this.tagInput = '';
         return;
       }
@@ -228,7 +276,7 @@ export class AddEditNewsPage implements OnInit {
         this.tagInput = ''; // Limpiar el input
         this.forceTagCounterUpdate();
       } else {
-        this.showToast('Máximo 6 etiquetas permitidas', 'warning');
+        this.tagError = 'Máximo 6 etiquetas permitidas';
       }
     } else {
       this.tagInput = ''; // Limpiar si está vacío
@@ -243,13 +291,10 @@ export class AddEditNewsPage implements OnInit {
   dummyCounter = 0;
 
   forceTagCounterUpdate() {
-    // Truco para forzar a Ionic a actualizar el contador:
-    // Cambiar dinámicamente un valor que el Web Component observa (como maxlength)
     this.dummyCounter++;
-    
-    // Reasignar la referencia de la función por seguridad
+    // Forzamos el refresco del formateador re-asignándolo
     this.tagCounterFormatter = (inputLength: number, maxLength: number) => {
-      return `${this.newsData.tags.length} / 6`;
+      return `${inputLength} / ${maxLength} carac. | ${this.newsData.tags.length} / 6 tags`;
     };
   }
 
@@ -259,31 +304,72 @@ export class AddEditNewsPage implements OnInit {
     }
   }
 
+
   async onPublish() {
     if (!this.newsData.title || !this.newsData.content) {
       this.showToast('Por favor, completa los campos obligatorios', 'warning');
       return;
     }
 
+    if (this.isEditMode && !this.hasChanges) {
+      this.showToast('No se han detectado cambios para actualizar', 'warning');
+      return;
+    }
+
     this.isPublishing = true;
 
-    const request = this.isEditMode
-      ? this.newsService.updateNews(this.newsData)
-      : this.newsService.addNews(this.newsData);
+    try {
+      // 1. Manejo de Imagen en Firebase Storage
+      if (this.selectedFile) {
+        // Validación extra de seguridad: Solo admin puede subir a Storage
+        if (!this.authService.isAdmin()) {
+          this.showToast('No tienes permisos para ejecutar esta acción', 'danger');
+          this.isPublishing = false;
+          return;
+        }
 
-    request.subscribe({
-      next: (res) => {
-        this.isPublishing = false;
-        const msg = this.isEditMode ? '¡Noticia actualizada con éxito!' : '¡Noticia publicada con éxito en CORBA!';
-        this.showToast(msg, 'success');
-        this.navCtrl.navigateRoot('/manage-news');
-      },
-      error: (err) => {
-        this.isPublishing = false;
-        console.error('Error al procesar la noticia:', err);
-        this.showToast('Error al conectar con el servidor CORBA', 'danger');
+        // Si hay una imagen nueva seleccionada para subir
+        console.log('[PUBLISH] Subiendo nueva imagen...');
+        const newImageUrl = await this.storageService.uploadImage(this.selectedFile, 'news');
+
+        // Si estamos editando y había una imagen previa en Firebase, borrarla
+        if (this.isEditMode && this.initialPreviewImage && this.initialPreviewImage.includes('firebasestorage')) {
+          await this.storageService.deleteImageByUrl(this.initialPreviewImage);
+        }
+
+        this.newsData.imageUrl = newImageUrl;
+      } else if (!this.previewImage && this.initialPreviewImage) {
+        // Si se quitó la imagen que había
+        if (this.initialPreviewImage.includes('firebasestorage')) {
+          await this.storageService.deleteImageByUrl(this.initialPreviewImage);
+        }
+        this.newsData.imageUrl = '';
       }
-    });
+
+      // 2. Enviar a CORBA
+      const request = this.isEditMode
+        ? this.newsService.updateNews(this.newsData)
+        : this.newsService.addNews(this.newsData);
+
+      request.subscribe({
+        next: (res) => {
+          this.isPublishing = false;
+          const msg = this.isEditMode ? '¡Noticia actualizada con éxito!' : '¡Noticia publicada con éxito en CORBA!';
+          this.showToast(msg, 'success');
+          this.navCtrl.navigateRoot('/manage-news');
+        },
+        error: (err) => {
+          this.isPublishing = false;
+          console.error('Error al procesar la noticia:', err);
+          this.showToast('Error al conectar con el servidor CORBA', 'danger');
+        }
+      });
+
+    } catch (error) {
+      this.isPublishing = false;
+      console.error('[PUBLISH] Error en el flujo de publicación:', error);
+      this.showToast('Error al procesar la imagen en Storage', 'danger');
+    }
   }
 
   onCancel() {

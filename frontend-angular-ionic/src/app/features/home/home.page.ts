@@ -10,6 +10,7 @@ import {
 import { RouterModule, Router } from '@angular/router';
 import { LayoutService } from 'src/app/core/services/layout.service';
 import { NewsService } from 'src/app/core/services/news.service';
+import { AuthService } from 'src/app/core/services/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -36,15 +37,17 @@ export class HomePage implements OnInit {
     });
   }
 
+  private authService = inject(AuthService);
+
   ngOnInit() {
     this.loadFeaturedNews();
 
     // Configurar Layout para la Home
     this.layoutService.setHeader({
-      title: '¡Bienvenido, Alex!',
+      title: `Hola, ${this.authService.firstName() || 'Usuario'}!`,
       subtitle: 'Toda la emoción del fútbol en tu mano',
       showHero: true,
-      isHome: true 
+      isHome: true
     });
 
     // Limpiar breadcrumbs al volver a Home

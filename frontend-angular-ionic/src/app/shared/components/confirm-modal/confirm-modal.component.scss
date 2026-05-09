@@ -1,0 +1,164 @@
+:host {
+  display: block;
+}
+
+.modal-wrapper {
+  padding: 40px 24px;
+  background: var(--color-white);
+  border-radius: 24px;
+  text-align: center;
+  position: relative;
+
+  // TEMATIZACIÓN DINÁMICA POR TIPO (Design System)
+  &.type-error,
+  &.type-delete,
+  &.type-logout {
+    .success-icon-bg {
+      background: var(--color-error-010) !important;
+
+      ion-icon {
+        color: var(--color-error-100) !important;
+      }
+    }
+  }
+
+  &.type-success {
+    .success-icon-bg {
+      background: var(--color-success-010) !important;
+
+      ion-icon {
+        color: var(--color-success-100) !important;
+      }
+    }
+  }
+
+  &.type-warning {
+    .success-icon-bg {
+      background: var(--color-warning-010) !important;
+
+      ion-icon {
+        color: var(--color-warning-100) !important;
+      }
+    }
+  }
+
+  &.type-info,
+  &.type-alert {
+    .success-icon-bg {
+      background: var(--blue-primary-010) !important;
+
+      ion-icon {
+        color: var(--blue-primary-100) !important;
+      }
+    }
+  }
+}
+
+.success-header {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+
+  .success-icon-bg {
+    width: 90px;
+    height: 90px;
+    border-radius: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    ion-icon {
+      font-size: 56px;
+    }
+  }
+}
+
+.modal-body {
+  margin-bottom: 32px;
+
+  h2 {
+    font-size: 22px;
+    margin-bottom: 12px;
+    color: var(--color-neutral-9);
+    line-height: 1.2;
+  }
+
+  p {
+    line-height: 1.6;
+    color: var(--color-neutral-7);
+    font-size: var(--fs-16);
+    margin: 0;
+  }
+}
+
+.modal-footer {
+  width: 100%;
+}
+
+.buttons-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  ion-button {
+    margin: 0;
+    height: 52px;
+    font-weight: var(--fw-semibold);
+  }
+
+  .btn-cancel {
+    order: 2;
+    --color: var(--color-primary);
+    --color-hover: var(--color-primary);
+    --color-focused: var(--color-primary);
+    --color-activated: var(--color-primary);
+    --border-color: var(--color-primary);
+    --background-hover: var(--blue-primary-010);
+    --background-focused: var(--blue-primary-010);
+    --background-activated: var(--blue-primary-010);
+    --background-hover-opacity: 1;
+    --background-focused-opacity: 1;
+    --background-activated-opacity: 1;
+  }
+
+  .futbol-btn-primary {
+    order: 1;
+  }
+}
+
+// ANIMACIONES
+@keyframes bounce {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-bounce {
+  animation: bounce 2s infinite ease-in-out;
+}
+
+// RESPONSIVE PARA DESKTOP
+@media (min-width: 768px) {
+  .buttons-container {
+    flex-direction: row;
+    gap: 16px;
+
+    ion-button {
+      flex: 1;
+    }
+
+    .btn-cancel {
+      order: 1;
+    }
+
+    .futbol-btn-primary {
+      order: 2;
+    }
+  }
+}

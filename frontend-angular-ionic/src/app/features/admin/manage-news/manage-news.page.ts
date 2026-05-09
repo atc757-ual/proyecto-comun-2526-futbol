@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { 
@@ -14,6 +14,8 @@ import {
   newspaperOutline, alertCircleOutline, searchOutline 
 } from 'ionicons/icons';
 import { NewsService, NewsItem } from '../../../core/services/news.service';
+import { StorageService } from '../../../core/services/storage.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-manage-news',
@@ -32,6 +34,9 @@ export class ManageNewsPage implements OnInit {
   filteredNews: NewsItem[] = [];
   isLoading = true;
   searchTerm = '';
+
+  private storageService = inject(StorageService);
+  private authService = inject(AuthService);
 
   constructor(
     private newsService: NewsService,
@@ -105,7 +110,7 @@ export class ManageNewsPage implements OnInit {
           text: 'Eliminar',
           role: 'destructive',
           handler: () => {
-            this.confirmDelete(item.id!);
+            this.confirmDelete(item);
           }
         }
       ]
@@ -114,8 +119,27 @@ export class ManageNewsPage implements OnInit {
     await alert.present();
   }
 
-  private confirmDelete(id: string) {
-    this.newsService.deleteNews(id).subscribe({
+  private async confirmDelete(item: NewsItem) {
+    // Validación de seguridad extra: Solo admin puede borrar
+    if (!this.authService.isAdmin()) {
+      const toast = await this.toastController.create({
+        message: 'No tienes permisos para ejecutar esta acción',
+        duration: 3000,
+        color: 'danger',
+        position: 'bottom'
+      });
+      toast.present();
+      return;
+    }
+
+    // 1. Si tiene imagen en Firebase Storage, borrarla primero
+    if (item.imageUrl && item.imageUrl.includes('firebasestorage')) {
+      console.log('[DELETE] Eliminando imagen de Storage antes de borrar noticia...');
+      await this.storageService.deleteImageByUrl(item.imageUrl);
+    }
+
+    // 2. Borrar de CORBA
+    this.newsService.deleteNews(item.id!).subscribe({
       next: async () => {
         const toast = await this.toastController.create({
           message: 'Noticia eliminada correctamente',

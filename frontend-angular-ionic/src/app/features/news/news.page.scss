@@ -5,15 +5,15 @@
   gap: var(--space-base);
   padding: 0 var(--space-base);
 
-  @media (max-width: 991px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  /* MOBILE: 1 POR FILA (HORIZONTAL) */
-  @media (max-width: 767px) {
+  /* LAYOUT PARA TABLET Y MOBILE (1 POR FILA) */
+  @media (max-width: 1024px) {
     grid-template-columns: 1fr;
     gap: var(--space-s);
     padding: 0 var(--space-s);
+
+    .main-news-card {
+      grid-column: span 1 !important;
+    }
   }
 
   .main-news-card {
@@ -43,12 +43,12 @@
       }
     }
 
-    /* --- ESTILO MOBILE: LISTA HORIZONTAL LIMPIA --- */
-    @media (max-width: 767px) {
+    /* --- ESTILO MOBILE/TABLET: LISTA HORIZONTAL LIMPIA --- */
+    @media (max-width: 1024px) {
       grid-column: span 1 !important;
       flex-direction: row !important;
-      height: 125px !important; // Altura fija compacta para móvil
-      border: 1px solid var(--color-neutral-1) !important; // Borde más fino para móvil
+      height: 125px !important; // Altura fija compacta
+      border: 1px solid var(--color-neutral-1) !important;
 
       .main-news-image-wrapper {
         flex: 0 0 25% !important;
@@ -63,7 +63,6 @@
         justify-content: space-around;
         padding: var(--space-s) !important;
 
-
         .main-news-title {
           margin-bottom: 0 !important;
           -webkit-line-clamp: 2 !important;
@@ -77,7 +76,7 @@
     }
 
     /* --- LÓGICA RÍTMICA DESKTOP (3-2-1) --- */
-    @media (min-width: 768px) {
+    @media (min-width: 1025px) {
 
       &:nth-child(6n+4),
       &:nth-child(6n+5) {
@@ -153,7 +152,7 @@
         font-weight: 800;
         text-transform: uppercase;
 
-        @media (max-width: 767px) {
+        @media (max-width: 1024px) {
           top: 8px;
           left: 8px;
           padding: 2px 6px;

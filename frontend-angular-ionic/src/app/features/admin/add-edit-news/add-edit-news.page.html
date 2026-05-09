@@ -26,8 +26,12 @@
           <div class="form-item mb-m">
             <ion-input mode="md" fill="outline" label="Autor/Editorial" labelPlacement="stacked"
               [(ngModel)]="newsData.author" name="author" class="futbol-input  " placeholder="Juan Pérez"
-              helperText="Nombre del autor o equipo editorial" errorText="Este campo debe tener un valor válido">
-              <ion-icon slot="start" name="person-outline" class="fs-20 mr-s" color="medium"></ion-icon>
+              helperText="Nombre del autor o equipo editorial" errorText="Este campo debe tener un valor válido"
+              (ionFocus)="setFocus('author')" (ionBlur)="setFocus(null)" [class.is-focused]="focusedField === 'author'">
+              <ion-icon slot="start" name="person-outline" class="fs-20 mr-s"
+                [color]="focusedField === 'author' ? 'primary' : 'medium'"></ion-icon>
+              <ion-icon *ngIf="isAuthorValid()" slot="end" name="checkmark-circle-outline" color="primary"
+                class="fs-20"></ion-icon>
             </ion-input>
           </div>
 
@@ -39,8 +43,10 @@
               placeholder="Un breve resumen que enganche al lector..." class="futbol-input "
               helperText="Resumen o frase importante" errorText="Min. 10 carácteres" (ionFocus)="setFocus('summary')"
               (ionBlur)="setFocus(null)" [class.is-focused]="focusedField === 'summary'"
-              [class.input-error]="summaryModel.invalid && summaryModel.touched"
-              style="min-height: 100px;"></ion-textarea>
+              [class.input-error]="summaryModel.invalid && summaryModel.touched" style="min-height: 100px;">
+              <ion-icon *ngIf="isSummaryValid()" slot="end" name="checkmark-circle-outline" color="primary"
+                class="fs-20"></ion-icon>
+            </ion-textarea>
           </div>
 
           <!-- Content -->
@@ -53,30 +59,43 @@
               (ionFocus)="setFocus('content')" (ionBlur)="setFocus(null)"
               [class.is-focused]="focusedField === 'content'"
               [class.input-error]="contentModel.invalid && contentModel.touched" style="min-height: 200px;">
+              <ion-icon *ngIf="isContentValid()" slot="end" name="checkmark-circle-outline" color="primary"
+                class="fs-20"></ion-icon>
             </ion-textarea>
-          </div>
+            <!-- Tags Input Section -->
+            <div class="form-item mb-base">
+              <div class="tags-input-container">
+                <ion-input #tagInputElem type="text" [(ngModel)]="tagInput" name="tagInput" mode="md" fill="outline"
+                  label="Etiquetas" labelPlacement="stacked" [counter]="true" [maxlength]="15"
+                  [counterFormatter]="tagCounterFormatter" class="futbol-input" (ionInput)="updateTags()"
+                  (keyup.enter)="addTag()" (ionFocus)="setFocus('tags')" (ionBlur)="setFocus(null); tagsTouched = true"
+                  helperText="Ingresa un tag y pulsa Enter Max 15 caracteres"
+                  [placeholder]="'Ej: mercado, fcb, liga...'" [class.is-focused]="focusedField === 'tags'"
+                  [class.input-error]="shouldShowTagBorderError">
 
-          <!-- Tags -->
-          <div class="form-item mb-m">
-            <ion-input mode="md" fill="outline" label="Tags (Pulsa Enter o usa Coma)" labelPlacement="stacked"
-              [(ngModel)]="tagInput" (ionChange)="updateTags()" (keyup.enter)="addTag()" name="tags"
-              [placeholder]="newsData.tags.length >= 6 ? 'Límite alcanzado' : '#fichajes, #laliga...'"
-              class="futbol-input " (ionFocus)="setFocus('tags')" (ionBlur)="setFocus(null)"
-              [class.is-focused]="focusedField === 'tags'" [disabled]="newsData.tags.length >= 6" counter="true"
-              [counterFormatter]="tagCounterFormatter" [maxlength]="100 + dummyCounter"
-              helperText="Ingresar los tags de la noticia (ej. #fichajes)" errorText="Min. un tag válido">
-              <ion-icon slot="start" name="pricetags-outline" class="fs-20 mr-s"
-                [color]="focusedField === 'tags' ? 'primary' : 'medium'"></ion-icon>
-            </ion-input>
+                  <!-- Icono Izquierda -->
+                  <ion-icon slot="start" icon="pricetags-outline" class="fs-20 mr-s"
+                    [color]="focusedField === 'tags' ? 'primary' : 'medium'"></ion-icon>
 
-            <!-- Chips debajo del contador nativo -->
-            <div class="tag-chips-container mt-s">
-              <div class="tag-chips-wrapper">
-                <ion-chip *ngFor="let tag of newsData.tags" mode="ios" class="futbol-chip">
-                  <ion-label>#{{ tag }}</ion-label>
-                  <ion-icon name="close" class="close-icon" (click)="removeTag(tag)"></ion-icon>
-                </ion-chip>
+                  <!-- Check Derecha -->
+                  <ion-icon slot="end" icon="checkmark-circle-outline" color="primary" class="fs-20"
+                    *ngIf="newsData.tags.length > 0"></ion-icon>
+                </ion-input>
               </div>
+
+              <!-- Chips de Etiquetas (FUERA y DEBAJO) -->
+              <div class="tag-chips-wrapper mt-s animated fadeIn" *ngIf="newsData.tags.length > 0">
+                <ion-chip *ngFor="let tag of newsData.tags" mode="ios" class="futbol-chip-pill">
+                  <ion-label>#{{ tag }}</ion-label>
+                  <ion-icon name="close" (click)="removeTag(tag)"></ion-icon>
+                </ion-chip>
+                <!-- Mensaje de Error Personalizado -->
+                <div class="error-message-container" *ngIf="tagErrorText">
+                  <span class="error-text animated fadeIn">{{ tagErrorText }}</span>
+                </div>
+              </div>
+
+
             </div>
           </div>
         </ion-card-content>
@@ -87,30 +106,32 @@
       <ion-card>
         <ion-card-content>
           <!-- Publication Date -->
-          <div class="form-item mb-base">
-            <ion-label class="f-medium mb-xs fs-12 f-regular">
-              Fecha de Publicación
-            </ion-label>
+          <div class="form-item mb-base date-wrapper">
             <ion-input mode="md" fill="outline" label="Fecha de Publicación" labelPlacement="stacked"
               [(ngModel)]="newsData.date" name="date" type="date" [min]="minDate" class="futbol-input "
               (ionFocus)="setFocus('date')" (ionBlur)="setFocus(null)" [class.is-focused]="focusedField === 'date'">
-              <ion-icon slot="start" name="calendar-outline" class="fs-20 mr-s"
-                [color]="focusedField === 'date' ? 'primary' : 'medium'"></ion-icon>
-            </ion-input>
+              <ion-icon class="fs-20" slot="end" icon="checkmark-circle-outline" color="primary"
+                *ngIf="newsData.date"></ion-icon></ion-input>
           </div>
 
           <!-- Category -->
-          <div class="form-item mb-base">
-            <ion-select #catModel="ngModel" interface="popover" [interfaceOptions]="{ cssClass: 'category-popover' }"
-              mode="md" fill="outline" label="Categoría" labelPlacement="stacked" [(ngModel)]="newsData.category"
-              name="category" class="futbol-input " (ionFocus)="setFocus('category')" (ionBlur)="setFocus(null)"
-              [class.is-focused]="focusedField === 'category'">
+          <div class="form-item mb-base category-wrapper">
+            <ion-select #catModel="ngModel" interface="popover" [interfaceOptions]="categoryPopoverOptions" mode="md"
+              fill="outline" label="Categoría" labelPlacement="stacked" [(ngModel)]="newsData.category" name="category"
+              class="futbol-input " (ionFocus)="setFocus('category')" (ionBlur)="setFocus(null)"
+              [class.is-focused]="focusedField === 'category'" placeholder="Selecciona una categoría">
               <ion-icon slot="start" name="list-outline" class="fs-20 mr-s"
                 [color]="focusedField === 'category' ? 'primary' : 'medium'"></ion-icon>
               <ion-select-option *ngFor="let cat of categories" [value]="cat.value">
                 {{ cat.label }}
               </ion-select-option>
             </ion-select>
+            <!-- Grupo de iconos: Check (si hay selección) + Flecha (siempre) -->
+            <div class="end-icons-group">
+              <ion-icon class="fs-20" icon="checkmark-circle-outline" color="primary"
+                *ngIf="newsData.category"></ion-icon>
+              <ion-icon class="fs-20" icon="chevron-down-outline" color="medium"></ion-icon>
+            </div>
           </div>
 
 
@@ -169,15 +190,13 @@
           <div class="action-buttons-stack">
             <ion-button expand="block" mode="ios" shape="round" (click)="onPublish()"
               [disabled]="!newsForm.valid || isPublishing || !previewImage || !hasChanges">
-              <ion-icon slot="start"
-                [name]="isPublishing ? '' : (isEditMode ? 'save-outline' : 'send-outline')"></ion-icon>
               <ion-spinner slot="start" name="crescent" *ngIf="isPublishing"></ion-spinner>
               {{ isPublishing ? (isEditMode ? 'Guardando...' : 'Publicando...') : (isEditMode ? 'Guardar Cambios' :
               'Publicar Noticia') }}
             </ion-button>
 
-            <ion-button *ngIf="platformService.isDesktop" shape="round" mode="ios" expand="block" class="mt-base"
-              fill="outline" color="primary" (click)="onCancel()">
+            <ion-button *ngIf="platformService.isDesktop" shape="round" mode="ios" expand="block"
+              class="btn-cancel mt-base" fill="outline" (click)="onCancel()">
               Volver atrás
             </ion-button>
           </div>

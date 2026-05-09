@@ -335,6 +335,7 @@
   }
 
   ion-breadcrumb {
+    color: var(--color-neutral-7);
 
     &.active-breadcrumb {
       color: var(--color-primary) !important;
@@ -347,6 +348,10 @@
 
     &::part(separator) {
       margin-inline: var(--breadcrumb-gap);
+    }
+
+    ion-icon {
+      color: var(--color-neutral-7) !important;
     }
 
     @media (max-width: 767px) {

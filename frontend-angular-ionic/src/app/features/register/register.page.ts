@@ -1,12 +1,12 @@
-import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, OnInit, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import {
-  IonInput, IonButton, IonIcon, IonModal,
+  IonInput, IonButton, IonIcon,
   IonSpinner, ToastController, IonInputPasswordToggle, NavController,
   IonHeader, IonToolbar, IonTitle, IonButtons, IonFooter, IonCheckbox, IonLabel, IonContent,
-  IonItem
+  IonItem, ModalController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -18,6 +18,7 @@ import {
 import { AuthService } from '../../core/services/auth.service';
 import { LayoutService } from '../../core/services/layout.service';
 import { PlatformService } from '../../core/services/platform.service';
+import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
 
 @Component({
   selector: 'app-register',
@@ -28,11 +29,9 @@ import { PlatformService } from '../../core/services/platform.service';
     CommonModule,
     FormsModule,
     RouterModule,
-
     IonInput,
     IonButton,
     IonIcon,
-    IonModal,
     IonSpinner,
     IonInputPasswordToggle,
     IonHeader,
@@ -43,11 +42,11 @@ import { PlatformService } from '../../core/services/platform.service';
     IonCheckbox,
     IonLabel,
     IonContent,
-    IonItem
+    IonItem,
+    ConfirmModalComponent
   ]
 })
 export class RegisterPage implements OnInit {
-
 
   // Form Data
   userName: string = '';
@@ -57,48 +56,12 @@ export class RegisterPage implements OnInit {
   acceptTerms: boolean = false;
   termsInteractable: boolean = false;
 
-  get termsBreakpoints(): number[] | undefined {
-    return this.platformService.isDesktop ? undefined : [0, 0.25, 0.5, 0.75];
-  }
-
-  get termsInitialBreakpoint(): number | undefined {
-    return this.platformService.isDesktop ? undefined : 0.75;
-  }
+  public platformService = inject(PlatformService);
+  private authService = inject(AuthService);
+  private layoutService = inject(LayoutService);
+  private modalCtrl = inject(ModalController);
 
   public showTermsOverlay: boolean = false;
-
-  // Open overlay and reset read state
-  openTermsOverlay() {
-    this.showTermsOverlay = true;
-    this.hasReadTerms = false;
-    this.termsInteractable = false;
-  }
-
-  // Close overlay without accepting
-  closeTermsOverlay() {
-    this.showTermsOverlay = false;
-  }
-
-  // Accept terms and close overlay
-  acceptAndCloseOverlay() {
-    this.acceptTerms = true;
-    this.termsInteractable = true;
-    this.showTermsOverlay = false;
-  }
-
-  // Handle manual checkbox unchecking
-  onTermsCheckboxChange(event: any) {
-    if (event.detail.checked === false) {
-      // Si el usuario desmarca la casilla, inhabilitamos y forzamos lectura de nuevo
-      this.termsInteractable = false;
-      this.hasReadTerms = false;
-    }
-  }
-
-  @ViewChild('modal') modal!: IonModal;
-  public platformService = inject(PlatformService);
-
-  // State for terms overlay
   public hasReadTerms: boolean = false;
   public isLoading: boolean = false;
 
@@ -111,9 +74,6 @@ export class RegisterPage implements OnInit {
   emailFocused: boolean = false;
   passFocused: boolean = false;
   confirmFocused: boolean = false;
-
-  private authService = inject(AuthService);
-  private layoutService = inject(LayoutService);
 
   constructor(
     private navCtrl: NavController,
@@ -148,7 +108,6 @@ export class RegisterPage implements OnInit {
   }
 
   // --- VALIDACIONES ---
-
   isNameValid(): boolean {
     const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
     return nameRegex.test(this.userName) && this.userName.length >= 3 && this.userName.length <= 250;
@@ -172,72 +131,107 @@ export class RegisterPage implements OnInit {
   }
 
   // --- LÓGICA DE TÉRMINOS ---
-
-  onModalWillPresent() {
-    if (!this.acceptTerms) {
-      this.hasReadTerms = false;
-    }
+  openTermsOverlay() {
+    this.showTermsOverlay = true;
+    this.hasReadTerms = false;
+    this.termsInteractable = false;
   }
 
-  async onModalDidPresent(event: any) {
-    if (this.hasReadTerms) return;
+  closeTermsOverlay() {
+    this.showTermsOverlay = false;
+  }
 
-    const modal = event.target;
-    const content = modal.querySelector('ion-content');
-    if (!content) return;
+  acceptAndCloseOverlay() {
+    this.acceptTerms = true;
+    this.termsInteractable = true;
+    this.showTermsOverlay = false;
+  }
 
-    const scrollElement = await content.getScrollElement();
-    const isAtBottom = scrollElement.scrollHeight <= scrollElement.clientHeight + 20;
-
-    if (isAtBottom) {
-      this.hasReadTerms = true;
+  onTermsCheckboxChange(event: any) {
+    if (event.detail.checked === false) {
+      this.termsInteractable = false;
+      this.hasReadTerms = false;
     }
   }
 
   async onTermsScroll(event: any, content: IonContent) {
     if (this.hasReadTerms) return;
-
     const scrollElement = await content.getScrollElement();
-    // Si el scroll llega cerca del final (20px de margen)
     const isAtBottom = scrollElement.scrollHeight - scrollElement.scrollTop <= scrollElement.clientHeight + 20;
-
     if (isAtBottom) {
       this.hasReadTerms = true;
     }
   }
 
-
-
   // --- EVENTOS DE FOCO ---
-
   onFocusName() { this.nameFocused = true; this.nameTouched = false; }
   onBlurName() { this.nameFocused = false; this.nameTouched = true; }
-
   onFocusEmail() { this.emailFocused = true; this.emailTouched = false; }
   onBlurEmail() { this.emailFocused = false; this.emailTouched = true; }
-
   onFocusPass() { this.passFocused = true; this.passTouched = false; }
   onBlurPass() { this.passFocused = false; this.passTouched = true; }
-
   onFocusConfirm() { this.confirmFocused = true; this.confirmTouched = false; }
   onBlurConfirm() { this.confirmFocused = false; this.confirmTouched = true; }
 
+  // Escuchar la tecla Enter en toda la ventana
+  @HostListener('window:keyup.enter', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    // Si el overlay de términos está abierto, no hacemos nada (para no registrar mientras lee)
+    if (this.showTermsOverlay) return;
+
+    this.onRegister();
+  }
+
   async onRegister() {
-    if (!this.isFormValid()) {
-      this.showToast('Por favor, revisa los campos con errores.', 'danger');
+    if (!this.isFormValid() || this.isLoading) {
       return;
     }
 
     this.isLoading = true;
     try {
+      // 1. Ejecutar Registro
       await this.authService.register(this.userEmail, this.userPass, this.userName);
-      this.showToast('¡Registro completado con éxito!', 'success');
-      this.modal.present();
+
+      // 2. IMPORTANTE: Parar el spinner de inmediato
+      this.isLoading = false;
+
+      // 3. Intentar mostrar el modal premium
+      try {
+        const successModal = await this.modalCtrl.create({
+          component: ConfirmModalComponent,
+          cssClass: 'premium-modal',
+          backdropDismiss: false,
+          componentProps: {
+            title: `¡Enhorabuena, ${this.capitalizedName}!`,
+            message: 'Tu cuenta ha sido creada correctamente. <br>Prepárate para vivir la experiencia real del fútbol.',
+            confirmText: 'Ir a la App',
+            cancelText: 'Más tarde',
+            type: 'success'
+          }
+        });
+
+        await successModal.present();
+        const { data } = await successModal.onWillDismiss();
+
+        if (data === true) {
+          // Confirmó: Ir a la App
+          this.navCtrl.navigateRoot('/home', { animated: true, animationDirection: 'forward' });
+        } else {
+          // Canceló: Más tarde. Cerramos la sesión automática y volvemos al login
+          await this.authService.logout();
+          this.navCtrl.navigateRoot('/auth/login', { animated: true, animationDirection: 'back' });
+        }
+
+      } catch (modalErr) {
+        console.error('Error al mostrar modal:', modalErr);
+        // Fallback: Si el modal falla, navegamos directo
+        this.navCtrl.navigateRoot('/home', { animated: true });
+      }
+
     } catch (error: any) {
+      this.isLoading = false;
       console.error('Error Register:', error);
       this.showToast(this.getErrorMessage(error.code), 'danger');
-    } finally {
-      this.isLoading = false;
     }
   }
 
@@ -250,15 +244,9 @@ export class RegisterPage implements OnInit {
     }
   }
 
-  closeModal() {
-    this.modal.dismiss();
-    this.navCtrl.navigateRoot('/home', { animated: true, animationDirection: 'forward' });
-  }
-
   get capitalizedName(): string {
     if (!this.userName) return '';
     const firstName = this.userName.trim().split(' ')[0];
     return firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
   }
-
 }

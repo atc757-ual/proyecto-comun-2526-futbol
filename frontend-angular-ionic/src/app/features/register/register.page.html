@@ -4,8 +4,9 @@
   <!-- INPUT: Nombre Completo -->
   <div class="mb-m">
     <ion-input mode="md" type="text" label="Nombre Completo" label-placement="stacked" fill="outline" required
-      name="fullName" minlength="3" maxlength="250" placeholder="Tu nombre completo"
-      class="futbol-input  capitalize-input" [(ngModel)]="userName" (ionBlur)="onBlurName()" (ionFocus)="onFocusName()"
+      name="fullName" minlength="3" maxlength="250" placeholder="Juán Pérez" class="futbol-input  capitalize-input"
+      [(ngModel)]="userName" (ionBlur)="onBlurName()" (ionFocus)="onFocusName()"
+      (keyup.enter)="onRegister()"
       [class.input-error]="nameTouched && !isNameValid()" [class.is-focused]="nameFocused">
 
       <ion-icon [color]="nameFocused ? 'primary' : (nameTouched && !isNameValid() ? 'danger' : 'medium')" slot="start"
@@ -26,7 +27,7 @@
   <div class="mb-m">
     <ion-input mode="md" type="email" label="Email" inputmode="email" label-placement="stacked" fill="outline" required
       name="email" placeholder="tu@email.com" class="futbol-input" [(ngModel)]="userEmail" (ionBlur)="onBlurEmail()"
-      (ionFocus)="onFocusEmail()" [class.input-error]="emailTouched && !isEmailValid()"
+      (ionFocus)="onFocusEmail()" (keyup.enter)="onRegister()" [class.input-error]="emailTouched && !isEmailValid()"
       [class.is-focused]="emailFocused">
 
       <ion-icon [color]="emailFocused ? 'primary' : (emailTouched && !isEmailValid() ? 'danger' : 'medium')"
@@ -47,7 +48,7 @@
   <div class="mb-m">
     <ion-input mode="md" type="password" label="Contraseña" label-placement="stacked" fill="outline" required
       name="password" minlength="8" placeholder="Mínimo 8 caracteres" class="futbol-input " [(ngModel)]="userPass"
-      (ionBlur)="onBlurPass()" (ionFocus)="onFocusPass()" [class.input-error]="passTouched && !isPasswordValid()"
+      (ionBlur)="onBlurPass()" (ionFocus)="onFocusPass()" (keyup.enter)="onRegister()" [class.input-error]="passTouched && !isPasswordValid()"
       [class.is-focused]="passFocused" clear-on-edit="true">
 
       <ion-icon slot="start"
@@ -56,7 +57,7 @@
       </ion-icon>
 
       <!-- TOGGLE DE CONTRASEÑA -->
-      <ion-input-password-toggle slot="end" mode="ios" color="medium"></ion-input-password-toggle>
+      <ion-input-password-toggle slot="end" mode="ios" tabindex="-1"></ion-input-password-toggle>
 
       <ion-icon *ngIf="isPasswordValid()" slot="end" name="checkmark-circle-outline" color="primary" class="fs-20">
       </ion-icon>
@@ -72,7 +73,8 @@
   <div class="mb-base">
     <ion-input mode="md" type="password" label="Confirmar Contraseña" label-placement="stacked" fill="outline" required
       name="confirmPassword" minlength="8" placeholder="Repite tu contraseña" class="futbol-input"
-      [(ngModel)]="confirmPass" (ionBlur)="onBlurConfirm()" (ionFocus)="onFocusConfirm()"
+      [(ngModel)]="confirmPass" (ionBlur)="onBlurConfirm()" (ionFocus)="onFocusConfirm()" clear-on-edit="true"
+      (keyup.enter)="onRegister()"
       [class.input-error]="confirmTouched && !doPasswordsMatch()" [class.is-focused]="confirmFocused"
       clear-on-edit="false">
 
@@ -82,7 +84,7 @@
       </ion-icon>
 
       <!-- TOGGLE DE CONTRASEÑA -->
-      <ion-input-password-toggle slot="end" mode="ios" color="medium"></ion-input-password-toggle>
+      <ion-input-password-toggle slot="end" mode="ios" tabindex="-1"></ion-input-password-toggle>
 
       <ion-icon *ngIf="doPasswordsMatch()" slot="end" name="checkmark-circle-outline" color="primary" class="fs-20">
       </ion-icon>
@@ -94,7 +96,7 @@
     </div>
   </div>
   <ion-item lines="none">
-    <ion-checkbox slot="start" [(ngModel)]="acceptTerms" name="acceptTerms" [disabled]="!termsInteractable"
+    <ion-checkbox mode="ios" slot="start" [(ngModel)]="acceptTerms" name="acceptTerms" [disabled]="!termsInteractable"
       (ionChange)="onTermsCheckboxChange($event)"></ion-checkbox>
     <ion-label class="f-medium ml-s">
       Acepto los <a class="text-primary f-semibold pointer" (click)="openTermsOverlay()"
@@ -107,8 +109,8 @@
   <div *ngIf="showTermsOverlay" class="custom-overlay">
     <div class="overlay-content">
       <!-- Cabecera -->
-      <ion-header class="ion-no-border">
-        <ion-toolbar class="toolbar-container">
+      <ion-header mode="ios" class="ion-no-border">
+        <ion-toolbar mode="ios" class="toolbar-container">
           <ion-title class="fs-20 f-medium"> Términos y Condiciones</ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="closeTermsOverlay()">
@@ -156,29 +158,3 @@
   </ion-button>
 
 </form>
-
-<!-- Modal de Éxito Premium -->
-<ion-modal #modal id="success-modal" [backdropDismiss]="false">
-  <ng-template>
-    <div class="modal-wrapper ion-padding t-center">
-      <div class="success-header">
-        <div class="success-icon-bg animate-bounce">
-          <ion-icon name="checkmark-circle-outline"></ion-icon>
-        </div>
-      </div>
-
-      <div class="modal-body">
-        <h2 class="f-bold">¡Bienvenido/a, {{ capitalizedName }}!</h2>
-        <p class="f-medium text-neutral-7">
-          Tu cuenta ha sido creada correctamente. Prepárate para vivir la experiencia real del fútbol.
-        </p>
-      </div>
-
-      <div class="modal-footer">
-        <ion-button mode="ios" expand="block" shape="round" class="futbol-btn-primary" (click)="closeModal()">
-          Ir a Inicio
-        </ion-button>
-      </div>
-    </div>
-  </ng-template>
-</ion-modal>

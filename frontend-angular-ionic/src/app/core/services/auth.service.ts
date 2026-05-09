@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal, computed } from '@angular/core';
 import {
   Auth, user, signInWithEmailAndPassword,
   signOut, createUserWithEmailAndPassword,
@@ -18,12 +18,28 @@ export class AuthService {
   private http = inject(HttpClient);
   private platform = inject(Platform);
 
+  // --- SIGNALS DE ESTADO ---
+  private _userData = signal<any>(this.loadInitialUserData());
+  public userData = this._userData.asReadonly();
+
+  // Signal computado para obtener solo el primer nombre
+  public firstName = computed(() => {
+    const user = this.userData();
+    if (!user || !user.name) return '';
+    return user.name.split(' ')[0];
+  });
+
   // Estado reactivo del usuario (Depende de Firebase Y del Token de Node)
   public user$ = user(this.auth);
   public currentUser = toSignal(this.user$);
   public isLoggedIn$ = this.user$.pipe(
     map(user => !!user && !!localStorage.getItem('jwt_token'))
   );
+
+  private loadInitialUserData() {
+    const data = localStorage.getItem('user_data');
+    return data ? JSON.parse(data) : null;
+  }
 
   constructor() {
     console.log('[AUTH] Inicializado');
@@ -45,6 +61,7 @@ export class AuthService {
   async logout() {
     localStorage.removeItem('jwt_token');
     localStorage.removeItem('user_data');
+    this._userData.set(null);
     return signOut(this.auth);
   }
 
@@ -86,6 +103,7 @@ export class AuthService {
       if (response && response.data && response.data.token) {
         localStorage.setItem('jwt_token', response.data.token);
         localStorage.setItem('user_data', JSON.stringify(response.data.user));
+        this._userData.set(response.data.user);
 
         console.log('--- DEBUG: BACKEND JWT (NUESTRO) ---');
         console.log(response.data.token);

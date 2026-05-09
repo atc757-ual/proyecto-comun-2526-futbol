@@ -57,20 +57,8 @@ ion-textarea {
   }
 }
 
-/* Forzar que el label no cambie a verde */
 .ion-valid.futbol-input {
   --highlight-color: var(--ion-color-primary) !important;
-}
-
-.error-container {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
-
-  ion-icon {
-    font-size: 16px;
-  }
 }
 
 .status-container {
@@ -185,54 +173,133 @@ ion-textarea {
   width: 100%;
 }
 
-.divider {
-  height: 1px;
-  background-color: var(--color-neutral-3);
-  width: 100%;
+.btn-cancel {
+  --color: var(--color-primary);
+  --color-hover: var(--color-primary);
+  --color-focused: var(--color-primary);
+  --color-activated: var(--color-primary);
+  --border-color: var(--color-primary);
+  --background-hover: var(--blue-primary-010);
+  --background-focused: var(--blue-primary-010);
+  --background-activated: var(--blue-primary-010);
+  --background-hover-opacity: 1;
+  --background-focused-opacity: 1;
+  --background-activated-opacity: 1;
 }
 
-.tag-chips-container {
-  display: flex;
-  flex-direction: column;
+.date-wrapper,
+.category-wrapper {
   position: relative;
-}
+  display: block;
 
-.tag-chips-wrapper {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 4px;
+  ion-input,
+  ion-select {
+    --padding-end: 12px !important;
 
-  .futbol-chip {
-    --background: var(--blue-primary-010);
-    --color: var(--color-primary);
-    height: 28px;
-    margin: 0;
-    border-radius: 8px;
-    font-weight: var(--fw-medium);
-    font-size: var(--fs-12);
-    border: 1px solid var(--color-primary);
+    ion-icon {
+      -webkit-margin-start: 8px;
+      margin-inline-start: 8px;
+      -webkit-margin-end: 0;
+      margin-inline-end: 0;
+    }
+  }
 
-    transition: all var(--transition-smooth);
+  .end-icons-group {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
     display: flex;
     align-items: center;
+    gap: 6px;
+    z-index: 2;
+    pointer-events: none;
 
-    ion-label {
-      margin: 0 4px;
+    ion-icon {
+      font-size: 18px;
+      transition: all var(--transition-smooth);
     }
 
-    .close-icon {
-      font-size: 20px;
-      color: var(--text-primary);
-      transition: all var(--transition-smooth);
-      cursor: pointer;
+    .success-icon {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
 
-      &:hover,
-      :active {
-        --background: var(--color-primary-020);
-        transform: scale(0.75);
+  ion-input[type="date"]::part(native) {
+    &::-webkit-calendar-picker-indicator {
+      opacity: 0 !important;
+      position: absolute;
+      right: 0;
+      width: 40px;
+      height: 100%;
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    // Ocultar iconos nativos adicionales en algunos navegadores
+    &::-webkit-inner-spin-button,
+    &::-webkit-clear-button {
+      display: none !important;
+      -webkit-appearance: none;
+    }
+  }
+
+  ion-select::part(icon) {
+    display: none !important;
+  }
+}
+
+/* --- Tags Section Styles (Input + Chips below) --- */
+.tag-chips-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-s, 8px);
+  padding: 4px var(--space-xs, 4px) 0 var(--space-xs, 4px);
+
+  .futbol-chip-pill {
+    height: 32px;
+    margin: 0;
+    background: var(--color-neutral-0, #f9fafb);
+    color: var(--color-primary);
+    font-weight: var(--fw-medium, 500);
+    font-size: var(--fs-13, 13px);
+    padding: 2px var(--space-s, 8px);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--border-radius-base, 8px);
+    transition: all var(--transition-smooth);
+
+    &:hover {
+      background: var(--blue-primary-010);
+      transform: translateY(-1px);
+    }
+
+    ion-icon {
+      color: var(--color-primary);
+      font-size: 18px;
+      margin-left: var(--space-xs, 4px);
+      opacity: 0.7;
+      cursor: pointer;
+      transition: opacity var(--transition-smooth);
+
+      &:hover {
+        opacity: 1;
       }
     }
+  }
+}
+
+.mt-s {
+  margin-top: 12px;
+}
+
+.error-message-container {
+  margin-top: var(--space-xs);
+  padding-left: var(--space-s);
+
+  .error-text {
+    font-size: var(--fs-10);
+    color: var(--ion-color-danger);
+    font-weight: var(--fw-medium);
   }
 }

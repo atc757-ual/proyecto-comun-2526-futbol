@@ -93,7 +93,7 @@
     <!-- LISTA REAL -->
     <ion-list *ngIf="!isLoading && newsList.length > 0" lines="none">
       <ion-list-header>
-        <ion-label class="f-bold mb-s fs-20 text-neutral-8">Noticias Destacadas</ion-label>
+        <ion-label class="f-bold mb-base fs-20 text-neutral-8">Noticias Destacadas</ion-label>
       </ion-list-header>
       <ng-container *ngFor="let news of newsList; let i = index">
         <ion-item button detail="false" class="side-news-item" [class.active]="news.id === selectedNew?.id"

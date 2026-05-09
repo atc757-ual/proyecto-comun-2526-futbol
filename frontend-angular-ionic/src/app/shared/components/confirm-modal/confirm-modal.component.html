@@ -1,0 +1,38 @@
+<div class="modal-wrapper t-center" [ngClass]="'type-' + type">
+  <!-- Cabecera con Icono Estilo Register -->
+  <div class="success-header">
+    <div class="success-icon-bg animate-bounce" [ngSwitch]="type">
+      <!-- Iconos automáticos por tipo (solo si no hay personalizado) -->
+      <ng-container>
+        <ion-icon *ngSwitchCase="'success'" icon="checkmark-circle-outline"></ion-icon>
+        <ion-icon *ngSwitchCase="'delete'" icon="trash-outline"></ion-icon>
+        <ion-icon *ngSwitchCase="'alert'" icon="alert-circle-outline"></ion-icon>
+        <ion-icon *ngSwitchCase="'warning'" icon="warning-outline"></ion-icon>
+        <ion-icon *ngSwitchCase="'logout'" icon="log-out-outline"></ion-icon>
+        <ion-icon *ngSwitchCase="'error'" icon="close-circle-outline"></ion-icon>
+        <ion-icon *ngSwitchDefault icon="information-circle-outline"></ion-icon>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Cuerpo -->
+  <div class="modal-body">
+    <h2 class="f-bold">{{ title }}</h2>
+    <p class="f-medium text-neutral-7" [innerHTML]="message"></p>
+  </div>
+
+  <!-- Footer con botones -->
+  <div class="modal-footer">
+    <div class="buttons-container">
+      <ion-button *ngIf="cancelText" mode="ios" expand="block" shape="round" fill="outline" class="btn-cancel"
+        (click)="dismiss(false)">
+        {{ cancelText }}
+      </ion-button>
+
+      <ion-button mode="ios" expand="block" color="primary" shape="round" class="futbol-btn-primary"
+        (click)="dismiss(true)">
+        {{ confirmText }}
+      </ion-button>
+    </div>
+  </div>
+</div>

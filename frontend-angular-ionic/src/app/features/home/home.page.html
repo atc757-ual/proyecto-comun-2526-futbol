@@ -3,6 +3,7 @@
   <swiper-container #swiperRef *ngIf="!isLoadingFeatured && featuredNews.length > 0"
     navigation-prev-el=".custom-prev" navigation-next-el=".custom-next" 
     [attr.loop]="featuredNews.length > 1 ? 'true' : 'false'"
+    [attr.looped-slides]="featuredNews.length"
     pagination="true" pagination-clickable="true" observer="true" observe-parents="true" autoplay="true"
     autoplay-delay="3000" autoplay-disable-on-interaction="false" slides-per-view="1" space-between="0"
     class="featured-swiper">

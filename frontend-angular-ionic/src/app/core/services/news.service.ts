@@ -83,12 +83,21 @@ export class NewsService {
    */
   private processNewsResponse(newsItems: NewsItem[]): NewsItem[] {
     if (!newsItems) return [];
-    return newsItems.map(item => {
+    
+    // 1. Formatear fechas a YYYY-MM-DD para que sean ordenables y legibles por HTML5
+    const processed = newsItems.map(item => {
       if (item.date && item.date.includes('/')) {
         const [day, month, year] = item.date.split('/');
         item.date = `${year}-${month}-${day}`;
       }
       return item;
+    });
+
+    // 2. Ordenar descendente (más reciente primero)
+    return processed.sort((a, b) => {
+      const dateA = a.date || '';
+      const dateB = b.date || '';
+      return dateB.localeCompare(dateA);
     });
   }
 

@@ -238,6 +238,14 @@ export class AddEditNewsPage implements OnInit {
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
+      // Validación de tamaño (100KB = 100 * 1024 bytes)
+      const maxSize = 100 * 1024;
+      if (file.size > maxSize) {
+        this.showToast('La imagen es demasiado pesada. Máximo 100KB', 'danger');
+        event.target.value = ''; // Limpiar el input para permitir re-seleccionar
+        return;
+      }
+
       this.selectedFile = file;
       const reader = new FileReader();
       reader.onload = () => {

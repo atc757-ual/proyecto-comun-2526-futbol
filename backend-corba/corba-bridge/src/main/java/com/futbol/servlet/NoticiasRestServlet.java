@@ -95,7 +95,22 @@ public class NoticiasRestServlet extends HttpServlet {
                 lista.add(validarYLimpiar(n, xsdPath));
             }
         }
-        System.out.println("[BRIDGE-LIST] Lista procesada. Enviando respuesta JSON...");
+        
+        // Ordenar la lista por fecha descendente (más reciente primero)
+        // El formato es DD/MM/YYYY, lo comparamos como YYYYMMDD
+        lista.sort((n1, n2) -> {
+            try {
+                String[] d1 = n1.date.split("/");
+                String[] d2 = n2.date.split("/");
+                String iso1 = d1[2] + d1[1] + d1[0]; // YYYYMMDD
+                String iso2 = d2[2] + d2[1] + d2[0];
+                return iso2.compareTo(iso1); // Descendente
+            } catch (Exception e) {
+                return 0;
+            }
+        });
+
+        System.out.println("[BRIDGE-LIST] Lista procesada y ordenada. Enviando respuesta JSON...");
         enviarRespuesta(response, HttpServletResponse.SC_OK, true, msg, lista);
     }
 
@@ -138,13 +153,17 @@ public class NoticiasRestServlet extends HttpServlet {
             NewsItem itemParaCorba = XMLDecoder.decode(xmlData);
 
             if (this.newsService == null) conectarCorba();
+            
+            // Validación de tamaño de imagen en Backend
+            validarTamanoImagen(noticiaRecibida.imageUrl);
+
             this.newsService.addNews(itemParaCorba);
 
             System.out.println("[BRIDGE-POST] Exito enviando a CORBA.");
             enviarRespuesta(response, HttpServletResponse.SC_CREATED, true, "Noticia publicada", itemParaCorba);
         } catch (Exception e) {
             System.err.println("[BRIDGE-POST] ERROR: " + e.getMessage());
-            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, e.getMessage(), null);
+            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, "Error de validación: " + e.getMessage(), null);
         }
     }
 
@@ -164,6 +183,10 @@ public class NoticiasRestServlet extends HttpServlet {
             NewsItem itemParaCorba = XMLDecoder.decode(xmlData);
 
             if (this.newsService == null) conectarCorba();
+            
+            // Validación de tamaño de imagen en Backend
+            validarTamanoImagen(noticiaRecibida.imageUrl);
+
             boolean success = this.newsService.updateNews(itemParaCorba);
 
             if (success) {
@@ -208,6 +231,29 @@ public class NoticiasRestServlet extends HttpServlet {
         } catch (Exception e) {
             System.err.println("[BRIDGE-DELETE] ERROR: " + e.getMessage());
             enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, e.getMessage(), null);
+        }
+    }
+
+    private void validarTamanoImagen(String imageUrl) throws Exception {
+        if (imageUrl == null || imageUrl.isEmpty() || !imageUrl.startsWith("http")) return;
+        
+        System.out.println("[BRIDGE-VALID] Verificando tamaño de imagen: " + imageUrl);
+        try {
+            java.net.URL url = new java.net.URL(imageUrl);
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("HEAD");
+            conn.setConnectTimeout(2000); // 2 segundos máximo
+            conn.setReadTimeout(2000);
+            
+            long size = conn.getContentLengthLong();
+            if (size > 100 * 1024) {
+                System.err.println("[BRIDGE-VALID] IMAGEN RECHAZADA: " + (size/1024) + "KB");
+                throw new Exception("La imagen es demasiado pesada (" + (size/1024) + "KB). El máximo permitido es 100KB.");
+            }
+            System.out.println("[BRIDGE-VALID] Imagen OK: " + (size/1024) + "KB");
+        } catch (IOException e) {
+            System.err.println("[BRIDGE-VALID] No se pudo verificar el tamaño (Ignorado): " + e.getMessage());
+            // Si falla la conexión, dejamos pasar para no bloquear la publicación por un error de red temporal
         }
     }
 

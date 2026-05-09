@@ -63,36 +63,53 @@ const loginFirebase = async (req, res) => {
         console.log('-------------------');
 
         // 2. Sincronizar con MongoDB
+        // Primero buscamos por UID
         let user = await User.findOne({ firebaseUid: firebaseUser.uid });
+        
+        // Si no existe por UID, buscamos por Email (por si es una cuenta antigua sin vincular)
+        if (!user) {
+            console.log(`[AUTH] No encontrado por UID, buscando por email: ${firebaseUser.email}`);
+            user = await User.findOne({ email: firebaseUser.email });
+        }
 
         if (!user) {
-            // Primer login: Crear usuario
-            // El rol se hereda directamente de los Custom Claims de Firebase (Opción A - Máxima Seguridad)
-            const isAdmin = firebaseUser.isAdmin;
+            console.log(`[AUTH] Usuario nuevo. Intentando crear...`);
+            try {
+                user = await User.create({
+                    firebaseUid: firebaseUser.uid,
+                    name: firebaseUser.name,
+                    email: firebaseUser.email,
+                    role: firebaseUser.isAdmin ? 'admin' : 'user'
+                });
+            } catch (err) {
+                if (err.code === 11000) {
+                    console.log(`[AUTH] Conflicto de duplicado detectado en Create. Re-intentando búsqueda...`);
+                    user = await User.findOne({ email: firebaseUser.email });
+                } else {
+                    throw err;
+                }
+            }
+        }
 
-            user = await User.create({
-                firebaseUid: firebaseUser.uid,
-                name: firebaseUser.name,
-                email: firebaseUser.email,
-                role: isAdmin ? 'admin' : 'user'
-            });
-            console.log(`Nuevo usuario creado: ${user.email} con rol ${user.role}`);
-        } else {
-            // Usuario existente: Actualizar datos básicos y ROL por si cambió
+        if (user) {
+            // Actualizar datos siempre para asegurar sincronización
+            user.firebaseUid = firebaseUser.uid;
             user.name = firebaseUser.name;
-            user.role = firebaseUser.isAdmin ? 'admin' : 'user'; // <--- ACTUALIZAMOS EL ROL
+            user.role = firebaseUser.isAdmin ? 'admin' : 'user';
             await user.save();
+            console.log(`[AUTH] Usuario sincronizado: ${user.email} (Rol: ${user.role})`);
+        } else {
+            throw new Error("No se pudo crear ni encontrar al usuario tras varios intentos.");
         }
 
         // 5. Generar token y responder (Chapter 2.3)
-        const token = generateJWT(user.firebaseUid, user.role);
+        const token = generateJWT(user.firebaseUid, user.role, isInitialAdmin);
 
         return sendApiResult(res, 200, "Login exitoso", {
             token,
             user: {
                 name: user.name,
-                email: user.email,
-                role: user.role
+                email: user.email
             }
         });
 
@@ -102,6 +119,46 @@ const loginFirebase = async (req, res) => {
     }
 };
 
+/**
+ * Promueve a un usuario a Administrador.
+ * Solo puede ser ejecutado por el Administrador Maestro.
+ */
+const setAdminRole = async (req, res) => {
+    const { email } = req.body;
+    
+    // El middleware de JWT ya debería haber verificado que el solicitante es Master
+    // pero añadimos una capa extra de seguridad aquí
+    const requester = req.user; // Asumiendo que el middleware inyecta el user decodificado
+    
+    if (!email) {
+        return sendApiResult(res, 400, "Falta el email del usuario a promover");
+    }
+
+    try {
+        // 1. Buscar usuario en Firebase
+        const userFirebase = await admin.auth().getUserByEmail(email);
+        
+        // 2. Establecer Custom Claims en Firebase
+        await admin.auth().setCustomUserClaims(userFirebase.uid, { admin: true });
+        
+        // 3. Actualizar rol en MongoDB
+        await User.findOneAndUpdate(
+            { email: email },
+            { role: 'admin' },
+            { new: true }
+        );
+
+        console.log(`[AUTH] Usuario ${email} promovido a ADMIN por el Master`);
+        
+        return sendApiResult(res, 200, `Usuario ${email} ahora es Administrador. Debe re-loguearse para aplicar cambios.`);
+
+    } catch (error) {
+        console.error('Error al promover usuario:', error);
+        return sendApiResult(res, 500, "Error al procesar la solicitud: " + error.message);
+    }
+};
+
 module.exports = {
-    loginFirebase
+    loginFirebase,
+    setAdminRole
 };

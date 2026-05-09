@@ -183,20 +183,22 @@ export class AddEditNewsPage implements OnInit {
     this.layoutService.setBreadcrumbs([
       { label: '', url: '/home', icon: 'home-outline' },
       { label: 'Noticias', url: '/news' },
-      { label: this.isEditMode ? 'Editar noticia' : 'Nueva noticia' }
+      { label: this.isEditMode ? 'Editar noticia' : 'Crear noticia' }
     ]);
 
     if (this.isEditMode && this.newsId) {
       this.loadNews();
     } else {
-      // Establecer autor por defecto desde el usuario logueado (solo si es nueva)
-      const userDataStr = localStorage.getItem('user_data');
-      if (userDataStr) {
-        const userData = JSON.parse(userDataStr);
-        this.newsData.author = userData.name || userData.email;
+      // Establecer creador automáticamente, pero dejar Autor vacío para llenado manual
+      const userData = this.authService.getUserData();
+      if (userData) {
+        this.newsData.createdBy = userData.name || userData.email || 'Admin';
       } else {
-        this.newsData.author = 'Admin';
+        this.newsData.createdBy = 'Admin';
       }
+
+      // El autor/editorial se queda vacío para que el admin lo decida
+      this.newsData.author = '';
     }
   }
 
@@ -317,6 +319,17 @@ export class AddEditNewsPage implements OnInit {
     if (!this.newsData.title || !this.newsData.content) {
       this.showToast('Por favor, completa los campos obligatorios', 'warning');
       return;
+    }
+
+    // Asegurar que el creador esté presente si es nueva
+    const userData = this.authService.getUserData();
+    const adminName = userData?.name || userData?.email || 'Admin';
+
+    if (!this.isEditMode) {
+      if (!this.newsData.createdBy) this.newsData.createdBy = adminName;
+      this.newsData.updatedBy = adminName; // En creación, ambos son el mismo
+    } else {
+      this.newsData.updatedBy = adminName; // En edición, solo actualizamos este
     }
 
     if (this.isEditMode && !this.hasChanges) {

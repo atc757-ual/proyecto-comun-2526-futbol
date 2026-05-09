@@ -158,11 +158,56 @@ export class AuthService {
   }
 
   /**
-   * Verifica si el usuario actual tiene rol de administrador
+   * Verifica si el usuario actual tiene rol de administrador.
+   * Se obtiene del JWT para evitar manipulación manual en LocalStorage.
    */
   isAdmin(): boolean {
-    const user = this.getUserData();
-    // Ajusta 'admin' según el valor exacto que envíe tu backend Node.js
-    return user && (user.role === 'admin' || user.role === 'ADMIN');
+    const token = localStorage.getItem('jwt_token');
+    if (!token) return false;
+
+    try {
+      // El JWT tiene 3 partes: Header.Payload.Signature
+      // El payload es la parte del medio codificada en Base64
+      const payloadBase64 = token.split('.')[1];
+      const payloadJson = JSON.parse(atob(payloadBase64));
+
+      // Ajusta 'admin' según el valor exacto que envíes tu backend Node.js
+      return payloadJson && (payloadJson.role === 'admin' || payloadJson.role === 'ADMIN' || payloadJson.role === 'Admin');
+    } catch (e) {
+      console.error('[AUTH] Error al decodificar el token para isAdmin:', e);
+      return false;
+    }
+  }
+
+  /**
+   * Verifica si el usuario actual es el Administrador Maestro (Super Admin).
+   * Se obtiene del claim 'master' del JWT.
+   */
+  isMasterAdmin(): boolean {
+    const token = localStorage.getItem('jwt_token');
+    if (!token) return false;
+
+    try {
+      const payloadBase64 = token.split('.')[1];
+      const payloadJson = JSON.parse(atob(payloadBase64));
+      return payloadJson && payloadJson.master === true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /**
+   * Promueve a un usuario a Administrador.
+   * Solo disponible para el Master Admin.
+   */
+  async promoteUserToAdmin(email: string) {
+    const fullUrl = `${environment.nodeApiUrl}/auth/make-admin`;
+    const token = localStorage.getItem('jwt_token');
+
+    return firstValueFrom(
+      this.http.post(fullUrl, { email }, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+    );
   }
 }

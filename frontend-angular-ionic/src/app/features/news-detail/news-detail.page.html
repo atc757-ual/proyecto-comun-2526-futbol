@@ -1,4 +1,4 @@
-<div class="row ">
+<div class="row mt-base">
   <!-- COLUMNA 8: DETALLE -->
   <div class="col-8 col-sm-12 pr-base px-0-sm mb-base">
     <ion-card class="main-article" *ngIf="isLoading && !selectedNew">
@@ -20,8 +20,7 @@
 
     <ion-card class="main-article" *ngIf="selectedNew">
       <div class="article-image-container">
-        <img [src]="selectedNew.imageUrl || 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1000'"
-          onerror="this.src='https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1000'">
+        <img [src]="selectedNew.imageUrl">
         <div class="article-badge">{{ selectedNew.category }}</div>
       </div>
 
@@ -73,17 +72,26 @@
     <!-- ADMIN CARD -->
     <ion-card *ngIf="isAdmin" class="mb-base">
       <ion-card-header>
-        <ion-card-title class="fs-20 fs-sm-18 f-semibold">Opciones de administrador</ion-card-title>
+        <ion-card-title class="fs-20 fs-sm-18 f-semibold">Administrador</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <ion-item [button]="true" lines="none" detail="true" class="action-item mb-s" (click)="editNews()">
+        <ion-item [button]="true" lines="none" detail="true" class="action-item mb-s" routerLink="/add-news">
+          <ion-icon color="primary" aria-hidden="true" class="fs-28" name="add-circle-outline"></ion-icon>
+          <ion-label class="ml-s f-medium ">Crear noticia</ion-label>
+        </ion-item>
+
+        <div *ngIf="selectedNew" class="separator my-s"></div>
+
+        <ion-item *ngIf="selectedNew" [button]="true" lines="none" detail="true" class="action-item mb-s"
+          (click)="editNews()">
           <ion-icon color="primary" aria-hidden="true" class="fs-28" name="create-outline"></ion-icon>
           <ion-label class="ml-s f-medium ">Editar noticia</ion-label>
         </ion-item>
 
-        <div class="separator my-s"></div>
+        <div *ngIf="selectedNew" class="separator my-s"></div>
 
-        <ion-item [button]="true" lines="none" detail="true" class="action-item " (click)="confirmDelete()">
+        <ion-item *ngIf="selectedNew" [button]="true" lines="none" detail="true" class="action-item"
+          (click)="confirmDelete()">
           <ion-icon color="primary" aria-hidden="true" class="fs-28" name="trash-outline"></ion-icon>
           <ion-label class="ml-s f-medium">Eliminar noticia</ion-label>
         </ion-item>
@@ -106,8 +114,6 @@
         <div *ngIf="i < newsList.length - 1" class="separator my-s"></div>
       </ng-container>
     </ion-list>
-
-
 
   </div>
 </div>

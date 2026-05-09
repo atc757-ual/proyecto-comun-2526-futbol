@@ -20,14 +20,17 @@
       <div class="menu-options-container">
         <!-- SECCIÓN SUPERIOR: NAVEGACIÓN -->
         <div class="menu-items-top">
-          <ion-menu-toggle auto-hide="false" *ngFor="let p of appPages">
-            <ion-item lines="none" class="nav-item pointer" [routerLink]="p.url" routerLinkActive="active-item"
-              [routerLinkActiveOptions]="{exact: true}">
-              <ion-icon slot="start" [name]="p.icon"></ion-icon>
-              <ion-label>{{ p.title }}</ion-label>
-            </ion-item>
-            <div class="separator my-s bg-neutral-2"></div>
-          </ion-menu-toggle>
+          <ng-container *ngFor="let p of appPages">
+            <ion-menu-toggle auto-hide="false"
+              *ngIf="(!p.adminOnly && !p.masterOnly) || (p.adminOnly && authService.isAdmin()) || (p.masterOnly && authService.isMasterAdmin())">
+              <ion-item lines="none" class="nav-item pointer" [routerLink]="p.url" routerLinkActive="active-item"
+                [routerLinkActiveOptions]="{exact: true}">
+                <ion-icon slot="start" [name]="p.icon"></ion-icon>
+                <ion-label>{{ p.title }}</ion-label>
+              </ion-item>
+              <div class="separator my-s bg-neutral-2"></div>
+            </ion-menu-toggle>
+          </ng-container>
         </div>
       </div>
       <!-- ESPACIADOR (Empuja lo de abajo hacia el final) -->
@@ -36,9 +39,9 @@
       <!-- SECCIÓN INFERIOR: CUENTA -->
       <div class="menu-items-bottom">
         <ion-menu-toggle auto-hide="false">
-          <ion-item lines="none" class="nav-item profile-item pointer " routerLink="/profile"
+          <ion-item lines="none" class="nav-item profile-item pointer " routerLink="/home"
             routerLinkActive="active-item">
-            <ion-icon color="primary" slot="start" name="person-circle-outline"></ion-icon>
+            <ion-icon color="primary" slot="start" name="person-outline"></ion-icon>
             <ion-label class="text-primary">Mi Perfil</ion-label>
           </ion-item>
         </ion-menu-toggle>
@@ -112,15 +115,16 @@
     <nav *ngIf="platformService.isDesktop" class="nav-header-row">
       <div class="main-content content">
         <ul class="nav-links-centered">
-          <li routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Inicio</li>
-          <li routerLink="/players" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Jugadores</li>
-          <li routerLink="/ai-team" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
-            class="nav-item-ai">
-            <ion-icon name="sparkles" class="nav-icon-mini"></ion-icon>IA
-          </li>
-          <li routerLink="/player-add" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Mercado
-          </li>
-          <li routerLink="/news" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Noticias</li>
+          <ng-container *ngFor="let p of appPages">
+            <li
+              *ngIf="(!p.adminOnly && !p.masterOnly) || (p.adminOnly && authService.isAdmin()) || (p.masterOnly && authService.isMasterAdmin())"
+              [routerLink]="p.url" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
+              [class.nav-item-ai]="p.title === 'IA'">
+              <ion-icon *ngIf="p.icon !== 'home' && p.icon !== 'people' && p.icon !== 'cart' && p.icon !== 'newspaper'"
+                [name]="p.icon" class="nav-icon-mini"></ion-icon>
+              {{ p.title }}
+            </li>
+          </ng-container>
         </ul>
       </div>
     </nav>
@@ -131,23 +135,25 @@
 
     <!-- SECCIÓN HERO FULL WIDTH (Dinámica con Signals) -->
     <section>
-      <div *ngIf="layoutService.showHero()" class="layout-hero-banner animate-fade-in">
-        <div class="main-content">
-          <h1 class="hero-title">{{ layoutService.title() }}</h1>
-          <p class="hero-subtitle" *ngIf="layoutService.subtitle()">{{ layoutService.subtitle() }}</p>
-        </div>
-      </div> <!-- BREADCRUMBS CENTRALIZADOS -->
-      <div *ngIf="!platformService.isMobileApp && layoutService.breadcrumbs().length > 0"
-        class="layout-hero-breadcrumbs">
-        <div class="main-content">
-          <ion-breadcrumbs>
-            <ion-breadcrumb *ngFor="let item of layoutService.breadcrumbs(); let last = last" [routerLink]="item.url"
-              [class.active-breadcrumb]="last">
-              <ion-icon *ngIf="item.icon" slot="start" [name]="item.icon"></ion-icon>
-              {{ item.label }}
-              <span slot="separator" class="fs-14 text-neutral-4">/</span>
-            </ion-breadcrumb>
-          </ion-breadcrumbs>
+      <div>
+        <div *ngIf="layoutService.showHero()" class="layout-hero-banner animate-fade-in">
+          <div class="main-content">
+            <h1 class="hero-title">{{ layoutService.title() }}</h1>
+            <p class="hero-subtitle" *ngIf="layoutService.subtitle()">{{ layoutService.subtitle() }}</p>
+          </div>
+        </div> <!-- BREADCRUMBS CENTRALIZADOS -->
+        <div *ngIf="!platformService.isMobileApp && layoutService.breadcrumbs().length > 0"
+          class="layout-hero-breadcrumbs">
+          <div class="main-content">
+            <ion-breadcrumbs>
+              <ion-breadcrumb *ngFor="let item of layoutService.breadcrumbs(); let last = last" [routerLink]="item.url"
+                [class.active-breadcrumb]="last">
+                <ion-icon *ngIf="item.icon" slot="start" [name]="item.icon"></ion-icon>
+                {{ item.label }}
+                <span slot="separator" class="fs-14 text-neutral-4">/</span>
+              </ion-breadcrumb>
+            </ion-breadcrumbs>
+          </div>
         </div>
       </div>
     </section>
@@ -182,19 +188,23 @@
   <ion-footer *ngIf="platformService.isMobileApp" class="hide-on-desktop main-app-footer ion-no-border">
     <ion-tab-bar slot="bottom" class="tab-bar-clean">
 
-      <ion-tab-button *ngFor="let p of appPages; let i = index" [tab]="p.title" [routerLink]="p.url"
-        routerLinkActive="tab-selected" [routerLinkActiveOptions]="{exact: true}" [class.ai-tab-special]="i === 2">
+      <ng-container *ngFor="let p of appPages; let i = index">
+        <ion-tab-button
+          *ngIf="(!p.adminOnly && !p.masterOnly) || (p.adminOnly && authService.isAdmin()) || (p.masterOnly && authService.isMasterAdmin())"
+          [tab]="p.title" [routerLink]="p.url" routerLinkActive="tab-selected" [routerLinkActiveOptions]="{exact: true}"
+          [class.ai-tab-special]="i === 2">
 
-        <!-- Icono normal para todos menos el tercero -->
-        <ion-icon *ngIf="i !== 2" [name]="p.icon"></ion-icon>
+          <!-- Icono normal para todos menos el tercero -->
+          <ion-icon *ngIf="i !== 2" [name]="p.icon"></ion-icon>
 
-        <!-- Estructura especial para el botón central de IA -->
-        <div *ngIf="i === 2" class="ai-icon-circle">
-          <ion-icon [name]="p.icon"></ion-icon>
-        </div>
+          <!-- Estructura especial para el botón central de IA -->
+          <div *ngIf="i === 2" class="ai-icon-circle">
+            <ion-icon [name]="p.icon"></ion-icon>
+          </div>
 
-        <ion-label>{{ p.title }}</ion-label>
-      </ion-tab-button>
+          <ion-label>{{ p.title }}</ion-label>
+        </ion-tab-button>
+      </ng-container>
 
     </ion-tab-bar>
   </ion-footer>

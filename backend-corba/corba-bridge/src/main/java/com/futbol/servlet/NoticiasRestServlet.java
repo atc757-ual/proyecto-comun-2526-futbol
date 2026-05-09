@@ -71,19 +71,30 @@ public class NoticiasRestServlet extends HttpServlet {
             } else {
                 String id = pathInfo.substring(1);
                 System.out.println("[BRIDGE-GET] Llamando a CORBA: getNewsById(" + id + ")...");
-                NewsItem noticia = this.newsService.getNewsById(id);
-                if (noticia == null) {
-                    System.out.println("[BRIDGE-GET] Noticia " + id + " no encontrada.");
-                    enviarRespuesta(response, HttpServletResponse.SC_NOT_FOUND, false, "Noticia no encontrada", null);
-                } else {
-                    System.out.println("[BRIDGE-GET] Noticia " + id + " encontrada. Validando XML...");
-                    enviarRespuesta(response, HttpServletResponse.SC_OK, true, "Noticia recuperada", validarYLimpiar(noticia, xsdPath));
+                try {
+                    NewsItem noticia = this.newsService.getNewsById(id);
+                    if (noticia == null || noticia.id == null || noticia.id.isEmpty()) {
+                        System.out.println("[BRIDGE-GET] Noticia " + id + " no encontrada (null).");
+                        enviarRespuesta(response, HttpServletResponse.SC_NOT_FOUND, false, "Noticia no encontrada", null);
+                    } else {
+                        System.out.println("[BRIDGE-GET] Noticia " + id + " encontrada. Validando XML...");
+                        try {
+                            enviarRespuesta(response, HttpServletResponse.SC_OK, true, "Noticia recuperada", validarYLimpiar(noticia, xsdPath));
+                        } catch (Exception valEx) {
+                            System.err.println("[BRIDGE-VALID] Error validando noticia existente: " + valEx.getMessage());
+                            // Si falla la validación pero la noticia existe, la enviamos igual pero con aviso o limpia
+                            enviarRespuesta(response, HttpServletResponse.SC_OK, true, "Noticia recuperada (Error validación XSD)", noticia);
+                        }
+                    }
+                } catch (org.omg.CORBA.OBJECT_NOT_EXIST | org.omg.CORBA.BAD_PARAM ex) {
+                    System.out.println("[BRIDGE-GET] Excepción CORBA: Noticia " + id + " no existe.");
+                    enviarRespuesta(response, HttpServletResponse.SC_NOT_FOUND, false, "Noticia no encontrada en CORBA", null);
                 }
             }
         } catch (Exception e) {
-            System.err.println("[BRIDGE-ERROR] Fallo en el flujo de datos: " + e.getMessage());
+            System.err.println("[BRIDGE-ERROR] Fallo crítico en el flujo: " + e.getMessage());
             e.printStackTrace();
-            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, "Error Bridge: " + e.getMessage(), null);
+            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, "Error Crítico Bridge: " + e.getMessage(), null);
         }
     }
 

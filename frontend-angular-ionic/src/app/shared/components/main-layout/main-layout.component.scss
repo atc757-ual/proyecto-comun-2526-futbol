@@ -324,7 +324,6 @@
   background: var(--bg-breadcrumbs);
   width: 100%;
   animation: fade-in-down 0.5s ease-out;
-  margin-bottom: var(--space-base);
 
   .main-content {
     padding: var(--space-s) var(--container-padding-desktop);
@@ -393,7 +392,7 @@
     }
 
     @media (max-width: 767px) {
-      padding: 0 var(--container-padding-mobile);
+      padding: var(--space-base) var(--container-padding-mobile) 0 var(--container-padding-mobile);
     }
   }
 }
@@ -674,9 +673,26 @@ ion-footer.main-app-footer {
       gap: 10px;
 
       .logo-text {
-        font-size: var(--fs-18);
+        font-size: var(--fs-22);
         color: var(--color-primary);
         font-weight: var(--fw-bold);
+      }
+
+      @media (max-width: 768px) {
+        .logo-circle-wrapper {
+          width: 32px;
+          height: 32px;
+          background: var(--blue-primary-010);
+          border-radius: var(--border-radius-circle);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          ion-icon {
+            font-size: var(--fs-26);
+            color: var(--color-primary);
+          }
+        }
       }
     }
 
@@ -807,19 +823,4 @@ ion-footer.main-app-footer {
 
 .gap-s {
   gap: var(--space-s) !important;
-}
-
-.logo-circle-wrapper {
-  width: 28px;
-  height: 28px;
-  background: var(--blue-primary-010);
-  border-radius: var(--border-radius-circle);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  ion-icon {
-    font-size: var(--fs-20);
-    color: var(--color-primary);
-  }
 }

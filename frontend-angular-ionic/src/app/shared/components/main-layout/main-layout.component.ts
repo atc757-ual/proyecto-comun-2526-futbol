@@ -9,10 +9,9 @@ import {
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
-  home, people, cart, newspaper, menuOutline, football,
-  personCircleOutline, logOutOutline, sparkles,
-  logoLinkedin, logoGithub, closeOutline, arrowBack, chevronBack,
-  homeOutline, chevronForwardOutline
+  homeOutline, peopleOutline, cartOutline, newspaperOutline, menuOutline, football,
+  personOutline, logOutOutline, sparklesOutline, footballOutline, logoLinkedin,
+  logoGithub, closeOutline, arrowBack, chevronBack, chevronForwardOutline, shieldCheckmarkOutline
 } from 'ionicons/icons';
 import { filter } from 'rxjs/operators';
 import { AuthService } from 'src/app/core/services/auth.service';
@@ -40,19 +39,19 @@ export class MainLayoutComponent implements OnInit {
   public layoutService = inject(LayoutService); // Inyectamos el nuevo servicio
 
   public appPages = [
-    { title: 'Inicio', url: '/home', icon: 'home' },
-    { title: 'Jugadores', url: '/players', icon: 'people' },
-    { title: 'IA', url: '/ai-team', icon: 'sparkles' },
-    { title: 'Mercado', url: '/player-add', icon: 'cart' },
-    { title: 'Noticias', url: '/news', icon: 'newspaper' }
+    { title: 'Inicio', url: '/home', icon: 'home-outline', adminOnly: false, masterOnly: false },
+    { title: 'Jugadores', url: '/players', icon: 'football-outline', adminOnly: false, masterOnly: false },
+    { title: 'IA', url: '/ai-team', icon: 'sparkles-outline', adminOnly: false, masterOnly: false },
+    { title: 'Mercado', url: '/player-add', icon: 'cart-outline', adminOnly: false, masterOnly: false },
+    { title: 'Noticias', url: '/news', icon: 'newspaper-outline', adminOnly: false, masterOnly: false },
+    { title: 'Seguridad', url: '/admin-security', icon: 'shield-checkmark-outline', adminOnly: false, masterOnly: true }
   ];
 
   constructor() {
     addIcons({
-      home, people, cart, newspaper, menuOutline, football,
-      personCircleOutline, logOutOutline, sparkles,
-      logoLinkedin, logoGithub, closeOutline, arrowBack, chevronBack,
-      homeOutline, chevronForwardOutline
+      homeOutline, peopleOutline, cartOutline, newspaperOutline, menuOutline, footballOutline,
+      personOutline, logOutOutline, sparklesOutline, logoLinkedin, logoGithub, closeOutline, arrowBack,
+      chevronBack, chevronForwardOutline, shieldCheckmarkOutline, football
     });
   }
 
@@ -61,23 +60,9 @@ export class MainLayoutComponent implements OnInit {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
-      // Opcional: resetear al cambiar de página para evitar que una página
-      // herede el título de la anterior si se olvida de poner el suyo.
-      // this.layoutService.resetLayout(); 
     });
   }
 
-  /* 
-  COMENTADO: Ya no leemos de la ruta, usamos LayoutService
-  private updateHeroData() {
-    try {
-      let route = this.router.routerState.root;
-      while (route.firstChild) route = route.firstChild;
-      const data = route.snapshot?.data;
-      ...
-    } catch (e) { }
-  }
-  */
 
   private actionSheetCtrl = inject(ActionSheetController);
   private alertCtrl = inject(AlertController);

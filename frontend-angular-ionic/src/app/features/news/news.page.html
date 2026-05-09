@@ -63,8 +63,8 @@
         <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
       </ion-button>
     </div>
-    <ion-card *ngIf="!isLoading && newsList.length === 0" class="empty-container">
-      <ion-card-content>
+    <ion-card *ngIf="!isLoading && newsList.length === 0">
+      <ion-card-content class="empty-container">
         <ion-icon name="newspaper-outline"></ion-icon>
         <h2>No hay noticias todavía</h2>
         <p>Vuelve pronto para las últimas novedades del fútbol.</p>
@@ -73,9 +73,9 @@
   </div>
   <!-- COLUMNA 4: LISTADO (Después en HTML -> Derecha en Desktop) -->
   <div class="col-4 col-sm-12 pl-base px-0-sm mb-base">
-    <ion-card *ngIf=" isAdmin">
+    <ion-card *ngIf="isAdmin">
       <ion-card-header>
-        <ion-card-title class="fs-20 fs-sm-18 f-semibold">Opciones de administrador</ion-card-title>
+        <ion-card-title class="fs-20 fs-sm-18 f-semibold">Administrador</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <ion-item [button]="true" lines="none" detail="true" class="action-item mb-s" [routerLink]="['/add-news']">

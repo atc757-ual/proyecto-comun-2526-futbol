@@ -50,3 +50,30 @@ export const startGuard = () => {
     })
   );
 };
+// Guard para rutas de administrador: bloquea si no tiene rol de admin
+export const adminGuard = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (authService.isAdmin()) {
+    return true;
+  }
+
+  console.warn('[ADMIN-GUARD] Acceso denegado: El usuario no es administrador.');
+  router.navigate(['/home']);
+  return false;
+};
+
+// Guard para rutas de Administrador Maestro: solo el Super Admin puede entrar
+export const masterGuard = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (authService.isMasterAdmin()) {
+    return true;
+  }
+
+  console.warn('[MASTER-GUARD] Acceso denegado: Se requieren privilegios de Administrador Maestro.');
+  router.navigate(['/home']);
+  return false;
+};

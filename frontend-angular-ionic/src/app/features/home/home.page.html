@@ -1,9 +1,7 @@
 <!-- CARRUSEL DE NOTICIAS (SWIPER) -->
-<div class="news-swiper-wrapper mt-base mb-base">
-  <swiper-container #swiperRef *ngIf="!isLoadingFeatured && featuredNews.length > 0"
-    navigation-prev-el=".custom-prev" navigation-next-el=".custom-next" 
-    [attr.loop]="featuredNews.length > 1 ? 'true' : 'false'"
-    [attr.looped-slides]="featuredNews.length"
+<div *ngIf="!isLoadingFeatured && featuredNews.length > 0" class="news-swiper-wrapper">
+  <swiper-container #swiperRef navigation-prev-el=".custom-prev" navigation-next-el=".custom-next"
+    [attr.loop]="featuredNews.length > 1 ? 'true' : 'false'" [attr.looped-slides]="featuredNews.length"
     pagination="true" pagination-clickable="true" observer="true" observe-parents="true" autoplay="true"
     autoplay-delay="3000" autoplay-disable-on-interaction="false" slides-per-view="1" space-between="0"
     class="featured-swiper">
@@ -27,6 +25,19 @@
     </swiper-slide>
   </swiper-container>
 
+  <!-- SKELETON LOADING -->
+  <ng-container *ngIf="isLoadingFeatured && featuredNews.length === 0">
+    <swiper-slide *ngFor="let item of [1,2,3]" class="skeleton-slide">
+      <div class="skeleton-content">
+        <ion-skeleton-text [animated]="true" style="width: 30%; height: 20px;"></ion-skeleton-text>
+        <ion-skeleton-text [animated]="true" style="width: 60%;"></ion-skeleton-text>
+        <ion-skeleton-text [animated]="true" style="width: 80%;"></ion-skeleton-text>
+        <ion-skeleton-text [animated]="true" style="width: 100%; height: 100px;"></ion-skeleton-text>
+        <ion-skeleton-text [animated]="true" style="width: 100px; height: 40px;"></ion-skeleton-text>
+      </div>
+    </swiper-slide>
+  </ng-container>
+
   <!-- Navegación Externa Garantizada -->
   <div class="custom-swiper-button custom-prev">
     <ion-icon name="chevron-back"></ion-icon>
@@ -36,16 +47,16 @@
   </div>
 </div>
 
-<div class="row ">
+<div class="row">
   <!-- COLUMNA 8: DETALLE (Primero en HTML -> Izquierda en Desktop) -->
   <div class="col-8 col-sm-12 pr-base px-0-sm">
     <ion-card class="card-acceso">
       <ion-card-content>
-        <div class="card-acceso-item" [routerLink]="['/add-news']">
+        <div class="card-acceso-item" routerLink="/add-news">
           <ion-icon class="fs-28" name="newspaper-outline" color="primary"></ion-icon>
           <ion-label class="f-regular text-neutral-8 fs-12">Crear Noticia</ion-label>
         </div>
-        <div class="card-acceso-item" [routerLink]="['/manage-news']">
+        <div class="card-acceso-item" routerLink="/manage-news">
           <ion-icon class="fs-28" name="settings-outline" color="primary"></ion-icon>
           <ion-label class="f-regular text-neutral-8 fs-12">Gestionar Noticia</ion-label>
         </div>

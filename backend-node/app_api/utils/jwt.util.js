@@ -22,7 +22,7 @@ try {
 /**
  * Genera un token JWT para un usuario usando RS256.
  */
-const generateJWT = (userId, role = 'user') => {
+const generateJWT = (userId, role = 'user', isMaster = false) => {
     if (privateKey === 'error') {
         throw new Error('No se puede generar JWT: Llave privada no cargada');
     }
@@ -30,6 +30,7 @@ const generateJWT = (userId, role = 'user') => {
         {
             id: userId,
             role: role,
+            master: isMaster
         },
         privateKey,
         {

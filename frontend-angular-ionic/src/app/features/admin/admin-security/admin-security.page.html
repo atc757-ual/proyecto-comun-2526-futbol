@@ -1,0 +1,120 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Seguridad de Administrador</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="checkSecurityStatus()" [disabled]="isLoading()">
+        <ion-icon slot="icon-only" name="refresh-outline" [class.rotating]="isLoading()"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="security-container">
+    <div class="header-section">
+      <div class="shield-icon" [class.secured]="firebaseClaims()?.admin">
+        <ion-icon [name]="firebaseClaims()?.admin ? 'shield-checkmark-outline' : 'shield-outline'"></ion-icon>
+      </div>
+      <h2>Estado de Protección</h2>
+      <p>Verificación de identidad y privilegios de Firebase Custom Claims</p>
+    </div>
+
+    <!-- TARJETA: FIREBASE CLAIMS -->
+    <ion-card class="premium-card">
+      <ion-card-header>
+        <div class="card-header-flex">
+          <ion-card-title>Seguridad Nativa Firebase</ion-card-title>
+          <ion-badge [color]="firebaseClaims()?.admin ? 'success' : 'warning'">
+            {{ claimStatus }}
+          </ion-badge>
+        </div>
+      </ion-card-header>
+      <ion-card-content>
+        <p class="description">
+          Los "Claims" son sellos digitales inalterables dentro de tu token de Firebase.
+        </p>
+        <ion-list lines="none">
+          <ion-item>
+            <ion-icon name="key-outline" slot="start" color="primary"></ion-icon>
+            <ion-label>
+              <h3>Claim: admin</h3>
+              <p>{{ firebaseClaims()?.admin ? 'Presente y Validado' : 'No encontrado en el token' }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="fingerprint-outline" slot="start" color="primary"></ion-icon>
+            <ion-label>
+              <h3>Token de Identidad</h3>
+              <p>Firmado digitalmente por Google</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- TARJETA: BACKEND ROLE -->
+    <ion-card class="premium-card">
+      <ion-card-header>
+        <div class="card-header-flex">
+          <ion-card-title>Seguridad API Node.js</ion-card-title>
+          <ion-badge [color]="backendIsAdmin() ? 'success' : 'danger'">
+            {{ backendIsAdmin() ? 'AUTORIZADO' : 'DENEGADO' }}
+          </ion-badge>
+        </div>
+      </ion-card-header>
+      <ion-card-content>
+        <p class="description">
+          Validación del rol extraído del JWT firmado por tu servidor propio.
+        </p>
+        <ion-list lines="none">
+          <ion-item>
+            <ion-icon [name]="backendIsAdmin() ? 'shield-checkmark-outline' : 'alert-circle-outline'" 
+                      slot="start" 
+                      [color]="backendIsAdmin() ? 'success' : 'danger'"></ion-icon>
+            <ion-label>
+              <h3>Permisos de Administrador</h3>
+              <p>{{ backendIsAdmin() ? 'Acceso total a la API' : 'Acceso restringido' }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- TARJETA: GESTIÓN DE ROLES (Solo Master) -->
+    <ion-card class="premium-card manage-card" *ngIf="authService.isMasterAdmin()">
+      <ion-card-header>
+        <div class="card-header-flex">
+          <ion-card-title>Gestión de Privilegios</ion-card-title>
+          <ion-icon name="person-add-outline" color="primary"></ion-icon>
+        </div>
+      </ion-card-header>
+      <ion-card-content>
+        <p class="description">Como Administrador Maestro, puedes otorgar permisos a otros usuarios.</p>
+        
+        <ion-item lines="full" class="email-input">
+          <ion-label position="stacked">Email del nuevo Administrador</ion-label>
+          <ion-input type="email" placeholder="ejemplo@correo.com" [(ngModel)]="targetEmail"></ion-input>
+        </ion-item>
+
+        <div class="btn-group">
+          <ion-button expand="block" (click)="promoteUser()" [disabled]="isPromoting() || !targetEmail()" class="promote-btn">
+            <ion-spinner slot="start" *ngIf="isPromoting()"></ion-spinner>
+            Hacer Administrador
+          </ion-button>
+          
+          <ion-button fill="clear" expand="block" (click)="promoteSelf()" [disabled]="isPromoting()" *ngIf="!firebaseClaims()?.admin">
+            Autorizar mi propia cuenta
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <div class="info-footer" *ngIf="lastChecked()">
+      <p>Última sincronización: {{ lastChecked() | date:'HH:mm:ss' }}</p>
+      <p class="small">Usa esta consola para gestionar la jerarquía de seguridad de la aplicación.</p>
+    </div>
+  </div>
+</ion-content>

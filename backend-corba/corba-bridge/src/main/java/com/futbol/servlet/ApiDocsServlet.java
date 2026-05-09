@@ -82,7 +82,7 @@ public class ApiDocsServlet extends HttpServlet {
             "      \"content\": \"20-5000 chars\",\n" +
             "      \"imageUrl\": \"Debe empezar por http:// o https://\",\n" +
             "      \"category\": \"Enum: Fichajes, Resultados, Crónica, Opinión, Internacional, General\",\n" +
-            "      \"tags\": \"Mínimo 1, máximo 6 etiquetas\"\n" +
+            "      \"tags\": \"Mínimo 1, máximo 6 etiquetas (máximo 15 caracteres cada una)\"\n" +
             "    }\n" +
             "  },\n" +
             "  \"pipeline_xml\": [\"XMLCoder (NewsItem→XML)\", \"XMLValidator (XML vs XSD)\", \"XMLParser (XML→DOM)\", \"XMLDecoder (XML→NewsItem)\"]\n" +

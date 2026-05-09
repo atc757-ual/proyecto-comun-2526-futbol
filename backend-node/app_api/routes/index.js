@@ -5,10 +5,11 @@ const ctrlComments = require('../controllers/comments');
 const ctrlAuth = require('../controllers/auth');
 const ctrlAI = require('../controllers/ai'); // Nuevo controlador de IA
 const ctrlExternal = require('../controllers/external.controller'); // Nuevo controlador de API externa
-const { authorizeRequest, isAdmin } = require('../middleware/auth.middleware');
+const { authorizeRequest, isAdmin, isMaster } = require('../middleware/auth.middleware');
 
 // --- RUTAS DE AUTENTICACIÓN ---
 router.post('/auth/signin', ctrlAuth.loginFirebase);
+router.post('/auth/make-admin', authorizeRequest, isMaster, ctrlAuth.setAdminRole);
 
 // --- SERVICIO DE CARGA (Desactivado temporalmente) ---
 // router.get('/db-load', ctrlOthers.dbLoad);

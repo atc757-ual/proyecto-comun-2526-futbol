@@ -1,13 +1,15 @@
 import { Component, Input, inject, CUSTOM_ELEMENTS_SCHEMA, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, IonContent, AlertController, ToastController, NavController } from '@ionic/angular';
+import { IonicModule, IonContent, AlertController, ToastController, NavController, ModalController } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
+import { ConfirmModalComponent } from 'src/app/shared/components/confirm-modal/confirm-modal.component';
 import { NewsService, NewsItem } from 'src/app/core/services/news.service';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { PlatformService } from 'src/app/core/services/platform.service';
 import { addIcons } from 'ionicons';
-import { alertCircleOutline, arrowBackOutline, newspaperOutline, homeOutline, createOutline, trashOutline, checkmarkCircleOutline } from 'ionicons/icons';
+import { alertCircleOutline, arrowBackOutline, newspaperOutline, homeOutline, addCircleOutline, createOutline, trashOutline, checkmarkCircleOutline } from 'ionicons/icons';
 import { LayoutService } from 'src/app/core/services/layout.service';
+import { StorageService } from 'src/app/core/services/storage.service';
 @Component({
   selector: 'app-news-detail',
   templateUrl: './news-detail.page.html',
@@ -25,6 +27,8 @@ export class NewsDetailPage {
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
   private navCtrl = inject(NavController);
+  private modalCtrl = inject(ModalController);
+  private storageService = inject(StorageService);
 
   selectedNew: NewsItem | null = null;
   newsList: NewsItem[] = [];
@@ -41,7 +45,7 @@ export class NewsDetailPage {
     // El Layout se configurará dinámicamente en loadData al recibir los datos
   }
   constructor() {
-    addIcons({ alertCircleOutline, arrowBackOutline, newspaperOutline, homeOutline, createOutline, trashOutline, checkmarkCircleOutline });
+    addIcons({ alertCircleOutline, arrowBackOutline, addCircleOutline, newspaperOutline, homeOutline, createOutline, trashOutline, checkmarkCircleOutline });
     this.isAdmin = this.authService.isAdmin();
   }
 
@@ -122,32 +126,37 @@ export class NewsDetailPage {
   }
 
   async confirmDelete() {
-    const alert = await this.alertCtrl.create({
-      header: '¿Eliminar noticia?',
-      message: 'Esta acción no se puede deshacer. ¿Estás seguro?',
-      mode: 'ios',
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-          cssClass: 'secondary'
-        },
-        {
-          text: 'Eliminar',
-          role: 'destructive',
-          handler: () => {
-            this.deleteNews();
-          }
-        }
-      ]
+    if (!this.selectedNew) return;
+
+    const modal = await this.modalCtrl.create({
+      component: ConfirmModalComponent,
+      componentProps: {
+        title: '¿Eliminar noticia?',
+        message: `Estás a punto de borrar "${this.selectedNew.title}". Esta acción no se puede deshacer.`,
+        confirmText: 'Sí, eliminar',
+        cancelText: 'Cancelar',
+        type: 'delete'
+      },
+      cssClass: 'premium-modal'
     });
 
-    await alert.present();
+    await modal.present();
+
+    const { data } = await modal.onWillDismiss();
+    if (data === true) {
+      this.deleteNews();
+    }
   }
 
-  private deleteNews() {
+  private async deleteNews() {
     if (!this.selectedNew || !this.selectedNew.id) return;
 
+    // 1. Borrar imagen de Storage (si existe y es de Firebase)
+    if (this.selectedNew.imageUrl && this.selectedNew.imageUrl.includes('firebasestorage')) {
+      await this.storageService.deleteImageByUrl(this.selectedNew.imageUrl);
+    }
+
+    // 2. Borrar registro de CORBA
     this.newsService.deleteNews(this.selectedNew.id).subscribe({
       next: async () => {
         const toast = await this.toastCtrl.create({

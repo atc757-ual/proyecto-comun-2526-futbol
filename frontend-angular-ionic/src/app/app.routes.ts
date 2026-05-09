@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './shared/components/main-layout/main-layout.component';
-import { authGuard } from './core/guards/auth.guard';
+import { authGuard, adminGuard, masterGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -52,15 +52,23 @@ export const routes: Routes = [
       },
       {
         path: 'add-news',
+        canActivate: [adminGuard],
         loadComponent: () => import('./features/admin/add-edit-news/add-edit-news.page').then((m) => m.AddEditNewsPage),
       },
       {
         path: 'edit-news/:id',
+        canActivate: [adminGuard],
         loadComponent: () => import('./features/admin/add-edit-news/add-edit-news.page').then((m) => m.AddEditNewsPage),
       },
       {
         path: 'manage-news',
+        canActivate: [adminGuard],
         loadComponent: () => import('./features/admin/manage-news/manage-news.page').then((m) => m.ManageNewsPage),
+      },
+      {
+        path: 'admin-security',
+        canActivate: [masterGuard],
+        loadComponent: () => import('./features/admin/admin-security/admin-security.page').then((m) => m.AdminSecurityPage),
       },
       {
         path: 'players',

@@ -42,8 +42,7 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
     IonCheckbox,
     IonLabel,
     IonContent,
-    IonItem,
-    ConfirmModalComponent
+    IonItem
   ]
 })
 export class RegisterPage implements OnInit {

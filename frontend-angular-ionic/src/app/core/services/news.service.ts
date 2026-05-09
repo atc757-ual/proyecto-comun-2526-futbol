@@ -15,7 +15,11 @@ export interface NewsItem {
   category: string;
   tags: string[];
   isActive: boolean;
-  isFeatured: boolean; // Nuevo campo
+  isFeatured: boolean;
+  createdBy?: string;
+  createdAt?: string;
+  updatedBy?: string;
+  updatedAt?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -86,10 +90,12 @@ export class NewsService {
     
     // 1. Formatear fechas a YYYY-MM-DD para que sean ordenables y legibles por HTML5
     const processed = newsItems.map(item => {
+      // 1. FORMATEAR FECHAS (IMPORTANTE PARA EL ORDEN)
       if (item.date && item.date.includes('/')) {
         const [day, month, year] = item.date.split('/');
         item.date = `${year}-${month}-${day}`;
       }
+      
       return item;
     });
 
@@ -145,7 +151,7 @@ export class NewsService {
     }
 
     // Limpiamos el objeto para que coincida exactamente con el IDL de CORBA
-    const cleanedNews = {
+    const cleanedNews: any = {
       id: (news.id || `news-${Date.now()}`).trim(),
       title: (news.title || '').trim(),
       author: (news.author || 'Anónimo').trim(),
@@ -158,6 +164,9 @@ export class NewsService {
       isActive: news.isActive !== undefined ? news.isActive : true,
       isFeatured: news.isFeatured !== undefined ? news.isFeatured : false
     };
+
+    // Asegurar que no excedemos los 6 tags
+    cleanedNews.tags = cleanedNews.tags ? cleanedNews.tags.slice(0, 6) : ['General'];
 
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`,
@@ -186,7 +195,7 @@ export class NewsService {
       formattedDate = `${day}/${month}/${year}`;
     }
 
-    const cleanedNews = {
+    const cleanedNews: any = {
       id: news.id,
       title: (news.title || '').trim(),
       author: (news.author || 'Anónimo').trim(),
@@ -199,6 +208,9 @@ export class NewsService {
       isActive: news.isActive !== undefined ? news.isActive : true,
       isFeatured: news.isFeatured !== undefined ? news.isFeatured : false
     };
+
+    // Asegurar que no excedemos los 6 tags
+    cleanedNews.tags = cleanedNews.tags ? cleanedNews.tags.slice(0, 6) : ['General'];
 
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`,

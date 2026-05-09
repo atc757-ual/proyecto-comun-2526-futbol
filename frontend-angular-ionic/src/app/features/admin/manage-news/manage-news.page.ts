@@ -1,21 +1,26 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { 
-  IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, 
-  IonMenuButton, IonList, IonItem, IonLabel, IonThumbnail, 
-  IonBadge, IonIcon, IonButton, IonSkeletonText, IonSearchbar,
-  IonRefresher, IonRefresherContent, AlertController, ToastController,
-  IonMenuToggle, IonRefresherContent as IonRefresherContentComponent, NavController
+import {
+  IonItem, IonLabel, IonThumbnail,
+  IonIcon, IonButton, IonSkeletonText, IonSearchbar,
+  ToastController, IonCardTitle,
+  NavController, IonCard, IonCardContent, ModalController, IonCardHeader
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { 
-  createOutline, trashOutline, eyeOutline, 
-  newspaperOutline, alertCircleOutline, searchOutline 
+import {
+  createOutline, trashOutline, eyeOutline,
+  newspaperOutline, alertCircleOutline, searchOutline,
+  chevronBackOutline, chevronForwardOutline, closeCircleOutline,
+  checkmarkCircleOutline, calendarClearOutline, addCircleOutline,
+  closeCircle
 } from 'ionicons/icons';
 import { NewsService, NewsItem } from '../../../core/services/news.service';
 import { StorageService } from '../../../core/services/storage.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { LayoutService } from 'src/app/core/services/layout.service';
+import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-manage-news',
@@ -23,10 +28,11 @@ import { AuthService } from '../../../core/services/auth.service';
   styleUrls: ['./manage-news.page.scss'],
   standalone: true,
   imports: [
-    CommonModule, FormsModule, IonContent, IonHeader, IonTitle, 
-    IonToolbar, IonButtons, IonMenuButton, IonList, IonItem, 
-    IonLabel, IonThumbnail, IonBadge, IonIcon, IonButton, 
-    IonSkeletonText, IonSearchbar, IonRefresher, IonRefresherContent
+    CommonModule, FormsModule, RouterModule,
+    IonItem,
+    IonLabel, IonThumbnail, IonIcon, IonButton,
+    IonSkeletonText, IonSearchbar,
+    IonCard, IonCardContent, IonCardHeader, IonCardTitle
   ]
 })
 export class ManageNewsPage implements OnInit {
@@ -34,24 +40,46 @@ export class ManageNewsPage implements OnInit {
   filteredNews: NewsItem[] = [];
   isLoading = true;
   searchTerm = '';
+  isAdmin = false;
+  // Paginación
+  currentPage = 1;
+  itemsPerPage = 5;
+  totalPages = 1;
+  pagedNews: NewsItem[] = [];
 
   private storageService = inject(StorageService);
   private authService = inject(AuthService);
+  private layoutService = inject(LayoutService);
 
   constructor(
     private newsService: NewsService,
-    private alertController: AlertController,
-    private toastController: ToastController,
+    private modalCtrl: ModalController,
+    private toastCtrl: ToastController,
     private navCtrl: NavController
   ) {
-    addIcons({ 
-      createOutline, trashOutline, eyeOutline, 
-      newspaperOutline, alertCircleOutline, searchOutline 
+    addIcons({
+      createOutline, trashOutline, eyeOutline,
+      newspaperOutline, alertCircleOutline, searchOutline,
+      chevronBackOutline, chevronForwardOutline, closeCircleOutline,
+      checkmarkCircleOutline, calendarClearOutline, addCircleOutline,
+      closeCircle
     });
+    this.isAdmin = this.authService.isAdmin();
   }
 
   ngOnInit() {
     this.loadNews();
+    this.layoutService.setHeader({
+      title: 'Gestión de noticias',
+      subtitle: '¡Gestiona las noticias desde aquí, visualiza, edita y elimina!',
+      showHero: true
+    });
+    this.layoutService.setBreadcrumbs([
+      { label: '', url: '', icon: 'home-outline' },
+      { label: 'Noticias', url: '/news' },
+      { label: 'Gestión de noticias' }
+    ]);
+
   }
 
   loadNews(event?: any) {
@@ -63,32 +91,52 @@ export class ManageNewsPage implements OnInit {
         this.isLoading = false;
         if (event) event.target.complete();
       },
-      error: async (err) => {
-        console.error('Error cargando noticias:', err);
+      error: () => {
         this.isLoading = false;
+        this.showToast('Error al cargar noticias', 'danger', 'alert-circle-outline');
         if (event) event.target.complete();
-        const toast = await this.toastController.create({
-          message: 'Error al conectar con el servidor CORBA',
-          duration: 3000,
-          color: 'danger',
-          position: 'bottom'
-        });
-        toast.present();
       }
     });
   }
 
   applyFilter() {
+    let result = [];
     if (!this.searchTerm.trim()) {
-      this.filteredNews = [...this.news];
+      result = [...this.news];
     } else {
       const term = this.searchTerm.toLowerCase();
-      this.filteredNews = this.news.filter(item => 
-        item.title.toLowerCase().includes(term) || 
+      result = this.news.filter(item =>
+        item.title.toLowerCase().includes(term) ||
         item.author.toLowerCase().includes(term) ||
         item.category.toLowerCase().includes(term)
       );
     }
+
+    this.filteredNews = result;
+    this.totalPages = Math.ceil(this.filteredNews.length / this.itemsPerPage);
+    if (this.currentPage > this.totalPages) this.currentPage = 1;
+    this.updatePagedNews();
+  }
+
+  updatePagedNews() {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.pagedNews = this.filteredNews.slice(startIndex, endIndex);
+  }
+
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePagedNews();
+    }
+  }
+
+  getPages(): number[] {
+    const pages = [];
+    for (let i = 1; i <= this.totalPages; i++) {
+      pages.push(i);
+    }
+    return pages;
   }
 
   handleRefresh(event: any) {
@@ -96,68 +144,44 @@ export class ManageNewsPage implements OnInit {
   }
 
   async deleteNews(item: NewsItem) {
-    const alert = await this.alertController.create({
-      header: 'Confirmar eliminación',
-      message: `¿Estás seguro de que deseas eliminar la noticia "${item.title}"?`,
-      mode: 'ios',
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-          cssClass: 'secondary'
-        },
-        {
-          text: 'Eliminar',
-          role: 'destructive',
-          handler: () => {
-            this.confirmDelete(item);
-          }
-        }
-      ]
+    const modal = await this.modalCtrl.create({
+      component: ConfirmModalComponent,
+      componentProps: {
+        title: '¿Eliminar noticia?',
+        message: `Estás a punto de borrar "${item.title}". Esta acción no se puede deshacer.`,
+        confirmText: 'Borrar ahora',
+        cancelText: 'Cancelar',
+        type: 'delete'
+      },
+      cssClass: 'premium-modal'
     });
 
-    await alert.present();
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+
+    if (data === true) {
+      this.executeDeletion(item);
+    }
   }
 
-  private async confirmDelete(item: NewsItem) {
-    // Validación de seguridad extra: Solo admin puede borrar
+  private async executeDeletion(item: NewsItem) {
     if (!this.authService.isAdmin()) {
-      const toast = await this.toastController.create({
-        message: 'No tienes permisos para ejecutar esta acción',
-        duration: 3000,
-        color: 'danger',
-        position: 'bottom'
-      });
-      toast.present();
+      this.showToast('No tienes permisos para ejecutar esta acción', 'danger', 'alert-circle-outline');
       return;
     }
 
-    // 1. Si tiene imagen en Firebase Storage, borrarla primero
     if (item.imageUrl && item.imageUrl.includes('firebasestorage')) {
-      console.log('[DELETE] Eliminando imagen de Storage antes de borrar noticia...');
       await this.storageService.deleteImageByUrl(item.imageUrl);
     }
 
     // 2. Borrar de CORBA
     this.newsService.deleteNews(item.id!).subscribe({
       next: async () => {
-        const toast = await this.toastController.create({
-          message: 'Noticia eliminada correctamente',
-          duration: 2000,
-          color: 'success',
-          position: 'bottom'
-        });
-        toast.present();
+        this.showToast('Noticia eliminada correctamente', 'success', 'checkmark-circle-outline');
         this.loadNews();
       },
       error: async (err) => {
-        const toast = await this.toastController.create({
-          message: 'Error al eliminar la noticia',
-          duration: 3000,
-          color: 'danger',
-          position: 'bottom'
-        });
-        toast.present();
+        this.showToast('Error al eliminar la noticia', 'danger', 'alert-circle-outline');
       }
     });
   }
@@ -169,4 +193,18 @@ export class ManageNewsPage implements OnInit {
   viewNews(item: NewsItem) {
     this.navCtrl.navigateForward(['/news', item.id]);
   }
+
+  async showToast(message: string, color: string, icon: string) {
+    const toast = await this.toastCtrl.create({
+      message,
+      duration: 3000,
+      position: 'bottom',
+      color: color,
+      cssClass: 'premium-toast',
+      buttons: [{ icon: icon, side: 'start', handler: () => { } }]
+    });
+    toast.present();
+  }
 }
+
+

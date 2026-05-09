@@ -1,16 +1,23 @@
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
+const fs = require('fs');
+const path = require('path');
 const { sendApiResult } = require('../controllers/apiResult');
+
+// Leer la llave para verificar (Usamos la misma llave para simplificar en este entorno)
+const keyPath = path.join(__dirname, '../../private_key.pem');
+let secretOrKey = process.env.JWT_SECRET || 'clave-por-defecto';
+
+if (fs.existsSync(keyPath)) {
+    secretOrKey = fs.readFileSync(keyPath, 'utf8');
+}
 
 /**
  * Middleware para autorizar peticiones.
- * Siguiendo el Chapter 2.4 del tutorial.
  */
 const authorizeRequest = async (req, res, next) => {
-    // BYPASS para entorno de TEST
     if (process.env.NODE_ENV === 'test') {
         const User = mongoose.model('User');
-        // Buscamos o creamos un usuario de prueba para que los tests tengan un ID válido
         let testUser = await User.findOne({ firebaseUid: 'test-user-id' });
         if (!testUser) {
             testUser = await User.create({
@@ -25,25 +32,19 @@ const authorizeRequest = async (req, res, next) => {
         return next();
     }
 
-    // Obtener la cabecera Authorization
     let header = req.headers.Authorization || req.headers.authorization;
 
-    // Comprobar si la cabecera existe y comienza con 'Bearer'
     if (!header || !header.startsWith("Bearer ")) {
         return sendApiResult(res, 401, "Acceso no autorizado");
     }
 
     const token = header.split(" ")[1];
 
-    if (!token) {
-        return sendApiResult(res, 401, "No autorizado: Token no proporcionado");
-    }
-
     const User = mongoose.model('User');
 
-    // Verificar el token
-    jwt.verify(token, process.env.JWT_SECRET || 'clave-por-defecto-cambiar-en-produccion', async (err, decoded) => {
+    jwt.verify(token, secretOrKey, async (err, decoded) => {
         if (err) {
+            console.error('JWT Verify Error:', err.message);
             return sendApiResult(res, 401, "No autorizado: Token inválido o expirado");
         }
 
@@ -55,13 +56,15 @@ const authorizeRequest = async (req, res, next) => {
             }).select('-password');
 
             if (!user) {
-                return sendApiResult(res, 401, "No autorizado: El usuario asociado al token no existe o está inactivo");
+                return sendApiResult(res, 401, "No autorizado: El usuario no existe");
             }
 
+            // Inyectamos el usuario de BD y los claims del token
             req.user = user;
+            req.tokenClaims = decoded; 
+            
             return next();
         } catch (error) {
-            console.error('Error en el middleware de autorización:', error);
             return sendApiResult(res, 500, "Error interno al verificar autorización");
         }
     });
@@ -77,4 +80,14 @@ const isAdmin = (req, res, next) => {
     return sendApiResult(res, 403, "Acceso denegado: Se requiere rol de Administrador");
 };
 
-module.exports = { authorizeRequest, isAdmin };
+/**
+ * Middleware para comprobar si el usuario es Master (Super Admin).
+ */
+const isMaster = (req, res, next) => {
+    if (req.tokenClaims && req.tokenClaims.master === true) {
+        return next();
+    }
+    return sendApiResult(res, 403, "Acceso denegado: Solo el Administrador Maestro puede realizar esta acción");
+};
+
+module.exports = { authorizeRequest, isAdmin, isMaster };

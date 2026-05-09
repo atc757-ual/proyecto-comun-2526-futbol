@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, LoadingController, NavController } from '@ionic/angular';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
@@ -7,7 +7,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { PlatformService } from 'src/app/core/services/platform.service';
 import { LayoutService } from 'src/app/core/services/layout.service';
 import { addIcons } from 'ionicons';
-import { addCircleOutline, newspaperOutline, homeOutline, settingsOutline } from 'ionicons/icons';
+import { addCircleOutline, newspaperOutline, homeOutline, settingsOutline, chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-news',
@@ -16,7 +16,7 @@ import { addCircleOutline, newspaperOutline, homeOutline, settingsOutline } from
   standalone: true,
   imports: [CommonModule, IonicModule, RouterModule]
 })
-export class NewsPage implements OnInit {
+export class NewsPage implements OnInit, OnDestroy {
   private newsService = inject(NewsService);
   private authService = inject(AuthService); // Inyectado correctamente aquí
   private route = inject(ActivatedRoute);
@@ -29,9 +29,18 @@ export class NewsPage implements OnInit {
   selectedNews: NewsItem | null = null;
   isAdmin = false;
   isLoading = true;
+  activeSpotlightIndex = -1; // Empezamos en -1 para que nada tenga foco al cargar
+  private spotlightTimer: any;
+
+  // Variables de Paginación
+  currentPage = 1;
+  itemsPerPage = 5;
+  totalPages = 1;
+  totalNews: NewsItem[] = [];
+  isChangingPage = false; // Para el efecto de transición
 
   constructor() {
-    addIcons({ addCircleOutline, newspaperOutline, homeOutline, settingsOutline });
+    addIcons({ addCircleOutline, newspaperOutline, homeOutline, settingsOutline, chevronBackOutline, chevronForwardOutline });
   }
 
   async ngOnInit() {
@@ -50,24 +59,49 @@ export class NewsPage implements OnInit {
 
     this.isAdmin = this.authService.isAdmin(); // Usamos la instancia inyectada
     this.loadNews();
+
+    // Si es Desktop, activamos el primer foco inmediatamente
+    if (this.platformService.isDesktop) {
+      this.activeSpotlightIndex = 0;
+    }
+
+    this.startSpotlight();
+  }
+
+  ngOnDestroy() {
+    if (this.spotlightTimer) {
+      clearInterval(this.spotlightTimer);
+    }
+  }
+
+  startSpotlight() {
+    this.spotlightTimer = setInterval(() => {
+      // Usamos el getter isDesktop del servicio (si no es desktop, es móvil)
+      if (!this.platformService.isDesktop) {
+        this.activeSpotlightIndex = -1;
+        return;
+      }
+
+      const limit = Math.min(this.newsList.length, 6);
+      if (limit > 0) {
+        this.activeSpotlightIndex = (this.activeSpotlightIndex + 1) % limit;
+      }
+    }, 3500);
   }
 
   loadNews() {
     this.isLoading = true;
-    
-    // Si es admin pide todo, si no pide el feed público (ya filtrado por el back)
-    const newsObservable = this.isAdmin ? this.newsService.getNews() : this.newsService.getFeed();
 
-    newsObservable.subscribe({
+    this.newsService.getFeed().subscribe({
       next: (news) => {
-        this.newsList = news;
+        // Usamos las noticias reales del servicio
+        this.totalNews = news;
 
-        const newsId = this.route.snapshot.paramMap.get('id');
-        if (newsId) {
-          this.selectedNews = this.newsList.find(n => n.id === newsId) || this.newsList[0];
-        } else {
-          this.selectedNews = this.newsList[0];
-        }
+        // Calculamos páginas
+        this.totalPages = Math.ceil(this.totalNews.length / this.itemsPerPage);
+
+        // Obtenemos solo la primera página para mostrar
+        this.updateVisibleNews();
 
         this.isLoading = false;
       },
@@ -76,6 +110,35 @@ export class NewsPage implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  updateVisibleNews() {
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    const end = start + this.itemsPerPage;
+    this.newsList = this.totalNews.slice(start, end);
+
+    // Al cambiar de página, reiniciamos el foco del spotlight
+    this.activeSpotlightIndex = -1;
+  }
+
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages && !this.isChangingPage) {
+      this.isChangingPage = true;
+
+      // Esperamos a que la animación de "salida" termine
+      setTimeout(() => {
+        this.currentPage = page;
+        this.updateVisibleNews();
+        this.isChangingPage = false;
+
+        // Scroll arriba suave
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 300);
+    }
+  }
+
+  getPages(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
   }
 
   selectNews(news: NewsItem) {

@@ -22,66 +22,12 @@
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
-/* --- UTILIDADES DE ESTRUCTURA (THEME GRID) --- */
-.container {
-  padding-left: 16px;
-  padding-right: 16px;
-  margin: 0 auto;
-  width: 100%;
-  max-width: 1440px;
-  box-sizing: border-box;
-
-  @media (min-width: 768px) {
-    padding-left: 64px;
-    padding-right: 64px;
-  }
-}
-
 /* --- FIX: Password Toggle Color --- */
 ion-input-password-toggle,
 .toggle-password [class*="toggle-password"] {
   --color: var(--color-neutral-6) !important;
   color: var(--color-neutral-6) !important;
   --ion-color-primary: var(--color-neutral-6) !important;
-}
-
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  width: 100%;
-
-  &.reverse {
-    flex-direction: row-reverse;
-
-    @media (max-width: 767px) {
-      flex-direction: column;
-    }
-  }
-}
-
-[class*="col-"] {
-  box-sizing: border-box;
-  flex: 0 0 auto;
-}
-
-// Grid de 12 columnas (Fórmula Robusta)
-@for $i from 1 through 12 {
-  .col-#{$i} {
-    width: calc((100% * #{$i} / 12) - (16px * (1 - #{$i} / 12)));
-  }
-}
-
-@media (max-width: 768px) {
-  @for $i from 1 through 12 {
-    .col-sm-#{$i} {
-      width: calc((100% * #{$i} / 12) - (16px * (1 - #{$i} / 12)));
-    }
-  }
-
-  .padding-sm-0 {
-    padding: 0 !important;
-  }
 }
 
 /* --- ANIMACIONES --- */
@@ -110,7 +56,7 @@ body {
   height: 100%;
   width: 100%;
   overflow-x: hidden !important;
-  font-family: var(--font-secondary);
+  font-family: var(--font-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: var(--color-background);
@@ -165,6 +111,7 @@ ion-modal#modal {
     --border-color: var(--color-error) !important;
     --label-color: var(--color-error) !important;
     --border-width: 2px !important;
+    --background: rgba(var(--ion-color-error-rgb), 0.1) !important;
   }
 
   &.is-focused,
@@ -175,7 +122,8 @@ ion-modal#modal {
     --highlight-color-focused: var(--color-primary) !important;
     --highlight-color: var(--color-primary) !important;
     --border-width: 2px !important;
-    box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.1) !important;
+    --background: var(--blue-primary-010) !important;
+    box-shadow: none !important;
   }
 
   /* Ocultar mensaje de error cuando el usuario está escribiendo (enfocado) */
@@ -204,8 +152,7 @@ ion-modal#modal {
 .futbol-btn-primary {
   --background: var(--color-primary);
   --color: var(--color-white);
-  --box-shadow: 0 8px 25px rgba(var(--ion-color-primary-rgb), 0.25);
-  margin-top: var(--space-base);
+  --box-shadow: 0 12px 28px -6px rgba(var(--ion-color-primary-rgb), 0.4);
   font-size: var(--fs-16);
   font-weight: var(--fw-semibold);
   transition: all var(--transition-smooth);
@@ -320,14 +267,27 @@ ion-modal#modal {
   }
 }
 
-/* CLASE GLOBAL PARA BOTONES DE ATRÁS PREMIUM */
+/* Fullscreen modal */
+ion-modal {
+  --width: 100vw !important;
+  --height: 100vh !important;
+  --border-radius: 0 !important;
+  --box-shadow: none !important;
+  top: 0;
+  left: 0;
+  margin: 0;
+}
+
 ion-back-button.back-link-minimal {
-  width: 48px;
+  width: 40px;
   height: 48px;
   --color: var(--color-primary);
   --padding-start: 0;
   --margin-start: 0;
-  background-color: var(--blue-primary-010, #f0f7ff);
+  --ripple-color: transparent;
+  --background-hover: transparent;
+  --background-focused: transparent;
+  background-color: transparent;
   border-radius: 50%;
 
   transition: all 0.2s ease;
@@ -346,7 +306,6 @@ ion-back-button.back-link-minimal {
   }
 
   &:hover {
-    background: var(--blue-primary-020, #e1efff);
     transform: scale(1.08);
   }
 
@@ -392,13 +351,13 @@ ion-card-header {
 }
 
 ion-item::part(native) {
+  --min-height: 32px;
   --inner-padding-start: 0;
   --inner-padding-end: 0;
   --padding-start: var(--space-xs);
   --padding-end: var(--space-xs);
   --detail-icon-color: var(--color-primary);
   --detail-icon-opacity: 0.9;
-  --border-radius: var(--space-s);
   --detail-icon-font-size: var(--fs-28);
   --background-activated: var(--blue-primary-010);
   --background-focused: var(--blue-primary-010);
@@ -416,12 +375,70 @@ ion-item::part(native) {
   opacity: 0.6;
 }
 
-.my-s {
-  margin-top: var(--space-s) !important;
-  margin-bottom: var(--space-s) !important;
+
+.empty-container {
+  min-height: 350px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  ion-icon {
+    font-size: 48px;
+    color: var(--color-neutral-3);
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-size: var(--fs-48);
+    color: var(--color-neutral-3);
+    margin-bottom: 20px;
+  }
+
+  h2 {
+    font-size: var(--fs-22);
+    font-weight: var(--fw-semibold);
+    color: var(--color-neutral-8);
+  }
+
+  p {
+    font-size: var(--fs-16);
+    font-weight: var(--fw-medium);
+    color: var(--color-neutral-5);
+  }
+
+  @media (max-width: 767px) {
+    min-height: 200px;
+
+    ion-icon {
+      font-size: 32px;
+      margin-bottom: var(--space-base);
+    }
+
+    h2 {
+      font-size: var(--fs-18);
+    }
+
+    p {
+      font-size: var(--fs-14);
+    }
+  }
 }
 
-.mt-s { margin-top: var(--space-s) !important; }
-.mb-s { margin-bottom: var(--space-s) !important; }
-.ml-s { margin-left: var(--space-s) !important; }
-.mr-s { margin-right: var(--space-s) !important; }
+/* --- ESTILOS PARA POPOVERS (Select de Categoría) --- */
+.category-popover {
+  --width: 260px;
+
+  ion-item {
+    --padding-top: var(--space-xs);
+    --padding-bottom: var(--space-xs);
+    --padding-start: var(--space-base) !important;
+    /* Left padding */
+    --inner-padding-end: var(--space-base) !important;
+    /* Right padding */
+    --min-height: 48px;
+    font-size: var(--fs-16);
+    font-family: var(--font-primary);
+  }
+}

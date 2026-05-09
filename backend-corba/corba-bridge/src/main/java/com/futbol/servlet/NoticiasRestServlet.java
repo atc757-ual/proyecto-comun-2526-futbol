@@ -12,22 +12,34 @@ import BufferApp.*;
 import com.futbol.utils.*;
 
 /**
- * Servlet RESTful para gestionar noticias.
- * Mapeado a /api/noticias/*
- * Responde con estructura estándar: { result: {success, message}, data: [...] }
+ * Servlet RESTful para gestionar noticias con Logs de Depuración y Conexión Persistente.
  */
 public class NoticiasRestServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     private final ObjectMapper mapper = new ObjectMapper();
+    private NewsService newsService;
 
-    // GET /api/noticias -> Lista todas (Admin)
-    // GET /api/noticias/public -> Lista solo activas (User)
-    // GET /api/noticias/recent -> Lista 5 más recientes (User)
-    // GET /api/noticias/{id} -> Obtiene una
+    @Override
+    public void init() throws ServletException {
+        conectarCorba();
+    }
+
+    private void conectarCorba() {
+        try {
+            System.out.println("[BRIDGE-INIT] Intentando conectar con servidor CORBA...");
+            this.newsService = getCorbaService();
+            System.out.println("[BRIDGE-INIT] !!! CONEXION ESTABLECIDA CON ÉXITO !!!");
+        } catch (Exception e) {
+            System.err.println("[BRIDGE-INIT] ERROR CRÍTICO AL CONECTAR: " + e.getMessage());
+        }
+    }
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
+        System.out.println("[BRIDGE-GET] Nueva peticion recibida: " + request.getPathInfo());
         
         if (!validarAutorizacion(request, response)) return;
 
@@ -35,228 +47,205 @@ public class NoticiasRestServlet extends HttpServlet {
         String pathInfo = request.getPathInfo(); 
         
         try {
-            NewsService newsService = getCorbaService();
+            if (this.newsService == null) {
+                System.out.println("[BRIDGE-GET] Re-intentando conexion CORBA perdida...");
+                conectarCorba();
+            }
+            
             String xsdPath = getXsdPath();
+            System.out.println("[BRIDGE-GET] Usando XSD: " + xsdPath);
 
-            if (pathInfo == null || pathInfo.equals("/")) {
-                // RUTA DE ADMIN: Requiere validación de rol Admin
+            if (pathInfo == null || pathInfo.equals("/") || pathInfo.isEmpty()) {
                 if (!validarRolAdmin(request, response)) return;
-                procesarLista(newsService.getAllNews(), response, xsdPath, "Todas las noticias recuperadas (Admin)");
-            } else if (pathInfo.equals("/feed")) {
-                // RUTA PÚBLICA: Solo noticias activas (Obscuridad)
-                procesarLista(newsService.getVisibleNews(), response, xsdPath, "Feed de noticias actualizado");
-            } else if (pathInfo.equals("/recent")) {
-                // RUTA PÚBLICA: 5 recientes
-                procesarLista(newsService.getRecentNews(), response, xsdPath, "Noticias recientes recuperadas");
+                System.out.println("[BRIDGE-GET] Llamando a CORBA: getAllNews()...");
+                procesarLista(this.newsService.getAllNews(), response, xsdPath, "Admin: Todas las noticias");
+            } else if (pathInfo.startsWith("/feed")) {
+                System.out.println("[BRIDGE-GET] Llamando a CORBA: getVisibleNews()...");
+                procesarLista(this.newsService.getVisibleNews(), response, xsdPath, "Public: Feed de noticias");
+            } else if (pathInfo.startsWith("/featured")) {
+                System.out.println("[BRIDGE-GET] Llamando a CORBA: getFeaturedNews()...");
+                procesarLista(this.newsService.getFeaturedNews(), response, xsdPath, "Public: Destacadas");
+            } else if (pathInfo.startsWith("/recent")) {
+                System.out.println("[BRIDGE-GET] Llamando a CORBA: getRecentNews()...");
+                procesarLista(this.newsService.getRecentNews(), response, xsdPath, "Public: Recientes");
             } else {
-                // Obtener por ID: Pública
                 String id = pathInfo.substring(1);
-                NewsItem noticia = newsService.getNewsById(id);
+                System.out.println("[BRIDGE-GET] Llamando a CORBA: getNewsById(" + id + ")...");
+                NewsItem noticia = this.newsService.getNewsById(id);
                 if (noticia == null) {
+                    System.out.println("[BRIDGE-GET] Noticia " + id + " no encontrada.");
                     enviarRespuesta(response, HttpServletResponse.SC_NOT_FOUND, false, "Noticia no encontrada", null);
                 } else {
+                    System.out.println("[BRIDGE-GET] Noticia " + id + " encontrada. Validando XML...");
                     enviarRespuesta(response, HttpServletResponse.SC_OK, true, "Noticia recuperada", validarYLimpiar(noticia, xsdPath));
                 }
             }
         } catch (Exception e) {
-            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, "Error: " + e.getMessage(), null);
+            System.err.println("[BRIDGE-ERROR] Fallo en el flujo de datos: " + e.getMessage());
+            e.printStackTrace();
+            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, "Error Bridge: " + e.getMessage(), null);
         }
     }
 
     private void procesarLista(NewsItem[] noticias, HttpServletResponse response, String xsdPath, String msg) throws Exception {
+        System.out.println("[BRIDGE-LIST] Procesando lista de " + (noticias != null ? noticias.length : 0) + " items...");
         List<NewsItem> lista = new ArrayList<>();
-        for (NewsItem n : noticias) {
-            lista.add(validarYLimpiar(n, xsdPath));
+        if (noticias != null) {
+            for (NewsItem n : noticias) {
+                lista.add(validarYLimpiar(n, xsdPath));
+            }
         }
+        System.out.println("[BRIDGE-LIST] Lista procesada. Enviando respuesta JSON...");
         enviarRespuesta(response, HttpServletResponse.SC_OK, true, msg, lista);
     }
 
     private NewsItem validarYLimpiar(NewsItem n, String xsdPath) throws Exception {
+        // System.out.println("[BRIDGE-VALID] Pipeline XML para: " + n.title);
         String xml = XMLCoder.toXML(n);
         XMLValidator.validar(xml, xsdPath);
         return XMLDecoder.decode(xml);
     }
 
-    // POST /api/noticias -> Crea una noticia (recibiendo JSON desde el Frontend)
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        request.setCharacterEncoding("UTF-8");
-        response.setContentType("application/json;charset=UTF-8");
-
-        if (!validarAutorizacion(request, response)) return;
-        if (!validarRolAdmin(request, response)) return;
-
-        try {
-            System.out.println("[DEBUG-BRIDGE] Iniciando proceso de publicacion...");
-            
-            // 1. Recibir JSON desde el Frontend y mapear a objeto CORBA NewsItem
-            System.out.println("[DEBUG-BRIDGE] Intentando mapear JSON a NewsItem...");
-            NewsItem noticiaRecibida = mapper.readValue(request.getReader(), NewsItem.class);
-            System.out.println("[DEBUG-BRIDGE] JSON mapeado correctamente para: " + noticiaRecibida.title);
-
-            if (noticiaRecibida == null) {
-                enviarRespuesta(response, HttpServletResponse.SC_BAD_REQUEST, false, "El body JSON no puede estar vacío", null);
-                return;
-            }
-
-            // 2. Convertir a XML para pasar el Pipeline de validación (Requisito de sintaxis/semántica)
-            System.out.println("[DEBUG-BRIDGE] Convirtiendo objeto a XML...");
-            String xmlData = XMLCoder.toXML(noticiaRecibida);
-            String xsdPath = getXsdPath();
-            System.out.println("[DEBUG-BRIDGE] XML generado. Usando XSD en: " + xsdPath);
-            
-            // 3. Validar sintaxis y semántica contra el XSD
-            System.out.println("[DEBUG-BRIDGE] Validando contra XSD...");
-            XMLValidator.validar(xmlData, xsdPath);
-            System.out.println("[DEBUG-BRIDGE] Validacion XSD exitosa.");
-            
-            // 4. Decodificar de nuevo desde el XML validado (Garantiza integridad total)
-            NewsItem itemParaCorba = XMLDecoder.decode(xmlData);
-
-            // 5. Enviar al servidor CORBA central
-            System.out.println("[DEBUG-BRIDGE] Conectando con el servicio CORBA (NewsService)...");
-            NewsService newsService = getCorbaService();
-            System.out.println("[DEBUG-BRIDGE] Servicio CORBA obtenido. Llamando a addNews...");
-            newsService.addNews(itemParaCorba);
-
-            System.out.println("[DEBUG-BRIDGE] !!! EXITO !!! Noticia enviada a CORBA.");
-            enviarRespuesta(response, HttpServletResponse.SC_CREATED, true, 
-                "Noticia procesada (JSON -> XML -> XSD VALID -> CORBA) con éxito", itemParaCorba);
-
-        } catch (org.xml.sax.SAXException vex) {
-            System.err.println("[DEBUG-BRIDGE] ERROR DE VALIDACION XSD: " + vex.getMessage());
-            enviarRespuesta(response, HttpServletResponse.SC_BAD_REQUEST, false, 
-                "Error: El JSON enviado genera un XML inválido según el esquema (XSD): " + vex.getMessage(), null);
-        } catch (Exception e) {
-            System.err.println("[DEBUG-BRIDGE] ERROR CRITICO: " + e.getMessage());
-            e.printStackTrace();
-            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, 
-                "Error interno en el bridge: " + e.getMessage(), null);
-        }
+        procesarPost(request, response);
     }
 
-    // PUT /api/noticias -> Actualiza una noticia
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        if (!validarAutorizacion(request, response)) return;
-        if (!validarRolAdmin(request, response)) return;
-
-        response.setContentType("application/json;charset=UTF-8");
-        
-        try {
-            NewsItem noticiaRecibida = mapper.readValue(request.getReader(), NewsItem.class);
-            String xsdPath = getXsdPath();
-            
-            // Validar Pipeline (JSON -> XML -> XSD -> CORBA)
-            NewsItem itemValidado = validarYLimpiar(noticiaRecibida, xsdPath);
-
-            NewsService newsService = getCorbaService();
-            boolean actualizado = newsService.updateNews(itemValidado);
-
-            if (actualizado) {
-                enviarRespuesta(response, HttpServletResponse.SC_OK, true, "Noticia actualizada con éxito", itemValidado);
-            } else {
-                enviarRespuesta(response, HttpServletResponse.SC_NOT_FOUND, false, "No se pudo actualizar: ID no encontrado", null);
-            }
-
-        } catch (Exception e) {
-            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, "Error al actualizar: " + e.getMessage(), null);
-        }
+        procesarPut(request, response);
     }
 
-    // DELETE /api/noticias/{id} -> Borra una noticia
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+        procesarDelete(request, response);
+    }
+
+    private void procesarPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("application/json;charset=UTF-8");
         if (!validarAutorizacion(request, response)) return;
         if (!validarRolAdmin(request, response)) return;
 
-        response.setContentType("application/json;charset=UTF-8");
-        String pathInfo = request.getPathInfo();
-        String id = (pathInfo != null && pathInfo.length() > 1) ? pathInfo.substring(1) : null;
+        try {
+            System.out.println("[BRIDGE-POST] Iniciando publicacion...");
+            NewsItem noticiaRecibida = mapper.readValue(request.getReader(), NewsItem.class);
+            String xmlData = XMLCoder.toXML(noticiaRecibida);
+            XMLValidator.validar(xmlData, getXsdPath());
+            NewsItem itemParaCorba = XMLDecoder.decode(xmlData);
 
-        if (id == null) {
-            enviarRespuesta(response, HttpServletResponse.SC_BAD_REQUEST, false, "Se requiere el ID de la noticia a eliminar en la URL", null);
+            if (this.newsService == null) conectarCorba();
+            this.newsService.addNews(itemParaCorba);
+
+            System.out.println("[BRIDGE-POST] Exito enviando a CORBA.");
+            enviarRespuesta(response, HttpServletResponse.SC_CREATED, true, "Noticia publicada", itemParaCorba);
+        } catch (Exception e) {
+            System.err.println("[BRIDGE-POST] ERROR: " + e.getMessage());
+            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, e.getMessage(), null);
+        }
+    }
+
+    private void procesarPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("application/json;charset=UTF-8");
+        if (!validarAutorizacion(request, response)) return;
+        if (!validarRolAdmin(request, response)) return;
+
+        try {
+            System.out.println("[BRIDGE-PUT] Iniciando actualizacion...");
+            NewsItem noticiaRecibida = mapper.readValue(request.getReader(), NewsItem.class);
+            System.out.println("[BRIDGE-PUT] Datos recibidos: ID=" + noticiaRecibida.id + ", isFeatured=" + noticiaRecibida.isFeatured);
+            
+            String xmlData = XMLCoder.toXML(noticiaRecibida);
+            XMLValidator.validar(xmlData, getXsdPath());
+            NewsItem itemParaCorba = XMLDecoder.decode(xmlData);
+
+            if (this.newsService == null) conectarCorba();
+            boolean success = this.newsService.updateNews(itemParaCorba);
+
+            if (success) {
+                System.out.println("[BRIDGE-PUT] Exito actualizando en CORBA.");
+                enviarRespuesta(response, HttpServletResponse.SC_OK, true, "Noticia actualizada", itemParaCorba);
+            } else {
+                System.out.println("[BRIDGE-PUT] CORBA devolvio false (no encontrado?).");
+                enviarRespuesta(response, HttpServletResponse.SC_NOT_FOUND, false, "No se pudo actualizar la noticia", null);
+            }
+        } catch (Exception e) {
+            System.err.println("[BRIDGE-PUT] ERROR: " + e.getMessage());
+            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, e.getMessage(), null);
+        }
+    }
+
+    private void procesarDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("application/json;charset=UTF-8");
+        if (!validarAutorizacion(request, response)) return;
+        if (!validarRolAdmin(request, response)) return;
+
+        String pathInfo = request.getPathInfo();
+        if (pathInfo == null || pathInfo.equals("/") || pathInfo.isEmpty()) {
+            enviarRespuesta(response, HttpServletResponse.SC_BAD_REQUEST, false, "ID de noticia requerido", null);
             return;
         }
 
         try {
-            NewsService newsService = getCorbaService();
-            
-            // Verificar si existe
-            NewsItem noticia = newsService.getNewsById(id);
-            if (noticia == null) {
-                enviarRespuesta(response, HttpServletResponse.SC_NOT_FOUND, false, "Noticia no encontrada para eliminar", null);
-                return;
+            String id = pathInfo.substring(1);
+            System.out.println("[BRIDGE-DELETE] Iniciando eliminacion de ID: " + id);
+
+            if (this.newsService == null) conectarCorba();
+            boolean success = this.newsService.deleteNews(id);
+
+            if (success) {
+                System.out.println("[BRIDGE-DELETE] Exito eliminando en CORBA.");
+                enviarRespuesta(response, HttpServletResponse.SC_OK, true, "Noticia eliminada", null);
+            } else {
+                System.out.println("[BRIDGE-DELETE] Noticia no encontrada en CORBA.");
+                enviarRespuesta(response, HttpServletResponse.SC_NOT_FOUND, false, "Noticia no encontrada", null);
             }
-
-            // Eliminar de CORBA
-            newsService.deleteNews(id);
-            enviarRespuesta(response, HttpServletResponse.SC_NO_CONTENT, true, "Noticia eliminada correctamente", null);
-
         } catch (Exception e) {
-            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, "Error al eliminar: " + e.getMessage(), null);
+            System.err.println("[BRIDGE-DELETE] ERROR: " + e.getMessage());
+            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, e.getMessage(), null);
         }
     }
 
-    // --- Métodos de utilidad ---
-
     private boolean validarAutorizacion(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String authHeader = request.getHeader("Authorization");
-        System.out.println("[DEBUG-AUTH] Verificando cabecera Authorization...");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            System.err.println("[DEBUG-AUTH] ERROR: Cabecera Authorization no encontrada o mal formateada");
+            System.err.println("[BRIDGE-AUTH] Denegado: Sin Token");
             enviarRespuesta(response, HttpServletResponse.SC_UNAUTHORIZED, false, "Token no proporcionado", null);
             return false;
         }
-        System.out.println("[DEBUG-AUTH] Cabecera Authorization encontrada.");
         return true;
     }
 
     private boolean validarRolAdmin(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        // En una arquitectura con Gateway, el Gateway suele inyectar el rol en un header
         String userRole = request.getHeader("X-User-Role");
-        System.out.println("[DEBUG-AUTH] Verificando rol de usuario (Header X-User-Role): " + (userRole != null ? userRole : "NULL"));
-        
         if (userRole == null || !userRole.equalsIgnoreCase("ADMIN")) {
-            System.err.println("[DEBUG-AUTH] ERROR: Acceso denegado. Se esperaba ADMIN y se recibio: " + userRole);
-            enviarRespuesta(response, HttpServletResponse.SC_FORBIDDEN, false, "Acceso denegado: Se requiere rol ADMIN", null);
+            System.err.println("[BRIDGE-AUTH] Denegado: Requiere ADMIN y es " + userRole);
+            enviarRespuesta(response, HttpServletResponse.SC_FORBIDDEN, false, "Requiere ADMIN", null);
             return false;
         }
-        System.out.println("[DEBUG-AUTH] !!! ROL ADMIN CONFIRMADO !!!");
         return true;
     }
 
     private void enviarRespuesta(HttpServletResponse response, int statusCode, boolean success, String mensaje, java.lang.Object data) throws IOException {
         response.setStatus(statusCode);
-        
-        java.util.Map<String, java.lang.Object> result = new java.util.LinkedHashMap<>();
-        result.put("transactionId", java.util.UUID.randomUUID().toString());
-        result.put("code", success ? "0" : String.valueOf(statusCode));
-        result.put("description", success ? "OK" : "NOK");
-        result.put("descriptionDetail", mensaje);
-        result.put("responseTimestamp", java.time.Instant.now().toString());
-
         java.util.Map<String, java.lang.Object> fullResponse = new java.util.LinkedHashMap<>();
+        java.util.Map<String, java.lang.Object> result = new java.util.LinkedHashMap<>();
+        result.put("descriptionDetail", mensaje);
+        result.put("code", success ? "0" : "1");
         fullResponse.put("result", result);
         fullResponse.put("data", data != null ? data : new java.util.ArrayList<>());
-
         response.getWriter().println(mapper.writeValueAsString(fullResponse));
     }
 
     private NewsService getCorbaService() throws Exception {
         String orbHost = System.getenv("ORB_HOST") != null ? System.getenv("ORB_HOST") : "localhost";
         String[] orbArgs = {"-ORBInitialPort", "1050", "-ORBInitialHost", orbHost};
-        java.util.Properties props = new java.util.Properties();
-        props.put("org.glassfish.gmbal.disable", "true");
-        props.put("com.sun.CORBA.ORBDisableJMX", "true");
-        
-        ORB orb = ORB.init(orbArgs, props);
+        ORB orb = ORB.init(orbArgs, null);
         org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
         NamingContextExt ncRef = NamingContextExtHelper.narrow(objRef);
         return NewsServiceHelper.narrow(ncRef.resolve_str("NewsService"));

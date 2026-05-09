@@ -2,6 +2,10 @@ package com.futbol.server;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import BufferApp.*;
 
 /**
@@ -20,50 +24,70 @@ public class BufferImpl extends _NewsServiceImplBase {
     }
 
     private void seedData() {
-        noticias.add(new NewsItem(
-            "seed-1", 
-            "El Real Madrid conquista su 16ª Champions", 
-            "Redacción Deportes", 
-            "El partido comenzó con un dominio alterno, pero dos goles en la segunda mitad sellaron el destino del encuentro. Vinicius Jr. fue nombrado MVP tras una actuación estelar.",
-            "Una noche histórica en Wembley donde el conjunto blanco demostró por qué es el rey de Europa.",
-            "https://images.unsplash.com/photo-1574629810360-7efbbe195018", 
-            "Internacional", 
-            new String[]{"#Champions", "#RealMadrid", "#Futbol"},
-            "22/05/2026", 
-            true
-        ));
+        try {
+            System.out.println("[INIT] Cargando noticias desde archivo externo...");
+            // Leemos el archivo desde los recursos
+            InputStream is = getClass().getClassLoader().getResourceAsStream("news-seeds.txt");
+            if (is == null) {
+                System.err.println("[ERROR] No se encontró news-seeds.txt en los recursos.");
+                return;
+            }
 
-        noticias.add(new NewsItem(
-            "seed-2", 
-            "Nuevos fichajes para la próxima temporada", 
-            "Mercado Fútbol", 
-            "Se rumorea que varias estrellas de la Premier League están en conversaciones avanzadas para recalar en La Liga. Las cifras que se barajan superan los 100 millones de euros.",
-            "Los grandes clubes europeos ya mueven ficha antes de que abra el mercado oficial.",
-            "https://images.unsplash.com/photo-1508098682722-e99c43a406b2", 
-            "Fichajes", 
-            new String[]{"#Fichajes", "#Mercado", "#LaLiga"},
-            "21/05/2026", 
-            true
-        ));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+            String line;
+            
+            // Variables temporales para construir la noticia
+            String id = "", title = "", author = "", content = "", summary = "", imageUrl = "", category = "", date = "";
+            boolean isActive = true, isFeatured = false;
+            java.util.List<String> tags = new java.util.ArrayList<>();
 
-        noticias.add(new NewsItem(
-            "seed-3", 
-            "Análisis táctico: La revolución del 4-3-3", 
-            "Táctica Pro", 
-            "El uso de laterales invertidos y la presión alta se han convertido en las señas de identidad de los entrenadores top. Analizamos los movimientos clave.",
-            "Cómo los equipos modernos están adaptando sus sistemas para dominar la posesión.",
-            "https://images.unsplash.com/photo-1551958219-acbc608c6377", 
-            "Opinión", 
-            new String[]{"#Tactica", "#Analisis", "#Entrenadores"},
-            "20/05/2026", 
-            true
-        ));
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty() || line.startsWith("#")) {
+                    if (line.startsWith("#")) id = line.substring(1).trim();
+                    continue;
+                }
+                
+                if (line.equals("---")) {
+                    // Guardamos la noticia acumulada
+                    noticias.add(new NewsItem(id, title, author, content, summary, imageUrl, category, tags.toArray(new String[0]), date, isActive, isFeatured));
+                    // Reset para la siguiente
+                    tags = new java.util.ArrayList<>();
+                    continue;
+                }
+
+                if (line.startsWith("TITLE:")) title = line.substring(6).trim();
+                else if (line.startsWith("AUTHOR:")) author = line.substring(7).trim();
+                else if (line.startsWith("DATE:")) date = line.substring(5).trim();
+                else if (line.startsWith("CATEGORY:")) category = line.substring(9).trim();
+                else if (line.startsWith("ACTIVE:")) isActive = Boolean.parseBoolean(line.substring(7).trim());
+                else if (line.startsWith("FEATURED:")) isFeatured = Boolean.parseBoolean(line.substring(9).trim());
+                else if (line.startsWith("IMAGE:")) imageUrl = line.substring(6).trim();
+                else if (line.startsWith("TAGS:")) {
+                    String[] tArr = line.substring(5).split(",");
+                    for(String t : tArr) tags.add(t.trim());
+                }
+                else if (line.startsWith("SUMMARY:")) summary = line.substring(8).trim();
+                else if (line.startsWith("CONTENT:")) content = line.substring(8).trim();
+            }
+            
+            // Añadir la última si no termina en ---
+            if (!id.isEmpty()) {
+                noticias.add(new NewsItem(id, title, author, content, summary, imageUrl, category, tags.toArray(new String[0]), date, isActive, isFeatured));
+            }
+
+            System.out.println("[SUCCESS] Se han cargado " + noticias.size() + " noticias.");
+            reader.close();
+        } catch (Exception e) {
+            System.err.println("[ERROR] Fallo al cargar semillas: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @Override
     public synchronized void addNews(NewsItem noticia) {
         noticias.add(noticia);
-        System.out.println("[CREATE] Noticia añadida: \"" + noticia.title + "\" (ID: " + noticia.id + ")");
+        System.out.println("[CREATE] Noticia añadida: \"" + noticia.title + "\" (ID: " + noticia.id + ", Featured: " + noticia.isFeatured + ")");
     }
 
     @Override
@@ -71,7 +95,7 @@ public class BufferImpl extends _NewsServiceImplBase {
         for (int i = 0; i < noticias.size(); i++) {
             if (noticias.get(i).id.equals(noticiaModificada.id)) {
                 noticias.set(i, noticiaModificada);
-                System.out.println("[UPDATE] Noticia actualizada: \"" + noticiaModificada.title + "\"");
+                System.out.println("[UPDATE] Noticia actualizada: \"" + noticiaModificada.title + "\" (Featured: " + noticiaModificada.isFeatured + ")");
                 return true;
             }
         }
@@ -98,6 +122,16 @@ public class BufferImpl extends _NewsServiceImplBase {
         System.out.println("[READ] Listando noticias visibles (activas)");
         return noticias.stream()
                 .filter(n -> n.isActive)
+                .sorted((a, b) -> b.date.compareTo(a.date)) // Orden descendente
+                .toArray(NewsItem[]::new);
+    }
+
+    @Override
+    public synchronized NewsItem[] getFeaturedNews() {
+        System.out.println("[READ] Listando noticias destacadas");
+        return noticias.stream()
+                .filter(n -> n.isActive && n.isFeatured)
+                .sorted((a, b) -> b.date.compareTo(a.date)) // Orden descendente
                 .toArray(NewsItem[]::new);
     }
 
@@ -106,7 +140,7 @@ public class BufferImpl extends _NewsServiceImplBase {
         System.out.println("[READ] Listando 5 noticias más recientes");
         return noticias.stream()
                 .filter(n -> n.isActive)
-                .sorted((a, b) -> b.date.compareTo(a.date)) // Asumiendo formato ISO que se puede comparar
+                .sorted((a, b) -> b.date.compareTo(a.date)) // Orden descendente
                 .limit(5)
                 .toArray(NewsItem[]::new);
     }

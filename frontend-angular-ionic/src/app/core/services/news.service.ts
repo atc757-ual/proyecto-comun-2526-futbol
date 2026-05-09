@@ -15,6 +15,7 @@ export interface NewsItem {
   category: string;
   tags: string[];
   isActive: boolean;
+  isFeatured: boolean; // Nuevo campo
 }
 
 @Injectable({ providedIn: 'root' })
@@ -23,6 +24,7 @@ export class NewsService {
   private auth = inject(Auth);
   private apiUrl = environment.corbaApiUrl + '/noticias';
   private feedUrl = environment.corbaApiUrl + '/noticias/feed';
+  private featuredUrl = environment.corbaApiUrl + '/noticias/featured'; // Nuevo
 
   /**
    * Obtiene las cabeceras con el token de Firebase
@@ -55,9 +57,23 @@ export class NewsService {
     const token = localStorage.getItem('jwt_token');
     const headers = new HttpHeaders({ 
       'Authorization': `Bearer ${token}`,
-      'X-User-Role': 'USER' // Rol normal
+      'X-User-Role': 'USER'
     });
     return this.http.get<any>(this.feedUrl, { headers }).pipe(
+      map(response => this.processNewsResponse(response.data))
+    );
+  }
+
+  /**
+   * Obtiene solo las noticias destacadas
+   */
+  getFeatured(): Observable<NewsItem[]> {
+    const token = localStorage.getItem('jwt_token');
+    const headers = new HttpHeaders({ 
+      'Authorization': `Bearer ${token}`,
+      'X-User-Role': 'USER'
+    });
+    return this.http.get<any>(this.featuredUrl, { headers }).pipe(
       map(response => this.processNewsResponse(response.data))
     );
   }
@@ -107,6 +123,13 @@ export class NewsService {
     // Eliminamos 'pseudonym' y aseguramos que todos los campos obligatorios existan
     // Formateamos la fecha de YYYY-MM-DD a DD/MM/YYYY para cumplir con el XSD de CORBA
     let formattedDate = news.date || new Date().toISOString().split('T')[0];
+    
+    // Si viene de ion-datetime, puede traer la T de ISO (ej: 2024-05-09T10:00:00)
+    // Nos quedamos solo con la parte de la fecha YYYY-MM-DD
+    if (formattedDate.includes('T')) {
+      formattedDate = formattedDate.split('T')[0];
+    }
+
     if (formattedDate.includes('-')) {
       const [year, month, day] = formattedDate.split('-');
       formattedDate = `${day}/${month}/${year}`;
@@ -123,7 +146,8 @@ export class NewsService {
       category: (news.category || 'General').trim(),
       tags: (news.tags && news.tags.length > 0) ? news.tags.map(t => t.trim()) : ['General'],
       date: formattedDate.trim(),
-      isActive: news.isActive !== undefined ? news.isActive : true
+      isActive: news.isActive !== undefined ? news.isActive : true,
+      isFeatured: news.isFeatured !== undefined ? news.isFeatured : false
     };
 
     const headers = new HttpHeaders({
@@ -142,6 +166,12 @@ export class NewsService {
     const token = localStorage.getItem('jwt_token');
     
     let formattedDate = news.date || new Date().toISOString().split('T')[0];
+    
+    // Limpiar ISO string si viene de ion-datetime
+    if (formattedDate.includes('T')) {
+      formattedDate = formattedDate.split('T')[0];
+    }
+
     if (formattedDate.includes('-')) {
       const [year, month, day] = formattedDate.split('-');
       formattedDate = `${day}/${month}/${year}`;
@@ -157,7 +187,8 @@ export class NewsService {
       category: (news.category || 'General').trim(),
       tags: (news.tags && news.tags.length > 0) ? news.tags.map(t => t.trim()) : ['General'],
       date: formattedDate.trim(),
-      isActive: news.isActive !== undefined ? news.isActive : true
+      isActive: news.isActive !== undefined ? news.isActive : true,
+      isFeatured: news.isFeatured !== undefined ? news.isFeatured : false
     };
 
     const headers = new HttpHeaders({
@@ -166,7 +197,7 @@ export class NewsService {
       'X-User-Role': 'ADMIN'
     });
 
-    return this.http.put(this.apiUrl, cleanedNews, { headers });
+    return this.http.put(`${this.apiUrl}/${news.id}`, cleanedNews, { headers });
   }
 
   /**
@@ -212,6 +243,7 @@ export class NewsService {
     <imageUrl>${news.imageUrl}</imageUrl>
     <category>${category}</category>
     <isActive>${news.isActive !== undefined ? news.isActive : true}</isActive>
+    <isFeatured>${news.isFeatured !== undefined ? news.isFeatured : false}</isFeatured>
     <tags>
 ${tagsXml || '        <tag>General</tag>'}
     </tags>

@@ -21,7 +21,6 @@
 .row {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-base);
   width: 100%;
 
   &.reverse {

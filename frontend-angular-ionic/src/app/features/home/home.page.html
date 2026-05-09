@@ -1,10 +1,12 @@
 <!-- CARRUSEL DE NOTICIAS (SWIPER) -->
 <div class="news-swiper-wrapper mt-base mb-base">
-  <swiper-container #swiperRef navigation-prev-el=".custom-prev" navigation-next-el=".custom-next" loop="true"
+  <swiper-container #swiperRef *ngIf="!isLoadingFeatured && featuredNews.length > 0"
+    navigation-prev-el=".custom-prev" navigation-next-el=".custom-next" 
+    [attr.loop]="featuredNews.length > 1 ? 'true' : 'false'"
     pagination="true" pagination-clickable="true" observer="true" observe-parents="true" autoplay="true"
     autoplay-delay="3000" autoplay-disable-on-interaction="false" slides-per-view="1" space-between="0"
     class="featured-swiper">
-    <swiper-slide *ngFor="let news of featuredNews" (click)="goToNewsDetail(news)">
+    <swiper-slide *ngFor="let news of featuredNews">
       <div class="slide-content" [style.background-image]="'url(' + news.image + ')'">
         <div class="overlay-gradient"></div>
         <div class="news-info-overlay">
@@ -15,7 +17,7 @@
           </div>
           <h2 class="news-title-overlay">{{ news.title }}</h2>
           <p class="news-excerpt-overlay">{{ news.excerpt }}</p>
-          <div class="read-more-button">
+          <div class="read-more-button" (click)="goToNewsDetail(news)">
             <span>Ver noticia</span>
             <ion-icon name="chevron-forward"></ion-icon>
           </div>
@@ -41,6 +43,10 @@
         <div class="card-acceso-item" [routerLink]="['/add-news']">
           <ion-icon class="fs-28" name="newspaper-outline" color="primary"></ion-icon>
           <ion-label class="f-regular text-neutral-8 fs-12">Crear Noticia</ion-label>
+        </div>
+        <div class="card-acceso-item" [routerLink]="['/manage-news']">
+          <ion-icon class="fs-28" name="settings-outline" color="primary"></ion-icon>
+          <ion-label class="f-regular text-neutral-8 fs-12">Gestionar Noticia</ion-label>
         </div>
       </ion-card-content>
     </ion-card>

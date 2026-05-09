@@ -36,6 +36,8 @@ public class XMLDecoder {
         noticia.category = XMLParser.getText(doc, "category");
         String isActiveStr = XMLParser.getText(doc, "isActive");
         noticia.isActive = isActiveStr != null && isActiveStr.equalsIgnoreCase("true");
+        String isFeaturedStr = XMLParser.getText(doc, "isFeatured");
+        noticia.isFeatured = isFeaturedStr != null && isFeaturedStr.equalsIgnoreCase("true");
 
         // 3. Extraer los tags (lista de elementos <tag>)
         NodeList tagNodes = doc.getElementsByTagName("tag");

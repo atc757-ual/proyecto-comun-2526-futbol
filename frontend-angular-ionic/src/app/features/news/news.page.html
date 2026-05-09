@@ -1,61 +1,93 @@
-<div class="row">
+<div class="row fl-col-rev-sm">
   <!-- COLUMNA PRINCIPAL: Ahora ocupa más espacio para estirarse -->
-  <div class="col-8 col-sm-12 pr-base px-0-sm">
+  <div class="col-8 col-sm-12 pr-base px-0-sm mb-base">
 
-    <!-- Cargando / Skeletons -->
-    <div *ngIf="isLoading" class="news-grid">
-      <ion-card *ngFor="let i of [1,2,3,4,5,6]" class="side-news-item skeleton-item">
-        <ion-skeleton-text animated style="height: 160px; width: 100%;"></ion-skeleton-text>
-        <div class="p-base">
-          <ion-skeleton-text animated style="width: 80%; height: 20px;"></ion-skeleton-text>
-          <ion-skeleton-text animated style="width: 60%; height: 16px;"></ion-skeleton-text>
-        </div>
-      </ion-card>
-    </div>
-
-    <!-- Grid de Noticias Estirado -->
-    <div *ngIf="!isLoading && newsList.length > 0" class="news-grid animate-fade-in">
-      <ion-card class="side-news-item clickable m-0 shadow-none" *ngFor="let news of newsList"
-        (click)="goToDetail(news.id)">
-        <div class="side-news-thumb">
-          <img [src]="news.imageUrl" [alt]="news.title">
-          <div class="category-pill">{{ news.category }}</div>
-        </div>
-        <div class="side-news-info">
-          <h3 class="side-news-title">{{ news.title }}</h3>
-          <p class="side-news-excerpt">{{ news.summary || news.content | slice:0:100 }}...</p>
-          <div class="side-news-footer">
-            <span class="side-news-author">{{ news.author }}</span>
-            <span class="side-news-date">{{ news.date | date:'mediumDate' }}</span>
+    <!-- Cargando / Skeletons Rítmicos -->
+    <ion-card *ngIf="isLoading" class="mb-base">
+      <ion-card-content class="news-dynamic-grid">
+        <div class="main-news-card skeleton-item" *ngFor="let i of [1,2,3]">
+          <div class="main-news-image-wrapper">
+            <ion-skeleton-text animated style="width: 100%; height: 100%;"></ion-skeleton-text>
+          </div>
+          <div class="main-news-content">
+            <ion-skeleton-text animated style="width: 40%; height: 12px;" class="mb-s"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 85%; height: 20px;" class="mb-s"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 70%; height: 16px;"></ion-skeleton-text>
           </div>
         </div>
-      </ion-card>
-    </div>
+      </ion-card-content>
+    </ion-card>
 
-    <!-- No hay noticias -->
-    <div *ngIf="!isLoading && newsList.length === 0" class="empty-container">
-      <ion-icon name="newspaper-outline"></ion-icon>
-      <h2>No hay noticias todavía</h2>
-      <p>Vuelve pronto para las últimas novedades del fútbol.</p>
+    <!-- Grid de Noticias Dinámico (Mezcla de Grande y Pequeño) -->
+    <ion-card *ngIf="!isLoading && totalNews.length > 0" class="animate-fade-in">
+      <ion-card-content class="news-dynamic-grid" [class.is-transitioning]="isChangingPage">
+        <a class="main-news-card animate-fade-in" *ngFor="let news of newsList; let i = index"
+          [routerLink]="['/news', news.id]" [class.is-spotlight]="i === activeSpotlightIndex">
+          <div class="main-news-image-wrapper">
+            <img [src]="news.imageUrl || 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=800'"
+              onerror="this.src='https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=800'"
+              class="main-news-img">
+            <div class="main-news-badge">{{ news.category }}</div>
+          </div>
+
+          <div class="main-news-content">
+
+            <h2 class="main-news-title">{{ news.title }}</h2>
+            <p class="main-news-excerpt">
+              {{ news.summary || news.content | slice:0:180 }}...
+            </p>
+          </div>
+        </a>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Paginación / Navegación Dinámica -->
+    <div class="news-pagination-container" *ngIf="!isLoading && totalNews.length > itemsPerPage">
+      <ion-button mode="ios" fill="clear" color="primary" class="f-semibold" (click)="goToPage(currentPage - 1)"
+        [disabled]="currentPage === 1">
+        <ion-icon name="chevron-back-outline" slot="start"></ion-icon>
+        Anterior
+      </ion-button>
+
+      <div class="page-indicators">
+        <ion-button *ngFor="let page of getPages()" [fill]="currentPage === page ? 'solid' : 'clear'"
+          [color]="currentPage === page ? 'primary' : 'dark'" class="page-btn" [class.active]="currentPage === page"
+          (click)="goToPage(page)">
+          {{ page }}
+        </ion-button>
+      </div>
+
+      <ion-button mode="ios" fill="clear" color="primary" class="f-semibold" (click)="goToPage(currentPage + 1)"
+        [disabled]="currentPage === totalPages">
+        Siguiente
+        <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+      </ion-button>
     </div>
+    <ion-card *ngIf="!isLoading && newsList.length === 0" class="empty-container">
+      <ion-card-content>
+        <ion-icon name="newspaper-outline"></ion-icon>
+        <h2>No hay noticias todavía</h2>
+        <p>Vuelve pronto para las últimas novedades del fútbol.</p>
+      </ion-card-content>
+    </ion-card>
   </div>
   <!-- COLUMNA 4: LISTADO (Después en HTML -> Derecha en Desktop) -->
-  <div class="col-4 col-sm-12 pl-base px-0-sm">
-    <ion-card *ngIf="isAdmin">
+  <div class="col-4 col-sm-12 pl-base px-0-sm mb-base">
+    <ion-card *ngIf=" isAdmin">
       <ion-card-header>
         <ion-card-title class="fs-20 fs-sm-18 f-semibold">Opciones de administrador</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <ion-item [button]="true" lines="none" detail="true" class="action-item mb-s" [routerLink]="['/add-news']">
-          <ion-icon aria-hidden="true" size="large" name="add-circle-outline" color="primary"></ion-icon>
-          <ion-label class="ml-s">Crear noticia</ion-label>
+          <ion-icon aria-hidden="true" class="fs-28" name="add-circle-outline" color="primary"></ion-icon>
+          <ion-label class="ml-s f-medium">Crear noticia</ion-label>
         </ion-item>
 
         <div class="separator my-s"></div>
 
         <ion-item [button]="true" lines="none" detail="true" class="action-item" [routerLink]="['/manage-news']">
-          <ion-icon aria-hidden="true" size="large" name="settings-outline" color="primary"></ion-icon>
-          <ion-label class="ml-s">Gestionar noticias</ion-label>
+          <ion-icon aria-hidden="true" class="fs-28" name="settings-outline" color="primary"></ion-icon>
+          <ion-label class="ml-s f-medium">Gestionar noticias</ion-label>
         </ion-item>
       </ion-card-content>
     </ion-card>

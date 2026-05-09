@@ -4,6 +4,63 @@
     margin: 0;
 }
 
+/* ===============================
+   CUSTOM OVERLAY COMPONENT
+   =============================== */
+.custom-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 99999;
+    background-color: rgba(101, 98, 145, 0.79);
+    /* Backdrop color */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .overlay-content {
+        display: flex;
+        flex-direction: column;
+        background-color: var(--color-white);
+        width: 100%;
+        height: 100%;
+
+        @media (min-width: 768px) {
+            width: 80%;
+            max-width: 600px;
+            height: 80vh;
+            max-height: 800px;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+    }
+
+    .inner-scroll {
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .toolbar-container ion-header {
+        align-items: center;
+    }
+
+    .toolbar-container {
+        height: 64px;
+        display: flex;
+        align-items: center;
+
+
+
+        ion-icon {
+            font-size: 36px;
+        }
+    }
+}
+
+
 .animate-fade-in {
     animation: fadeIn var(--transition-fast);
 }
@@ -27,6 +84,28 @@
 // Estilos para el Input de Nombre
 .capitalize-input {
     text-transform: capitalize;
+}
+
+.pointer {
+    cursor: pointer;
+}
+
+.terms-content {
+    line-height: 1.6;
+    padding: var(--space-base);
+
+    p {
+        margin-bottom: 16px;
+        text-align: justify;
+        color: var(--color-neutral-7);
+    }
+}
+
+/* Forzar que el contenido del modal sea scrollable */
+ion-modal {
+    ion-content {
+        height: 100%;
+    }
 }
 
 // Estilos para el Modal de Éxito

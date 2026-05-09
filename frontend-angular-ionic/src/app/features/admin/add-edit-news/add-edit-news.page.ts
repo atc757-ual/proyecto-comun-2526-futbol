@@ -7,11 +7,14 @@ import { addIcons } from 'ionicons';
 import {
   cloudUploadOutline, cameraOutline, sendOutline, arrowBackOutline,
   homeOutline, newspaperOutline, listOutline, personOutline, pricetagsOutline,
-  fingerPrintOutline, calendarOutline, eyeOutline, eyeOffOutline, closeCircle
+  fingerPrintOutline, calendarOutline, eyeOutline, eyeOffOutline, closeCircle, starOutline,
+  saveOutline, checkmarkCircleOutline, alertCircleOutline, close, trashOutline, syncOutline,
+  chevronBackOutline, imageOutline
 } from 'ionicons/icons';
 import { NewsService, NewsItem } from '../../../core/services/news.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { LayoutService } from 'src/app/core/services/layout.service';
+import { PlatformService } from 'src/app/core/services/platform.service';
 
 @Component({
   selector: 'app-add-edit-news',
@@ -27,10 +30,16 @@ export class AddEditNewsPage implements OnInit {
   private navCtrl = inject(NavController);
   private layoutService = inject(LayoutService);
   private route = inject(ActivatedRoute);
+  public platformService = inject(PlatformService);
 
   isEditMode = false;
   newsId: string | null = null;
   isLoading = false;
+  selectedFile: File | null = null;
+
+  // Para detección de cambios reales
+  private initialDataJson = '';
+  private initialPreviewImage: string | null = null;
 
   newsData: NewsItem = {
     title: '',
@@ -41,18 +50,24 @@ export class AddEditNewsPage implements OnInit {
     imageUrl: '',
     date: new Date().toISOString(),
     tags: [],
-    isActive: false
+    isActive: false,
+    isFeatured: false
   }
 
   tagInput: string = '';
   previewImage: string | null = null;
   isPublishing: boolean = false;
+  minDate: string = new Date().toISOString().split('T')[0];
   categories = [
     { value: 'Fichajes', label: 'Fichajes' },
     { value: 'Resultados', label: 'Resultados' },
     { value: 'Crónica', label: 'Crónica' },
     { value: 'Opinión', label: 'Opinión' },
     { value: 'Internacional', label: 'Internacional' },
+    { value: 'Mundial 2026', label: 'Mundial 2026' },
+    { value: 'Táctica', label: 'Táctica' },
+    { value: 'Actualidad', label: 'Actualidad' },
+    { value: 'Salud', label: 'Salud' },
     { value: 'General', label: 'General' }
   ];
 
@@ -69,6 +84,16 @@ export class AddEditNewsPage implements OnInit {
     // Necesitamos acceder al valor actual del modelo
     return ``; // Se completará en el HTML o con una lógica más directa
   };
+
+  get hasChanges(): boolean {
+    // Si no estamos en edición, cualquier dato válido es un "cambio" respecto a nada
+    if (!this.isEditMode) return true;
+
+    const currentDataJson = JSON.stringify(this.newsData);
+    const imageChanged = this.previewImage !== this.initialPreviewImage;
+
+    return currentDataJson !== this.initialDataJson || imageChanged;
+  }
 
   getNonWhitespaceLength(value: string | undefined): number {
     if (!value) return 0;
@@ -91,11 +116,17 @@ export class AddEditNewsPage implements OnInit {
     return `${len} / ${maxLength}`;
   };
 
+  tagCounterFormatter = (inputLength: number, maxLength: number) => {
+    return `${this.newsData.tags.length} / 6`;
+  };
+
   constructor() {
     addIcons({
       cloudUploadOutline, cameraOutline, sendOutline, arrowBackOutline,
       homeOutline, newspaperOutline, listOutline, personOutline, pricetagsOutline,
-      fingerPrintOutline, calendarOutline, eyeOutline, eyeOffOutline, closeCircle
+      fingerPrintOutline, calendarOutline, eyeOutline, eyeOffOutline, closeCircle, starOutline,
+      saveOutline, checkmarkCircleOutline, alertCircleOutline, close, trashOutline, syncOutline, chevronBackOutline,
+      imageOutline
     });
   }
 
@@ -136,6 +167,20 @@ export class AddEditNewsPage implements OnInit {
       next: (news) => {
         this.newsData = { ...news };
         this.previewImage = news.imageUrl;
+
+        // Guardar estado inicial para detección de cambios reales
+        this.initialDataJson = JSON.stringify(this.newsData);
+        this.initialPreviewImage = news.imageUrl;
+
+        // Ajustar minDate si la noticia es más antigua que hoy para permitir la edición
+        const newsDateOnly = news.date ? news.date.split('T')[0] : '';
+        if (newsDateOnly && newsDateOnly < this.minDate) {
+          this.minDate = newsDateOnly;
+        }
+
+        // Forzar actualización del contador de tags inicial
+        setTimeout(() => this.forceTagCounterUpdate(), 100);
+
         this.isLoading = false;
       },
       error: (err) => {
@@ -149,34 +194,63 @@ export class AddEditNewsPage implements OnInit {
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
+      this.selectedFile = file;
       const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.previewImage = e.target.result;
-        // En una app real, aquí subiríamos a Firebase Storage y obtendríamos la URL
-        // Por ahora simulamos guardando el base64 como URL si es corto, 
-        // o usando una imagen de placeholder para que CORBA no pete por tamaño si fuera el caso
-        this.newsData.imageUrl = 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1000'; // Placeholder premium
+      reader.onload = () => {
+        this.previewImage = reader.result as string;
       };
       reader.readAsDataURL(file);
     }
   }
 
+  removeImage() {
+    this.previewImage = null;
+    this.selectedFile = null;
+    this.newsData.imageUrl = '';
+  }
+
   addTag() {
-    const tag = this.tagInput.trim().replace(/,/g, '');
-    if (tag && !this.newsData.tags.includes(tag)) {
+    let tag = this.tagInput.trim().replace(/,/g, '');
+    if (!tag) return;
+
+    // Quitar el # inicial si ya lo trae para no duplicarlo, luego lo pondremos en el HTML
+    tag = tag.startsWith('#') ? tag.substring(1) : tag;
+
+    if (tag) {
+      if (this.newsData.tags.includes(tag)) {
+        this.showToast('Esta etiqueta ya ha sido añadida', 'warning');
+        this.tagInput = '';
+        return;
+      }
+
       if (this.newsData.tags.length < 6) {
         this.newsData.tags.push(tag);
         this.tagInput = ''; // Limpiar el input
+        this.forceTagCounterUpdate();
       } else {
         this.showToast('Máximo 6 etiquetas permitidas', 'warning');
       }
     } else {
-      this.tagInput = ''; // Limpiar si está vacío o duplicado
+      this.tagInput = ''; // Limpiar si está vacío
     }
   }
 
   removeTag(tag: string) {
     this.newsData.tags = this.newsData.tags.filter(t => t !== tag);
+    this.forceTagCounterUpdate();
+  }
+
+  dummyCounter = 0;
+
+  forceTagCounterUpdate() {
+    // Truco para forzar a Ionic a actualizar el contador:
+    // Cambiar dinámicamente un valor que el Web Component observa (como maxlength)
+    this.dummyCounter++;
+    
+    // Reasignar la referencia de la función por seguridad
+    this.tagCounterFormatter = (inputLength: number, maxLength: number) => {
+      return `${this.newsData.tags.length} / 6`;
+    };
   }
 
   updateTags() {
@@ -193,7 +267,7 @@ export class AddEditNewsPage implements OnInit {
 
     this.isPublishing = true;
 
-    const request = this.isEditMode 
+    const request = this.isEditMode
       ? this.newsService.updateNews(this.newsData)
       : this.newsService.addNews(this.newsData);
 
@@ -213,16 +287,25 @@ export class AddEditNewsPage implements OnInit {
   }
 
   onCancel() {
-    this.navCtrl.navigateBack('/news');
+    this.navCtrl.back();
   }
 
-  private async showToast(message: string, color: string) {
+  private async showToast(message: string, type: 'success' | 'error' | 'warning' | 'danger') {
+    const iconMap = {
+      'success': 'checkmark-circle-outline',
+      'error': 'alert-circle-outline',
+      'danger': 'alert-circle-outline',
+      'warning': 'alert-circle-outline'
+    };
+
     const toast = await this.toastCtrl.create({
       message,
       duration: 3000,
-      color,
-      position: 'bottom',
-      mode: 'ios'
+      position: 'top',
+      cssClass: type === 'success' ? 'toast-success' : 'toast-error',
+      icon: iconMap[type],
+      mode: 'ios',
+      buttons: [{ role: 'cancel' }]
     });
     await toast.present();
   }

@@ -4,7 +4,7 @@
   <div class="mb-m">
     <ion-input mode="md" type="email" label="Email" inputmode="email" required name="email"
       pattern="^[a-zA-Z0-9\._%\+\-]+@[a-zA-Z0-9\.\-]+\.[a-zA-Z]{2,}$" label-placement="stacked" fill="outline"
-      minlength="5" placeholder="tu@email.com" class="futbol-input f-medium" [(ngModel)]="userEmail"
+      minlength="5" placeholder="tu@email.com" class="futbol-input" [(ngModel)]="userEmail"
       (ionBlur)="markEmailTouched()" (ionFocus)="onFocusEmail()" [class.input-error]="emailTouched && !isEmailValid()"
       [class.is-focused]="emailFocused">
 
@@ -27,8 +27,8 @@
   <!-- INPUT: Contraseña -->
   <div class="mb-m">
     <ion-input mode="md" type="password" label="Contraseña" label-placement="stacked" fill="outline" required
-      maxlength="64" minlength="8" placeholder="Mínimo 8 caracteres" class="futbol-input f-medium"
-      [(ngModel)]="userPass" name="password" (ionBlur)="markPassTouched()" (ionFocus)="onFocusPass()"
+      maxlength="64" minlength="8" placeholder="Mínimo 8 caracteres" class="futbol-input " [(ngModel)]="userPass"
+      name="password" (ionBlur)="markPassTouched()" (ionFocus)="onFocusPass()"
       [class.input-error]="passTouched && !isPasswordValid()" [class.is-focused]="passFocused" clear-on-edit="true">
 
       <ion-icon slot="start"
@@ -61,13 +61,13 @@
 
   <!-- OPCIONES EXTRA -->
   <div class="t-center mt-m mb-xl">
-    <a class="text-primary f-semibold fs-14 pointer no-underline" routerLink="/auth/forgot-password">¿Olvidaste
+    <a class="text-primary f-semibold fs-16 pointer no-underline" routerLink="/auth/forgot-password">¿Olvidaste
       tu contraseña?</a>
   </div>
 
   <!-- REGISTRO -->
   <div class="mt-xl t-center">
-    <p class="fs-14">¿Aún no tienes cuenta?
+    <p class="fs-16">¿Aún no tienes cuenta?
       <a class=" text-primary f-semibold pointer no-underline" routerLink="/auth/register">Regístrate aquí</a>
     </p>
   </div>

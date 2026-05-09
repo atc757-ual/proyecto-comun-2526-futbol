@@ -4,17 +4,20 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import {
   IonInput, IonButton, IonIcon, IonModal,
-  IonSpinner, ToastController, IonInputPasswordToggle, NavController
+  IonSpinner, ToastController, IonInputPasswordToggle, NavController,
+  IonHeader, IonToolbar, IonTitle, IonButtons, IonFooter, IonCheckbox, IonLabel, IonContent,
+  IonItem
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
   personOutline, atOutline, lockClosedOutline,
   shieldCheckmarkOutline, alertCircleOutline,
   checkmarkCircleOutline, arrowForwardOutline,
-  closeCircleOutline, checkmarkCircle
+  closeCircleOutline, checkmarkCircle, closeOutline
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import { LayoutService } from '../../core/services/layout.service';
+import { PlatformService } from '../../core/services/platform.service';
 
 @Component({
   selector: 'app-register',
@@ -31,23 +34,74 @@ import { LayoutService } from '../../core/services/layout.service';
     IonIcon,
     IonModal,
     IonSpinner,
-    IonInputPasswordToggle
+    IonInputPasswordToggle,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonFooter,
+    IonCheckbox,
+    IonLabel,
+    IonContent,
+    IonItem
   ]
 })
 export class RegisterPage implements OnInit {
 
-  @ViewChild('modal') modal!: IonModal;
 
   // Form Data
   userName: string = '';
   userEmail: string = '';
   userPass: string = '';
   confirmPass: string = '';
+  acceptTerms: boolean = false;
+  termsInteractable: boolean = false;
 
-  // State
-  isLoading: boolean = false;
+  get termsBreakpoints(): number[] | undefined {
+    return this.platformService.isDesktop ? undefined : [0, 0.25, 0.5, 0.75];
+  }
 
-  // Validation States
+  get termsInitialBreakpoint(): number | undefined {
+    return this.platformService.isDesktop ? undefined : 0.75;
+  }
+
+  public showTermsOverlay: boolean = false;
+
+  // Open overlay and reset read state
+  openTermsOverlay() {
+    this.showTermsOverlay = true;
+    this.hasReadTerms = false;
+    this.termsInteractable = false;
+  }
+
+  // Close overlay without accepting
+  closeTermsOverlay() {
+    this.showTermsOverlay = false;
+  }
+
+  // Accept terms and close overlay
+  acceptAndCloseOverlay() {
+    this.acceptTerms = true;
+    this.termsInteractable = true;
+    this.showTermsOverlay = false;
+  }
+
+  // Handle manual checkbox unchecking
+  onTermsCheckboxChange(event: any) {
+    if (event.detail.checked === false) {
+      // Si el usuario desmarca la casilla, inhabilitamos y forzamos lectura de nuevo
+      this.termsInteractable = false;
+      this.hasReadTerms = false;
+    }
+  }
+
+  @ViewChild('modal') modal!: IonModal;
+  public platformService = inject(PlatformService);
+
+  // State for terms overlay
+  public hasReadTerms: boolean = false;
+  public isLoading: boolean = false;
+
   nameTouched: boolean = false;
   emailTouched: boolean = false;
   passTouched: boolean = false;
@@ -69,7 +123,7 @@ export class RegisterPage implements OnInit {
       personOutline, atOutline, lockClosedOutline,
       shieldCheckmarkOutline, alertCircleOutline,
       checkmarkCircleOutline, arrowForwardOutline,
-      closeCircleOutline, checkmarkCircle
+      closeCircleOutline, checkmarkCircle, closeOutline
     });
   }
 
@@ -114,8 +168,45 @@ export class RegisterPage implements OnInit {
   }
 
   isFormValid(): boolean {
-    return this.isNameValid() && this.isEmailValid() && this.isPasswordValid() && this.doPasswordsMatch();
+    return this.isNameValid() && this.isEmailValid() && this.isPasswordValid() && this.doPasswordsMatch() && this.acceptTerms;
   }
+
+  // --- LÓGICA DE TÉRMINOS ---
+
+  onModalWillPresent() {
+    if (!this.acceptTerms) {
+      this.hasReadTerms = false;
+    }
+  }
+
+  async onModalDidPresent(event: any) {
+    if (this.hasReadTerms) return;
+
+    const modal = event.target;
+    const content = modal.querySelector('ion-content');
+    if (!content) return;
+
+    const scrollElement = await content.getScrollElement();
+    const isAtBottom = scrollElement.scrollHeight <= scrollElement.clientHeight + 20;
+
+    if (isAtBottom) {
+      this.hasReadTerms = true;
+    }
+  }
+
+  async onTermsScroll(event: any, content: IonContent) {
+    if (this.hasReadTerms) return;
+
+    const scrollElement = await content.getScrollElement();
+    // Si el scroll llega cerca del final (20px de margen)
+    const isAtBottom = scrollElement.scrollHeight - scrollElement.scrollTop <= scrollElement.clientHeight + 20;
+
+    if (isAtBottom) {
+      this.hasReadTerms = true;
+    }
+  }
+
+
 
   // --- EVENTOS DE FOCO ---
 

@@ -5,10 +5,11 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { addIcons } from 'ionicons';
 import {
   star, calendar, trophy, statsChart, grid, person,
-  chevronForward, football, chevronBack, newspaperOutline
+  chevronForward, football, chevronBack, newspaperOutline, settingsOutline
 } from 'ionicons/icons';
 import { RouterModule, Router } from '@angular/router';
 import { LayoutService } from 'src/app/core/services/layout.service';
+import { NewsService } from 'src/app/core/services/news.service';
 
 @Component({
   selector: 'app-home',
@@ -19,57 +20,57 @@ import { LayoutService } from 'src/app/core/services/layout.service';
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class HomePage implements OnInit {
+  private newsService = inject(NewsService);
   private router = inject(Router);
-  private layoutService = inject(LayoutService); // Inyectamos el servicio
+  private layoutService = inject(LayoutService);
 
-  featuredNews = [
-    {
-      id: 1,
-      title: 'El Real Madrid anuncia nuevo fichaje estrella',
-      excerpt: 'El club blanco ha cerrado el acuerdo por una cifra récord para reforzar su delantera la próxima temporada.',
-      author: 'Marca',
-      date: 'Hoy, 10:30',
-      image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=800&auto=format&fit=crop'
-    },
-    {
-      id: 2,
-      title: 'Análisis: El impacto de la IA en los entrenamientos',
-      excerpt: 'Los grandes equipos europeos empiezan a utilizar modelos predictivos para prevenir lesiones en sus jugadores.',
-      author: 'Mundo Deportivo',
-      date: 'Ayer, 18:45',
-      image: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?q=80&w=800&auto=format&fit=crop'
-    },
-    {
-      id: 3,
-      title: 'Mercado de fichajes: Últimas novedades del verano',
-      excerpt: 'Sigue en directo todos los movimientos, rumores y confirmaciones de las principales ligas europeas.',
-      author: 'Sport',
-      date: 'Hace 2h',
-      image: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=800&auto=format&fit=crop'
-    }
-  ];
+  featuredNews: any[] = [];
+  isLoadingFeatured = true;
 
   constructor() {
     addIcons({
       star, calendar, trophy,
       statsChart, grid, person,
       chevronForward, football,
-      chevronBack, newspaperOutline
+      chevronBack, newspaperOutline, settingsOutline
     });
   }
 
   ngOnInit() {
+    this.loadFeaturedNews();
+
     // Configurar Layout para la Home
     this.layoutService.setHeader({
       title: '¡Bienvenido, Alex!',
       subtitle: 'Toda la emoción del fútbol en tu mano',
       showHero: true,
-      isHome: true // Muy importante para mostrar el Logo en el Header móvil
+      isHome: true 
     });
 
     // Limpiar breadcrumbs al volver a Home
     this.layoutService.setBreadcrumbs([]);
+  }
 
+  loadFeaturedNews() {
+    this.isLoadingFeatured = true;
+    this.newsService.getFeatured().subscribe({
+      next: (news) => {
+        this.featuredNews = news.map(item => ({
+          id: item.id,
+          title: item.title,
+          excerpt: item.summary,
+          author: item.author,
+          date: item.date,
+          image: item.imageUrl
+        }));
+        console.log('Noticias destacadas cargadas:', this.featuredNews.length);
+        this.isLoadingFeatured = false;
+      },
+      error: (err) => {
+        console.error('Error cargando destacadas:', err);
+        this.isLoadingFeatured = false;
+      }
+    });
   }
 
   goToNewsDetail(news: any) {

@@ -3,6 +3,7 @@
   <ion-content class="ion-no-padding" scroll-y="false">
     <div class="menu-wrapper">
       <div class="menu-header d-flex align-center justify-between px-base">
+
         <div class="logo-container">
           <span class="logo-text">Football App</span>
           <div class="logo-circle-wrapper">
@@ -15,7 +16,7 @@
           </ion-button>
         </ion-menu-toggle>
       </div>
-
+      <div class="separator my-s"></div>
       <div class="menu-options-container">
         <!-- SECCIÓN SUPERIOR: NAVEGACIÓN -->
         <div class="menu-items-top">
@@ -25,32 +26,31 @@
               <ion-icon slot="start" [name]="p.icon"></ion-icon>
               <ion-label>{{ p.title }}</ion-label>
             </ion-item>
-          </ion-menu-toggle>
-        </div>
-
-        <!-- ESPACIADOR (Empuja lo de abajo hacia el final) -->
-        <div class="menu-spacer"></div>
-
-        <!-- SECCIÓN INFERIOR: CUENTA -->
-        <div class="menu-items-bottom">
-          <div class="menu-divider"></div>
-
-          <ion-menu-toggle auto-hide="false">
-            <ion-item lines="none" class="nav-item profile-item pointer" routerLink="/profile"
-              routerLinkActive="active-item">
-              <ion-icon slot="start" name="person-circle-outline"></ion-icon>
-              <ion-label>Mi Perfil</ion-label>
-            </ion-item>
-          </ion-menu-toggle>
-
-          <ion-menu-toggle auto-hide="false">
-            <ion-item lines="none" class="nav-item logout-item pointer" (click)="logout()">
-              <ion-icon slot="start" name="log-out-outline"></ion-icon>
-              <ion-label>Cerrar Sesión</ion-label>
-            </ion-item>
+            <div class="separator my-s bg-neutral-2"></div>
           </ion-menu-toggle>
         </div>
       </div>
+      <!-- ESPACIADOR (Empuja lo de abajo hacia el final) -->
+      <div class="menu-spacer"></div>
+      <div class="separator my-s"></div>
+      <!-- SECCIÓN INFERIOR: CUENTA -->
+      <div class="menu-items-bottom">
+        <ion-menu-toggle auto-hide="false">
+          <ion-item lines="none" class="nav-item profile-item pointer " routerLink="/profile"
+            routerLinkActive="active-item">
+            <ion-icon color="primary" slot="start" name="person-circle-outline"></ion-icon>
+            <ion-label class="text-primary">Mi Perfil</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+        <div class="separator my-xs"></div>
+        <ion-menu-toggle auto-hide="false">
+          <ion-item lines="none" class="nav-item logout-item pointer" (click)="logout()">
+            <ion-icon slot="start" name="log-out-outline"></ion-icon>
+            <ion-label>Cerrar Sesión</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+      </div>
+
     </div>
   </ion-content>
 </ion-menu>
@@ -99,7 +99,7 @@
               <ion-icon name="person-circle-outline"></ion-icon>
               <span class="hide-on-phone">Mi Perfil</span>
             </a>
-            <a class="auth-btn logout clickable">
+            <a class="auth-btn logout clickable" (click)="logout()">
               <ion-icon name="log-out-outline"></ion-icon>
               <span class="hide-on-phone">Cerrar Sesión</span>
             </a>

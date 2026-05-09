@@ -89,6 +89,25 @@
     flex-wrap: wrap !important;
 }
 
+/* Flexbox (Direction Mobile) */
+@media (max-width: 767px) {
+    .fl-row-sm {
+        flex-direction: row !important;
+    }
+
+    .fl-column-sm {
+        flex-direction: column !important;
+    }
+
+    .fl-row-rev-sm {
+        flex-direction: row-reverse !important;
+    }
+
+    .fl-col-rev-sm {
+        flex-direction: column-reverse !important;
+    }
+}
+
 /* Flexbox (Justify Content) */
 .jc-start {
     justify-content: flex-start !important;

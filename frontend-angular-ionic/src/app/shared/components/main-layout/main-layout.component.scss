@@ -702,7 +702,7 @@ ion-footer.main-app-footer {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    padding-bottom: var(--space-m);
+    padding: var(--space-base) var(--space-base) var(--space-m) var(--space-base);
   }
 
   .menu-items-list {

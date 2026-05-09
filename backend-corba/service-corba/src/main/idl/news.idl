@@ -13,6 +13,7 @@ module BufferApp {
         TagList tags;     
         string date;      
         boolean isActive;
+        boolean isFeatured; // Nuevo campo para noticias destacadas
     };
 
     typedef sequence<NewsItem> NewsList;
@@ -27,6 +28,7 @@ module BufferApp {
         // Métodos de Usuario / Públicos
         NewsList getVisibleNews();
         NewsList getRecentNews();
+        NewsList getFeaturedNews(); // Nuevo método para obtener destacadas
         NewsItem getNewsById(in string id);
         
         oneway void shutdown();

@@ -53,7 +53,8 @@
     <!-- Items Reales -->
     <ion-item *ngFor="let item of filteredNews" class="admin-news-item mb-s animate-fade-in">
       <ion-thumbnail slot="start" class="news-thumb">
-        <img [src]="item.imageUrl || 'assets/imgs/placeholder.png'" onerror="this.src='assets/imgs/placeholder.png'" />
+        <img [src]="item.imageUrl || 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=200'" 
+             onerror="this.src='https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=200'" />
       </ion-thumbnail>
       
       <ion-label class="ion-text-wrap">

@@ -130,6 +130,19 @@
 
   .mt-0-sm { margin-top: 0 !important; }
   .mt-s-sm { margin-top: var(--space-s) !important; }
+  .mt-base-sm { margin-top: var(--space-base) !important; }
+  .mt-m-sm { margin-top: var(--space-m) !important; }
+
   .mb-0-sm { margin-bottom: 0 !important; }
   .mb-s-sm { margin-bottom: var(--space-s) !important; }
+  .mb-base-sm { margin-bottom: var(--space-base) !important; }
+  .mb-m-sm { margin-bottom: var(--space-m) !important; }
+  .mb-l-sm { margin-bottom: var(--space-l) !important; }
+
+  .ml-0-sm { margin-left: 0 !important; }
+  .mr-0-sm { margin-right: 0 !important; }
+
+  .p-0-sm { padding: 0 !important; }
+  .pt-base-sm { padding-top: var(--space-base) !important; }
+  .pb-base-sm { padding-bottom: var(--space-base) !important; }
 }

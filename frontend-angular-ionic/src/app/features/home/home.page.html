@@ -50,7 +50,7 @@
 <div class="row">
   <!-- COLUMNA 8: DETALLE (Primero en HTML -> Izquierda en Desktop) -->
   <div class="col-8 col-sm-12 pr-base px-0-sm">
-    <ion-card class="card-acceso">
+    <ion-card class="card-acceso" *ngIf="isAdmin">
       <ion-card-content>
         <div class="card-acceso-item" routerLink="/add-news">
           <ion-icon class="fs-28" name="newspaper-outline" color="primary"></ion-icon>

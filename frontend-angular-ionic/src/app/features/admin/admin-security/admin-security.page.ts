@@ -2,8 +2,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
-  IonContent, IonHeader, IonToolbar, IonTitle, IonButtons,
-  IonBackButton, IonCard, IonCardHeader, IonCardTitle,
+  IonCard, IonCardHeader, IonCardTitle,
   IonCardContent, IonItem, IonLabel, IonIcon, IonBadge,
   IonButton, IonSpinner, IonList, IonInput, ToastController
 } from '@ionic/angular/standalone';
@@ -24,8 +23,8 @@ import { Auth } from '@angular/fire/auth';
   styleUrls: ['./admin-security.page.scss'],
   standalone: true,
   imports: [
-    CommonModule, FormsModule, IonContent, IonHeader, IonToolbar, IonTitle,
-    IonButtons, IonBackButton, IonCard, IonCardHeader, IonCardTitle,
+    CommonModule, FormsModule,
+    IonCard, IonCardHeader, IonCardTitle,
     IonCardContent, IonItem, IonLabel, IonIcon, IonBadge,
     IonButton, IonList, IonInput, IonSpinner
   ]

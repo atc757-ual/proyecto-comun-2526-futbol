@@ -39,6 +39,10 @@ export class HomePage implements OnInit {
 
   private authService = inject(AuthService);
 
+  get isAdmin(): boolean {
+    return this.authService.isAdmin();
+  }
+
   ngOnInit() {
     this.loadFeaturedNews();
 

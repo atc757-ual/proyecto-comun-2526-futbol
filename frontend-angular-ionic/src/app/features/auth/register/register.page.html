@@ -5,8 +5,7 @@
   <div class="mb-m">
     <ion-input mode="md" type="text" label="Nombre Completo" label-placement="stacked" fill="outline" required
       name="fullName" minlength="3" maxlength="250" placeholder="Juán Pérez" class="futbol-input  capitalize-input"
-      [(ngModel)]="userName" (ionBlur)="onBlurName()" (ionFocus)="onFocusName()"
-      (keyup.enter)="onRegister()"
+      [(ngModel)]="userName" (ionBlur)="onBlurName()" (ionFocus)="onFocusName()" (keyup.enter)="onRegister()"
       [class.input-error]="nameTouched && !isNameValid()" [class.is-focused]="nameFocused">
 
       <ion-icon [color]="nameFocused ? 'primary' : (nameTouched && !isNameValid() ? 'danger' : 'medium')" slot="start"
@@ -48,8 +47,8 @@
   <div class="mb-m">
     <ion-input mode="md" type="password" label="Contraseña" label-placement="stacked" fill="outline" required
       name="password" minlength="8" placeholder="Mínimo 8 caracteres" class="futbol-input " [(ngModel)]="userPass"
-      (ionBlur)="onBlurPass()" (ionFocus)="onFocusPass()" (keyup.enter)="onRegister()" [class.input-error]="passTouched && !isPasswordValid()"
-      [class.is-focused]="passFocused" clear-on-edit="true">
+      (ionBlur)="onBlurPass()" (ionFocus)="onFocusPass()" (keyup.enter)="onRegister()"
+      [class.input-error]="passTouched && !isPasswordValid()" [class.is-focused]="passFocused" clear-on-edit="true">
 
       <ion-icon slot="start"
         [color]="passFocused ? 'primary' : (passTouched && !isPasswordValid() ? 'danger' : 'medium')"
@@ -74,9 +73,8 @@
     <ion-input mode="md" type="password" label="Confirmar Contraseña" label-placement="stacked" fill="outline" required
       name="confirmPassword" minlength="8" placeholder="Repite tu contraseña" class="futbol-input"
       [(ngModel)]="confirmPass" (ionBlur)="onBlurConfirm()" (ionFocus)="onFocusConfirm()" clear-on-edit="true"
-      (keyup.enter)="onRegister()"
-      [class.input-error]="confirmTouched && !doPasswordsMatch()" [class.is-focused]="confirmFocused"
-      clear-on-edit="false">
+      (keyup.enter)="onRegister()" [class.input-error]="confirmTouched && !doPasswordsMatch()"
+      [class.is-focused]="confirmFocused" clear-on-edit="false">
 
       <ion-icon slot="start"
         [color]="confirmFocused ? 'primary' : (confirmTouched && !doPasswordsMatch() ? 'danger' : 'medium')"
@@ -111,7 +109,7 @@
       <!-- Cabecera -->
       <ion-header mode="ios" class="ion-no-border">
         <ion-toolbar mode="ios" class="toolbar-container">
-          <ion-title class="fs-20 f-medium"> Términos y Condiciones</ion-title>
+          <ion-title class="fs-20 f-medium">Lee nuestros terminos</ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="closeTermsOverlay()">
               <ion-icon size="fs-36" name="close-outline" slot="icon-only"></ion-icon>
@@ -121,19 +119,22 @@
       </ion-header>
 
       <!-- Contenido con scroll -->
-      <ion-content #termsContent class="inner-scroll" [scrollEvents]="true"
-        (ionScroll)="onTermsScroll($event, termsContent)">
+      <ion-content #termsScrollArea class="inner-scroll" [scrollEvents]="true"
+        (ionScroll)="onTermsScroll($event, termsScrollArea)">
         <div class="terms-content">
-          <h2 class="f-bold fs-20 text-primary mb-m">Reglas de Juego</h2>
-          <p class="f-medium text-neutral-7" *ngFor="let p of [1,2,3,4,5,6,7,8,9,10]">
-            Al utilizar nuestra plataforma de gestión de fútbol, te comprometes a mantener un espíritu deportivo y
-            profesional.
-            Este software es para uso recreativo y organizativo. No se permite el uso indebido de datos de jugadores ni
-            la suplantación de identidad.
-            Todos los resultados y estadísticas generadas son propiedad intelectual de la liga correspondiente.
-            Recuerda que el fútbol es pasión, pero el respeto es la base de todo gran equipo.
-            ¡Disfruta de la mejor experiencia digital del deporte rey!
-          </p>
+          <!-- Esqueleto de Carga -->
+          <div *ngIf="isTermsLoading">
+            <ion-skeleton-text animated style="width: 70%; height: 26px;" class="mb-base"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 100%; height: 16px;" class="mb-s"
+              *ngFor="let i of [1,2,3,4,5,6,7,8,9,10]"></ion-skeleton-text>
+          </div>
+
+          <!-- Contenido Real -->
+          <ng-container *ngIf="!isTermsLoading">
+            <div class="f-semibold fs-20 text-neutral-9 mb-base">{{ termsTitle }}</div>
+            <div class="f-regular text-neutral-8 fs-14" [innerHTML]="termsContent"></div>
+          </ng-container>
+
           <div id="terms-end"></div>
         </div>
       </ion-content>

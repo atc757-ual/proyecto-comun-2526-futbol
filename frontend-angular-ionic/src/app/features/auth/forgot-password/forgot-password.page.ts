@@ -11,8 +11,8 @@ import {
   paperPlaneOutline, sparklesOutline,
   logInOutline, closeCircleOutline
 } from 'ionicons/icons';
-import { AuthService } from '../../core/services/auth.service';
-import { LayoutService } from '../../core/services/layout.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { LayoutService } from '../../../core/services/layout.service';
 
 @Component({
   selector: 'app-forgot-password',

@@ -29,15 +29,15 @@ export const routes: Routes = [
     children: [
       {
         path: 'login',
-        loadComponent: () => import('./features/login/login.page').then((m) => m.LoginPage),
+        loadComponent: () => import('./features/auth/login/login.page').then((m) => m.LoginPage),
       },
       {
         path: 'register',
-        loadComponent: () => import('./features/register/register.page').then((m) => m.RegisterPage),
+        loadComponent: () => import('./features/auth/register/register.page').then((m) => m.RegisterPage),
       },
       {
         path: 'forgot-password',
-        loadComponent: () => import('./features/forgot-password/forgot-password.page').then((m) => m.ForgotPasswordPage),
+        loadComponent: () => import('./features/auth/forgot-password/forgot-password.page').then((m) => m.ForgotPasswordPage),
       }
     ]
   },
@@ -53,17 +53,17 @@ export const routes: Routes = [
       {
         path: 'add-news',
         canActivate: [adminGuard],
-        loadComponent: () => import('./features/admin/add-edit-news/add-edit-news.page').then((m) => m.AddEditNewsPage),
+        loadComponent: () => import('./features/news/add-edit-news/add-edit-news.page').then((m) => m.AddEditNewsPage),
       },
       {
         path: 'edit-news/:id',
         canActivate: [adminGuard],
-        loadComponent: () => import('./features/admin/add-edit-news/add-edit-news.page').then((m) => m.AddEditNewsPage),
+        loadComponent: () => import('./features/news/add-edit-news/add-edit-news.page').then((m) => m.AddEditNewsPage),
       },
       {
         path: 'manage-news',
         canActivate: [adminGuard],
-        loadComponent: () => import('./features/admin/manage-news/manage-news.page').then((m) => m.ManageNewsPage),
+        loadComponent: () => import('./features/news/manage-news/manage-news.page').then((m) => m.ManageNewsPage),
       },
       {
         path: 'admin-security',
@@ -80,12 +80,12 @@ export const routes: Routes = [
       },
       {
         path: 'news',
-        loadComponent: () => import('./features/news/news.page').then((m) => m.NewsPage),
+        loadComponent: () => import('./features/news/list-news/news.page').then((m) => m.NewsPage),
         pathMatch: 'full'
       },
       {
         path: 'news/:id',
-        loadComponent: () => import('./features/news-detail/news-detail.page').then(m => m.NewsDetailPage),
+        loadComponent: () => import('./features/news/news-detail/news-detail.page').then(m => m.NewsDetailPage),
         pathMatch: 'full'
       },
       {

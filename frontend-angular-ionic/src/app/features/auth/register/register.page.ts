@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, HostListener } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -6,7 +7,7 @@ import {
   IonInput, IonButton, IonIcon,
   IonSpinner, ToastController, IonInputPasswordToggle, NavController,
   IonHeader, IonToolbar, IonTitle, IonButtons, IonFooter, IonCheckbox, IonLabel, IonContent,
-  IonItem, ModalController
+  IonItem, ModalController, IonSkeletonText
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -15,10 +16,10 @@ import {
   checkmarkCircleOutline, arrowForwardOutline,
   closeCircleOutline, checkmarkCircle, closeOutline
 } from 'ionicons/icons';
-import { AuthService } from '../../core/services/auth.service';
-import { LayoutService } from '../../core/services/layout.service';
-import { PlatformService } from '../../core/services/platform.service';
-import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
+import { AuthService } from '../../../core/services/auth.service';
+import { LayoutService } from '../../../core/services/layout.service';
+import { PlatformService } from '../../../core/services/platform.service';
+import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 
 @Component({
   selector: 'app-register',
@@ -42,7 +43,8 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
     IonCheckbox,
     IonLabel,
     IonContent,
-    IonItem
+    IonItem,
+    IonSkeletonText
   ]
 })
 export class RegisterPage implements OnInit {
@@ -63,6 +65,11 @@ export class RegisterPage implements OnInit {
   public showTermsOverlay: boolean = false;
   public hasReadTerms: boolean = false;
   public isLoading: boolean = false;
+  public isTermsLoading: boolean = false;
+
+  // Datos dinámicos de términos
+  public termsTitle: string = 'Términos y Condiciones';
+  public termsContent: string = 'Cargando términos...';
 
   nameTouched: boolean = false;
   emailTouched: boolean = false;
@@ -86,7 +93,7 @@ export class RegisterPage implements OnInit {
     });
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.layoutService.setAuth({
       title: 'Únete al equipo',
       subtitle: 'Crea tu cuenta para empezar a gestionar jugadores.',
@@ -130,10 +137,21 @@ export class RegisterPage implements OnInit {
   }
 
   // --- LÓGICA DE TÉRMINOS ---
-  openTermsOverlay() {
+  async openTermsOverlay() {
     this.showTermsOverlay = true;
-    this.hasReadTerms = false;
     this.termsInteractable = false;
+    this.hasReadTerms = false;
+
+    // Cargar datos solo si aún no se han cargado o si quieres refrescar
+    if (this.termsContent === 'Cargando términos...') {
+      this.isTermsLoading = true;
+      const termsData: any = await this.authService.getTermsAndConditions();
+      if (termsData) {
+        this.termsTitle = termsData.title ? String(termsData.title) : this.termsTitle;
+        this.termsContent = termsData.content ? String(termsData.content) : this.termsContent;
+      }
+      this.isTermsLoading = false;
+    }
   }
 
   closeTermsOverlay() {

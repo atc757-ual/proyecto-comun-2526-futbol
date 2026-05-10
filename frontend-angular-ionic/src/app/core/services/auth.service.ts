@@ -26,7 +26,8 @@ export class AuthService {
   public firstName = computed(() => {
     const user = this.userData();
     if (!user || !user.name) return '';
-    return user.name.split(' ')[0];
+    const first = user.name.split(' ')[0].toLowerCase();
+    return first.charAt(0).toUpperCase() + first.slice(1);
   });
 
   // Estado reactivo del usuario (Depende de Firebase Y del Token de Node)
@@ -206,6 +207,49 @@ export class AuthService {
 
     return firstValueFrom(
       this.http.post(fullUrl, { email }, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+    );
+  }
+
+  /**
+   * Quita el rol de Administrador a un usuario.
+   * Solo disponible para el Master Admin.
+   */
+  async removeAdminRole(email: string) {
+    const fullUrl = `${environment.nodeApiUrl}/auth/remove-admin`;
+    const token = localStorage.getItem('jwt_token');
+
+    return firstValueFrom(
+      this.http.post(fullUrl, { email }, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+    );
+  }
+
+  /**
+   * Busca usuarios por email.
+   */
+  async searchUsers(email: string = '') {
+    const fullUrl = `${environment.nodeApiUrl}/auth/users?email=${email}`;
+    const token = localStorage.getItem('jwt_token');
+
+    return firstValueFrom(
+      this.http.get(fullUrl, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+    );
+  }
+
+  /**
+   * Cambia el estado de activación de un usuario (Habilitar/Inhabilitar).
+   */
+  async toggleUserStatus(email: string, disabled: boolean) {
+    const fullUrl = `${environment.nodeApiUrl}/auth/toggle-status`;
+    const token = localStorage.getItem('jwt_token');
+
+    return firstValueFrom(
+      this.http.post(fullUrl, { email, disabled }, {
         headers: { Authorization: `Bearer ${token}` }
       })
     );

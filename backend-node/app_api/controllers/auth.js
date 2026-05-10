@@ -158,7 +158,98 @@ const setAdminRole = async (req, res) => {
     }
 };
 
+/**
+ * Degrada a un usuario de Administrador a Usuario normal.
+ * Solo puede ser ejecutado por el Administrador Maestro.
+ */
+const removeAdminRole = async (req, res) => {
+    const { email } = req.body;
+    
+    if (!email) {
+        return sendApiResult(res, 400, "Falta el email del usuario a degradar");
+    }
+
+    try {
+        // 1. Buscar usuario en Firebase
+        const userFirebase = await admin.auth().getUserByEmail(email);
+        
+        // 2. Eliminar Custom Claims en Firebase
+        await admin.auth().setCustomUserClaims(userFirebase.uid, { admin: false });
+        
+        // 3. Actualizar rol en MongoDB
+        await User.findOneAndUpdate(
+            { email: email },
+            { role: 'user' },
+            { new: true }
+        );
+
+        console.log(`[AUTH] Usuario ${email} degradado a USER por el Master`);
+        
+        return sendApiResult(res, 200, `Usuario ${email} ya no es Administrador.`);
+
+    } catch (error) {
+        console.error('Error al degradar usuario:', error);
+        return sendApiResult(res, 500, "Error al procesar la solicitud: " + error.message);
+    }
+};
+
+/**
+ * Busca usuarios por email (para autocompletado o verificación).
+ * Solo Master Admin.
+ */
+const getUsers = async (req, res) => {
+    const { email } = req.query;
+    
+    try {
+        const query = email ? { email: { $regex: email, $options: 'i' } } : {};
+        const users = await User.find(query).limit(10).select('name email role is_active');
+        
+        return sendApiResult(res, 200, "Usuarios encontrados", users);
+    } catch (error) {
+        return sendApiResult(res, 500, "Error al buscar usuarios: " + error.message);
+    }
+};
+
+/**
+ * Activa o desactiva a un usuario.
+ * Solo Master Admin.
+ */
+const toggleUserStatus = async (req, res) => {
+    const { email, disabled } = req.body;
+    
+    if (!email) {
+        return sendApiResult(res, 400, "Falta el email del usuario");
+    }
+
+    try {
+        // 1. Buscar usuario en Firebase
+        const userFirebase = await admin.auth().getUserByEmail(email);
+        
+        // 2. Actualizar en Firebase
+        await admin.auth().updateUser(userFirebase.uid, { disabled: disabled });
+        
+        // 3. Actualizar en MongoDB
+        const updatedUser = await User.findOneAndUpdate(
+            { email: email },
+            { is_active: !disabled },
+            { new: true }
+        );
+
+        const statusLabel = disabled ? 'INHABILITADO' : 'HABILITADO';
+        console.log(`[AUTH] Usuario ${email} ha sido ${statusLabel} por el Master`);
+        
+        return sendApiResult(res, 200, `Usuario ${statusLabel} correctamente`, updatedUser);
+
+    } catch (error) {
+        console.error('Error al cambiar estado del usuario:', error);
+        return sendApiResult(res, 500, "Error al procesar la solicitud: " + error.message);
+    }
+};
+
 module.exports = {
     loginFirebase,
-    setAdminRole
+    setAdminRole,
+    removeAdminRole,
+    getUsers,
+    toggleUserStatus
 };

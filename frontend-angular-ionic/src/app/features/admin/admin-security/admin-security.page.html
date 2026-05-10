@@ -1,120 +1,182 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/home"></ion-back-button>
-    </ion-buttons>
-    <ion-title>Seguridad de Administrador</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="checkSecurityStatus()" [disabled]="isLoading()">
-        <ion-icon slot="icon-only" name="refresh-outline" [class.rotating]="isLoading()"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+<!-- TARJETA: FIREBASE CLAIMS   -->
+<div class="row fl-col-rev-sm mt-base" *ngIf="isAdmin">
+  <div class="col-8 col-sm-12 pr-base px-0-sm mb-base">
 
-<ion-content [fullscreen]="true" class="ion-padding">
-  <div class="security-container">
-    <div class="header-section">
-      <div class="shield-icon" [class.secured]="firebaseClaims()?.admin">
-        <ion-icon [name]="firebaseClaims()?.admin ? 'shield-checkmark-outline' : 'shield-outline'"></ion-icon>
-      </div>
-      <h2>Estado de Protección</h2>
-      <p>Verificación de identidad y privilegios de Firebase Custom Claims</p>
-    </div>
-
-    <!-- TARJETA: FIREBASE CLAIMS -->
     <ion-card class="premium-card">
+      <ion-card-header>
+        <div class="header-section">
+          <div class="shield-icon" [class.secured]="firebaseClaims()">
+            <ion-icon name="shield-checkmark-outline" *ngIf="firebaseClaims()"></ion-icon>
+            <ion-icon name="shield-outline" *ngIf="!firebaseClaims()"></ion-icon>
+          </div>
+          <h2>Estado de Protección</h2>
+          <p>Verificación de identidad y privilegios de Firebase Custom Claims</p>
+        </div>
+      </ion-card-header>
+
       <ion-card-header>
         <div class="card-header-flex">
           <ion-card-title>Seguridad Nativa Firebase</ion-card-title>
-          <ion-badge [color]="firebaseClaims()?.admin ? 'success' : 'warning'">
-            {{ claimStatus }}
+          <ion-badge [class.success]="firebaseClaims()" [class.error]="!firebaseClaims()">
+            {{ firebaseClaims() ? 'Activo' : 'No detectado' }}
           </ion-badge>
         </div>
       </ion-card-header>
       <ion-card-content>
-        <p class="description">
-          Los "Claims" son sellos digitales inalterables dentro de tu token de Firebase.
-        </p>
-        <ion-list lines="none">
-          <ion-item>
-            <ion-icon name="key-outline" slot="start" color="primary"></ion-icon>
-            <ion-label>
-              <h3>Claim: admin</h3>
-              <p>{{ firebaseClaims()?.admin ? 'Presente y Validado' : 'No encontrado en el token' }}</p>
-            </ion-label>
-          </ion-item>
-          <ion-item>
-            <ion-icon name="fingerprint-outline" slot="start" color="primary"></ion-icon>
-            <ion-label>
-              <h3>Token de Identidad</h3>
-              <p>Firmado digitalmente por Google</p>
-            </ion-label>
-          </ion-item>
-        </ion-list>
-      </ion-card-content>
-    </ion-card>
+        <div class="card-content-security">
+          <p class="description">
+            Los "Claims" son sellos digitales inalterables dentro de tu token de Firebase.
+          </p>
+          <ion-list lines="none">
+            <ion-item>
+              <ion-icon class="mr-s" name="key-outline" slot="start" color="primary"></ion-icon>
+              <ion-label>
+                <h3>Claim: admin</h3>
+                <p *ngIf="firebaseClaims()?.admin">Presente y Validado</p>
+                <p *ngIf="!firebaseClaims()?.admin">No encontrado en el token</p>
+              </ion-label>
+            </ion-item>
+            <ion-item class="mt-s">
+              <ion-icon class="mr-s" name="finger-print-outline" slot="start" color="primary"></ion-icon>
+              <ion-label>
+                <h3>Token de Identidad</h3>
+                <p>Firmado digitalmente por Google</p>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </div>
 
-    <!-- TARJETA: BACKEND ROLE -->
-    <ion-card class="premium-card">
+      </ion-card-content>
       <ion-card-header>
         <div class="card-header-flex">
           <ion-card-title>Seguridad API Node.js</ion-card-title>
-          <ion-badge [color]="backendIsAdmin() ? 'success' : 'danger'">
-            {{ backendIsAdmin() ? 'AUTORIZADO' : 'DENEGADO' }}
+          <ion-badge [class.success]="backendIsAdmin()" [class.error]="!backendIsAdmin()">
+            {{ backendIsAdmin() ? 'Autorizado' : 'Denegado' }}
           </ion-badge>
         </div>
       </ion-card-header>
       <ion-card-content>
-        <p class="description">
-          Validación del rol extraído del JWT firmado por tu servidor propio.
-        </p>
-        <ion-list lines="none">
-          <ion-item>
-            <ion-icon [name]="backendIsAdmin() ? 'shield-checkmark-outline' : 'alert-circle-outline'" 
-                      slot="start" 
-                      [color]="backendIsAdmin() ? 'success' : 'danger'"></ion-icon>
-            <ion-label>
-              <h3>Permisos de Administrador</h3>
-              <p>{{ backendIsAdmin() ? 'Acceso total a la API' : 'Acceso restringido' }}</p>
-            </ion-label>
-          </ion-item>
-        </ion-list>
+        <div class="card-content-security">
+          <p class="description">
+            Validación del rol extraído del JWT firmado por tu servidor propio.
+          </p>
+          <ion-list lines="none">
+            <ion-item>
+              <ion-icon class="mr-s" name="shield-outline" color="primary" *ngIf="!backendIsAdmin()"></ion-icon>
+              <ion-icon class="mr-s" name="shield-checkmark-outline" color="primary"
+                *ngIf="backendIsAdmin()"></ion-icon>
+              <ion-label>
+                <h3>Permisos de Administrador</h3>
+                <p>{{ backendIsAdmin() ? 'Acceso total a la API' : 'Acceso restringido' }}</p>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </div>
       </ion-card-content>
     </ion-card>
 
-    <!-- TARJETA: GESTIÓN DE ROLES (Solo Master) -->
+  </div>
+
+  <!-- TARJETA: GESTIÓN DE ROLES (Solo Master) -->
+  <div class="col-4 col-sm-12 pl-base px-0-sm mb-base">
     <ion-card class="premium-card manage-card" *ngIf="authService.isMasterAdmin()">
       <ion-card-header>
         <div class="card-header-flex">
           <ion-card-title>Gestión de Privilegios</ion-card-title>
-          <ion-icon name="person-add-outline" color="primary"></ion-icon>
+          <ion-icon class="fs-18" name="person-add-outline" color="primary"></ion-icon>
         </div>
       </ion-card-header>
       <ion-card-content>
-        <p class="description">Como Administrador Maestro, puedes otorgar permisos a otros usuarios.</p>
-        
-        <ion-item lines="full" class="email-input">
-          <ion-label position="stacked">Email del nuevo Administrador</ion-label>
-          <ion-input type="email" placeholder="ejemplo@correo.com" [(ngModel)]="targetEmail"></ion-input>
-        </ion-item>
+        <p class="description mb-base">Como Administrador Maestro, puedes otorgar permisos a otros usuarios.</p>
+        <div class="mb-base pos-relative">
+          <ion-input mode="md" type="email" label="Email del nuevo Administrador" label-placement="stacked"
+            fill="outline" placeholder="ejemplo@correo.com" class="futbol-input" [(ngModel)]="targetEmail"
+            [class.is-focused]="emailFocused" (ionFocus)="emailFocused = true" (ionBlur)="emailFocused = false"
+            (ionInput)="onSearchInput($event)">
+            <ion-icon slot="start" name="at-outline" [color]="emailFocused ? 'primary' : 'medium'"></ion-icon>
+          </ion-input>
 
-        <div class="btn-group">
-          <ion-button expand="block" (click)="promoteUser()" [disabled]="isPromoting() || !targetEmail()" class="promote-btn">
-            <ion-spinner slot="start" *ngIf="isPromoting()"></ion-spinner>
+          <!-- LISTA DE SUGERENCIAS -->
+          <div class="search-suggestions" *ngIf="suggestedUsers().length > 0">
+            <ion-item button *ngFor="let user of suggestedUsers()" (click)="selectUser(user)" lines="full">
+              <ion-label>
+                <h2 class="f-bold">{{ user.name | titlecase }}</h2>
+                <p>{{ user.email }}</p>
+              </ion-label>
+              <ion-badge slot="end" [class.success]="user.role === 'admin'" [class.info]="user.role !== 'admin'">
+                {{ user.role }}
+              </ion-badge>
+            </ion-item>
+          </div>
+        </div>
+
+        <!-- DETALLES DEL USUARIO SELECCIONADO -->
+        <div class="selected-user-box mb-base" *ngIf="selectedUser()">
+          <div class="user-info">
+            <ion-icon name="person-circle-outline" color="primary"></ion-icon>
+            <div>
+              <p class="name">{{ selectedUser().name | titlecase }}</p>
+              <p class="email">{{ selectedUser().email }}</p>
+              <div class="d-flex gap-xs mt-xs">
+                <ion-badge [color]="selectedUser().role === 'admin' ? 'primary' : 'medium'">
+                  Rol: {{ selectedUser().role }}
+                </ion-badge>
+                <ion-badge [class.success]="selectedUser().is_active === true"
+                  [class.error]="selectedUser().is_active === false">
+                  {{ selectedUser().is_active === true ? 'Activo' : 'Inactivo' }}
+                </ion-badge>
+              </div>
+            </div>
+          </div>
+          <ion-button fill="clear" color="primary" (click)="clearSelection()" class="close-btn">
+            <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+
+
+        <div class="btn-group" *ngIf="selectedUser()">
+          <!-- BOTÓN HACER ADMIN (Solo si es 'user') -->
+          <ion-button mode="ios" shape="round" expand="block" (click)="promoteUser()"
+            *ngIf="selectedUser()?.role !== 'admin' && selectedUser().is_active === true"
+            [disabled]="isPromoting() || isTogglingStatus() || !targetEmail" class="promote-btn">
+            <ion-spinner class="mr-s" slot="start" *ngIf="isPromoting()"></ion-spinner>
+            <ion-icon slot="start" name="person-add-outline" *ngIf="!isPromoting()"></ion-icon>
             Hacer Administrador
           </ion-button>
-          
-          <ion-button fill="clear" expand="block" (click)="promoteSelf()" [disabled]="isPromoting()" *ngIf="!firebaseClaims()?.admin">
+
+          <!-- BOTÓN QUITAR ADMIN (Solo si es 'admin') -->
+          <ion-button mode="ios" shape="round" expand="block" fill="outline" color="danger" (click)="revokeUser()"
+            *ngIf="selectedUser()?.role === 'admin'" [disabled]="isPromoting() || isTogglingStatus() || !targetEmail"
+            class="promote-btn">
+            <ion-spinner class="mr-s" slot="start" *ngIf="isPromoting()"></ion-spinner>
+            <ion-icon slot="start" name="person-remove-outline" *ngIf="!isPromoting()"></ion-icon>
+            Quitar Administrador
+          </ion-button>
+
+          <!-- BOTÓN INHABILITAR / HABILITAR (Solo Master) -->
+          <ion-button mode="ios" shape="round" expand="block" fill="clear" class=" btn-toggle"
+            [class.error]="selectedUser().is_active === true" [class.success]="selectedUser().is_active === false"
+            (click)="toggleUserStatus(selectedUser().is_active === true)"
+            [disabled]="isPromoting() || isTogglingStatus() || !targetEmail">
+            <ion-spinner class="mr-s" slot="start" *ngIf="isTogglingStatus()"></ion-spinner>
+            <ion-icon slot="start" *ngIf="selectedUser().is_active === true" name="ban-outline"
+              [class.error]="selectedUser().is_active === true"></ion-icon>
+            <ion-icon slot="start" *ngIf="selectedUser().is_active === false" name="checkmark-circle-outline"
+              [class.success]="selectedUser().is_active === false"></ion-icon>
+            {{ selectedUser().is_active === true ? 'Inhabilitar Cuenta' : 'Habilitar Cuenta' }}
+          </ion-button>
+
+          <ion-button class="mt-base promote-btn" shape="round" mode="ios" fill="clear" expand="block"
+            (click)="promoteSelf()" [disabled]="isPromoting()" *ngIf="!firebaseClaims()?.admin">
+            <ion-icon slot="start" name="person-add-outline" *ngIf="!isPromoting()"></ion-icon>
             Autorizar mi propia cuenta
           </ion-button>
         </div>
       </ion-card-content>
     </ion-card>
 
-    <div class="info-footer" *ngIf="lastChecked()">
+    <div class="fs-12 f-medium mt-base text-neutral-6 text-center" *ngIf="lastChecked()">
       <p>Última sincronización: {{ lastChecked() | date:'HH:mm:ss' }}</p>
-      <p class="small">Usa esta consola para gestionar la jerarquía de seguridad de la aplicación.</p>
     </div>
   </div>
-</ion-content>
+</div>

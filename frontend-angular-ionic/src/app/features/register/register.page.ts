@@ -203,7 +203,7 @@ export class RegisterPage implements OnInit {
           componentProps: {
             title: `¡Enhorabuena, ${this.capitalizedName}!`,
             message: 'Tu cuenta ha sido creada correctamente. <br>Prepárate para vivir la experiencia real del fútbol.',
-            confirmText: 'Ir a la App',
+            confirmText: 'Ingresar ahora',
             cancelText: 'Más tarde',
             type: 'success'
           }

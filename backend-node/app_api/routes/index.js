@@ -10,6 +10,9 @@ const { authorizeRequest, isAdmin, isMaster } = require('../middleware/auth.midd
 // --- RUTAS DE AUTENTICACIÓN ---
 router.post('/auth/signin', ctrlAuth.loginFirebase);
 router.post('/auth/make-admin', authorizeRequest, isMaster, ctrlAuth.setAdminRole);
+router.post('/auth/remove-admin', authorizeRequest, isMaster, ctrlAuth.removeAdminRole);
+router.get('/auth/users', authorizeRequest, isMaster, ctrlAuth.getUsers);
+router.post('/auth/toggle-status', authorizeRequest, isMaster, ctrlAuth.toggleUserStatus);
 
 // --- SERVICIO DE CARGA (Desactivado temporalmente) ---
 // router.get('/db-load', ctrlOthers.dbLoad);

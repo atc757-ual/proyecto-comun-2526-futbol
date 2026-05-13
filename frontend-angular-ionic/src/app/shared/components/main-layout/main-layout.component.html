@@ -1,3 +1,15 @@
+<!-- GLOBAL AI THINKING OVERLAY -->
+<div *ngIf="layoutService.aiLoading()" class="ai-thinking-overlay animate-fade-in">
+  <div class="ai-core-container">
+    <div class="ai-core-orb"></div>
+    <div class="ai-core-ring"></div>
+    <div class="ai-core-ring delay-1"></div>
+    <div class="ai-core-ring delay-2"></div>
+  </div>
+  <h2 class="ai-thinking-text">{{ layoutService.aiThinkingText() }}</h2>
+  <p class="ai-thinking-subtext">Procesando tus datos en servidores neurales</p>
+</div>
+
 <ion-menu *ngIf="!platformService.isMobileApp" contentId="main-content" class="mobile-only-menu" side="start"
   mode="ios">
   <ion-content class="ion-no-padding" scroll-y="false">
@@ -119,7 +131,7 @@
             <li
               *ngIf="(!p.adminOnly && !p.masterOnly) || (p.adminOnly && authService.isAdmin()) || (p.masterOnly && authService.isMasterAdmin())"
               [routerLink]="p.url" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
-              [class.nav-item-ai]="p.title === 'IA'">
+              [class.nav-item-ai]="p.title === 'Football AI'">
               <ion-icon *ngIf="p.icon !== 'home' && p.icon !== 'people' && p.icon !== 'cart' && p.icon !== 'newspaper'"
                 [name]="p.icon" class="nav-icon-mini"></ion-icon>
               {{ p.title }}
@@ -146,8 +158,8 @@
           class="layout-hero-breadcrumbs">
           <div class="main-content">
             <ion-breadcrumbs>
-              <ion-breadcrumb *ngFor="let item of layoutService.breadcrumbs(); let last = last" [routerLink]="item.url"
-                [class.active-breadcrumb]="last">
+              <ion-breadcrumb *ngFor="let item of layoutService.breadcrumbs(); let last = last"
+                [routerLink]="item.url || null" [class.active-breadcrumb]="last" [class.has-url]="!!item.url">
                 <ion-icon *ngIf="item.icon" slot="start" [name]="item.icon"></ion-icon>
                 {{ item.label }}
                 <span slot="separator" class="fs-14 text-neutral-4">/</span>

@@ -1,72 +1,88 @@
+/**
+ * Archivo de Inicialización para MongoDB (football db)
+ * Uso: mongosh mongodb://localhost:27017/football init-mongo.js
+ */
+
 db = db.getSiblingDB('football');
 
+// Limpiar colecciones
 db.players.drop();
 db.users.drop();
 
-// Inicializar Usuarios (Nuevos para JWT/Firebase)
+console.log("Collections dropped.");
+
+// Inicializar Usuarios (Admin de prueba)
 db.users.insertMany([
   {
-    firebaseUid: "admin_uid",
-    name: "Administrador Sistema",
-    email: "admin@futbol.com",
+    uid: "admin_uid",
+    email: "admin@scouting.com",
     role: "admin",
     is_active: true,
     blocked: false,
     created_at: new Date()
-  },
-  {
-    firebaseUid: "firebase_uid_1",
-    name: "Alex User",
-    email: "alex@test.com",
-    role: "user",
-    is_active: true,
-    blocked: false,
-    created_at: new Date()
   }
 ]);
 
-// Inicializar Jugadores con sus comentarios embebidos (Patrón de subdocumentos TRWM)
+// Inicializar Jugadores con la nueva estructura completa
 db.players.insertMany([
   {
-    name: "Lionel Messi",
-    team: "Inter Miami",
-    league: "MLS",
-    image_url: "https://images.besoccer.com/player/lionel-messi.png",
-    entry_date: "2024-01-01",
+    name: "Neymar Canhembe",
+    fullname: "Amâncio João Pita Canhembe",
+    age: 28,
+    birth_date: "1997-11-16",
+    birth_place: "Maputo",
+    birth_country: "Mozambique",
+    nationality: "Mozambique",
+    height: "180 cm",
+    weight: "70 kg",
+    number: 8,
+    position: "Midfielder",
+    image_url: "https://media.api-sports.io/football/players/154833.png",
+    team: "Custom Team",
     user_id: "admin_uid",
+    created_at: new Date(),
+    updated_at: new Date(),
+    created_by: "admin@scouting.com",
+    updated_by: "admin@scouting.com",
+    status: true,
+    summary: "Neymar Canhembe, conocido como Neymar, es un centrocampista mozambiqueño que destaca por su despliegue físico y visión de juego. Ha sido una pieza clave en su selección y en los clubes por los que ha pasado, demostrando una madurez táctica excepcional.",
+    social_media: {
+      facebook: "www.facebook.com/neymar.canhembe",
+      instagram: "www.instagram.com/neymar_canhembe",
+      twitter: "www.twitter.com/neymar_c",
+      website: "www.neymarcanhembe.mz"
+    },
+    images: {
+      thumb: "https://media.api-sports.io/football/players/154833.png",
+      poster: "https://r2.thesportsdb.com/images/media/player/poster/4vgz4c1741866974.jpg",
+      cutout: "https://r2.thesportsdb.com/images/media/player/cutout/e0i2051750317027.png",
+      cartoon: "https://r2.thesportsdb.com/images/media/player/cartoon/kzz67d1768229024.png",
+      banner: "https://r2.thesportsdb.com/images/media/player/banner/yzrspt1549398433.jpg"
+    },
+    tsdb_ids: {
+      player_id: "154833",
+      team_id: "1234",
+      team2_id: "5678",
+      league_id: "4321"
+    },
     location: {
       type: "Point",
-      coordinates: [-80.1918, 25.7617]
+      coordinates: [32.5732, -25.9692]
     },
-    created_at: new Date(),
     comments: [
       {
         user_id: "firebase_uid_1",
-        user_name: "Alex",
+        autor_name: "Alex",
         content: "El mejor de la historia 🐐",
         rating: 5,
-        location: {
-          type: "Point",
-          coordinates: [-3.7038, 40.4168]
-        },
-        created_at: new Date()
+        created_at: new Date(),
+        updated_at: new Date(),
+        created_by: "admin@scouting.com",
+        updated_by: "admin@scouting.com",
+        status: true
       }
     ]
-  },
-  {
-    name: "Cristiano Ronaldo",
-    team: "Al Nassr",
-    league: "Saudi Pro League",
-    image_url: "https://images.besoccer.com/player/cristiano-ronaldo.png",
-    entry_date: "2024-01-01",
-    user_id: "admin_uid",
-    location: {
-      type: "Point",
-      coordinates: [46.6753, 24.7136]
-    },
-    created_at: new Date(),
-    comments: [] // Empieza sin comentarios
   }
 ]);
 
-console.log("MongoDB Initialized with Embedded Comments (TRWM Pattern).");
+console.log("MongoDB Initialized with Complete Player Profile (DB: football).");

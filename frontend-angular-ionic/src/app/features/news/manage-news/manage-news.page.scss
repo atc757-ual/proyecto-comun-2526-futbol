@@ -1,295 +1,294 @@
-/* BUSCADOR */
-.custom-searchbar {
-  --background: var(--color-searchbar, rgba(var(--color-primary-rgb), 0.1));
-  --border-radius: 24px;
-  --box-shadow: none;
-  padding: 0 !important;
-  margin: 0 !important;
-
-
-  --cancel-button-color: var(--color-primary);
-
-  ::ng-deep {
-    .searchbar-input-container {
-      min-height: 48px !important;
-    }
-
-    .searchbar-input {
-      font-size: var(--fs-16);
-      font-family: var(--font-secondary) !important;
-      padding-inline-start: 48px !important;
-    }
-
-    .searchbar-search-icon {
-      margin-inline-start: 12px !important;
-      font-size: 20px !important;
-    }
-
-    .searchbar-cancel-button {
-      font-family: var(--font-secondary) !important;
-      font-weight: var(--fw-semibold) !important;
-      font-size: var(--fs-14) !important;
-    }
-  }
-}
-
-.news-admin-grid {
+/* ITEM DE NOTICIA ADMIN PRO - DISEÑO COMPACTO */
+.news-admin-item {
+  background: var(--color-neutral-0);
   display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+  align-items: center;
+  gap: var(--space-s);
+  position: relative;
 
-/* TARJETA */
-.admin-news-card {
-  display: flex;
-  background: var(--color-white);
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-  transition: all 0.4s ease;
-  border: 1px solid rgba(0, 0, 0, 0.03);
-  min-height: 110px;
-  height: auto;
-  padding-bottom: 8px;
-
-  &:hover {
-    transform: translateX(6px);
-  }
-
-  .card-image-wrapper {
-    width: 180px;
+  /* 1. MEDIA (Miniatura Compacta) */
+  .item-media {
+    width: 70px;
+    height: 90px;
+    min-width: 70px;
     position: relative;
-    flex-shrink: 0;
+    overflow: hidden;
 
-    @media (max-width: 768px) {
-      width: 100px;
-      /* Mobile: Más estrecha para dar espacio al texto */
-    }
-
-    img {
+    .item-img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
 
-    .category-badge {
+    .item-badge {
       position: absolute;
-      top: 8px;
-      left: 8px;
-      background: var(--color-primary);
-      color: white;
-      padding: 2px 8px;
-      border-radius: 6px;
-      font-size: 9px;
-      font-weight: 700;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      font-size: 8px;
+      font-weight: var(--fw-semibold);
+      text-transform: uppercase;
+      color: var(--color-neutral-0);
+      text-align: center;
+      padding: 1px 0;
+      background: rgba(0, 0, 0, 0.7);
+
+      &.internacional {
+        background: var(--color-primary);
+      }
+
+      &.fichajes {
+        background: var(--color-warning);
+      }
+
+      &.crónica {
+        background: var(--color-tertiary);
+      }
+
+      &.táctica {
+        background: var(--color-success);
+      }
+
+      &.opinión {
+        background: var(--color-secondary);
+      }
     }
   }
 
-  .card-content-wrapper {
+  /* 2. INFO CENTRAL */
+  .item-info {
     flex: 1;
-    display: flex;
-    padding: var(--space-base);
-    gap: var(--space-base);
     min-width: 0;
-    /* Para que los hijos no desborden */
 
-    @media (max-width: 768px) {
-      padding: 8px 10px;
-      /* Más compacto en móvil */
-      gap: 10px;
+    .item-title {
+      font-size: var(--fs-14);
+      font-weight: var(--fw-semibold);
+      color: var(--color-neutral-10);
+      margin: 0 0 var(--space-xs) 0;
+      line-height: 1.2;
     }
 
-    .card-info-side {
-      flex: 1;
-      min-width: 0;
+    .item-summary {
+      font-size: var(--fs-12);
+      color: var(--color-neutral-6);
+      margin: 0 0 var(--space-xs) 0;
+      display: none;
+      /* Oculto por defecto (móvil) */
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .item-audit-stack {
+      margin-top: var(--space-s);
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
-      /* Alineación al inicio */
-      gap: var(--space-s);
-      /* Espacio homogéneo en todas las tarjetas */
+      gap: 4px;
 
-      .card-title {
-        font-size: var(--fs-18);
-        font-weight: var(--fw-semibold);
-        margin: 0;
-        color: var(--color-neutral-9);
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-
-        @media (max-width: 768px) {
-          font-size: var(--fs-16);
-          font-weight: var(--fw-medium);
-        }
-      }
-
-      .card-meta {
+      .audit-group {
         display: flex;
-        flex-direction: column;
-        overflow: hidden;
+        align-items: center;
+        line-height: 1.1;
+        position: relative;
+        padding-left: 12px;
 
-        .meta-row {
-          display: flex;
-          align-items: center;
-          font-size: var(--fs-14);
+        &::before {
+          content: "";
+          position: absolute;
+          left: 0;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: var(--color-primary);
+          /* Punto Azul para Creación */
+        }
 
-          @media (max-width: 768px) {
-            gap: var(--space-xs);
-            font-size: var(--fs-12);
-          }
+        &.update::before {
+          background: var(--color-success);
+          /* Punto Verde para Edición */
+        }
 
-          /* Metadata más pequeño */
-          color: var(--color-neutral-7);
+        .audit-text {
+          font-size: var(--fs-12);
+          color: var(--color-neutral-6);
           white-space: nowrap;
           overflow: hidden;
-          text-overflow: ellipsis;
-
-          ion-icon {
-            font-size: var(--fs-16);
-            /* Iconos más visibles */
-            color: var(--color-primary);
-            opacity: 0.9;
-          }
-
-          .creator-badge,
-          .editor-badge {
-            color: var(--color-neutral-8);
-            font-weight: var(--fw-medium);
-            background: rgba(var(--color-primary-rgb), 0.05);
-            border-radius: 4px;
-          }
-
-          .meta-divider {
-            color: var(--color-neutral-4);
-            margin: 0 var(--space-s);
-          }
-
-          .meta-date,
-          .meta-label {
-            margin: 0 var(--space-xs);
-            font-weight: var(--fw-regular);
-            color: var(--color-neutral-7);
-          }
-
-          &.update-info {
-            opacity: 0.8;
-
-            ion-icon {
-              color: var(--color-success);
-            }
-          }
-        }
-      }
-    }
-
-    .card-actions-side {
-      display: flex;
-      align-items: center;
-      flex-shrink: 0;
-      /* IMPORTANTE: Que no desaparezca */
-      justify-content: center;
-      min-width: 32px;
-
-      /* DESKTOP: Botones juntos */
-      gap: 2px;
-
-      @media (max-width: 768px) {
-        /* MOBILE: Vertical con separación equilibrada */
-        flex-direction: column;
-        gap: var(--space-s);
-      }
-
-      ion-button {
-        --padding-start: 4px !important;
-        --padding-end: 4px !important;
-        --background: transparent !important;
-        background: transparent !important;
-        margin: 0;
-        --border-radius: var(--btn-radius);
-        min-height: 0 !important;
-
-        /* DESKTOP: Altura normal */
-        height: 32px !important;
-        --height: 32px !important;
-
-        @media (max-width: 768px) {
-          /* MOBILE: Realmente compactos */
-          height: 20px !important;
-          --height: 20px !important;
-        }
-
-        ion-icon {
-          font-size: var(--fs-20);
-        }
-
-        /* Clases de color del HTML */
-        &.text-primary {
-          ion-icon {
-            color: var(--color-primary);
-          }
-        }
-
-        &.text-success {
-          ion-icon {
-            color: var(--color-success);
-          }
-        }
-
-        &.text-error {
-          ion-icon {
-            color: var(--red-100);
-          }
-        }
-
-        &:hover {
-          opacity: 0.6;
         }
       }
     }
   }
-}
 
-/* OTROS */
-.news-pagination-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: var(--space-m) 0;
-  background: white;
-  padding: var(--space-s) var(--space-base);
-  border-radius: var(--border-radius-m);
-}
-
-.skeleton-card {
-  border-radius: var(--border-radius-soft);
-  padding: var(--space-base);
-  background: white;
-
-  .skeleton-layout {
+  /* 3. ACCIONES (Vertical en móvil) */
+  .item-actions {
     display: flex;
-    height: 100px;
+    flex-direction: column;
+    gap: 0;
+    padding-left: 4px;
+    border-left: 1px solid var(--color-neutral-2);
 
-    .skeleton-thumb {
-      width: 150px;
+    .btn-action {
+      --padding-start: 10px;
+      --padding-end: 10px;
+      margin: 2px 0;
+      height: 32px;
+      min-height: 32px;
+      --border-radius: 8px;
+      font-size: 16px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+      /* Colores permanentes suaves (Garantizados por Ionic) */
+      &.view {
+        --background: var(--blue-primary-010);
+        --color: var(--blue-primary-100);
+      }
+
+      &.edit {
+        --background: var(--green-010);
+        --color: var(--color-success);
+      }
+
+      &.delete {
+        --background: var(--red-010);
+        --color: var(--red-100);
+      }
+
+      /* Animación de presión */
+      &:active {
+        transform: scale(0.85);
+        filter: brightness(0.95);
+      }
     }
   }
 }
 
-.empty-state {
-  text-align: center;
-  padding: 60px 20px;
+/* AJUSTES PARA DESKTOP */
+@media (min-width: 768px) {
+  .news-admin-item {
+    .item-media {
+      width: 90px;
+      height: 90px;
+      min-width: 90px;
+      gap: var(--space-base);
+
+      .item-badge {
+        font-size: var(--fs-10);
+      }
+    }
+
+    .item-info {
+      .item-title {
+        font-size: var(--fs-20);
+      }
+
+      .item-summary {
+        display: block;
+        /* Visible en desktop */
+        font-size: var(--fs-16);
+        font-weight: var(--fw-regular);
+        color: var(--color-neutral-7);
+        margin: 0 0 var(--space-xs) 0;
+      }
+
+      .item-audit-stack {
+        flex-direction: row;
+        gap: var(--space-s);
+        margin-top: var(--space-s);
+        color: var(--color-neutral-6);
+
+        .audit-group.update {
+          border-top: none;
+          padding-top: 0;
+          border-left: 1px solid var(--color-neutral-2);
+          padding-left: 22px;
+          /* Más espacio para el punto */
+          margin-left: var(--space-xs);
+
+          &::before {
+            left: 10px;
+            /* Posición centrada respecto al borde */
+            top: 50%;
+            transform: translateY(-50%);
+          }
+        }
+
+        .audit-text {
+          font-size: var(--fs-14);
+        }
+      }
+    }
+
+    .item-actions {
+      flex-direction: row;
+      gap: var(--space-s);
+
+      .btn-action {
+        font-size: var(--fs-16);
+        height: 40px;
+      }
+    }
+  }
+}
+
+/* CARGA MASIVA - PANEL DESPLEGABLE */
+.bulk-upload-panel {
+  background: var(--green-010);
+  border-radius: 12px;
+  padding: var(--space-s);
+  margin-top: var(--space-s);
+  border: 1px dashed var(--color-success);
+
+  .panel-inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-s);
+  }
+
+  .file-selection-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs);
+    padding: var(--space-base);
+    background: var(--color-neutral-0);
+    border-radius: 8px;
+    border: 1px solid var(--color-success);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: var(--green-010);
+      background: var(--color-neutral-1);
+    }
+
+    ion-icon {
+      font-size: var(--fs-30);
+    }
+
+    span {
+      font-size: var(--fs-14);
+      color: var(--color-neutral-5);
+    }
+  }
+
+  .confirm-btn {
+    --background: var(--color-success);
+    --color: white;
+    margin: 0;
+    font-weight: var(--fw-semibold);
+  }
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.6s ease forwards;
+  animation: fadeIn 0.3s ease-out forwards;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(15px);
+    transform: translateY(5px);
   }
 
   to {

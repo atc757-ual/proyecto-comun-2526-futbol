@@ -139,7 +139,7 @@ export class ForgotPasswordPage implements OnInit {
 
   // --- EVENTOS DE FOCO ---
 
-  onFocusEmail() { this.emailFocused = true; this.emailTouched = false; }
+  onFocusEmail() { this.emailFocused = true; }
   onBlurEmail() { this.emailFocused = false; this.emailTouched = true; }
 
   onFocusPass() { this.passFocused = true; this.passTouched = false; }

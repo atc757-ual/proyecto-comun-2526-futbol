@@ -29,6 +29,10 @@ public class XMLCoder {
             }
         }
         xml.append("    </tags>\n");
+        xml.append("    <createdBy>").append(escapeXML(noticia.createdBy)).append("</createdBy>\n");
+        xml.append("    <updatedBy>").append(escapeXML(noticia.updatedBy)).append("</updatedBy>\n");
+        xml.append("    <createdAt>").append(escapeXML(noticia.createdAt)).append("</createdAt>\n");
+        xml.append("    <updatedAt>").append(escapeXML(noticia.updatedAt)).append("</updatedAt>\n");
         xml.append("</noticia>");
         
         return xml.toString();

@@ -20,8 +20,10 @@ if (environment.production) {
 }
 
 import { register } from 'swiper/element/bundle';
+import { defineCustomElements } from '@ionic/pwa-elements/loader';
 
 register();
+defineCustomElements(window);
 
 bootstrapApplication(AppComponent, {
   providers: [

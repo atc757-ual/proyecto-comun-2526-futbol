@@ -19,14 +19,13 @@
 // --- LADO FORMULARIO ---
 .auth-form-side {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  background: var(--color-neutral-0);
-  min-width: 0;
-  box-sizing: border-box;
+  --background: var(--color-neutral-0);
   height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
+
+  &::part(scroll) {
+    display: flex;
+    flex-direction: column;
+  }
 
   .form-wrapper {
     width: 100%;

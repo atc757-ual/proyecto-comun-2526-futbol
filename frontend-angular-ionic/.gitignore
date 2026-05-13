@@ -22,6 +22,8 @@ log.txt
 /www
 /platforms
 /plugins
+!src/app/core/plugins/
+!src/app/core/plugins/*
 
 # Compiled output
 /dist

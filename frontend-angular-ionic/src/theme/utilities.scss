@@ -1,5 +1,6 @@
 /* --- UTILIDADES DE DISEÑO Y ESTRUCTURA --- */
 
+
 /* Border Radius */
 .br-none {
     border-radius: 0 !important;
@@ -67,6 +68,9 @@
     justify-content: space-between !important;
 }
 
+.fl-align-end {
+    align-items: flex-end !important;
+}
 
 /* Flexbox (Direction) */
 .fl-row {
@@ -97,6 +101,10 @@
 
     .fl-column-sm {
         flex-direction: column !important;
+    }
+
+    .gap-0-sm {
+        gap: 0 !important;
     }
 
     .fl-row-rev-sm {
@@ -148,35 +156,35 @@
 
 /* Gaps */
 .gap-0 {
-    gap: 0 !important;
+    gap: 0;
 }
 
 .gap-xxs {
-    gap: var(--space-xxs) !important;
+    gap: var(--space-xxs);
 }
 
 .gap-xs {
-    gap: var(--space-xs) !important;
+    gap: var(--space-xs);
 }
 
 .gap-s {
-    gap: var(--space-s) !important;
+    gap: var(--space-s);
 }
 
 .gap-base {
-    gap: var(--space-base) !important;
+    gap: var(--space-base);
 }
 
 .gap-m {
-    gap: var(--space-m) !important;
+    gap: var(--space-m);
 }
 
 .gap-l {
-    gap: var(--space-l) !important;
+    gap: var(--space-l);
 }
 
 .gap-xl {
-    gap: var(--space-xl) !important;
+    gap: var(--space-xl);
 }
 
 /* Sombras (Box Shadows) */
@@ -274,4 +282,36 @@
 
 .full-height {
     height: 100% !important;
+}
+
+/* Margins Auto */
+.ml-auto {
+    margin-left: auto !important;
+}
+
+.mr-auto {
+    margin-right: auto !important;
+}
+
+.mt-auto {
+    margin-top: auto !important;
+}
+
+.mb-auto {
+    margin-bottom: auto !important;
+}
+
+.mx-auto {
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.my-auto {
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+}
+
+.border-primary-010 {
+    border: 2px solid var(--blue-primary-010);
+    border-radius: var(--border-radius-soft);
 }

@@ -10,8 +10,9 @@ import {
 import { addIcons } from 'ionicons';
 import {
   homeOutline, peopleOutline, cartOutline, newspaperOutline, menuOutline, football,
-  personOutline, logOutOutline, sparklesOutline, footballOutline, logoLinkedin,
-  logoGithub, closeOutline, arrowBack, chevronBack, chevronForwardOutline, shieldCheckmarkOutline
+  personOutline, logOutOutline, sparklesOutline, footballOutline, logoLinkedin, personCircleOutline,
+  logoGithub, closeOutline, arrowBack, chevronBack, chevronForwardOutline, shieldCheckmarkOutline,
+  trophyOutline, searchOutline
 } from 'ionicons/icons';
 import { filter } from 'rxjs/operators';
 import { AuthService } from 'src/app/core/services/auth.service';
@@ -41,17 +42,16 @@ export class MainLayoutComponent implements OnInit {
   public appPages = [
     { title: 'Inicio', url: '/home', icon: 'home-outline', adminOnly: false, masterOnly: false },
     { title: 'Jugadores', url: '/players', icon: 'football-outline', adminOnly: false, masterOnly: false },
-    { title: 'IA', url: '/ai-team', icon: 'sparkles-outline', adminOnly: false, masterOnly: false },
-    { title: 'Mercado', url: '/player-add', icon: 'cart-outline', adminOnly: false, masterOnly: false },
-    { title: 'Noticias', url: '/news', icon: 'newspaper-outline', adminOnly: false, masterOnly: false },
-    { title: 'Seguridad', url: '/admin-security', icon: 'shield-checkmark-outline', adminOnly: false, masterOnly: true }
+    { title: 'Football AI', url: '/ai-team', icon: 'sparkles-outline', adminOnly: false, masterOnly: false },
+    { title: 'Búsqueda', url: '/leagues', icon: 'search-outline', adminOnly: false, masterOnly: false },
+    { title: 'Noticias', url: '/news', icon: 'newspaper-outline', adminOnly: false, masterOnly: false }
   ];
 
   constructor() {
     addIcons({
-      homeOutline, peopleOutline, cartOutline, newspaperOutline, menuOutline, footballOutline,
+      homeOutline, peopleOutline, cartOutline, newspaperOutline, menuOutline, footballOutline, personCircleOutline,
       personOutline, logOutOutline, sparklesOutline, logoLinkedin, logoGithub, closeOutline, arrowBack,
-      chevronBack, chevronForwardOutline, shieldCheckmarkOutline, football
+      chevronBack, chevronForwardOutline, shieldCheckmarkOutline, football, trophyOutline, searchOutline
     });
   }
 

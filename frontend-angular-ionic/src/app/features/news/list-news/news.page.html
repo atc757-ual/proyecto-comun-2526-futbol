@@ -78,16 +78,23 @@
         <ion-card-title class="fs-20 fs-sm-18 f-semibold">Administrador</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <ion-item [button]="true" lines="none" detail="true" class="action-item mb-s" [routerLink]="['/add-news']">
-          <ion-icon aria-hidden="true" class="fs-28" name="add-circle-outline" color="primary"></ion-icon>
-          <ion-label class="ml-s f-medium">Crear noticia</ion-label>
+        <ion-item [button]="true" lines="none" detail="true" class="action-item is-blue" [routerLink]="['/add-news']">
+          <ion-icon slot="start" aria-hidden="true" name="add-circle-outline"></ion-icon>
+          <div>
+            <ion-label>Crear noticia</ion-label>
+            <p>Crea noticias para nuestros usuarios</p>
+          </div>
         </ion-item>
 
         <div class="separator my-s"></div>
 
-        <ion-item [button]="true" lines="none" detail="true" class="action-item" [routerLink]="['/manage-news']">
-          <ion-icon aria-hidden="true" class="fs-28" name="settings-outline" color="primary"></ion-icon>
-          <ion-label class="ml-s f-medium">Gestionar noticias</ion-label>
+        <ion-item [button]="true" lines="none" detail="true" class="action-item is-blue"
+          [routerLink]="['/manage-news']">
+          <ion-icon slot="start" aria-hidden="true" name="settings-outline"></ion-icon>
+          <div>
+            <ion-label>Gestionar noticias</ion-label>
+            <p>Lista, edita y borra noticias</p>
+          </div>
         </ion-item>
       </ion-card-content>
     </ion-card>

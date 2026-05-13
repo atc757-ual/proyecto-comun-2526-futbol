@@ -5,7 +5,17 @@ const ctrlComments = require('../controllers/comments');
 const ctrlAuth = require('../controllers/auth');
 const ctrlAI = require('../controllers/ai'); // Nuevo controlador de IA
 const ctrlExternal = require('../controllers/external.controller'); // Nuevo controlador de API externa
+const ctrlNews = require('../controllers/news'); // Controlador de noticias persistentes
 const { authorizeRequest, isAdmin, isMaster } = require('../middleware/auth.middleware');
+
+// --- RUTAS DE NOTICIAS ---
+router.get('/news', ctrlNews.getNews);
+router.get('/news/bulk', authorizeRequest, isAdmin, ctrlNews.bulkCreateNews); // Test GET bulk if needed or just use POST
+router.post('/news/bulk', authorizeRequest, isAdmin, ctrlNews.bulkCreateNews);
+router.get('/news/:id', ctrlNews.getNewsById);
+router.post('/news', authorizeRequest, isAdmin, ctrlNews.createNews);
+router.put('/news/:id', authorizeRequest, isAdmin, ctrlNews.updateNews);
+router.delete('/news/:id', authorizeRequest, isAdmin, ctrlNews.deleteNews);
 
 // --- RUTAS DE AUTENTICACIÓN ---
 router.post('/auth/signin', ctrlAuth.loginFirebase);
@@ -211,7 +221,17 @@ router.route('/players/:playerid/comments/:commentid')
 // --- RUTA DE IA (Análisis de Equipo) ---
 router.post('/ai/analyze', authorizeRequest, ctrlAI.analyzeMyTeam);
 
-// --- RUTAS DE API EXTERNA (API-Football) ---
-router.get('/external/players', authorizeRequest, ctrlExternal.searchExternalPlayers);
+// --- RUTAS DE API EXTERNA (TheSportsDB) ---
+router.get('/external/tsdb/search', authorizeRequest, ctrlExternal.searchTSDBPlayers);
+router.get('/external/tsdb/search-teams', authorizeRequest, ctrlExternal.searchTSDBTeams);
+router.get('/external/tsdb/team-players/:id', authorizeRequest, ctrlExternal.getTSDBPlayersByTeam);
+router.get('/external/tsdb/player/:id', authorizeRequest, ctrlExternal.getTSDBPlayerDetails);
+router.get('/external/tsdb/team/:id', authorizeRequest, ctrlExternal.getTSDBTeamDetails);
+router.get('/external/tsdb/leagues', authorizeRequest, ctrlExternal.getTSDBLeagues);
+router.get('/external/tsdb/search-leagues', authorizeRequest, ctrlExternal.searchTSDBLeagues);
+router.get('/external/tsdb/tv/:sport', authorizeRequest, ctrlExternal.getTSDBTVBySport);
+router.get('/external/tsdb/teams-by-league/:id', authorizeRequest, ctrlExternal.getTSDBTeamsByLeague);
+router.get('/external/tsdb/player-teams/:id', authorizeRequest, ctrlExternal.getTSDBPlayerTeams);
+router.get('/external/tsdb/player-honours/:id', authorizeRequest, ctrlExternal.getTSDBPlayerHonours);
 
 module.exports = router;

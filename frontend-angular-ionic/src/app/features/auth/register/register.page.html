@@ -3,10 +3,12 @@
 
   <!-- INPUT: Nombre Completo -->
   <div class="mb-m">
-    <ion-input mode="md" type="text" label="Nombre Completo" label-placement="stacked" fill="outline" required
-      name="fullName" minlength="3" maxlength="250" placeholder="Juán Pérez" class="futbol-input  capitalize-input"
-      [(ngModel)]="userName" (ionBlur)="onBlurName()" (ionFocus)="onFocusName()" (keyup.enter)="onRegister()"
-      [class.input-error]="nameTouched && !isNameValid()" [class.is-focused]="nameFocused">
+    <ion-input #nameModel="ngModel" mode="md" type="text" label="Nombre Completo" label-placement="stacked" fill="outline"
+      required name="fullName" minlength="3" maxlength="250" placeholder="Juán Pérez"
+      class="futbol-input capitalize-input" [(ngModel)]="userName" (ionBlur)="onBlurName()" (ionFocus)="onFocusName()"
+      (keyup.enter)="onRegister()" [errorText]="nameTouched && !isNameValid() ? 'Solo letras (Mín. 3 carácteres)' : ''"
+      [class.input-error]="nameTouched && !isNameValid()" [class.ion-invalid]="nameTouched && !isNameValid()"
+      [class.is-focused]="nameFocused">
 
       <ion-icon [color]="nameFocused ? 'primary' : (nameTouched && !isNameValid() ? 'danger' : 'medium')" slot="start"
         name="person-outline" aria-hidden="true">
@@ -15,40 +17,34 @@
       <ion-icon *ngIf="isNameValid()" slot="end" name="checkmark-circle-outline" color="primary" class="fs-20">
       </ion-icon>
     </ion-input>
-
-    <div class="error-container" *ngIf="nameTouched && !isNameValid()">
-      <ion-icon name="alert-circle-outline"></ion-icon>
-      <span class="f-medium">Solo letras (Mín. 3 carácteres)</span>
-    </div>
   </div>
 
   <!-- INPUT: Email -->
   <div class="mb-m">
-    <ion-input mode="md" type="email" label="Email" inputmode="email" label-placement="stacked" fill="outline" required
-      name="email" placeholder="tu@email.com" class="futbol-input" [(ngModel)]="userEmail" (ionBlur)="onBlurEmail()"
-      (ionFocus)="onFocusEmail()" (keyup.enter)="onRegister()" [class.input-error]="emailTouched && !isEmailValid()"
+    <ion-input #emailModel="ngModel" mode="md" type="email" label="Email" inputmode="email" label-placement="stacked"
+      fill="outline" required name="email" placeholder="tu@email.com" class="futbol-input" [(ngModel)]="userEmail"
+      (ionBlur)="onBlurEmail()" (ionFocus)="onFocusEmail()" (keyup.enter)="onRegister()"
+      [errorText]="emailTouched && !isEmailValid() ? 'Ingresa un email válido' : ''"
+      [class.input-error]="emailTouched && !isEmailValid()" [class.ion-invalid]="emailTouched && !isEmailValid()"
       [class.is-focused]="emailFocused">
 
-      <ion-icon [color]="emailFocused ? 'primary' : (emailTouched && !isEmailValid() ? 'danger' : 'medium')"
-        slot="start" name="at-outline" aria-hidden="true">
+      <ion-icon [color]="emailFocused ? 'primary' : (emailTouched && !isEmailValid() ? 'danger' : 'medium')" slot="start"
+        name="at-outline" aria-hidden="true">
       </ion-icon>
 
       <ion-icon *ngIf="isEmailValid()" slot="end" name="checkmark-circle-outline" color="primary" class="fs-20">
       </ion-icon>
     </ion-input>
-
-    <div class="error-container" *ngIf="emailTouched && !isEmailValid()">
-      <ion-icon name="alert-circle-outline"></ion-icon>
-      <span class="f-medium">Ingresa un email válido</span>
-    </div>
   </div>
 
   <!-- INPUT: Contraseña -->
   <div class="mb-m">
-    <ion-input mode="md" type="password" label="Contraseña" label-placement="stacked" fill="outline" required
-      name="password" minlength="8" placeholder="Mínimo 8 caracteres" class="futbol-input " [(ngModel)]="userPass"
-      (ionBlur)="onBlurPass()" (ionFocus)="onFocusPass()" (keyup.enter)="onRegister()"
-      [class.input-error]="passTouched && !isPasswordValid()" [class.is-focused]="passFocused" clear-on-edit="true">
+    <ion-input #passModel="ngModel" mode="md" type="password" label="Contraseña" label-placement="stacked" fill="outline"
+      required name="password" minlength="8" placeholder="Mínimo 8 caracteres" class="futbol-input"
+      [(ngModel)]="userPass" (ionBlur)="onBlurPass()" (ionFocus)="onFocusPass()" (keyup.enter)="onRegister()"
+      [errorText]="passTouched && !isPasswordValid() ? 'Debe tener al menos 8 caracteres' : ''"
+      [class.input-error]="passTouched && !isPasswordValid()" [class.ion-invalid]="passTouched && !isPasswordValid()"
+      [class.is-focused]="passFocused" clear-on-edit="true">
 
       <ion-icon slot="start"
         [color]="passFocused ? 'primary' : (passTouched && !isPasswordValid() ? 'danger' : 'medium')"
@@ -61,20 +57,18 @@
       <ion-icon *ngIf="isPasswordValid()" slot="end" name="checkmark-circle-outline" color="primary" class="fs-20">
       </ion-icon>
     </ion-input>
-
-    <div class="error-container" *ngIf="passTouched && !isPasswordValid()">
-      <ion-icon name="alert-circle-outline"></ion-icon>
-      <span class="f-medium">Debe tener al menos 8 caracteres</span>
-    </div>
   </div>
 
   <!-- INPUT: Confirmar Contraseña -->
   <div class="mb-base">
-    <ion-input mode="md" type="password" label="Confirmar Contraseña" label-placement="stacked" fill="outline" required
-      name="confirmPassword" minlength="8" placeholder="Repite tu contraseña" class="futbol-input"
-      [(ngModel)]="confirmPass" (ionBlur)="onBlurConfirm()" (ionFocus)="onFocusConfirm()" clear-on-edit="true"
-      (keyup.enter)="onRegister()" [class.input-error]="confirmTouched && !doPasswordsMatch()"
-      [class.is-focused]="confirmFocused" clear-on-edit="false">
+    <ion-input #confirmModel="ngModel" mode="md" type="password" label="Confirmar Contraseña" label-placement="stacked"
+      fill="outline" required name="confirmPassword" minlength="8" placeholder="Repite tu contraseña"
+      class="futbol-input" [(ngModel)]="confirmPass" (ionBlur)="onBlurConfirm()" (ionFocus)="onFocusConfirm()"
+      clear-on-edit="true" (keyup.enter)="onRegister()"
+      [errorText]="confirmTouched && !doPasswordsMatch() ? 'Las contraseñas deben coincidir' : ''"
+      [class.input-error]="confirmTouched && !doPasswordsMatch()"
+      [class.ion-invalid]="confirmTouched && !doPasswordsMatch()" [class.is-focused]="confirmFocused"
+      clear-on-edit="false">
 
       <ion-icon slot="start"
         [color]="confirmFocused ? 'primary' : (confirmTouched && !doPasswordsMatch() ? 'danger' : 'medium')"
@@ -87,11 +81,6 @@
       <ion-icon *ngIf="doPasswordsMatch()" slot="end" name="checkmark-circle-outline" color="primary" class="fs-20">
       </ion-icon>
     </ion-input>
-
-    <div class="error-container" *ngIf="confirmTouched && !doPasswordsMatch()">
-      <ion-icon name="alert-circle-outline"></ion-icon>
-      <span class="f-medium">Las contraseñas deben coincidir</span>
-    </div>
   </div>
   <ion-item lines="none">
     <ion-checkbox mode="ios" slot="start" [(ngModel)]="acceptTerms" name="acceptTerms" [disabled]="!termsInteractable"

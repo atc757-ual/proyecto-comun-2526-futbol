@@ -52,39 +52,54 @@ export class NewsDetailPage {
   private loadData(id: string) {
     this.isLoading = true;
 
-    // Llamada 1: Detalle por ID (Izquierda)
+    // Llamada 1: Detalle por ID (Con soporte de Caché Local)
     this.newsService.getNewsById(id).subscribe({
       next: (data) => {
+        if (!data) {
+          this.isLoading = false;
+          this.showToast('No se encontró la noticia solicitada', 'warning', 'alert-circle-outline');
+          this.navCtrl.navigateBack('/news');
+          return;
+        }
+
         this.selectedNew = data;
 
         // ACTUALIZAR TÍTULO DE CABECERA
-        if (data) {
-          this.layoutService.setHeader({
-            title: 'Detalle de la noticia',
-            subtitle: 'Aquí podrás leer la noticia completa.',
-            showHero: true
-          });
+        this.layoutService.setHeader({
+          title: 'Detalle de la noticia',
+          subtitle: 'Aquí podrás leer la noticia completa.',
+          showHero: true
+        });
 
-          this.layoutService.setBreadcrumbs([
-            { label: '', url: '/home', icon: 'home-outline' },
-            { label: 'Noticias', url: '/news' },
-            { label: "Detalle" }
-          ]);
-        }
+        this.layoutService.setBreadcrumbs([
+          { label: '', url: '/home', icon: 'home-outline' },
+          { label: 'Noticias', url: '/news' },
+          { label: "Detalle" }
+        ]);
 
         // Si no tenemos la lista lateral cargada, la pedimos
         if (this.newsList.length === 0) {
           this.loadSidebarList();
-          this.isLoading = false;
-        } else {
-          this.isLoading = false;
         }
+        this.isLoading = false;
       },
       error: () => {
         this.isLoading = false;
+        this.showToast('Error de conexión. Intentando cargar modo offline...', 'danger', 'alert-circle-outline');
         if (this.newsList.length === 0) this.loadSidebarList();
       }
     });
+  }
+
+  async showToast(message: string, color: string, icon: string) {
+    const toast = await this.toastCtrl.create({
+      message,
+      duration: 3000,
+      position: 'bottom',
+      color: color,
+      buttons: [{ icon: icon, side: 'start', handler: () => { } }]
+    });
+    toast.present();
   }
 
   private loadSidebarList() {

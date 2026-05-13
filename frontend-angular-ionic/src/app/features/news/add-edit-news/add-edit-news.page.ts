@@ -207,26 +207,33 @@ export class AddEditNewsPage implements OnInit {
     this.isLoading = true;
     this.newsService.getNewsById(this.newsId).subscribe({
       next: (news) => {
-        this.newsData = { ...news };
-        // Asegurar formato yyyy-MM-dd para el input nativo
-        if (this.newsData.date && this.newsData.date.includes('T')) {
-          this.newsData.date = this.newsData.date.split('T')[0];
+        if (news) {
+          // Asignación segura de campos obligatorios para evitar errores de tipado
+          this.newsData = {
+            ...this.newsData, // Mantenemos los valores por defecto
+            ...news           // Sobreescribimos con lo que viene de la API
+          };
+
+          // Asegurar formato yyyy-MM-DD para el input nativo
+          if (this.newsData.date && this.newsData.date.includes('T')) {
+            this.newsData.date = this.newsData.date.split('T')[0];
+          }
+          
+          this.previewImage = news.imageUrl || '';
+
+          // Guardar estado inicial para detección de cambios reales
+          this.initialDataJson = JSON.stringify(this.newsData);
+          this.initialPreviewImage = news.imageUrl || '';
+
+          // Ajustar minDate si la noticia es más antigua que hoy
+          const newsDateOnly = news.date ? news.date.split('T')[0] : '';
+          if (newsDateOnly && newsDateOnly < this.minDate) {
+            this.minDate = newsDateOnly;
+          }
+
+          // Forzar actualización del contador de tags inicial
+          setTimeout(() => this.forceTagCounterUpdate(), 100);
         }
-        this.previewImage = news.imageUrl;
-
-        // Guardar estado inicial para detección de cambios reales
-        this.initialDataJson = JSON.stringify(this.newsData);
-        this.initialPreviewImage = news.imageUrl;
-
-        // Ajustar minDate si la noticia es más antigua que hoy para permitir la edición
-        const newsDateOnly = news.date ? news.date.split('T')[0] : '';
-        if (newsDateOnly && newsDateOnly < this.minDate) {
-          this.minDate = newsDateOnly;
-        }
-
-        // Forzar actualización del contador de tags inicial
-        setTimeout(() => this.forceTagCounterUpdate(), 100);
-
         this.isLoading = false;
       },
       error: (err) => {
@@ -340,27 +347,27 @@ export class AddEditNewsPage implements OnInit {
     this.isPublishing = true;
 
     try {
-      // 1. Manejo de Imagen en Firebase Storage
-      if (this.selectedFile) {
-        // Validación extra de seguridad: Solo admin puede subir a Storage
-        if (!this.authService.isAdmin()) {
-          this.showToast('No tienes permisos para ejecutar esta acción', 'danger');
-          this.isPublishing = false;
-          return;
-        }
+        // 1. Manejo de Imagen en Firebase Storage
+        if (this.selectedFile) {
+          if (!this.authService.isAdmin()) {
+            this.showToast('No tienes permisos para ejecutar esta acción', 'danger');
+            this.isPublishing = false;
+            return;
+          }
+          
+          const oldImageUrl = this.initialPreviewImage; // Guardamos la vieja antes de nada
+          console.log('[PUBLISH] Subiendo nueva imagen...');
+          const newImageUrl = await this.storageService.uploadImage(this.selectedFile, 'news');
 
-        // Si hay una imagen nueva seleccionada para subir
-        console.log('[PUBLISH] Subiendo nueva imagen...');
-        const newImageUrl = await this.storageService.uploadImage(this.selectedFile, 'news');
+          // Borrar la antigua SOLO si era distinta y de Firebase
+          if (this.isEditMode && oldImageUrl && oldImageUrl.includes('firebasestorage') && oldImageUrl !== newImageUrl) {
+            console.log('[PUBLISH] Borrando imagen antigua:', oldImageUrl);
+            await this.storageService.deleteImageByUrl(oldImageUrl);
+          }
 
-        // Si estamos editando y había una imagen previa en Firebase, borrarla
-        if (this.isEditMode && this.initialPreviewImage && this.initialPreviewImage.includes('firebasestorage')) {
-          await this.storageService.deleteImageByUrl(this.initialPreviewImage);
-        }
-
-        this.newsData.imageUrl = newImageUrl;
+          this.newsData.imageUrl = newImageUrl;
       } else if (!this.previewImage && this.initialPreviewImage) {
-        // Si se quitó la imagen que había
+        // ... resto de lógica si se quita la imagen ...
         if (this.initialPreviewImage.includes('firebasestorage')) {
           await this.storageService.deleteImageByUrl(this.initialPreviewImage);
         }

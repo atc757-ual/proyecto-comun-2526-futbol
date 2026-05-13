@@ -11,7 +11,7 @@ export const authGuard = () => {
   const router = inject(Router);
 
   // Comprobación síncrona primero (evita race condition con Firebase)
-  if (auth.currentUser) {
+  if (auth.currentUser || localStorage.getItem('jwt_token')) {
     return true;
   }
 

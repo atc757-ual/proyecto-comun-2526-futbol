@@ -49,6 +49,10 @@ public class XMLDecoder {
             }
         }
         noticia.tags = tagList.toArray(new String[0]);
+        noticia.createdBy = XMLParser.getText(doc, "createdBy");
+        noticia.updatedBy = XMLParser.getText(doc, "updatedBy");
+        noticia.createdAt = XMLParser.getText(doc, "createdAt");
+        noticia.updatedAt = XMLParser.getText(doc, "updatedAt");
 
         return noticia;
     }

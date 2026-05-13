@@ -1,25 +1,13 @@
-# ==========================================
-# Dockerfile para el servidor CORBA (BufferServer)
-# ==========================================
+FROM alpine:3.18
 
-FROM maven:3.9-eclipse-temurin-11 AS builder
+# Instalamos Java y Maven directamente en Alpine
+RUN apk add --no-cache openjdk11 maven
 
 WORKDIR /app
-# Copiamos desde el contexto raíz
 COPY service-corba/ ./service-corba/
 
-# Compilar y extraer dependencias
+# Compilamos
 RUN cd service-corba && mvn clean compile dependency:copy-dependencies -DoutputDirectory=target/dependency
 
-# --- Runtime ---
-FROM eclipse-temurin:11-jre
-
-WORKDIR /app
-
-# Copiar las clases compiladas y las dependencias
-COPY --from=builder /app/service-corba/target/classes/ ./classes/
-COPY --from=builder /app/service-corba/target/dependency/ ./dependency/
-
-# Comando de arranque directo (Sin scripts externos)
-# Usamos el classpath que apunta a classes y a todas las libs en dependency/
-ENTRYPOINT ["java", "-cp", "classes:dependency/*", "com.futbol.server.BufferServer", "-ORBInitialPort", "1050", "-ORBInitialHost", "corba-naming"]
+# Comando de arranque
+ENTRYPOINT ["java", "-cp", "service-corba/target/classes:service-corba/target/dependency/*", "com.futbol.server.BufferServer", "-ORBInitialPort", "1050", "-ORBInitialHost", "corba-naming"]

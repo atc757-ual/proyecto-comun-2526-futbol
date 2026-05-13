@@ -50,7 +50,7 @@
 <div class="row">
   <!-- COLUMNA 8: DETALLE (Primero en HTML -> Izquierda en Desktop) -->
   <div class="col-8 col-sm-12 pr-base px-0-sm">
-    <ion-card class="card-acceso" *ngIf="isAdmin">
+    <ion-card class="card-acceso mb-base" *ngIf="isAdmin">
       <ion-card-content>
         <div class="card-acceso-item" routerLink="/add-news">
           <ion-icon class="fs-28" name="newspaper-outline" color="primary"></ion-icon>
@@ -66,7 +66,61 @@
 
   <!-- COLUMNA 4: LISTADO (Después en HTML -> Derecha en Desktop) -->
   <div class="col-4 col-sm-12 pl-base px-0-sm">
+    <ion-card class="premium-card profile-card animate-fade-in">
+      <ion-card-content>
 
+        <!-- Header del Perfil -->
+        <div class="d-flex fl-align-center gap-s ">
+          <ion-avatar style="width: 60px; height: 60px;">
+            <img [src]="currentUserInfo.avatar" (error)="handleAvatarError($event)" alt="Avatar" />
+          </ion-avatar>
+          <div class="d-flex fl-column ">
+            <div class="f-medium text-neutral-9 fs-16 ">{{ currentUserInfo.name }}</div>
+            <div class=" d-flex fl-align-center text-neutral-7 fs-14 text-ellipsis">
+              <ion-icon name="mail-outline" class="mr-xs"></ion-icon>{{currentUserInfo.email}}
+            </div>
+            <div>
+              <ion-badge [class.bg-primary]="isAdmin" [class.bg-neutral-2]="!isAdmin"
+                class="mt-xs py-xs px-s f-medium fs-12 round-badge">
+                <ion-icon *ngIf="isAdmin" name="shield-checkmark-outline" class="mr-xs"></ion-icon>
+                <ion-icon *ngIf="!isAdmin" name="person-outline" class="mr-xs"></ion-icon>
+                {{ currentUserInfo.role }}
+              </ion-badge>
+            </div>
+          </div>
+        </div>
+        <div class="separator my-s"></div>
+        <!-- Estadísticas Rápidas -->
+        <ion-item lines="none" class="action-item is-blue">
+          <ion-icon slot="start" name="time-outline"></ion-icon>
+          <div>
+            <ion-label>Último acceso</ion-label>
+            <p>{{ currentUserInfo.lastLogin }}</p>
+          </div>
+        </ion-item>
+        <div class="separator my-s"></div>
+        <!-- Botones de Acción -->
+        <ion-item [button]="true" lines="none" detail="true" class="action-item is-green" routerLink="/admin-security">
+          <ion-icon slot="start" name="shield-checkmark-outline"></ion-icon>
+          <div>
+            <ion-label>Seguridad</ion-label>
+            <p>Gestiona los permisos de tus usuarios</p>
+          </div>
+        </ion-item>
+        <div class="separator my-s"></div>
+        <ion-item [button]="!resetCooldown" lines="none" [detail]="!resetCooldown" class="action-item is-blue"
+          [class.is-disabled]="resetCooldown" (click)="sendPasswordReset()">
+          <ion-icon slot="start" *ngIf="resetCooldown " name="time-outline"></ion-icon>
+          <ion-icon slot="start" *ngIf="!resetCooldown " name="key-outline"></ion-icon>
+          <div>
+            <ion-label>{{ resetCooldown ? 'Espera 5 min' : 'Cambiar clave' }}</ion-label>
+            <p>{{ resetCooldown ? 'Por seguridad, debes esperar un poco' : 'Te enviaremos un email con indicaciones' }}
+            </p>
+          </div>
+          <ion-spinner *ngIf="isSendingReset" slot="end" name="crescent" size="small"></ion-spinner>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
   </div>
 
 </div>

@@ -1,29 +1,28 @@
-# ==========================================
-# Dockerfile para el Bridge HTTP-CORBA
-# ==========================================
+FROM alpine:3.18
 
-# 1. Fase de construcción
-FROM maven:3.9-eclipse-temurin-11 AS builder
+# Instalamos Java y Maven
+RUN apk add --no-cache openjdk11 maven wget
 
 WORKDIR /app
-
-# El bridge necesita acceder a service-corba/src/main/idl para compilar (generar Stubs)
 COPY service-corba/ ./service-corba/
 COPY corba-bridge/ ./corba-bridge/
 
-# Compilar y empaquetar el WAR sin ejecutar tests
+# Compilar e instalar el módulo común (Genera los Stubs con los nuevos campos)
+RUN cd service-corba && mvn clean install -DskipTests
+
+# Compilar y empaquetar el WAR del bridge
 RUN cd corba-bridge && mvn clean package -DskipTests
 
-# 2. Fase de ejecución (Runtime en Tomcat)
-FROM tomcat:9.0-jre11-temurin
+# Descargamos e instalamos Tomcat 9 manualmente
+RUN wget https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.82/bin/apache-tomcat-9.0.82.tar.gz && \
+    tar -xzf apache-tomcat-9.0.82.tar.gz && \
+    mv apache-tomcat-9.0.82 /usr/local/tomcat && \
+    rm apache-tomcat-9.0.82.tar.gz
 
-# Limpiar las aplicaciones por defecto de Tomcat
+# Limpiar aplicaciones y copiar nuestro WAR
 RUN rm -rf /usr/local/tomcat/webapps/*
-
-# Copiar nuestro WAR compilado.
-# Lo llamamos "corba-bridge.war" para que esté disponible en la ruta /corba-bridge
-COPY --from=builder /app/corba-bridge/target/corba-bridge.war /usr/local/tomcat/webapps/corba-bridge.war
+RUN cp corba-bridge/target/corba-bridge.war /usr/local/tomcat/webapps/corba-bridge.war
 
 EXPOSE 8080
 
-CMD ["catalina.sh", "run"]
+ENTRYPOINT ["/usr/local/tomcat/bin/catalina.sh", "run"]

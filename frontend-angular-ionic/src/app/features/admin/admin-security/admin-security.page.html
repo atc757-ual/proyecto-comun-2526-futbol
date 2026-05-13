@@ -89,11 +89,13 @@
       <ion-card-content>
         <p class="description mb-base">Como Administrador Maestro, puedes otorgar permisos a otros usuarios.</p>
         <div class="mb-base pos-relative">
-          <ion-input mode="md" type="email" label="Email del nuevo Administrador" label-placement="stacked"
-            fill="outline" placeholder="ejemplo@correo.com" class="futbol-input" [(ngModel)]="targetEmail"
-            [class.is-focused]="emailFocused" (ionFocus)="emailFocused = true" (ionBlur)="emailFocused = false"
-            (ionInput)="onSearchInput($event)">
+          <ion-input #emailModel="ngModel" mode="md" type="email" label="Email del nuevo Administrador"
+            label-placement="stacked" fill="outline" placeholder="ejemplo@correo.com" class="futbol-input"
+            [(ngModel)]="targetEmail" [class.is-focused]="emailFocused" (ionFocus)="emailFocused = true"
+            (ionBlur)="emailFocused = false" (ionInput)="onSearchInput($event)">
             <ion-icon slot="start" name="at-outline" [color]="emailFocused ? 'primary' : 'medium'"></ion-icon>
+            <ion-icon *ngIf="emailModel.valid && emailModel.value" slot="end" name="checkmark-circle-outline"
+              color="primary" class="fs-20"></ion-icon>
           </ion-input>
 
           <!-- LISTA DE SUGERENCIAS -->

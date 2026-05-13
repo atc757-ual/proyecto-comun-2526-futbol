@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './shared/components/main-layout/main-layout.component';
+import { PublicLayoutComponent } from './shared/components/public-layout/public-layout.component';
 import { authGuard, adminGuard, masterGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
@@ -43,6 +44,16 @@ export const routes: Routes = [
   },
   {
     path: '',
+    component: PublicLayoutComponent,
+    children: [
+      {
+        path: 'players-public',
+        loadComponent: () => import('./features/players/players-public/players-public.page').then((m) => m.PlayersPublicPage),
+      }
+    ]
+  },
+  {
+    path: '',
     component: MainLayoutComponent,
     canActivate: [authGuard],
     children: [
@@ -72,11 +83,19 @@ export const routes: Routes = [
       },
       {
         path: 'players',
-        loadComponent: () => import('./features/players/players.page').then((m) => m.PlayersPage),
+        loadComponent: () => import('./features/players/list-players/players.page').then((m) => m.PlayersPage),
       },
       {
         path: 'player-add',
-        loadComponent: () => import('./features/players/add-player/add-player.page').then((m) => m.AddPlayerPage),
+        loadComponent: () => import('./features/players/add-edit-player/add-edit-player.page').then((m) => m.AddEditPlayerPage),
+      },
+      {
+        path: 'player-edit/:id',
+        loadComponent: () => import('./features/players/add-edit-player/add-edit-player.page').then((m) => m.AddEditPlayerPage),
+      },
+      {
+        path: 'player-detail/:id',
+        loadComponent: () => import('./features/players/player-detail/player-detail.page').then((m) => m.PlayerDetailPage),
       },
       {
         path: 'news',
@@ -91,7 +110,13 @@ export const routes: Routes = [
       {
         path: 'ai-team',
         loadComponent: () => import('./features/ai-team/ai-team.page').then((m) => m.AiTeamPage),
+      },
+      {
+        path: 'leagues',
+        loadComponent: () => import('./features/leagues/leagues-list/leagues-list.page').then((m) => m.LeaguesListPage),
       }
     ]
   }
 ];
+
+// Touch for recompilation

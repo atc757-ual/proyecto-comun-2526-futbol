@@ -43,7 +43,18 @@ if (process.env.NODE_ENV !== 'test') {
   app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
   });
+
+  // --- MANEJO DE ERRORES GLOBALES PARA EVITAR CRASHES ---
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('[SERVER-CRITICAL] Unhandled Rejection at:', promise, 'reason:', reason);
+    // No cerramos el proceso, solo lo logueamos para evitar caídas
+  });
+
+  process.on('uncaughtException', (err) => {
+    console.error('[SERVER-CRITICAL] Uncaught Exception thrown:', err);
+    // En producción podrías querer hacer un restart suave, 
+    // pero aquí evitamos que el servidor se detenga.
+  });
 }
 
 module.exports = app;
-

@@ -4,9 +4,10 @@
       <ion-card-content>
         <!-- BARRA DE BÚSQUEDA PREMIUM -->
         <div class="mb-base">
-          <ion-searchbar mode="ios" placeholder="Buscar por título, autor o categoría..." [(ngModel)]="searchTerm"
-            showCancelButton="focus" (ionInput)="applyFilter()" class="custom-searchbar" clearIcon="close-circle"
-            cancel-button-text="Limpiar">
+          <div class="fs-14 text-neutral-9 mb-s f-semibold">Buscar Noticias</div>
+          <ion-searchbar mode="ios" placeholder="Título, editorial o fecha (dd/mm/yyyy)" [(ngModel)]="searchTerm"
+            show-cancel-button="never" cancel-button-icon="close-outline" clear-icon="close-circle-outline"
+            (ionInput)="applyFilter()">
           </ion-searchbar>
         </div>
 
@@ -44,58 +45,54 @@
               <p class="fs-16 fs-sm-14 f-regular mt-base">No hemos encontrado nada que coincida con "</p>
               <p class="mt-base"><strong>{{ searchTerm
                   }}</strong>".</p>
-              <ion-button fill="clear" color="primary" (click)="searchTerm = ''; applyFilter()">
+              <ion-button mode="ios" class="fs-14 f-medium mt-base" fill="clear" shape="round"
+                (click)="searchTerm = ''; applyFilter()">
                 Limpiar búsqueda
               </ion-button>
             </ng-template>
           </div>
 
-          <!-- LISTADO DE NOTICIAS PREMIUM -->
-          <div class="admin-news-card animate-fade-in" *ngFor="let item of pagedNews">
-            <div class="card-image-wrapper">
-              <img [src]="item.imageUrl" />
-              <div class="category-badge">{{ item.category }}</div>
-            </div>
+          <div *ngFor="let item of pagedNews; let isLast = last">
+            <div class="news-admin-item animate-fade-in">
+              <!-- Columna Imagen -->
+              <div class="item-media">
+                <img [src]="item.imageUrl || 'assets/imgs/news-placeholder.png'"
+                  (error)="$any($event.target).src = 'assets/imgs/news-placeholder.png'" class="item-img" alt="Noticia">
+                <div class="item-badge" [class]="item.category | lowercase">{{ item.category }}</div>
+              </div>
 
-            <div class="card-content-wrapper">
-              <div class="card-info-side">
-                <h2 class="card-title">{{ item.title }}</h2>
+              <!-- Columna Info -->
+              <div class="item-info">
+                <h3 class="item-title">{{ item.title }}</h3>
+                <p class="item-summary hide-on-phone">{{ item.summary }}</p>
 
-                <div class="card-meta">
-                  <!-- INFO DE CREACIÓN -->
-                  <div class="meta-row" *ngIf="item.createdBy">
-                    <ion-icon class="hide-on-phone" name="person-circle-outline"></ion-icon>
-                    <span class="meta-label">Creó </span>
-                    <span class="creator-badge">{{ item.createdBy }}</span>
-                    <span class="meta-divider">•</span>
-                    <ion-icon class="hide-on-phone" name="calendar-clear-outline"></ion-icon>
-                    <span class="meta-date">{{ (item.createdAt || item.date) | date:'dd/MM/yy' }}</span>
+                <div class="item-audit-stack">
+                  <!-- Creación (Punto Azul) -->
+                  <div class="audit-group">
+                    <span class="audit-text">{{ item.createdBy }} | {{ (item.createdAt || item.date) | date:'dd/MM/yyyy' }}</span>
                   </div>
-
-                  <!-- INFO DE ACTUALIZACIÓN (Si existe) -->
-                  <div class="meta-row update-info" *ngIf="item.updatedBy">
-                    <ion-icon class="hide-on-phone" name="create-outline"></ion-icon>
-                    <span class="meta-label">Editó </span>
-                    <span class="editor-badge">{{ item.updatedBy }}</span>
-                    <span class="meta-divider">•</span>
-                    <ion-icon class="hide-on-phone" name="calendar-clear-outline"></ion-icon>
-                    <span class="meta-date">{{ item.updatedAt | date:'dd/MM/yy' }}</span>
+                  <!-- Edición (Punto Verde) -->
+                  <div class="audit-group update" *ngIf="item.updatedBy">
+                    <span class="audit-text">{{ item.updatedBy }} | {{ (item.updatedAt || item.date) | date:'dd/MM/yyyy' }}</span>
                   </div>
                 </div>
               </div>
 
-              <div class="card-actions-side">
-                <ion-button mode="ios" fill="" (click)="viewNews(item)" class="text-primary">
+              <!-- Columna Acciones -->
+              <div class="item-actions">
+                <ion-button fill="clear" (click)="viewNews(item)" class="btn-action view" title="Ver">
                   <ion-icon name="eye-outline"></ion-icon>
                 </ion-button>
-                <ion-button mode="ios" fill="" (click)="editNews(item)" class="text-success">
+                <ion-button fill="clear" (click)="editNews(item)" class="btn-action edit" title="Editar">
                   <ion-icon name="create-outline"></ion-icon>
                 </ion-button>
-                <ion-button mode="ios" fill="" (click)="deleteNews(item)" class="text-error">
+                <ion-button fill="clear" (click)="deleteNews(item)" class="btn-action delete" title="Borrar">
                   <ion-icon name="trash-outline"></ion-icon>
                 </ion-button>
               </div>
+
             </div>
+            <div class="separator my-s" *ngIf="!isLast"></div>
           </div>
         </div>
 
@@ -131,10 +128,54 @@
         <ion-card-title class="fs-20 fs-sm-18 f-semibold">Administrador</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <ion-item [button]="true" lines="none" detail="true" class="action-item" routerLink="/add-news">
-          <ion-icon color="primary" aria-hidden="true" class="fs-28" icon="add-circle-outline"></ion-icon>
-          <ion-label class="ml-s f-medium ">Crear noticia</ion-label>
+        <ion-item [button]="true" lines="none" detail="true" class="action-item is-blue" routerLink="/add-news">
+          <ion-icon slot="start" color="primary" name="add-circle-outline"></ion-icon>
+          <div>
+            <ion-label>Crear noticia</ion-label>
+            <p>Crea noticias para el portal</p>
+          </div>
         </ion-item>
+        <div class="separator my-s"></div>
+        <ion-item [button]="true" lines="none" detail="true" class="action-item is-blue mt-base"
+          (click)="downloadNews()">
+          <ion-icon slot="start" color="primary" name="download-outline"></ion-icon>
+          <div>
+            <ion-label>Descargar Noticias</ion-label>
+            <p>Exportar a JSON</p>
+          </div>
+        </ion-item>
+        <div class="separator my-s"></div>
+        <!-- CARGA MASIVA EXPERIENCIA DESPLEGABLE -->
+        <ion-item [button]="true" lines="none" detail="false" class="action-item is-green mt-base"
+          (click)="showBulkPanel = !showBulkPanel">
+          <ion-icon slot="start" color="success" name="cloud-upload-outline"></ion-icon>
+          <div>
+            <ion-label>Carga Masiva</ion-label>
+            <p>Subir archivo JSON/Texto</p>
+          </div>
+          <!-- Icono de desplegable -->
+          <ion-icon slot="end" [name]="showBulkPanel ? 'chevron-up-outline' : 'chevron-down-outline'"
+            class="fs-28 text-success"></ion-icon>
+        </ion-item>
+        <!-- PANEL EXPANDIBLE -->
+        <div class="bulk-upload-panel animate-fade-in" *ngIf="showBulkPanel">
+          <input type="file" #fileInput (change)="onFileSelected($event)" accept=".json,.txt" style="display: none">
+
+          <div class="panel-inner">
+            <div class="file-selection-area" (click)="fileInput.click()">
+              <ion-icon name="document-text-outline" color="medium"></ion-icon>
+              <span *ngIf="!bulkFileName">Seleccionar archivo (.json / .txt)</span>
+              <span *ngIf="bulkFileName" class="text-primary f-semibold">{{ bulkFileName }}</span>
+            </div>
+
+            <ion-button mode="ios" expand="block" class="mt-base confirm-btn"
+              [disabled]="!selectedBulkFile || isUploadingBulk" (click)="confirmBulkUpload()">
+              <ion-spinner name="crescent" *ngIf="isUploadingBulk" slot="start"></ion-spinner>
+              {{ isUploadingBulk ? 'Subiendo...' : 'Confirmar Subida' }}
+            </ion-button>
+          </div>
+        </div>
+
       </ion-card-content>
     </ion-card>
   </div>

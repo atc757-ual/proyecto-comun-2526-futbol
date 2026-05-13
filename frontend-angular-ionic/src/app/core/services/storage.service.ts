@@ -34,25 +34,35 @@ export class StorageService {
    * @param url La URL completa del archivo en storage
    */
   async deleteImageByUrl(url: string): Promise<void> {
+    console.log(`[STORAGE] Intento de borrado para URL: ${url}`);
+    
     if (!url || !url.includes('firebasestorage.googleapis.com')) {
-      console.log('[STORAGE] URL no válida o no pertenece a Firebase Storage');
+      console.warn('[STORAGE] La URL no es de Firebase Storage o está vacía. Saltando borrado.');
       return;
     }
 
     try {
       // Extraer la ruta del archivo de la URL
-      // Las URLs de Firebase Storage tienen el formato: .../o/news%2Ffilename?alt=media...
+      // Formato: .../o/news%2Ffilename?alt=media...
       const decodedUrl = decodeURIComponent(url);
       const startIndex = decodedUrl.indexOf('/o/') + 3;
       const endIndex = decodedUrl.indexOf('?');
+      
+      if (startIndex === 2 || endIndex === -1) {
+        console.error('[STORAGE] No se pudo extraer la ruta del archivo de la URL:', decodedUrl);
+        return;
+      }
+
       const filePath = decodedUrl.substring(startIndex, endIndex);
+      console.log(`[STORAGE] Ruta extraída: "${filePath}". Solicitando borrado a Firebase...`);
 
       const storageRef = ref(this.storage, filePath);
       await deleteObject(storageRef);
-      console.log(`[STORAGE] Imagen eliminada con éxito: ${filePath}`);
+      
+      console.log(`[STORAGE] ✅ Imagen eliminada con éxito del servidor: ${filePath}`);
     } catch (error) {
-      console.error('[STORAGE] Error al eliminar imagen:', error);
-      // No lanzamos error para no romper el flujo principal si la imagen ya no existía
+      console.error('[STORAGE] ❌ Error crítico al eliminar imagen de Firebase:', error);
+      // No lanzamos error para no romper el flujo de la app
     }
   }
 }

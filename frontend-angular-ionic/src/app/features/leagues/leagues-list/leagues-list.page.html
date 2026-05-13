@@ -1,0 +1,172 @@
+<div class="row leagues-drilldown-container animate-fade-in">
+
+  <!-- COLUMNA PANEL DE CONTROL (4): Buscador Inteligente -->
+  <div class="col-4 col-sm-12 pl-base pl-0-sm mb-base-sm order-sm-1 order-2">
+    <ion-card class="sticky-card leagues-control-panel animate-fade-in">
+      <ion-card-content>
+        <div class="panel-header mb-base">
+          <h3 class="f-bold text-neutral-9 fs-18 m-0">Scouting Pro</h3>
+          <p class="text-neutral-5 fs-12">Filtra por jugador, equipo o competición</p>
+        </div>
+
+        <!-- Selector de Modo de Búsqueda -->
+        <div class="search-mode-selector mb-base">
+          <ion-segment [(ngModel)]="searchType" mode="ios" (ionChange)="clearAll()">
+            <ion-segment-button value="player">
+              <ion-label>Jugador</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="team">
+              <ion-label>Equipo</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="league">
+              <ion-label>Liga</ion-label>
+            </ion-segment-button>
+          </ion-segment>
+        </div>
+
+        <!-- Buscador Dinámico -->
+        <div class="custom-searchbar mb-s">
+          <ion-searchbar mode="ios" 
+            [placeholder]="searchType === 'player' ? 'Nombre del crack...' : (searchType === 'team' ? 'Nombre del club...' : 'Nombre de la liga...')" 
+            [(ngModel)]="apiSearchQuery"
+            (ionInput)="onSearchInput()"
+            (ionClear)="clearAll()"
+            class="small-searchbar">
+          </ion-searchbar>
+        </div>
+
+        <!-- DROPDOWN DE LIGAS -->
+        <div class="autocomplete-dropdown" *ngIf="searchType === 'league' && leagueResults.length > 0 && !selectedLeague">
+          <ion-list lines="none" class="compact-dropdown-list">
+            <ion-item *ngFor="let league of leagueResults" (click)="selectLeague(league)" button detail="false">
+              <ion-icon name="football-outline" slot="start" color="primary"></ion-icon>
+              <ion-label>
+                <h2 class="f-semibold fs-14">{{ league.strLeague }}</h2>
+                <p class="fs-12">{{ league.strCountry }}</p>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </div>
+
+        <!-- DROPDOWN DE EQUIPOS -->
+        <div class="autocomplete-dropdown" *ngIf="(searchType === 'team' || (searchType === 'league' && selectedLeague)) && teamResults.length > 0 && !selectedTeam">
+          <div class="dropdown-header px-base py-xs bg-neutral-1 d-flex fl-align-center gap-s" *ngIf="selectedLeague">
+            <ion-icon name="chevron-down-outline" class="fs-12"></ion-icon>
+            <span class="fs-11 f-bold text-neutral-6 uppercase">Equipos: {{ selectedLeague.strLeague }}</span>
+          </div>
+          <ion-list lines="none" class="compact-dropdown-list">
+            <ion-item *ngFor="let team of teamResults" (click)="selectTeam(team)" button detail="false">
+              <ion-thumbnail slot="start" class="mini-badge">
+                <img [src]="team.strTeamBadge" (error)="handleImageError($event)">
+              </ion-thumbnail>
+              <ion-label>
+                <h2 class="f-semibold fs-14">{{ team.strTeam }}</h2>
+                <p class="fs-12">{{ team.strLeague }}</p>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </div>
+
+        <!-- Chips de Filtro -->
+        <div class="active-filters-row d-flex gap-s mt-xs mb-base" *ngIf="selectedLeague || selectedTeam">
+          <ion-chip color="primary" outline *ngIf="selectedLeague" (click)="selectedLeague = null; teamResults = []; players = []">
+            <ion-label>{{ selectedLeague.strLeague }}</ion-label>
+            <ion-icon name="close-circle"></ion-icon>
+          </ion-chip>
+          <ion-chip color="primary" outline *ngIf="selectedTeam" (click)="selectedTeam = null; players = []">
+            <ion-label>{{ selectedTeam.strTeam }}</ion-label>
+            <ion-icon name="close-circle"></ion-icon>
+          </ion-chip>
+        </div>
+
+        <!-- Acciones Masivas -->
+        <div class="import-actions mt-base" *ngIf="selectedPlayerIds.size > 0">
+          <div class="separator mb-base"></div>
+          <ion-button expand="block" mode="ios" fill="solid" color="primary" shape="round" 
+            [disabled]="isImporting"
+            (click)="importPlayers()">
+            <ion-spinner name="crescent" *ngIf="isImporting" class="mr-s"></ion-spinner>
+            <ion-icon name="person-add-outline" slot="start" *ngIf="!isImporting"></ion-icon>
+            Fichar ({{ selectedPlayerIds.size }})
+          </ion-button>
+          <ion-button expand="block" mode="ios" fill="clear" color="medium" size="small" (click)="clearSelection()">
+            Limpiar selección
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+  
+  <!-- COLUMNA ÁREA DE TRABAJO (8): Resultados de Jugadores -->
+  <div class="col-8 col-sm-12 pr-base pr-0-sm order-sm-2 order-1">
+    
+    <!-- Loader Central -->
+    <div *ngIf="isLoading" class="text-center py-xxl">
+      <ion-spinner name="crescent" color="primary" class="fs-40"></ion-spinner>
+      <p class="text-neutral-5 mt-base">Analizando mercado...</p>
+    </div>
+
+    <!-- Estado vacío -->
+    <div *ngIf="players.length === 0 && !isLoading" class="empty-selection-state animate-fade-in">
+      <div class="empty-content text-center py-xxl">
+        <div class="icon-circle mb-base">
+          <ion-icon name="search-outline" class="fs-60 text-primary"></ion-icon>
+        </div>
+        <h2 class="f-bold text-neutral-8">Buscador Scouting</h2>
+        <p class="text-neutral-5 px-xxl">Usa el buscador de la izquierda para explorar el mundo del fútbol</p>
+      </div>
+    </div>
+
+    <!-- REJILLA DE JUGADORES -->
+    <div *ngIf="players.length > 0 && !isLoading" class="players-selection-area animate-fade-in">
+      <div class="section-title mb-base d-flex fl-justify-between fl-align-center">
+        <div>
+          <h3 class="f-bold text-neutral-9 fs-18 m-0">{{ selectedTeam?.strTeam || 'Resultados de búsqueda' }}</h3>
+          <p class="text-neutral-5 fs-12" *ngIf="selectedTeam">{{ selectedTeam.strLeague }}</p>
+        </div>
+        <div class="d-flex gap-s">
+          <ion-button fill="outline" size="small" mode="ios" (click)="selectAll()">
+            <ion-icon [name]="selectedPlayerIds.size === players.length ? 'close-circle-outline' : 'checkmark-done-outline'" slot="start"></ion-icon>
+            {{ selectedPlayerIds.size === players.length ? 'Desmarcar' : 'Elegir Todo' }}
+          </ion-button>
+        </div>
+      </div>
+
+      <div class="minimal-list-container mt-base">
+        <div *ngFor="let player of players" 
+             class="minimal-result-item" 
+             [class.selected]="selectedPlayerIds.has(player.idPlayer)"
+             [class.already-in-staff]="isAlreadyAdded(player.strPlayer)"
+             (click)="!isAlreadyAdded(player.strPlayer) && togglePlayer(player.idPlayer)">
+          
+          <div class="item-content-wrapper">
+            <ion-avatar class="mini-avatar">
+              <img [src]="player.strCutout || player.strThumb || 'assets/img/player-placeholder.png'" (error)="handleImageError($event)">
+            </ion-avatar>
+            
+            <div class="player-info-main">
+              <h4 class="f-bold fs-15 text-neutral-9 mb-0 text-ellipsis">{{ player.strPlayer }}</h4>
+              <div class="d-flex fl-align-center gap-xs">
+                <span class="pos-tag">{{ player.strPosition || 'N/A' }}</span>
+                <span class="text-neutral-3">|</span>
+                <span class="team-tag text-ellipsis">{{ player.strTeam }}</span>
+              </div>
+            </div>
+
+            <div class="item-check-container">
+              <!-- Mostrar badge si ya está en staff -->
+              <div *ngIf="isAlreadyAdded(player.strPlayer)" class="staff-alert-wrapper">
+                <ion-badge color="danger" mode="ios" class="fs-9">YA EN STAFF</ion-badge>
+              </div>
+              
+              <!-- Mostrar checkbox solo si NO está en staff -->
+              <ion-checkbox *ngIf="!isAlreadyAdded(player.strPlayer)" 
+                [checked]="selectedPlayerIds.has(player.idPlayer)" 
+                mode="md" style="pointer-events: none;"></ion-checkbox>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

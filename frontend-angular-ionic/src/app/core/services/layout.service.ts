@@ -34,6 +34,18 @@ export class LayoutService {
   authSubtitle = this._authSubtitle.asReadonly();
   isLogin = this._isLogin.asReadonly();
 
+  // Signals para IA (Global Thinking Overlay)
+  private _aiLoading = signal<boolean>(false);
+  private _aiThinkingText = signal<string>('');
+
+  aiLoading = this._aiLoading.asReadonly();
+  aiThinkingText = this._aiThinkingText.asReadonly();
+
+  setAILoading(loading: boolean, text: string = '') {
+    this._aiLoading.set(loading);
+    this._aiThinkingText.set(text);
+  }
+
   /**
    * Configura el Header de MainLayout
    */

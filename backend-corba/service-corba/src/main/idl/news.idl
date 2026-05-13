@@ -13,7 +13,11 @@ module BufferApp {
         TagList tags;     
         string date;      
         boolean isActive;
-        boolean isFeatured; // Nuevo campo para noticias destacadas
+        boolean isFeatured;
+        string createdBy;
+        string updatedBy;
+        string createdAt; 
+        string updatedAt;
     };
 
     typedef sequence<NewsItem> NewsList;
@@ -21,6 +25,7 @@ module BufferApp {
     interface NewsService {
         // Métodos de Administración
         void addNews(in NewsItem noticia);
+        void bulkAddNews(in NewsList noticias); // Nuevo método para carga masiva
         boolean updateNews(in NewsItem noticia);
         boolean deleteNews(in string id);
         NewsList getAllNews();

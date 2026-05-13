@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   IonItem, IonLabel, IonThumbnail,
-  IonIcon, IonButton, IonSkeletonText, IonSearchbar,
+  IonIcon, IonButton, IonSkeletonText, IonSearchbar, IonSpinner,
   ToastController, IonCardTitle,
   NavController, IonCard, IonCardContent, ModalController, IonCardHeader
 } from '@ionic/angular/standalone';
@@ -12,8 +12,9 @@ import {
   createOutline, trashOutline, eyeOutline,
   newspaperOutline, alertCircleOutline, searchOutline,
   chevronBackOutline, chevronForwardOutline, closeCircleOutline,
-  checkmarkCircleOutline, calendarClearOutline, addCircleOutline,
-  closeCircle
+  checkmarkCircleOutline, addCircleOutline,
+  cloudUploadOutline, chevronDownOutline, chevronUpOutline,
+  documentTextOutline, downloadOutline
 } from 'ionicons/icons';
 import { NewsService, NewsItem } from '../../../core/services/news.service';
 import { StorageService } from '../../../core/services/storage.service';
@@ -31,7 +32,7 @@ import { RouterModule } from '@angular/router';
     CommonModule, FormsModule, RouterModule,
     IonItem,
     IonLabel, IonThumbnail, IonIcon, IonButton,
-    IonSkeletonText, IonSearchbar,
+    IonSkeletonText, IonSearchbar, IonSpinner,
     IonCard, IonCardContent, IonCardHeader, IonCardTitle
   ]
 })
@@ -46,6 +47,12 @@ export class ManageNewsPage implements OnInit {
   itemsPerPage = 5;
   totalPages = 1;
   pagedNews: NewsItem[] = [];
+  
+  // Carga Masiva
+  showBulkPanel = false;
+  isUploadingBulk = false;
+  selectedBulkFile: File | null = null;
+  bulkFileName = '';
 
   private storageService = inject(StorageService);
   private authService = inject(AuthService);
@@ -61,8 +68,9 @@ export class ManageNewsPage implements OnInit {
       createOutline, trashOutline, eyeOutline,
       newspaperOutline, alertCircleOutline, searchOutline,
       chevronBackOutline, chevronForwardOutline, closeCircleOutline,
-      checkmarkCircleOutline, calendarClearOutline, addCircleOutline,
-      closeCircle
+      checkmarkCircleOutline, addCircleOutline,
+      cloudUploadOutline, chevronDownOutline, chevronUpOutline,
+      documentTextOutline, downloadOutline
     });
     this.isAdmin = this.authService.isAdmin();
   }
@@ -186,6 +194,7 @@ export class ManageNewsPage implements OnInit {
     });
   }
 
+
   editNews(item: NewsItem) {
     this.navCtrl.navigateForward(['/edit-news', item.id]);
   }
@@ -194,14 +203,81 @@ export class ManageNewsPage implements OnInit {
     this.navCtrl.navigateForward(['/news', item.id]);
   }
 
-  async showToast(message: string, color: string, icon: string) {
+  /**
+   * Maneja la selección del archivo (Pre-carga)
+   */
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedBulkFile = file;
+      this.bulkFileName = file.name;
+    }
+  }
+
+  /**
+   * Ejecuta la subida real tras confirmar
+   */
+  confirmBulkUpload() {
+    if (!this.selectedBulkFile) return;
+
+    this.isUploadingBulk = true;
+    const reader = new FileReader();
+    
+    reader.onload = (e: any) => {
+      try {
+        const json = JSON.parse(e.target.result);
+        this.newsService.bulkAddNews(json).subscribe({
+          next: () => {
+            this.showToast(`¡Éxito! Noticias cargadas correctamente.`, 'success', 'checkmark-circle-outline');
+            this.isUploadingBulk = false;
+            this.showBulkPanel = false; // Cerrar al terminar
+            this.selectedBulkFile = null;
+            this.bulkFileName = '';
+            this.loadNews();
+          },
+          error: () => {
+            this.isUploadingBulk = false;
+            this.showToast('Error en el servidor al procesar la carga masiva', 'danger', 'alert-circle-outline');
+          }
+        });
+      } catch (err) {
+        this.isUploadingBulk = false;
+        this.showToast('El archivo no tiene un formato JSON válido', 'danger', 'close-circle-outline');
+      }
+    };
+    
+    reader.readAsText(this.selectedBulkFile);
+  }
+
+  /**
+   * Exporta el listado de noticias actual a un archivo JSON
+   */
+  downloadNews() {
+    if (this.news.length === 0) {
+      this.showToast('No hay noticias para descargar', 'warning', 'alert-circle-outline');
+      return;
+    }
+
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.news, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "noticias_export.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+    
+    this.showToast('Exportación completada', 'success', 'checkmark-circle-outline');
+  }
+
+  async showToast(message: string, type: 'success' | 'danger' | 'warning' | 'info', icon: string) {
     const toast = await this.toastCtrl.create({
       message,
-      duration: 3000,
-      position: 'bottom',
-      color: color,
-      cssClass: 'premium-toast',
-      buttons: [{ icon: icon, side: 'start', handler: () => { } }]
+      duration: 5000,
+      position: 'top',
+      cssClass: `toast-${type === 'danger' ? 'error' : type}`,
+      icon: icon,
+      mode: 'ios',
+      buttons: [{ role: 'cancel', icon: 'close-outline' }]
     });
     toast.present();
   }

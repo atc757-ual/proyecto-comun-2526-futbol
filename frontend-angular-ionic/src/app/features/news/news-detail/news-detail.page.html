@@ -76,23 +76,23 @@
       </ion-card-header>
       <ion-card-content>
         <ion-item [button]="true" lines="none" detail="true" class="action-item mb-s" routerLink="/add-news">
-          <ion-icon color="primary" aria-hidden="true" class="fs-28" name="add-circle-outline"></ion-icon>
-          <ion-label class="ml-s f-medium ">Crear noticia</ion-label>
+          <ion-icon slot="start" color="primary" aria-hidden="true" class="fs-28" name="add-circle-outline"></ion-icon>
+          <ion-label>Crear noticia</ion-label>
         </ion-item>
 
         <div *ngIf="selectedNew" class="separator my-s"></div>
 
         <ion-item *ngIf="selectedNew" [button]="true" lines="none" detail="true" class="action-item mb-s"
           (click)="editNews()">
-          <ion-icon color="primary" aria-hidden="true" class="fs-28" name="create-outline"></ion-icon>
-          <ion-label class="ml-s f-medium ">Editar noticia</ion-label>
+          <ion-icon slot="start" color="primary" aria-hidden="true" class="fs-28" name="create-outline"></ion-icon>
+          <ion-label>Editar noticia</ion-label>
         </ion-item>
 
         <div *ngIf="selectedNew" class="separator my-s"></div>
 
         <ion-item *ngIf="selectedNew" [button]="true" lines="none" detail="true" class="action-item"
           (click)="confirmDelete()">
-          <ion-icon color="primary" aria-hidden="true" class="fs-28" name="trash-outline"></ion-icon>
+          <ion-icon slot="start" color="primary" aria-hidden="true" class="fs-28" name="trash-outline"></ion-icon>
           <ion-label class="ml-s f-medium">Eliminar noticia</ion-label>
         </ion-item>
       </ion-card-content>

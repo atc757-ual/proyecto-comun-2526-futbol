@@ -261,3 +261,12 @@ ion-card.card-acceso {
     }
   }
 }
+
+.action-item {
+  &.is-disabled {
+    opacity: 0.6;
+    pointer-events: none;
+    filter: grayscale(0.5);
+    cursor: not-allowed;
+  }
+}

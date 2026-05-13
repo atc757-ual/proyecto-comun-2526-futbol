@@ -1,0 +1,188 @@
+<div class="main-container animate-fade-in">
+  <div class="row">
+    <!-- COLUMNA PRINCIPAL (8) -->
+    <div class="col-8 col-sm-12 px-0-sm">
+
+      <ion-card class="main-content-card mb-base">
+        <ion-card-content>
+          <!-- BUSCADOR ORIGINAL -->
+          <ion-label class="pb-base text-neutral-9 f-semibold">Búsqueda personalizada</ion-label>
+          <div class="mt-s mb-base">
+
+            <ion-searchbar mode="ios" placeholder="Nombre, equipo/liga, pais o fecha de creación (dd/mm/yyyy)"
+              [(ngModel)]="searchTerm" show-cancel-button="never" cancel-button-icon="close-outline" [debounce]="300"
+              clear-icon="close-circle-outline" (ionInput)="onSearchChange($event)">
+            </ion-searchbar>
+          </div>
+
+          <!-- GRID DE JUGADORES -->
+          <div class="players-container">
+            <div *ngIf="isLoading()" class="loader-container">
+              <ion-spinner name="crescent" color="primary"></ion-spinner>
+              <p class="mt-s text-neutral-5 text-center">Cargando...</p>
+            </div>
+
+            <div *ngIf="!isLoading()">
+              <ion-label class="pb-base text-neutral-9 f-semibold">Mis jugadores</ion-label>
+              <div *ngIf="pagedPlayers().length > 0">
+                <div class="players-grid">
+
+                  <!-- VERSIÓN DESKTOP: CARDS -->
+                  <ng-container *ngFor="let player of pagedPlayers(); let last = last">
+                    <ion-card class="player-premium-card hide-on-phone animate-fade-in">
+                      <div class="card-image-container">
+                        <img [src]="player.image_url" (error)="handleImageError($event)" />
+                        <div class="card-overlay"></div>
+                        <div class="position-badge">{{ player.position || 'N/A' }}</div>
+
+                        <!-- Acciones Flotantes (Blur + Iconos Blancos) -->
+                        <div class="admin-actions-floating" *ngIf="isAdmin" (click)="$event.stopPropagation()">
+                          <button class="action-fab view" [routerLink]="['/player-detail', player._id]">
+                            <ion-icon name="eye-outline"></ion-icon>
+                          </button>
+                          <button class="action-fab edit" [routerLink]="['/player-edit', player._id]">
+                            <ion-icon name="create-outline"></ion-icon>
+                          </button>
+                          <button class="action-fab delete" (click)="deletePlayer(player)">
+                            <ion-icon name="trash-outline"></ion-icon>
+                          </button>
+                        </div>
+                      </div>
+
+                      <ion-card-content class="ps">
+                        <div class="player-main-info">
+                          <h2 class="f-bold text-neutral-9 fs-15 mb-xs text-ellipsis">{{ player.name }}</h2>
+                          <div class="d-flex fl-align-center gap-xs mb-s">
+                            <!-- PAÍS EN GRIS NEUTRAL-7 -->
+                            <span class="f-semibold text-neutral-7 fs-11 uppercase letter-spacing-1">{{
+                              player.nationality }}</span>
+                          </div>
+                          <div class="team-league-badge">
+                            <ion-icon name="shield-outline"></ion-icon>
+                            <span class="text-ellipsis">{{ player.team }}</span>
+                          </div>
+                        </div>
+                      </ion-card-content>
+                    </ion-card>
+
+                    <!-- VERSIÓN MÓVIL -->
+                    <ion-item class="player-mobile-item hide-on-desktop animate-fade-in" lines="none" [button]="false">
+                      <ion-thumbnail slot="start" class="mobile-thumb">
+                        <img [src]="player.image_url" (error)="handleImageError($event)" />
+                        <div class="mobile-pos-badge">{{ player.position || 'N/A' }}</div>
+                      </ion-thumbnail>
+
+                      <ion-label class="mobile-label">
+                        <div class="d-flex fl-align-center gap-xs">
+                          <h2 class="f-semibold text-neutral-9 fs-14 m-0 text-ellipsis">{{ player.name }}</h2>
+                          <span class="text-neutral-3">|</span>
+                          <div class="d-flex fl-align-center gap-xs">
+                            <ion-icon name="shield-outline" color="primary" class="fs-12"></ion-icon>
+                            <span class="fs-12 text-neutral-7 f-medium">{{ player.team }}</span>
+                          </div>
+                        </div>
+
+                        <div class="d-flex fl-align-center gap-s">
+                          <span class="fs-12 text-neutral-7 f">{{ player.nationality }}</span>
+                          <div class="mobile-item-actions ml-auto" (click)="$event.stopPropagation()">
+                            <ion-button fill="clear" [routerLink]="['/player-detail', player._id]" class="view-btn">
+                              <ion-icon name="eye-outline" slot="icon-only"></ion-icon>
+                            </ion-button>
+                            <ion-button fill="clear" [routerLink]="['/player-edit', player._id]" class="edit-btn">
+                              <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+                            </ion-button>
+                            <ion-button fill="clear" (click)="deletePlayer(player)" class="delete-btn">
+                              <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+                            </ion-button>
+                          </div>
+                        </div>
+                      </ion-label>
+                    </ion-item>
+                    <div class="separator hide-on-desktop" *ngIf="!last"></div>
+                  </ng-container>
+                </div>
+              </div>
+
+              <!-- Empty State -->
+              <div *ngIf="pagedPlayers().length === 0" class="empty-card animate-fade-in">
+                <div class="empty-icon-box">
+                  <ion-icon name="search-outline"></ion-icon>
+                </div>
+                <h3 class="f-semibold text-neutral-9 fs-18">No hay jugadores</h3>
+                <p class="text-neutral-6">No se encontraron resultados para "{{ searchTerm() }}"</p>
+                <ion-button mode="ios" fill="clear" color="primary" (click)="clearFilters()" class="mt-s fs-14">
+                  Limpiar búsqueda
+                </ion-button>
+              </div>
+              <div class="separator my-base"></div>
+              <!-- PAGINACIÓN ESTILO NOTICIAS -->
+              <div class="news-pagination-container animate-fade-in" *ngIf="totalPages() > 1">
+                <ion-button mode="ios" fill="clear" color="primary" (click)="prevPage()"
+                  [disabled]="currentPage() === 1" class="nav-btn">
+                  <ion-icon name="chevron-back-outline" slot="start"></ion-icon>
+                  <span>Anterior</span>
+                </ion-button>
+
+                <div class="page-indicators">
+                  <ion-button mode="ios" *ngFor="let page of getPages()"
+                    [fill]="currentPage() === page ? 'solid' : 'clear'"
+                    [color]="currentPage() === page ? 'primary' : 'dark'" class="page-btn"
+                    [class.active]="currentPage() === page" (click)="goToPage(page)">
+                    {{ page }}
+                  </ion-button>
+                </div>
+
+                <ion-button mode="ios" fill="clear" color="primary" (click)="nextPage()"
+                  [disabled]="currentPage() === totalPages()" class="nav-btn">
+                  <span>Siguiente</span>
+                  <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+                </ion-button>
+              </div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- COLUMNA LATERAL (4) -->
+    <div class="col-4 col-sm-12 pl-base px-0-sm mb-base">
+      <ion-card class="mb-base" *ngIf="isAdmin">
+        <ion-card-header>
+          <ion-card-title class="fs-18 text-neutral-9 f-semibold">Gestión de jugadores</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-item [button]="true" lines="none" detail="true" class="action-item is-blue" routerLink="/player-add">
+            <ion-icon slot="start" color="primary" name="person-add-outline"></ion-icon>
+            <div>
+              <ion-label>Crear nuevo jugador</ion-label>
+              <p>Registra a tus jugadores</p>
+            </div>
+          </ion-item>
+          <div class="separator my-s"></div>
+          <ion-item lines="none" class="action-item is-green" *ngIf="totalPlayersCount() >= 11">
+            <ion-icon slot="start" name="happy-outline"></ion-icon>
+            <div>
+              <h2>¡Enhorabuena!</h2>
+              <p>Tienes {{ totalPlayersCount() }} jugadores registrados</p>
+            </div>
+          </ion-item>
+          <ion-item lines="none" class="action-item is-blue"
+            *ngIf="totalPlayersCount() > 0 && totalPlayersCount() < 11">
+            <ion-icon slot="start" name="thumbs-up-outline"></ion-icon>
+            <div>
+              <h2>¡A por ellos!</h2>
+              <p>¡Sigue así, continua registrando jugadores para completar tu plantilla!</p>
+            </div>
+          </ion-item>
+          <ion-item lines="none" class="action-item is-red" *ngIf="totalPlayersCount() === 0">
+            <ion-icon slot="start" name="sad-outline"></ion-icon>
+            <div>
+              <h2>¡Vamos!</h2>
+              <p>Empieza por registrar jugadores para completar tu plantilla</p>
+            </div>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+</div>

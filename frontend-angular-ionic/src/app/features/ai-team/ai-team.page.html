@@ -1,0 +1,195 @@
+<div class="row animate-fade-in">
+  <!-- COLUMNA PRINCIPAL (8) - ANÁLISIS IA -->
+  <div class="col-8 col-sm-12 pr-base px-0-sm">
+    <!-- Info Card de IA -->
+    <ion-card>
+      <ion-card-content *ngIf="!analysisData">
+        <div class="f-bold fs-24 text-neutral-9 mb-base text-center">¡Hola, soy Football AI!</div>
+        <div class="ai-icon-container text-center my-m">
+          <!-- Botón con efecto de pulso -->
+          <div class="pulse-wrapper">
+            <div class="pulse-ring"></div>
+            <div class="pulse-ring delay-1"></div>
+            <div class="pulse-ring delay-2"></div>
+            <ion-button fill="clear" class="pulse-main-btn">
+              <ion-icon name="sparkles-outline" class="fs-48 text-primary"></ion-icon>
+            </ion-button>
+          </div>
+        </div>
+        <div class="text-center my-base">
+          <!-- Texto explicativo -->
+          <p class="text-neutral-7 fs-16 ">
+            Analizaré los jugadores de tu plantilla para crear el <strong>Once Ideal</strong> y darte consejos
+            tácticos.
+          </p>
+
+          <!-- Estado: Sin jugadores -->
+          <div *ngIf="!isLoading && !hasPlayers" class="warning-box animate-fade-in">
+            <div class="d-flex fl-align-center gap-s bg-warning-light p-base border-radius-soft">
+              <ion-icon name="alert-circle-outline" class="fs-24 text-warning"></ion-icon>
+              <p class="text-warning-dark f-medium fs-14 m-0">
+                Para que la IA funcione correctamente, debes tener jugadores cargados en tu sistema. :)
+              </p>
+            </div>
+          </div>
+        </div>
+        <!-- Botón de acción -->
+        <div class="col-6 col-sm-12 mx-auto">
+          <ion-button *ngIf="hasPlayers" (click)="generateTeam()" [disabled]="isGenerating" expand="block" shape="round"
+            mode="ios" color="primary" class="f-semibold futbol-btn-primary py-s h-auto">
+            <ion-icon name="sparkles-outline" slot="start"></ion-icon>
+            <ion-label class="fs-16 pl-s">Obtener mi equipo ideal</ion-label>
+          </ion-button>
+        </div>
+
+        <!-- Pantalla de carga Premium -->
+        <div *ngIf="isLoading" class="ai-loading-container animate-fade-in">
+          <div class="ai-loading-box">
+            <div class="spinner-wrapper">
+              <ion-spinner name="crescent" color="primary"></ion-spinner>
+            </div>
+            <h3 class="text-primary f-bold mt-base mb-xs animate-pulse">Analizando tu plantilla...</h3>
+            <p class="text-neutral-5 fs-12 m-0">Nuestra IA de élite está diseñando tu táctica ideal</p>
+          </div>
+        </div>
+
+      </ion-card-content>
+
+      <div *ngIf="analysisData">
+        <div class="star-player-card animate-pulse-slow">
+          <div class="star-badge">
+            <ion-icon name="star" color="warning"></ion-icon>
+            <span>ESTRELLA DE LA PLANTILLA</span>
+          </div>
+          <div
+            class="star-content p-base bg-primary text-white border-radius-medium shadow-m d-flex fl-align-center gap-base">
+            <ion-avatar *ngIf="analysisData.starPlayerImage" class="star-avatar">
+              <img [src]="analysisData.starPlayerImage" [alt]="analysisData.starPlayer" />
+            </ion-avatar>
+            <div class="star-info">
+              <h2 class="f-bold fs-24 m-0">{{ analysisData.starPlayer }}</h2>
+              <p class="fs-13 opacity-80 m-0">Líder indiscutible de la plantilla</p>
+            </div>
+          </div>
+        </div>
+        <ion-card-content>
+          <!-- Análisis General -->
+          <div>
+            <h3 class="f-bold fs-18 mb-base text-neutral-9 ">Análisis del Plantel</h3>
+            <div class="text-neutral-8 fs-14 lh-base">
+              {{ analysisData.analysis }}
+            </div>
+          </div>
+          <div class="separator my-base"></div>
+          <!-- Pizarra Táctica (Estadio) -->
+          <div class="d-flex gap-base fl-column-sm">
+            <div class="col-7 col-sm-12">
+              <h3 class="f-bold fs-18 mb-base text-neutral-9">Pizarra Táctica ({{ analysisData.formation }})
+              </h3>
+              <div class="football-pitch-container mb-base animate-fade-in">
+                <div class="football-pitch">
+                  <!-- Área de ataque (Delanteros) -->
+                  <div class="pitch-zone zone-forwards">
+                    <div *ngFor="let p of getPlayersByZone('DL')" class="player-marker">
+                      <div class="player-shirt dl">DL</div>
+                      <span class="player-name">{{ p.name }}</span>
+                    </div>
+                  </div>
+                  <!-- Área de creación (Mediocampo) -->
+                  <div class="pitch-zone zone-midfield">
+                    <div *ngFor="let p of getPlayersByZone('MC')" class="player-marker">
+                      <div class="player-shirt mc">MC</div>
+                      <span class="player-name">{{ p.name }}</span>
+                    </div>
+                  </div>
+                  <!-- Área defensiva (Defensas) -->
+                  <div class="pitch-zone zone-defense">
+                    <div *ngFor="let p of getPlayersByZone('DF')" class="player-marker">
+                      <div class="player-shirt df">DF</div>
+                      <span class="player-name">{{ p.name }}</span>
+                    </div>
+                  </div>
+                  <!-- Portería -->
+                  <div class="pitch-zone zone-goalkeeper">
+                    <div *ngFor="let p of getPlayersByZone('PO')" class="player-marker">
+                      <div class="player-shirt po">PO</div>
+                      <span class="player-name">{{ p.name }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-5 col-sm-12">
+              <!-- Once Ideal (Lista Detallada) -->
+              <h3 class="f-bold fs-18 mb-base text-neutral-9 ">Once Ideal Sugerido</h3>
+              <ng-container *ngFor="let p of analysisData.idealEleven">
+                <ion-item class="ai-player-item py-xs">
+                  <ion-avatar slot="start" class="mr-s" *ngIf="p.image_url">
+                    <img [src]="p.image_url" [alt]="p.name" />
+                  </ion-avatar>
+                  <ion-icon *ngIf="!p.image_url" slot="start" name="person-circle-outline" color="primary"
+                    class="fs-32"></ion-icon>
+                  <ion-label>
+                    <h3 class="f-bold fs-16">{{ p.name }}</h3>
+                    <p class="fs-12 text-neutral-6">{{ p.role }}</p>
+                  </ion-label>
+                  <ion-badge slot="end" class="bg-primary px-s py-xs" mode="ios">{{ p.position }}</ion-badge>
+                </ion-item>
+              </ng-container>
+            </div>
+          </div>
+
+          <div class="separator my-base"></div>
+
+          <!-- Justificación Táctica -->
+          <h3 class="f-bold fs-18 mb-base text-neutral-9 ">Estrategia</h3>
+          <div>
+            <p class="text-neutral-8 fs-14">
+              "{{ analysisData.justification }}"
+            </p>
+          </div>
+          <div class="separator my-base"></div>
+          <!-- Recomendaciones -->
+          <h3 class="f-bold fs-18 mb-base text-neutral-9 ">Consejos Tácticos</h3>
+          <div class="row gap-s">
+            <div class="col-12 mb-xs" *ngFor="let rec of analysisData.tacticalRecommendations; let i = index">
+              <span class="f-bold text-primary mr-xs">{{ i + 1 }}.</span>
+              <span class="fs-14 text-neutral-7">{{ rec }}</span>
+            </div>
+          </div>
+        </ion-card-content>
+      </div>
+    </ion-card>
+  </div>
+  <!-- COLUMNA LATERAL (4) - ACCESOS RÁPIDOS -->
+  <div class="col-4 col-sm-12 pl-base px-0-sm mt-base-sm">
+    <!-- Card: Crear Jugador -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title class="f-bold fs-18 text-neutral-9">Opciones recomendadas</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="none">
+          <ion-item class="action-item is-blue" [button]="true" lines="none" detail="true" routerLink="/player-add">
+            <ion-icon name="person-add-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h3>Crear Jugadores</h3>
+              <p>Añade nuevos jugadores</p>
+            </ion-label>
+          </ion-item>
+
+          <div class="separator my-s"></div>
+
+          <ion-item class="action-item is-green" [button]="true" lines="none" detail="true" routerLink="/players">
+            <ion-icon name="people-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h3>Mis Jugadores</h3>
+              <p>Ver toda mi plantilla</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</div>

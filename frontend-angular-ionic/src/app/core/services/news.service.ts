@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Auth, idToken } from '@angular/fire/auth';
 import { environment } from '../../../environments/environment';
-import { firstValueFrom, map, Observable, switchMap, take } from 'rxjs';
+import { firstValueFrom, map, Observable, switchMap, take, catchError, of, throwError } from 'rxjs';
 
 export interface NewsItem {
   id?: string;
@@ -26,36 +26,38 @@ export interface NewsItem {
 export class NewsService {
   private http = inject(HttpClient);
   private auth = inject(Auth);
-  private apiUrl = environment.corbaApiUrl + '/noticias';
-  private feedUrl = environment.corbaApiUrl + '/noticias/feed';
-  private featuredUrl = environment.corbaApiUrl + '/noticias/featured'; // Nuevo
+  private apiUrl = environment.nodeApiUrl + '/news';
+  private feedUrl = environment.nodeApiUrl + '/news'; 
+  private featuredUrl = environment.nodeApiUrl + '/news'; 
 
   /**
-   * Obtiene las cabeceras con el token de Firebase
+   * Obtiene todas las noticias (Panel Admin)
+   * Implementa PERSISTENCIA LOCAL (JSON) como respaldo
    */
-  private async getAuthHeaders(): Promise<HttpHeaders> {
-    const user = await firstValueFrom(idToken(this.auth).pipe(take(1)));
-    return new HttpHeaders({
-      'Authorization': `Bearer ${user}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    });
-  }
-
   getNews(): Observable<NewsItem[]> {
     const token = localStorage.getItem('jwt_token');
     const headers = new HttpHeaders({ 
       'Authorization': `Bearer ${token}`,
       'X-User-Role': 'ADMIN'
     });
+
     return this.http.get<any>(this.apiUrl, { headers }).pipe(
-      map(response => this.processNewsResponse(response.data))
+      map(response => {
+        const processed = this.processNewsResponse(response.data);
+        if (processed && processed.length > 0) {
+          localStorage.setItem('cached_news_admin', JSON.stringify(processed));
+        }
+        return processed;
+      }),
+      catchError((err: any) => {
+        console.error('[NewsService] Error crítico de conexión con el servidor CORBA:', err);
+        return throwError(() => new Error('No se pudo conectar con el servidor de noticias'));
+      })
     );
   }
 
   /**
    * Obtiene solo las noticias activas (Público)
-   * Usa el nuevo endpoint discreto /feed
    */
   getFeed(): Observable<NewsItem[]> {
     const token = localStorage.getItem('jwt_token');
@@ -64,7 +66,15 @@ export class NewsService {
       'X-User-Role': 'USER'
     });
     return this.http.get<any>(this.feedUrl, { headers }).pipe(
-      map(response => this.processNewsResponse(response.data))
+      map(response => {
+        const processed = this.processNewsResponse(response.data);
+        localStorage.setItem('cached_news_feed', JSON.stringify(processed));
+        return processed;
+      }),
+      catchError(() => {
+        const cached = localStorage.getItem('cached_news_feed');
+        return of(cached ? JSON.parse(cached) : []);
+      })
     );
   }
 
@@ -88,18 +98,14 @@ export class NewsService {
   private processNewsResponse(newsItems: NewsItem[]): NewsItem[] {
     if (!newsItems) return [];
     
-    // 1. Formatear fechas a YYYY-MM-DD para que sean ordenables y legibles por HTML5
     const processed = newsItems.map(item => {
-      // 1. FORMATEAR FECHAS (IMPORTANTE PARA EL ORDEN)
       if (item.date && item.date.includes('/')) {
         const [day, month, year] = item.date.split('/');
         item.date = `${year}-${month}-${day}`;
       }
-      
       return item;
     });
 
-    // 2. Ordenar descendente (más reciente primero)
     return processed.sort((a, b) => {
       const dateA = a.date || '';
       const dateB = b.date || '';
@@ -108,14 +114,15 @@ export class NewsService {
   }
 
   /**
-   * Obtiene una noticia por ID
+   * Obtiene una noticia por ID (Con respaldo en caché local)
    */
-  getNewsById(id: string): Observable<NewsItem> {
+  getNewsById(id: string): Observable<NewsItem | null> {
     const token = localStorage.getItem('jwt_token');
     const headers = new HttpHeaders({ 
       'Authorization': `Bearer ${token}`,
       'X-User-Role': 'ADMIN'
     });
+
     return this.http.get<any>(`${this.apiUrl}/${id}`, { headers }).pipe(
       map(response => {
         const item = response.data;
@@ -123,107 +130,57 @@ export class NewsService {
           const [day, month, year] = item.date.split('/');
           item.date = `${year}-${month}-${day}`;
         }
-        return item;
+        return item as NewsItem;
+      }),
+      catchError((err: any) => {
+        console.warn(`[NewsService] Error al obtener noticia ${id}, buscando en caché local...`);
+        const cachedStr = localStorage.getItem('cached_news_admin');
+        if (cachedStr) {
+          const cachedNews: NewsItem[] = JSON.parse(cachedStr);
+          const found = cachedNews.find(n => n.id === id);
+          if (found) return of(found);
+        }
+        return of(null);
       })
     );
   }
 
-  /**
-   * Registra una nueva noticia
-   */
   addNews(news: NewsItem): Observable<any> {
     const token = localStorage.getItem('jwt_token');
+    const user = this.auth.currentUser;
     
-    // Limpiamos el objeto para que coincida exactamente con el IDL de CORBA
-    // Eliminamos 'pseudonym' y aseguramos que todos los campos obligatorios existan
-    // Formateamos la fecha de YYYY-MM-DD a DD/MM/YYYY para cumplir con el XSD de CORBA
-    let formattedDate = news.date || new Date().toISOString().split('T')[0];
-    
-    // Si viene de ion-datetime, puede traer la T de ISO (ej: 2024-05-09T10:00:00)
-    // Nos quedamos solo con la parte de la fecha YYYY-MM-DD
-    if (formattedDate.includes('T')) {
-      formattedDate = formattedDate.split('T')[0];
-    }
-
-    if (formattedDate.includes('-')) {
-      const [year, month, day] = formattedDate.split('-');
-      formattedDate = `${day}/${month}/${year}`;
-    }
-
-    // Limpiamos el objeto para que coincida exactamente con el IDL de CORBA
-    const cleanedNews: any = {
-      id: (news.id || `news-${Date.now()}`).trim(),
-      title: (news.title || '').trim(),
-      author: (news.author || 'Anónimo').trim(),
-      content: (news.content || '').trim(),
-      summary: (news.summary || '').trim(),
-      imageUrl: (news.imageUrl || '').trim(),
-      category: (news.category || 'General').trim(),
-      tags: (news.tags && news.tags.length > 0) ? news.tags.map(t => t.trim()) : ['General'],
-      date: formattedDate.trim(),
-      isActive: news.isActive !== undefined ? news.isActive : true,
-      isFeatured: news.isFeatured !== undefined ? news.isFeatured : false
+    const payload = {
+      ...news,
+      createdBy: user?.email || 'Anónimo',
+      createdAt: new Date().toISOString()
     };
-
-    // Asegurar que no excedemos los 6 tags
-    cleanedNews.tags = cleanedNews.tags ? cleanedNews.tags.slice(0, 6) : ['General'];
-
+    
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json; charset=utf-8',
-      'X-User-Role': 'ADMIN'
+      'Content-Type': 'application/json'
     });
 
-    return this.http.post(this.apiUrl, cleanedNews, { headers });
+    return this.http.post(this.apiUrl, payload, { headers });
   }
 
-  /**
-   * Actualiza una noticia existente
-   */
   updateNews(news: NewsItem): Observable<any> {
     const token = localStorage.getItem('jwt_token');
-    
-    let formattedDate = news.date || new Date().toISOString().split('T')[0];
-    
-    // Limpiar ISO string si viene de ion-datetime
-    if (formattedDate.includes('T')) {
-      formattedDate = formattedDate.split('T')[0];
-    }
+    const user = this.auth.currentUser;
 
-    if (formattedDate.includes('-')) {
-      const [year, month, day] = formattedDate.split('-');
-      formattedDate = `${day}/${month}/${year}`;
-    }
-
-    const cleanedNews: any = {
-      id: news.id,
-      title: (news.title || '').trim(),
-      author: (news.author || 'Anónimo').trim(),
-      content: (news.content || '').trim(),
-      summary: (news.summary || '').trim(),
-      imageUrl: (news.imageUrl || '').trim(),
-      category: (news.category || 'General').trim(),
-      tags: (news.tags && news.tags.length > 0) ? news.tags.map(t => t.trim()) : ['General'],
-      date: formattedDate.trim(),
-      isActive: news.isActive !== undefined ? news.isActive : true,
-      isFeatured: news.isFeatured !== undefined ? news.isFeatured : false
+    const payload = {
+      ...news,
+      updatedBy: user?.email || 'Anónimo',
+      updatedAt: new Date().toISOString()
     };
-
-    // Asegurar que no excedemos los 6 tags
-    cleanedNews.tags = cleanedNews.tags ? cleanedNews.tags.slice(0, 6) : ['General'];
-
+    
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json; charset=utf-8',
-      'X-User-Role': 'ADMIN'
+      'Content-Type': 'application/json'
     });
 
-    return this.http.put(`${this.apiUrl}/${news.id}`, cleanedNews, { headers });
+    return this.http.put(`${this.apiUrl}/${news.id}`, payload, { headers });
   }
 
-  /**
-   * Elimina una noticia por ID
-   */
   deleteNews(id: string): Observable<any> {
     const token = localStorage.getItem('jwt_token');
     const headers = new HttpHeaders({ 
@@ -232,42 +189,16 @@ export class NewsService {
     });
     return this.http.delete(`${this.apiUrl}/${id}`, { headers });
   }
+
   /**
-   * Convierte un objeto NewsItem a XML compatible con el bridge CORBA
-   * Cumple estrictamente con noticias.xsd
+   * Carga masiva de noticias (Admin)
    */
-  private jsonToXml(news: NewsItem): string {
-    const tagsXml = (news.tags || [])
-      .slice(0, 6) // Máximo 6 tags según XSD
-      .map(tag => `        <tag>${tag}</tag>`)
-      .join('\n');
-
-    // Formatear fecha a DD/MM/YYYY
-    const d = new Date();
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    const formattedDate = `${day}/${month}/${year}`;
-
-    // Asegurar que la categoría es válida según XSD (default: General)
-    const validCategories = ['Fichajes', 'Resultados', 'Crónica', 'Opinión', 'Internacional', 'General'];
-    const category = validCategories.includes(news.category) ? news.category : 'General';
-
-    return `<?xml version="1.0" encoding="UTF-8"?>
-<noticia>
-    <id>${news.id || 'news-' + Date.now()}</id>
-    <date>${formattedDate}</date>
-    <title>${news.title}</title>
-    <author>${news.author}</author>
-    <summary>${news.summary}</summary>
-    <content>${news.content}</content>
-    <imageUrl>${news.imageUrl}</imageUrl>
-    <category>${category}</category>
-    <isActive>${news.isActive !== undefined ? news.isActive : true}</isActive>
-    <isFeatured>${news.isFeatured !== undefined ? news.isFeatured : false}</isFeatured>
-    <tags>
-${tagsXml || '        <tag>General</tag>'}
-    </tags>
-</noticia>`;
+  bulkAddNews(newsList: NewsItem[]): Observable<any> {
+    const token = localStorage.getItem('jwt_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+    return this.http.post(`${this.apiUrl}/bulk`, newsList, { headers });
   }
 }

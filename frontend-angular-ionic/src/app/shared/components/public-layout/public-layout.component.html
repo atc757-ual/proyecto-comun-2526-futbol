@@ -1,0 +1,97 @@
+<div class="main-wrapper" id="main-content">
+  <!-- HEADER PREMIUM (CLON DE MAIN) -->
+  <header class="main-header" [class.no-border]="layoutService.showHero()">
+    <!-- FILA 1: Branding y Perfil -->
+    <div class="top-header-row">
+      <div class="main-content header">
+        <div class="header-left">
+          <!-- Botón de atrás (Solo App Móvil Nativa) -->
+          <ion-back-button *ngIf="platformService.isMobileApp" defaultHref="/login" text="" icon="arrow-back"
+            class="back-link-minimal">
+          </ion-back-button>
+
+          <!-- Logo a la Izquierda -->
+          <div class="logo-box clickable" routerLink="/login">
+            <div class="logo-ball-blue">
+              <ion-icon name="football"></ion-icon>
+            </div>
+            <span class="main-logo-text">Football App</span>
+          </div>
+        </div>
+
+        <!-- Balón Azul Centrado (Móvil Web) -->
+        <div *ngIf="platformService.isWebMobile" class="header-center-icon">
+
+        </div>
+
+        <div class="header-right">
+          <div class="auth-actions">
+            <!-- Acciones de Registro -->
+            <a routerLink="/register" class="auth-btn" style="margin-left: 15px;">
+              <ion-icon name="person-add-outline" color="primary"></ion-icon>
+              <span class="hide-on-phone">¡Regístrate!</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <ion-content class="main-main-bg" [scrollY]="true">
+
+    <!-- SECCIÓN HERO (Igual que Main) -->
+    <section>
+      <div>
+        <div *ngIf="layoutService.showHero()" class="layout-hero-banner animate-fade-in">
+          <div class="main-content">
+            <h1 class="hero-title">{{ layoutService.title() }}</h1>
+            <p class="hero-subtitle" *ngIf="layoutService.subtitle()">{{ layoutService.subtitle() }}</p>
+          </div>
+        </div>
+
+        <!-- BREADCRUMBS CENTRALIZADOS -->
+        <div *ngIf="!platformService.isMobileApp && layoutService.breadcrumbs().length > 0"
+          class="layout-hero-breadcrumbs">
+          <div class="main-content">
+            <ion-breadcrumbs>
+              <ion-breadcrumb *ngFor="let item of layoutService.breadcrumbs(); let last = last" 
+                [routerLink]="item.url || null"
+                [class.active-breadcrumb]="last"
+                [class.has-url]="!!item.url">
+                <ion-icon *ngIf="item.icon" slot="start" [name]="item.icon"></ion-icon>
+                {{ item.label }}
+                <span slot="separator" class="fs-14 text-neutral-4">/</span>
+              </ion-breadcrumb>
+            </ion-breadcrumbs>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="main-content content">
+      <router-outlet></router-outlet>
+    </div>
+
+    <!-- FOOTER (Igual que Main) -->
+    <footer class="main-footer-gray">
+      <div class="main-content footer">
+        <div class="footer-slim-content">
+          <div class="footer-left">
+            <span class="copyright-text fs-14 text-neutral-7">© 2026 Football App. Público.</span>
+          </div>
+          <div class="footer-right">
+            <div class="footer-socials">
+              <a href="https://www.linkedin.com/in/alextaquilacamasca/" target="_blank" class="social-icon">
+                <ion-icon name="logo-linkedin"></ion-icon>
+              </a>
+              <a href="https://github.com/atc757-ual/proyecto-comun-2526-futbol" target="_blank" class="social-icon">
+                <ion-icon name="logo-github"></ion-icon>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </ion-content>
+</div>

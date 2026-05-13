@@ -8,13 +8,12 @@ const Player = mongoose.model('Player');
  */
 const analyzeMyTeam = async (req, res) => {
     try {
-        // 1. Obtener el firebaseUid del token decodificado (inyectado por el middleware de auth)
-        const firebaseUid = req.auth.uid;
+        const firebaseUid = req.user.firebaseUid;
 
-        // 2. Buscar los jugadores en MongoDB que pertenezcan a este usuario
-        // Nota: Asegúrate de que el modelo Player tenga el campo 'firebaseUid' 
-        // o similar para filtrar por dueño.
-        const players = await Player.find({ user_id: firebaseUid });
+        // 1. Limitamos a los 30 jugadores más recientes para optimizar el prompt y evitar costes/errores
+        const players = await Player.find({ user_id: firebaseUid })
+                                    .sort({ updated_at: -1 })
+                                    .limit(30);
 
         if (!players || players.length === 0) {
             return res.status(404).json({
@@ -22,7 +21,9 @@ const analyzeMyTeam = async (req, res) => {
             });
         }
 
-        // 3. Llamar al servicio de IA
+        console.log(`[AI-CONTROLLER] Analizando ${players.length} jugadores para UID: ${firebaseUid}`);
+
+        // 2. Llamar al servicio de IA
         const analysis = await aiService.analyzePlayers(players);
 
         return res.status(200).json({
@@ -37,9 +38,24 @@ const analyzeMyTeam = async (req, res) => {
         });
 
     } catch (err) {
-        console.error("Error en analyzeMyTeam:", err);
+        const errorMessage = err.message || "";
+        console.error("Error en analyzeMyTeam:", errorMessage);
+
+        // Si es un error de cuota (Rate Limit), devolvemos 429 en lugar de 500
+        if (errorMessage.includes('429') || errorMessage.toLowerCase().includes('quota')) {
+            return res.status(429).json({
+                result: { 
+                    status: "NOK", 
+                    description: "¡FootballAI está recargando pilas! 🔋 Mañana tendremos más consejos para ti." 
+                }
+            });
+        }
+
         res.status(500).json({
-            result: { status: "NOK", description: err.message }
+            result: { 
+                status: "NOK", 
+                description: "Lo sentimos, el entrenador IA no está disponible en este momento. Revisa tu conexión o inténtalo más tarde." 
+            }
         });
     }
 };

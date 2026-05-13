@@ -103,7 +103,13 @@ public class NoticiasRestServlet extends HttpServlet {
         List<NewsItem> lista = new ArrayList<>();
         if (noticias != null) {
             for (NewsItem n : noticias) {
-                lista.add(validarYLimpiar(n, xsdPath));
+                try {
+                    lista.add(validarYLimpiar(n, xsdPath));
+                } catch (Exception e) {
+                    System.err.println("[BRIDGE-LIST] Saltando noticia " + n.id + " por error de validación: " + e.getMessage());
+                    // Opcionalmente podrías añadir la noticia sin validar si quieres que se vea igual
+                    // lista.add(n); 
+                }
             }
         }
         
@@ -135,7 +141,57 @@ public class NoticiasRestServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        procesarPost(request, response);
+        String pathInfo = request.getPathInfo();
+        if (pathInfo != null && pathInfo.equals("/bulk")) {
+            handleBulkUpload(request, response);
+        } else {
+            procesarPost(request, response);
+        }
+    }
+
+    private void handleBulkUpload(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("application/json;charset=UTF-8");
+        if (!validarAutorizacion(request, response)) return;
+        if (!validarRolAdmin(request, response)) return;
+
+        try {
+            System.out.println("[BRIDGE-BULK] Iniciando carga masiva...");
+            NewsItem[] noticias = mapper.readValue(request.getReader(), NewsItem[].class);
+            List<NewsItem> validadas = new ArrayList<>();
+
+            for (NewsItem n : noticias) {
+                // Blindaje anti-nulos para CORBA
+                if (n.id == null) n.id = "";
+                if (n.title == null) n.title = "";
+                if (n.author == null) n.author = "";
+                if (n.summary == null) n.summary = "";
+                if (n.content == null) n.content = "";
+                if (n.imageUrl == null) n.imageUrl = "";
+                if (n.category == null) n.category = "";
+                if (n.date == null) n.date = "";
+                if (n.tags == null) n.tags = new String[0];
+                if (n.createdBy == null) n.createdBy = "Admin";
+                if (n.updatedBy == null) n.updatedBy = "Admin";
+                if (n.createdAt == null) n.createdAt = "";
+                if (n.updatedAt == null) n.updatedAt = "";
+
+                System.out.println("[BRIDGE-BULK] Procesando noticia ID: " + n.id + " | Titulo: " + n.title);
+
+                String xmlData = XMLCoder.toXML(n);
+                XMLValidator.validar(xmlData, getXsdPath());
+                validadas.add(XMLDecoder.decode(xmlData));
+            }
+
+            if (this.newsService == null) conectarCorba();
+            this.newsService.bulkAddNews(validadas.toArray(new NewsItem[0]));
+
+            System.out.println("[BRIDGE-BULK] Exito: " + validadas.size() + " noticias cargadas.");
+            enviarRespuesta(response, HttpServletResponse.SC_CREATED, true, "Carga masiva exitosa", validadas);
+        } catch (Exception e) {
+            System.err.println("[BRIDGE-BULK] ERROR: " + e.getMessage());
+            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, "Error en carga masiva: " + e.getMessage(), null);
+        }
     }
 
     @Override
@@ -158,20 +214,29 @@ public class NoticiasRestServlet extends HttpServlet {
 
         try {
             System.out.println("[BRIDGE-POST] Iniciando publicacion...");
+            // 1. Leer una sola vez el JSON del request
             NewsItem noticiaRecibida = mapper.readValue(request.getReader(), NewsItem.class);
-            String xmlData = XMLCoder.toXML(noticiaRecibida);
-            XMLValidator.validar(xmlData, getXsdPath());
-            NewsItem itemParaCorba = XMLDecoder.decode(xmlData);
+            
+            // 2. Validar contra XSD antes de guardar (Pipeline de limpieza)
+            String xsdPath = getXsdPath();
+            NewsItem noticiaLimpia;
+            try {
+                noticiaLimpia = validarYLimpiar(noticiaRecibida, xsdPath);
+            } catch (Exception e) {
+                System.err.println("[BRIDGE-POST] Error de validación XSD: " + e.getMessage());
+                enviarRespuesta(response, HttpServletResponse.SC_BAD_REQUEST, false, "Error de validación XSD: " + e.getMessage(), null);
+                return;
+            }
 
             if (this.newsService == null) conectarCorba();
             
-            // Validación de tamaño de imagen en Backend
-            validarTamanoImagen(noticiaRecibida.imageUrl);
+            // 3. Validación de tamaño de imagen en Backend
+            validarTamanoImagen(noticiaLimpia.imageUrl);
 
-            this.newsService.addNews(itemParaCorba);
-
-            System.out.println("[BRIDGE-POST] Exito enviando a CORBA.");
-            enviarRespuesta(response, HttpServletResponse.SC_CREATED, true, "Noticia publicada", itemParaCorba);
+            // 4. Guardar en CORBA
+            this.newsService.addNews(noticiaLimpia);
+            System.out.println("[BRIDGE-POST] Noticia creada con éxito: " + noticiaLimpia.id);
+            enviarRespuesta(response, HttpServletResponse.SC_CREATED, true, "Noticia creada correctamente", noticiaLimpia);
         } catch (Exception e) {
             System.err.println("[BRIDGE-POST] ERROR: " + e.getMessage());
             enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, "Error de validación: " + e.getMessage(), null);
@@ -186,30 +251,38 @@ public class NoticiasRestServlet extends HttpServlet {
 
         try {
             System.out.println("[BRIDGE-PUT] Iniciando actualizacion...");
+            // 1. Leer JSON una sola vez
             NewsItem noticiaRecibida = mapper.readValue(request.getReader(), NewsItem.class);
-            System.out.println("[BRIDGE-PUT] Datos recibidos: ID=" + noticiaRecibida.id + ", isFeatured=" + noticiaRecibida.isFeatured);
             
-            String xmlData = XMLCoder.toXML(noticiaRecibida);
-            XMLValidator.validar(xmlData, getXsdPath());
-            NewsItem itemParaCorba = XMLDecoder.decode(xmlData);
+            // 2. Validar contra XSD (Pipeline de limpieza)
+            String xsdPath = getXsdPath();
+            NewsItem noticiaLimpia;
+            try {
+                noticiaLimpia = validarYLimpiar(noticiaRecibida, xsdPath);
+            } catch (Exception e) {
+                System.err.println("[BRIDGE-PUT] Error de validación XSD: " + e.getMessage());
+                enviarRespuesta(response, HttpServletResponse.SC_BAD_REQUEST, false, "Error de validación XSD: " + e.getMessage(), null);
+                return;
+            }
 
             if (this.newsService == null) conectarCorba();
             
-            // Validación de tamaño de imagen en Backend
-            validarTamanoImagen(noticiaRecibida.imageUrl);
+            // 3. Validación de tamaño de imagen en Backend
+            validarTamanoImagen(noticiaLimpia.imageUrl);
 
-            boolean success = this.newsService.updateNews(itemParaCorba);
+            // 4. Actualizar en CORBA
+            boolean success = this.newsService.updateNews(noticiaLimpia);
 
             if (success) {
                 System.out.println("[BRIDGE-PUT] Exito actualizando en CORBA.");
-                enviarRespuesta(response, HttpServletResponse.SC_OK, true, "Noticia actualizada", itemParaCorba);
+                enviarRespuesta(response, HttpServletResponse.SC_OK, true, "Noticia actualizada", noticiaLimpia);
             } else {
                 System.out.println("[BRIDGE-PUT] CORBA devolvio false (no encontrado?).");
                 enviarRespuesta(response, HttpServletResponse.SC_NOT_FOUND, false, "No se pudo actualizar la noticia", null);
             }
         } catch (Exception e) {
             System.err.println("[BRIDGE-PUT] ERROR: " + e.getMessage());
-            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, e.getMessage(), null);
+            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, "Error al actualizar: " + e.getMessage(), null);
         }
     }
 

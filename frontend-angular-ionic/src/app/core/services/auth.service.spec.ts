@@ -34,7 +34,7 @@ describe('AuthService', () => {
       const mockUserCredential = { user: { email: 'newuser@test.com' } };
       spyOn(service, 'register').and.resolveTo(mockUserCredential as any);
 
-      const result = await service.register('newuser@test.com', 'password123');
+      const result = await service.register('newuser@test.com', 'password123', 'Test User');
       expect(result.user.email).toBe('newuser@test.com');
     });
   });
@@ -72,7 +72,7 @@ describe('AuthService', () => {
       spyOn(service, 'register').and.rejectWith(error);
 
       try {
-        await service.register('yaexiste@test.com', 'password123');
+        await service.register('yaexiste@test.com', 'password123', 'Test User');
       } catch (err: any) {
         expect(err.code).toBe('auth/email-already-in-use');
       }

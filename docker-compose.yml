@@ -209,7 +209,9 @@ services:
         condition: service_started
 
   corba-naming:
-    image: eclipse-temurin:8-jre
+    build:
+      context: ./backend-corba
+      dockerfile: Dockerfile.naming
     container_name: football-corba-naming
     command: orbd -ORBInitialPort 1050 -ORBInitialHost 0.0.0.0
     networks:

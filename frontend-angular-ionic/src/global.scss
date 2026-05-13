@@ -22,6 +22,9 @@
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
+/* --- LEAFLET MAPS CSS --- */
+@import "leaflet/dist/leaflet.css";
+
 /* --- FIX: Password Toggle Color --- */
 ion-input-password-toggle,
 .toggle-password [class*="toggle-password"] {
@@ -29,6 +32,8 @@ ion-input-password-toggle,
   color: var(--color-neutral-6) !important;
   --ion-color-primary: var(--color-neutral-6) !important;
 }
+
+
 
 /* --- ANIMACIONES --- */
 @keyframes fadeIn {
@@ -49,6 +54,7 @@ ion-input-password-toggle,
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  caret-color: var(--color-primary);
 }
 
 html,
@@ -75,68 +81,258 @@ body {
   }
 }
 
+
+
 /** --- INPUTS ESTILO FOOTBALL APP --- **/
-.futbol-input {
-  --background: var(--color-neutral-1);
-  --border-radius: var(--border-radius-soft);
-  --border-color: var(--color-neutral-3);
-  --border-width: 1px;
-  --color: var(--color-neutral-9);
-  --placeholder-color: var(--color-neutral-5);
-  --label-color: var(--color-neutral-7);
-  font-family: var(--font-primary);
-  font-size: 16px !important;
-  min-height: 56px;
+ion-input,
+ion-select,
+ion-textarea {
+
+  .input-bottom,
+  .textarea-bottom {
+    padding: 0 !important;
+
+    .helper-text {
+      color: var(--color-neutral-7);
+      font-size: 12px;
+    }
+
+    .error-text {
+      color: var(--color-error);
+      font-size: 12px;
+    }
+  }
+
+  .label-text-wrapper {
+    .label-text {
+      font-size: var(--fs-16);
+      color: var(--color-neutral-7);
+    }
+  }
+
+  &.is-focused {
+    .error-text {
+      display: none !important;
+    }
+  }
+
+  .input-fill-outline {
+    --border-color: var(--color-neutral-5);
+  }
+}
+
+ion-input,
+ion-textarea {
+  border-radius: var(--border-radius-soft);
   margin-bottom: var(--space-base);
+  --border-width: 1px !important;
   transition: all var(--transition-fast) ease;
+  min-height: 48px !important;
+  --border-color: var(--color-neutral-5) !important;
 
   ion-icon[slot="start"] {
     margin-right: var(--space-s) !important;
   }
 
-
-
+  /* Estado de Error / Inválido (Sin Foco) */
   &.input-error,
   &.ion-invalid.ion-touched {
     --border-color: var(--color-error) !important;
-    --label-color: var(--color-error) !important;
-    --border-width: 2px !important;
-    --background: rgba(var(--ion-color-error-rgb), 0.1) !important;
+    --background: var(--red-010) !important;
+
+    .label-text-wrapper {
+      .label-text {
+        color: var(--color-error) !important;
+      }
+    }
   }
 
+  /* ESTADO DE FOCO UNIFICADO (Siempre Azul) */
   &.is-focused,
-  &.is-focused.input-error,
-  &.is-focused.ion-invalid.ion-touched {
+  &.is-focused.ion-valid,
+  &.is-focused.ion-invalid,
+  &.is-focused.input-error {
     --border-color: var(--color-primary) !important;
-    --label-color: var(--color-primary) !important;
-    --highlight-color-focused: var(--color-primary) !important;
-    --highlight-color: var(--color-primary) !important;
-    --border-width: 2px !important;
     --background: var(--blue-primary-010) !important;
-    box-shadow: none !important;
+
+    .label-text-wrapper {
+      .label-text {
+        color: var(--color-primary) !important;
+      }
+    }
   }
 
-  /* Ocultar mensaje de error cuando el usuario está escribiendo (enfocado) */
-  &.is-focused+.error-container {
-    display: none !important;
+  /* Estilo para el icono nativo de calendario */
+  &[type="date"] {
+    color-scheme: light !important;
+    --border-color: var(--color-neutral-5);
+    color: var(--color-neutral-7);
+  }
+
+  &[type="date"]::part(native)::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    ;
+    filter: invert(48%) sepia(13%) saturate(3207%) hue-rotate(185deg) brightness(80%) contrast(70%);
+    transition: all 0.2s ease;
+  }
+
+  &[type="date"]::part(native)::-webkit-calendar-picker-indicator:hover {
+    transform: scale(1.1);
+  }
+
+
+}
+
+/* --- SELECT ESTILO FOOTBALL APP --- */
+ion-select {
+  border-radius: var(--border-radius-soft);
+  margin-bottom: var(--space-base);
+  --border-width: 1px !important;
+  transition: all var(--transition-fast) ease;
+  min-height: 48px !important;
+
+  &.select-fill-outline.select-expanded {
+    --border-color: var(--color-primary);
+
+    &::part(icon),
+    &::part(label),
+    ion-icon {
+      color: var(--color-primary);
+    }
+  }
+
+  &.ion-touched,
+  &.ion-valid {
+    --border-color: var(--color-neutral-5);
+    color: var(--color-neutral-7);
+
+    &::part(icon),
+    &::part(label),
+    ion-icon {
+      color: var(--color-neutral-7);
+    }
+  }
+
+  ion-icon[slot="start"] {
+    margin-right: var(--space-s) !important;
   }
 }
 
-.error-container {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  color: var(--color-error);
-  font-size: var(--fs-12);
-  margin-top: -12px;
-  margin-bottom: var(--space-m);
-  padding-left: var(--space-xs);
-  animation: fadeIn var(--transition-fast);
 
-  ion-icon {
-    font-size: var(--fs-14);
+
+/** --- ACTION ITEMS (ADMIN CARDS) --- **/
+ion-item.action-item {
+  /* Variables por defecto (Azul) */
+
+  --border-radius: 12px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --inner-padding-end: 0;
+  transition: transform 0.2s ease-in-out;
+  margin: 4px 0;
+  --background: var(--action-bg);
+  outline: none !important;
+  --ripple-color: var(--action-icon-color);
+
+  /* Variaciones de Color */
+  &.is-green {
+    --action-icon-bg: var(--green-010);
+    --action-icon-color: var(--green-075);
+    --action-hover-bg: var(--green-010);
+
+    &::part(native) {
+      --background-hover: var(--green-010) !important;
+    }
+
+    &:hover::part(native) {
+      background: var(--green-010) !important;
+    }
+  }
+
+  &.is-red {
+    --action-icon-bg: var(--red-010);
+    --action-icon-color: var(--red-75);
+    --action-hover-bg: var(--red-010);
+
+    &::part(native) {
+      --background-hover: var(--red-010) !important;
+    }
+
+    &:hover::part(native) {
+      background: var(--red-010) !important;
+    }
+  }
+
+  &.is-yellow {
+    --action-icon-bg: var(--yellow-010);
+    --action-icon-color: var(--yellow-75);
+    --action-hover-bg: var(--yellow-010);
+
+    &::part(native) {
+      --background-hover: var(--yellow-010) !important;
+    }
+
+    &:hover::part(native) {
+      background: var(--yellow-010) !important;
+    }
+  }
+
+  &.is-blue {
+    --action-icon-bg: var(--blue-primary-010);
+    --action-icon-color: var(--color-primary);
+    --action-hover-bg: var(--blue-primary-010);
+
+    &::part(native) {
+      --background-hover: var(--blue-primary-010) !important;
+    }
+
+    &:hover::part(native) {
+      background: var(--blue-primary-010) !important;
+    }
+  }
+
+  ion-icon[slot="start"],
+  ion-icon[slot="icon-only"] {
+    font-size: 24px !important;
+    margin-right: 12px !important;
+    background: var(--action-icon-bg);
+    color: var(--action-icon-color);
+    padding: 10px;
+    border-radius: 10px;
+    transition: transform 0.2s ease;
+  }
+
+  ion-label,
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-size: var(--fs-16) !important;
+    font-weight: var(--fw-medium) !important;
+    color: var(--color-neutral-9);
+    margin: 0 !important;
+  }
+
+  p {
+    font-size: var(--fs-14) !important;
+    font-weight: var(--fw-regular);
+    color: var(--color-neutral-7);
+    margin: 1px 0 0 0;
+  }
+
+  &:active,
+  &:focus,
+  &:hover {
+    --background-hover-opacity: 1 !important;
+    --ripple-color: var(--action-icon-color);
+    transform: scale(0.98);
+
+    ion-icon {
+      transform: scale(1.05);
+    }
   }
 }
+
 
 /** --- BOTÓN PRIMARIO --- **/
 .futbol-btn-primary {
@@ -338,6 +534,16 @@ ion-card-header {
   padding: var(--space-base) var(--space-base) 0 !important;
 }
 
+@media (max-width: 767px) {
+  ion-card-content.ps {
+    padding: var(--space-s) !important;
+  }
+
+  ion-card-header.ps {
+    padding: var(--space-s) var(--space-s) 0 !important;
+  }
+}
+
 ion-item::part(native) {
   --min-height: 34px;
   --inner-padding-start: 0;
@@ -527,9 +733,308 @@ ion-modal#modal {
   }
 }
 
-/* FIX: Password Toggle Color override */
+/* --- FIX: Password Toggle Color override --- */
 ion-input-password-toggle {
   --color: var(--color-neutral-6) !important;
   color: var(--color-neutral-6) !important;
   --ion-color-base: var(--color-neutral-6) !important;
+}
+
+/* --- BUSCADOR GLOBAL PREMIUM --- */
+
+ion-searchbar {
+  //--background: var(--blue-primary-010) !important;
+  --background: var(--color-neutral-0) !important;
+  --border-radius: var(--border-radius-soft) !important;
+  --box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  --cancel-button-color: var(--color-primary) !important;
+  min-height: 48px !important;
+  border: 2px solid var(--blue-primary-050) !important;
+  border-radius: var(--border-radius-soft) !important;
+  padding: 0 !important;
+
+  input.searchbar-input {
+    font-size: var(--fs-14) !important;
+    font-family: var(--font-secondary) !important;
+    padding-inline-start: 48px !important;
+    padding-inline-end: 48px !important;
+    height: 42px !important;
+  }
+
+  ion-icon.searchbar-search-icon {
+    margin-inline-start: 12px !important;
+    color: var(--color-primary) !important;
+  }
+
+  button.searchbar-clear-button {
+    color: var(--color-primary) !important;
+    opacity: 1 !important;
+    margin-inline-end: 12px !important;
+
+    .searchbar-clear-icon {
+      width: 24px !important;
+      color: var(--color-primary) !important;
+    }
+  }
+}
+
+/*Ion Segment*/
+ion-segment {
+  border-radius: 0;
+  width: 100%;
+  overflow: hidden;
+  min-height: 48px;
+  border-bottom: 2px solid var(--color-primary);
+
+  ion-segment-button {
+    --color: var(--color-primary);
+    --background: var(--color-neutral-0);
+    --border-radius: 0 !important;
+    margin: 0 -8px;
+
+    &.segment-button-checked {
+      --indicator-color: var(--color-primary);
+      --color-checked: var(--color-neutral-0);
+    }
+
+
+    &::part(native) {
+      padding: 0;
+      border: none;
+    }
+
+    ion-label {
+      font-size: var(--fs-14);
+      margin-left: var(--space-s);
+    }
+
+    ion-icon {
+      font-size: var(--fs-20);
+    }
+  }
+
+}
+
+/* ==========================================================================
+   SISTEMA DE PAGINACIÓN GLOBAL PREMIUM
+   ========================================================================== */
+
+
+// --- PAGINACIÓN (MINIMALISTA) ---
+.news-pagination-container {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center;
+  gap: var(--space-s); // Espacio reducido para que estén juntos
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  border: none;
+  box-shadow: none;
+  flex-wrap: nowrap;
+
+  ion-button {
+    min-height: 0;
+    height: 32px;
+    font-size: var(--fs-14);
+    font-weight: var(--fw-medium);
+  }
+
+  .nav-btn {
+    --color: var(--color-primary);
+    font-weight: var(--fw-semibold);
+    font-size: var(--fs-14);
+    text-transform: none;
+    margin: 0;
+
+    @media (max-width: 767px) {
+      font-size: var(--fs-12); // Más pequeño en móvil
+      --padding-start: var(--space-xxs);
+      --padding-end: var(--space-xxs);
+
+      ion-icon {
+        font-size: var(--fs-16);
+      }
+    }
+  }
+
+  .page-info {
+    text-align: center;
+  }
+
+  .page-indicators {
+    display: flex;
+    gap: var(--space-xxs);
+    align-items: center;
+
+    .page-btn {
+      --border-radius: var(--border-radius-soft);
+      width: 32px;
+      height: 32px;
+      margin: 0;
+      font-weight: 600;
+      font-size: var(--fs-14);
+      --padding-start: 0;
+      --padding-end: 0;
+
+      &.active {
+        --background: var(--color-primary);
+        --color: var(--color-white);
+      }
+    }
+  }
+}
+
+// Helpers de visibilidad para componentes globales
+@media (max-width: 767px) {
+  .hide-on-phone {
+    display: none !important;
+  }
+
+  .show-on-phone,
+  .hide-on-desktop {
+    display: block !important;
+  }
+}
+
+@media (min-width: 768px) {
+
+  .show-on-phone,
+  .hide-on-desktop {
+    display: none !important;
+  }
+}
+
+/* --- EMPTY STATE (Tarjetas de estado vacío para listas) --- */
+.empty-card {
+  text-align: center;
+  padding: 60px 20px;
+
+  .empty-icon-box {
+    width: 56px;
+    height: 56px;
+    background: var(--blue-primary-010);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+
+  }
+}
+
+/* --- GLOBAL AI THINKING OVERLAY --- */
+.ai-thinking-overlay {
+  // Variables Locales para personalización rápida
+  --ai-overlay-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(240, 244, 255, 0.98) 100%);
+  --ai-overlay-blur: 10px;
+  --ai-orb-size: 60px;
+  --ai-container-size: 160px;
+  --ai-core-color: var(--color-primary);
+  --ai-effect-color: rgba(var(--ion-color-primary-rgb), 0.2);
+
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: var(--ai-overlay-bg) !important;
+  backdrop-filter: blur(var(--ai-overlay-blur)) !important;
+  -webkit-backdrop-filter: blur(var(--ai-overlay-blur)) !important;
+  z-index: 999999 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: var(--ai-core-color) !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  padding: 24px !important;
+  box-sizing: border-box !important;
+}
+
+.ai-core-container {
+  position: relative;
+  width: var(--ai-container-size);
+  height: var(--ai-container-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.ai-core-orb {
+  width: var(--ai-orb-size);
+  height: var(--ai-orb-size);
+  background: var(--ai-core-color);
+  border-radius: 50%;
+  box-shadow: 0 0 30px var(--ai-effect-color), 0 10px 40px rgba(0, 0, 0, 0.1);
+  animation: orbPulse 1.5s ease-in-out infinite alternate;
+}
+
+.ai-core-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--ai-core-color);
+  border-radius: 50%;
+  animation: ringExpand 2.5s cubic-bezier(0.21, 0.53, 0.56, 1) infinite;
+  opacity: 0;
+}
+
+.ai-core-ring.delay-1 {
+  animation-delay: 0.8s;
+}
+
+.ai-core-ring.delay-2 {
+  animation-delay: 1.6s;
+}
+
+@keyframes orbPulse {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+@keyframes ringExpand {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.5;
+    border-width: 3px;
+  }
+
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+    border-width: 1px;
+  }
+}
+
+.ai-thinking-text {
+  font-size: 22px !important;
+  font-weight: 800;
+  margin: 24px 0 12px;
+  text-align: center;
+  color: var(--color-primary) !important;
+  letter-spacing: -0.5px;
+  max-width: 90%;
+}
+
+.ai-thinking-subtext {
+  font-size: 16px !important;
+  opacity: 0.7;
+  margin: 0;
+  font-weight: 500;
+  color: var(--color-neutral-6) !important;
+  text-align: center;
 }

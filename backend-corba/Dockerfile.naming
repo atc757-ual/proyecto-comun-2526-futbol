@@ -1,0 +1,10 @@
+FROM alpine:3.18
+
+# Instalamos Java 8 completo (JDK) para asegurar que orbd esté ahí
+RUN apk add --no-cache openjdk8
+
+# Exponemos el puerto de CORBA
+EXPOSE 1050
+
+# Usamos la ruta absoluta de orbd en Alpine
+ENTRYPOINT ["/usr/lib/jvm/java-1.8-openjdk/bin/orbd", "-ORBInitialPort", "1050", "-ORBInitialHost", "0.0.0.0"]

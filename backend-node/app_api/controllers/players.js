@@ -5,12 +5,9 @@ const { sendApiResult } = require('./apiResult');
 // GET /api/players/public
 const playersPublicList = async (req, res) => {
     try {
-        // Usamos $sample para aleatoriedad y $project para limitar campos
-        const players = await Player.aggregate([
-            { $sample: { size: 10 } },
-            { $project: { _id: 0, name: 1, image_url: 1 } }
-        ]);
-        sendApiResult(res, 200, "Vista pública aleatoria recuperada", players);
+        // Devolvemos los campos necesarios para la vista pública premium
+        const players = await Player.find({}, 'name image_url nationality team league created_at position age').exec();
+        sendApiResult(res, 200, "Lista pública de jugadores recuperada", players);
     } catch (err) {
         sendApiResult(res, 500, "Error en vista pública: " + err.message);
     }

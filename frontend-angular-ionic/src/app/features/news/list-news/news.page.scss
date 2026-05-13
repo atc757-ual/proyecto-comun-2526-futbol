@@ -16,6 +16,10 @@
     }
   }
 
+  .meta-separator {
+    margin: 0 var(--space-xs);
+  }
+
   .main-news-card {
     grid-column: span 2;
     height: 300px;

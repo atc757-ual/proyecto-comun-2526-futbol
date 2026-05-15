@@ -31,20 +31,17 @@
 
           <!-- Empty State (Base de datos vacía o búsqueda sin éxito) -->
           <div *ngIf="!isLoading && filteredNews.length === 0" class="empty-state animate-fade-in">
-            <ion-icon class="fs-36" [name]="searchTerm ? 'search-outline' : 'newspaper-outline'"></ion-icon>
+            <ion-icon [name]="searchTerm ? 'search-outline' : 'newspaper-outline'"></ion-icon>
 
             <ng-container *ngIf="!searchTerm; else searching">
-              <h3 class="fs-20 fs-sm-16 f-semibold mt-base">Aún no hay noticias</h3>
-              <p class="fs-16 fs-sm-14 f-regular mt-base">Parece que la lista está vacía. ¡Crea tu primera noticia para
-                empezar!
-              </p>
+              <h3 class="f-semibold">Aún no hay noticias</h3>
+              <p class="f-regular">Parece que la lista está vacía. ¡Crea tu primera noticia para empezar!</p>
             </ng-container>
 
             <ng-template #searching>
-              <h3 class="fs-20 fs-sm-16 f-semibold mt-base">No hay resultados</h3>
-              <p class="fs-16 fs-sm-14 f-regular mt-base">No hemos encontrado nada que coincida con "</p>
-              <p class="mt-base"><strong>{{ searchTerm
-                  }}</strong>".</p>
+              <h3 class="f-semibold">No hay resultados</h3>
+              <p class="f-regular">No hemos encontrado nada que coincida con "</p>
+              <p><strong>{{ searchTerm }}</strong>".</p>
               <ion-button mode="ios" class="fs-14 f-medium mt-base" fill="clear" shape="round"
                 (click)="searchTerm = ''; applyFilter()">
                 Limpiar búsqueda
@@ -54,35 +51,35 @@
 
           <div *ngFor="let item of pagedNews; let isLast = last">
             <div class="news-admin-item animate-fade-in">
-              <!-- Columna Imagen -->
-              <div class="item-media">
+              <div class="item-media" (click)="viewNews(item)" style="cursor: pointer;">
                 <img [src]="item.imageUrl || 'assets/imgs/news-placeholder.png'"
                   (error)="$any($event.target).src = 'assets/imgs/news-placeholder.png'" class="item-img" alt="Noticia">
                 <div class="item-badge" [class]="item.category | lowercase">{{ item.category }}</div>
+                <!-- Badge de Borrador -->
+                <div class="inactive-badge" *ngIf="!item.isActive">
+                  <span>BORRADOR</span>
+                </div>
               </div>
 
-              <!-- Columna Info -->
-              <div class="item-info">
+              <div class="item-info" (click)="viewNews(item)" style="cursor: pointer;">
                 <h3 class="item-title">{{ item.title }}</h3>
                 <p class="item-summary hide-on-phone">{{ item.summary }}</p>
 
                 <div class="item-audit-stack">
                   <!-- Creación (Punto Azul) -->
                   <div class="audit-group">
-                    <span class="audit-text">{{ item.createdBy }} | {{ (item.createdAt || item.date) | date:'dd/MM/yyyy' }}</span>
+                    <span class="audit-text">{{ item.createdBy }} | {{ (item.createdAt || item.date) | date:'dd/MM/yyyy'
+                      }}</span>
                   </div>
                   <!-- Edición (Punto Verde) -->
                   <div class="audit-group update" *ngIf="item.updatedBy">
-                    <span class="audit-text">{{ item.updatedBy }} | {{ (item.updatedAt || item.date) | date:'dd/MM/yyyy' }}</span>
+                    <span class="audit-text">{{ item.updatedBy }} | {{ (item.updatedAt || item.date) | date:'dd/MM/yyyy'
+                      }}</span>
                   </div>
                 </div>
               </div>
 
-              <!-- Columna Acciones -->
               <div class="item-actions">
-                <ion-button fill="clear" (click)="viewNews(item)" class="btn-action view" title="Ver">
-                  <ion-icon name="eye-outline"></ion-icon>
-                </ion-button>
                 <ion-button fill="clear" (click)="editNews(item)" class="btn-action edit" title="Editar">
                   <ion-icon name="create-outline"></ion-icon>
                 </ion-button>
@@ -168,7 +165,7 @@
               <span *ngIf="bulkFileName" class="text-primary f-semibold">{{ bulkFileName }}</span>
             </div>
 
-            <ion-button mode="ios" expand="block" class="mt-base confirm-btn"
+            <ion-button mode="ios" shape="round" expand="block" color="success" class="mt-base confirm-btn"
               [disabled]="!selectedBulkFile || isUploadingBulk" (click)="confirmBulkUpload()">
               <ion-spinner name="crescent" *ngIf="isUploadingBulk" slot="start"></ion-spinner>
               {{ isUploadingBulk ? 'Subiendo...' : 'Confirmar Subida' }}

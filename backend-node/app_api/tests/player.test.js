@@ -50,9 +50,10 @@ describe("CRUD de Jugadores", () => {
         expect(response.body.data.name).toBe(reqAddPlayer.name);
     });
 
-    // Prueba de obtención de todos
-    test("Debería retornar la lista de jugadores (GET /api/players)", async () => {
-        await Player.create(reqAddPlayer);
+    // Prueba de obtención de todos los PROPIOS
+    test("Debería retornar la lista de jugadores PROPIOS (GET /api/players)", async () => {
+        // El middleware de test inyecta 'test-user-id'
+        await Player.create({ ...reqAddPlayer, user_id: 'test-user-id' });
         
         const response = await request(app)
             .get("/api/players")
@@ -61,6 +62,20 @@ describe("CRUD de Jugadores", () => {
             
         expect(Array.isArray(response.body.data)).toBe(true);
         expect(response.body.data.length).toBeGreaterThan(0);
+        expect(response.body.data[0].user_id).toBe('test-user-id');
+    });
+
+    // Prueba de obtención de todos (Base de datos global)
+    test("Debería retornar la lista COMPLETA de jugadores (GET /api/players/all)", async () => {
+        await Player.create(reqAddPlayer); // user_id: test_user_123
+        await Player.create({ ...reqAddPlayer, name: "Otro Jugador", user_id: "otro_id" });
+        
+        const response = await request(app)
+            .get("/api/players/all")
+            .set('Authorization', `Bearer ${adminToken}`)
+            .expect(200);
+            
+        expect(response.body.data.length).toBeGreaterThanOrEqual(2);
     });
 
     // Prueba de obtención de un jugador específico

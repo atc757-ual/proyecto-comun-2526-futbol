@@ -1,148 +1,205 @@
-<div class="player-detail-container" *ngIf="player">
-  <!-- HEADER PREMIUM -->
-  <div class="header-section mb-m d-flex justify-content-between align-items-end">
-    <div>
-      <h1 class="f-bold text-neutral-9 mb-0">Informe Técnico</h1>
-      <p class="fs-15 m-0">Análisis detallado de perfil y rendimiento profesional</p>
-    </div>
-    <ion-badge color="primary" mode="ios" class="px-m py-xs fs-12 f-bold shadow-sm">ID: {{ player._id?.slice(-6) }}</ion-badge>
-  </div>
-
-  <div class="row">
-    <!-- COLUMNA PRINCIPAL (8): Información Técnica -->
-    <div class="col-8 col-md-12 pr-base pr-md-0">
-      <div class="row mb-base">
-        <!-- Datos Profesionales -->
-        <div class="col-6 col-sm-12 pr-s pr-sm-0 mb-sm-base">
-          <ion-card class="premium-card h-100">
-            <ion-card-header>
-              <div class="d-flex align-items-center gap-xs">
-                <ion-icon name="stats-chart-outline" color="primary"></ion-icon>
-                <ion-card-title class="f-bold fs-16">Datos Profesionales</ion-card-title>
-              </div>
-            </ion-card-header>
-            <ion-card-content>
-              <div class="info-grid-simple">
-                <div class="info-item-small">
-                  <span class="label">Edad</span>
-                  <span class="value">{{ player.age || 'N/A' }} años</span>
-                </div>
-                <div class="info-item-small">
-                  <span class="label">Altura</span>
-                  <span class="value">{{ player.height || 'N/A' }}</span>
-                </div>
-                <div class="info-item-small">
-                  <span class="label">Peso</span>
-                  <span class="value">{{ player.weight || 'N/A' }}</span>
-                </div>
-                <div class="info-item-small">
-                  <span class="label">Dorsal</span>
-                  <span class="value">#{{ player.number || 'N/A' }}</span>
-                </div>
-              </div>
-            </ion-card-content>
-          </ion-card>
+<div *ngIf="player">
+  <!-- COMPACT SCOUTING BANNER -->
+  <div class="premium-scouting-banner mb-base" [class.is-owner]="isOwner" [class.is-global]="!isOwner">
+    <div class="banner-content">
+      <!-- BADGE Y TÍTULO EN LA MISMA FILA -->
+      <div class="d-flex fl-align-center gap-base">
+        <div *ngIf="isOwner" class="banner-badge owner">
+          <ion-icon name="star"></ion-icon>
+          <span>MI JUGADOR</span>
         </div>
-
-        <!-- Trayectoria y Origen -->
-        <div class="col-6 col-sm-12 pl-s pl-sm-0">
-          <ion-card class="premium-card h-100">
-            <ion-card-header>
-              <div class="d-flex align-items-center gap-xs">
-                <ion-icon name="earth-outline" color="primary"></ion-icon>
-                <ion-card-title class="f-bold fs-16">Trayectoria y Origen</ion-card-title>
-              </div>
-            </ion-card-header>
-            <ion-card-content>
-              <div class="info-list-rows-compact">
-                <div class="compact-row">
-                  <span class="label">Origen</span>
-                  <span class="value">{{ player.birth_place }}, {{ player.birth_country }}</span>
-                </div>
-                <div class="compact-row">
-                  <span class="label">Club</span>
-                  <span class="value">{{ player.team }}</span>
-                </div>
-                <div class="compact-row" *ngIf="player.secondary_team">
-                  <span class="label">Selección/2º Equipo</span>
-                  <span class="value">{{ player.secondary_team }}</span>
-                </div>
-                <div class="compact-row">
-                  <span class="label">Liga</span>
-                  <span class="value text-primary">{{ player.league }}</span>
-                </div>
-              </div>
-            </ion-card-content>
-          </ion-card>
+        <div *ngIf="!isOwner" class="banner-badge global">
+          <ion-icon name="globe-outline"></ion-icon>
+          <span>GLOBAL</span>
         </div>
+        <h1 class="banner-title m-0">{{ isOwner ? 'Ficha de Plantilla' : 'Ficha de Scouting' }}</h1>
       </div>
 
-      <!-- Biografía Profesional (Expandible) -->
-      <ion-card class="premium-card mb-base" *ngIf="player.summary">
-        <ion-card-header>
-          <div class="d-flex align-items-center gap-xs">
-            <ion-icon name="person-outline" color="primary"></ion-icon>
-            <ion-card-title class="f-bold fs-18">Biografía Profesional</ion-card-title>
+      <div class="separator-v mx-base hide-on-phone"></div>
+
+      <p class="banner-subtitle m-0 hide-on-phone">
+        <ion-icon name="checkmark-circle-outline" class="mr-xs"></ion-icon>
+        {{ isOwner ? 'Verificado en tu red' : 'Scout: ' + (player.created_by || 'Comunidad') }}
+      </p>
+    </div>
+
+    <div class="banner-id-box hide-on-phone">
+      <span class="id-label">REGISTRO</span>
+      <span class="id-value">#{{ player._id?.substring(0,8) }}</span>
+    </div>
+  </div>
+
+  <div class="row fl-col-rev-sm">
+    <!-- COLUMNA IZQUIERDA (8): Toda la Info y Comentarios -->
+    <div class="col-8 col-md-12 pr-base px-0-sm">
+
+      <!-- DASHBOARD TÉCNICO -->
+      <div class="stats-dashboard" (scroll)="onStatScroll($event)" (mousedown)="onMouseDown($event)"
+        (mouseleave)="onMouseLeave()" (mouseup)="onMouseUp()" (mousemove)="onMouseMove($event)">
+        <div class="stat-box">
+          <div class="stat-icon"><ion-icon name="calendar-outline"></ion-icon></div>
+          <div class="stat-data">
+            <span class="stat-label">Nacimiento</span>
+            <span class="stat-value">{{ (player.birth_date | date:'dd/MM/yyyy') || '--' }}</span>
           </div>
-        </ion-card-header>
-        <ion-card-content>
-          <div class="summary-wrapper" [class.expanded]="isSummaryExpanded">
-            <p class="summary-text text-neutral-7 fs-15 lh-base">
-              {{ player.summary }}
-            </p>
-            <div class="summary-fade" *ngIf="!isSummaryExpanded && player.summary.length > 200"></div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-icon"><ion-icon name="resize-outline"></ion-icon></div>
+          <div class="stat-data">
+            <span class="stat-label">Altura</span>
+            <span class="stat-value">{{ player.height || '--' }}</span>
           </div>
-          <div class="text-center mt-s" *ngIf="player.summary.length > 200">
-            <ion-button fill="clear" color="primary" class="btn-ver-mas" (click)="toggleSummary()">
-              {{ isSummaryExpanded ? 'Ver menos' : 'Ver biografía completa' }}
-              <ion-icon [name]="isSummaryExpanded ? 'chevron-up-outline' : 'chevron-down-outline'" slot="end"></ion-icon>
+        </div>
+        <div class="stat-box">
+          <div class="stat-icon"><ion-icon name="barbell-outline"></ion-icon></div>
+          <div class="stat-data">
+            <span class="stat-label">Peso</span>
+            <span class="stat-value">{{ player.weight || '--' }}</span>
+          </div>
+        </div>
+        <div class="stat-box" *ngIf="player.side">
+          <div class="stat-icon"><ion-icon name="walk-outline"></ion-icon></div>
+          <div class="stat-data">
+            <span class="stat-label">Pie Hábil</span>
+            <span class="stat-value">{{ player.side === 'Left' ? 'Zurdo' : (player.side === 'Right' ? 'Diestro' :
+              'Ambidiestro') }}</span>
+          </div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-icon">
+            <img *ngIf="leagueDetails?.strBadge" [src]="leagueDetails.strBadge" class="mini-league-badge">
+            <ion-icon *ngIf="!leagueDetails?.strBadge" name="earth-outline"></ion-icon>
+          </div>
+          <div class="stat-data">
+            <span class="stat-label">Competición</span>
+            <span class="stat-value text-truncate">{{ leagueDetails?.strLeague || player.league || 'Pro' }}</span>
+          </div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-icon"><ion-icon name="football-outline"></ion-icon></div>
+          <div class="stat-data">
+            <span class="stat-label">Dorsal</span>
+            <span class="stat-value">#{{ player.number || '00' }}</span>
+          </div>
+        </div>
+      </div>
+      <!-- Dots del Swiper de Stats -->
+      <div class="stat-dots-container d-flex fl-justify-center gap-xs mt-s mb-base">
+        <div class="stat-dot" *ngFor="let i of [0, 1, 2]" [class.active]="currentStatPage === i"></div>
+      </div>
+
+      <!-- BIOGRAFÍA -->
+      <ion-card class="player-card mb-base">
+        <ion-card-content class="p-base">
+          <div class="d-flex fl-align-center mb-base">
+            <span class="fs-16 f-bold text-neutral-8 pr-s ls-1">Biografía</span>
+            <ion-badge color="light" mode="ios" class="text-primary ml-auto py-xs px-s f-bold fs-12">OFICIAL</ion-badge>
+          </div>
+          <div class="bio-wrapper" [class.expanded]="isSummaryExpanded">
+            <p class="bio-text m-0 lh-1-6">{{ player.summary || 'No hay descripción disponible.' }}</p>
+            <div class="bio-fade" *ngIf="!isSummaryExpanded && player.summary && player.summary.length > 150"></div>
+          </div>
+          <div class="text-center mt-base" *ngIf="player.summary && player.summary.length > 150">
+            <ion-button fill="clear" color="primary" mode="ios" (click)="toggleSummary()" class="f-bold fs-14">
+              {{ isSummaryExpanded ? 'Ver menos' : 'Leer biografía completa' }}
+              <ion-icon slot="end" [name]="isSummaryExpanded ? 'chevron-up' : 'chevron-down'"></ion-icon>
             </ion-button>
           </div>
         </ion-card-content>
       </ion-card>
 
-      <!-- VITRINA DE TROFEOS (Premium V2) -->
-      <ion-card class="premium-card mb-base" *ngIf="honours.length > 0">
-        <ion-card-header>
-          <div class="d-flex align-items-center gap-xs">
-            <ion-icon name="trophy-outline" color="primary"></ion-icon>
-            <ion-card-title class="f-bold fs-18">Vitrina de Trofeos</ion-card-title>
-          </div>
-        </ion-card-header>
-        <ion-card-content>
-          <div class="honours-scroll-grid">
-            <div *ngFor="let item of honours" class="honour-badge-item">
-              <div class="trophy-container">
-                <img [src]="item.strHonourTrophy || item.strHonourLogo" (error)="handleImageError($event)" class="trophy-img">
-              </div>
-              <div class="honour-meta">
-                <span class="honour-name">{{ item.strHonour }}</span>
-                <span class="honour-season">{{ item.strSeason }}</span>
+      <!-- TRAYECTORIA Y HONORES -->
+      <ion-card class="player-card mb-base overflow-hidden">
+        <div class="p-0">
+          <ion-segment [(ngModel)]="activeSegment" mode="ios" class="premium-segment-v">
+            <ion-segment-button value="history">
+              <ion-label class="f-bold">Trayectoria</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="honours">
+              <ion-label class="f-bold">Palmarés</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="milestones">
+              <ion-label class="f-bold">Hitos</ion-label>
+            </ion-segment-button>
+          </ion-segment>
+        </div>
+
+        <ion-card-content class="p-base pt-base">
+          <div [ngSwitch]="activeSegment">
+            <!-- Trayectoria -->
+            <div *ngSwitchCase="'history'">
+              <div *ngIf="isLoadingExtra" class="text-center p-xl"><ion-spinner color="primary"></ion-spinner></div>
+              <div *ngIf="!isLoadingExtra && career.length === 0" class="text-center p-xl text-neutral-5">No hay
+                registros históricos</div>
+              <div class="career-list" *ngIf="!isLoadingExtra && career.length > 0">
+                <div class="career-item" *ngFor="let item of visibleCareer">
+                  <div class="career-badge-container">
+                    <ion-icon name="shield-outline"></ion-icon>
+                    <img [src]="item.strTeamBadge" (error)="handleImageError($event)">
+                  </div>
+                  <div class="career-info">
+                    <h4>{{ item.strTeam }}</h4>
+                    <p>{{ item.strSeason }}</p>
+                  </div>
+                </div>
+                <div class="grid-full mt-base" *ngIf="career.length > itemsLimit">
+                  <ion-button fill="clear" size="small" mode="ios" (click)="toggleCareer()" class="f-bold">
+                    {{ isCareerExpanded ? 'Ver menos' : 'Ver todo (' + career.length + ')' }}
+                  </ion-button>
+                </div>
               </div>
             </div>
-          </div>
-        </ion-card-content>
-      </ion-card>
 
-      <!-- TRAYECTORIA HISTÓRICA (Premium V2) -->
-      <ion-card class="premium-card mb-base" *ngIf="career.length > 0">
-        <ion-card-header>
-          <div class="d-flex align-items-center gap-xs">
-            <ion-icon name="shield-outline" color="primary"></ion-icon>
-            <ion-card-title class="f-bold fs-18">Trayectoria en Clubes</ion-card-title>
-          </div>
-        </ion-card-header>
-        <ion-card-content>
-          <div class="career-timeline-v2">
-            <div *ngFor="let step of career" class="timeline-node">
-              <div class="node-badge">
-                <img [src]="step.strBadge" (error)="handleImageError($event)">
+            <!-- Palmarés -->
+            <div *ngSwitchCase="'honours'">
+              <div *ngIf="isLoadingExtra" class="text-center p-xl">
+                <ion-spinner color="primary"></ion-spinner>
+                <p class="fs-12 text-neutral-5 mt-s">Buscando trofeos...</p>
               </div>
-              <div class="node-info">
-                <h4 class="f-bold fs-15 text-neutral-8 mb-0">{{ step.strFormerTeam }}</h4>
-                <div class="d-flex align-items-center gap-xs mt-xs">
-                  <ion-badge color="light" mode="ios" class="fs-10">{{ step.strJoined }} - {{ step.strDeparted }}</ion-badge>
-                  <span class="text-neutral-5 fs-11">{{ step.strMoveType }}</span>
+              <div *ngIf="!isLoadingExtra && honours.length === 0" class="text-center p-xl text-neutral-5">Sin trofeos
+                registrados</div>
+              <div class="honours-grid" *ngIf="!isLoadingExtra && honours.length > 0">
+                <div class="honour-card" *ngFor="let item of visibleHonours">
+                  <div class="trophy-img-box mb-s">
+                    <ion-icon name="trophy-outline"></ion-icon>
+                    <img [src]="item.strTeamBadge" class="trophy-main" (error)="handleImageError($event)">
+                  </div>
+                  <div class="honour-text">
+                    <span class="name">{{ item.strTeam }}</span>
+                    <span class="season">{{ item.strSeason }}</span>
+                  </div>
+                </div>
+                <div class="grid-full mt-base" *ngIf="honours.length > itemsLimit">
+                  <ion-button fill="clear" size="small" mode="ios" (click)="toggleHonours()" class="f-bold">
+                    {{ isHonoursExpanded ? 'Ver menos' : 'Ver todo (' + honours.length + ')' }}
+                  </ion-button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Hitos -->
+            <div *ngSwitchCase="'milestones'">
+              <div *ngIf="isLoadingExtra" class="text-center p-xl">
+                <ion-spinner color="primary"></ion-spinner>
+                <p class="fs-12 text-neutral-5 mt-s">Cargando hitos...</p>
+              </div>
+              <div *ngIf="!isLoadingExtra && milestones.length === 0" class="text-center p-xl text-neutral-5">Sin hitos
+                relevantes</div>
+              <div class="honours-grid" *ngIf="!isLoadingExtra && milestones.length > 0">
+                <div class="honour-card" *ngFor="let item of visibleMilestones">
+                  <div class="milestone-img-box mb-s">
+                    <ion-icon name="flag-outline"></ion-icon>
+                    <img [src]="item.strTeamBadge" class="milestone-main" (error)="handleImageError($event)">
+                  </div>
+                  <div class="honour-text">
+                    <span class="name">{{ item.strTeam }}</span>
+                    <span class="season">{{ item.strSeason }}</span>
+                  </div>
+                </div>
+                <div class="grid-full mt-base" *ngIf="milestones.length > itemsLimit">
+                  <ion-button fill="clear" size="small" mode="ios" (click)="toggleMilestones()" class="f-bold">
+                    {{ isMilestonesExpanded ? 'Ver menos' : 'Ver todo (' + milestones.length + ')' }}
+                  </ion-button>
                 </div>
               </div>
             </div>
@@ -150,138 +207,257 @@
         </ion-card-content>
       </ion-card>
 
-      <!-- Redes Sociales -->
-      <ion-card class="premium-card mb-base" *ngIf="player.social_media">
-        <ion-card-header>
-          <ion-card-title class="f-bold fs-18">Presencia Digital</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <div class="social-links-container d-flex flex-wrap gap-m">
-            <a [href]="'https://' + player.social_media.instagram" target="_blank" class="social-pill instagram" *ngIf="player.social_media.instagram">
-              <ion-icon name="logo-instagram"></ion-icon>
-              <span>Instagram</span>
-            </a>
-            <a [href]="'https://' + player.social_media.facebook" target="_blank" class="social-pill facebook" *ngIf="player.social_media.facebook">
-              <ion-icon name="logo-facebook"></ion-icon>
-              <span>Facebook</span>
-            </a>
-            <a [href]="'https://' + player.social_media.twitter" target="_blank" class="social-pill twitter" *ngIf="player.social_media.twitter">
-              <ion-icon name="logo-twitter"></ion-icon>
-              <span>Twitter</span>
-            </a>
-            <a [href]="'https://' + player.social_media.website" target="_blank" class="social-pill website" *ngIf="player.social_media.website">
-              <ion-icon name="globe-outline"></ion-icon>
-              <span>Sitio Web</span>
-            </a>
+      <!-- COMUNIDAD Y OPINIONES PREMIUM -->
+      <ion-card class="mb-base overflow-hidden">
+        <ion-card-content class="p-base">
+          <!-- Scouting Helper -->
+          <div class="scouting-helper-box mb-base">
+            <div class="d-flex gap-s">
+              <ion-icon name="chatbubble-ellipses-outline" class="hide-on-phone text-primary fs-24"></ion-icon>
+              <p class="m-0 fs-14 text-neutral-8 lh-1-5">
+                ¿Qué te parece el rendimiento de <strong>{{ player.name }}</strong>? Comparte tu opinión o sensaciones
+                con la comunidad.
+              </p>
+            </div>
+          </div>
+
+          <div class="community-container-v">
+            <!-- FORMULARIO INLINE PREMIUM -->
+            <div class="new-comment-form shadow-sm p-base border-radius-soft">
+              <div class="form-inline-grid">
+                <!-- COLUMNA IZQUIERDA: IDENTIDAD Y RATING -->
+                <div class="form-identity">
+                  <div class="editor-header d-flex fl-align-center mb-base">
+                    <span class="fs-16 f-bold text-neutral-8 pr-s ls-1">¿Cómo lo valoras?</span>
+                    <div class="rating-stars-input">
+                      <ion-icon *ngFor="let i of [1,2,3,4,5]" [name]="i <= newRating ? 'star' : 'star-outline'"
+                        [class.active]="i <= newRating" (click)="setRating(i)"></ion-icon>
+                    </div>
+                  </div>
+
+                  <div class="d-flex fs-16 f-medium fl-align-center gap-s">
+                    <ion-icon slot="start" name="person-circle-outline" class="fs-16" aria-hidden="true"></ion-icon>
+                    {{authService.userData()?.name || 'Usuario'}}
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <ion-button [disabled]="!newComment.trim() || isSubmittingComment || newRating === 0"
+                    (click)="submitComment()" mode="ios" shape="round" class="futbol-btn-primary f-bold w-100">
+                    <ion-spinner name="crescent" *ngIf="isSubmittingComment" slot="start" size="small"></ion-spinner>
+                    <span *ngIf="!isSubmittingComment">Publicar Opinión</span>
+                    <span *ngIf="isSubmittingComment">Publicando...</span>
+                    <ion-icon class="ml-s fs-20" name="paper-plane-outline" slot="end"
+                      *ngIf="!isSubmittingComment"></ion-icon>
+                  </ion-button>
+                </div>
+
+                <div class="form-opinion">
+                  <ion-textarea mode="md" label="Tu opinión" label-placement="stacked" fill="outline"
+                    placeholder="Escribe aquí tu opinión sobre el jugador..." class="futbol-input h-100"
+                    [(ngModel)]="newComment" [counter]="true" maxlength="1000" rows="7"
+                    (ionFocus)="commentFocused = true" (ionBlur)="commentFocused = false"
+                    [class.is-focused]="commentFocused">
+                    <ion-icon slot="start" name="analytics-outline" class="fs-16" aria-hidden="true"></ion-icon>
+                  </ion-textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- FEED DE COMENTARIOS (ANCHO COMPLETO) -->
+            <div class="community-feed-full mt-base">
+              <div *ngIf="player.comments && player.comments.length > 0" class="d-flex fl-align-center mb-base">
+                <span class="fs-16 f-bold text-neutral-8 pr-s ls-1">Comentarios</span>
+                <ion-badge color="light" mode="ios" class="text-primary ml-auto py-xs px-s f-bold fs-18">
+                  {{ player.comments.length }}
+                </ion-badge>
+              </div>
+
+              <div class="empty-reports-state" *ngIf="!player.comments || player.comments.length === 0">
+                <div class="empty-icon-box"><ion-icon name="chatbubbles-outline"></ion-icon></div>
+                <h4 class="f-semibold fs-18 text-neutral-8 m-0">Aún no hay opiniones</h4>
+                <p class="text-neutral-5 fs-14 mt-xs">¡Sé el primero en aportar un informe técnico!</p>
+              </div>
+
+              <div class="comment-bubble mt-s" *ngFor="let comment of pagedComments"
+                [class.rating-positive]="comment.rating >= 4" [class.rating-neutral]="comment.rating === 3"
+                [class.rating-negative]="comment.rating > 0 && comment.rating <= 2"
+                [class.is-editing]="editingCommentId === comment._id">
+
+                <ng-container *ngIf="editingCommentId !== comment._id">
+                  <div class="bubble-head">
+                    <div class="d-flex fl-align-center gap-s">
+                      <ion-avatar class="mini-avatar shadow-sm">
+                        <img src="https://ui-avatars.com/api/?name={{comment.autor_name}}&background=random" />
+                      </ion-avatar>
+                      <div class="author-info">
+                        <span class="author">{{ comment.autor_name }}</span>
+                        <span class="date">{{ comment.created_at | date:'dd MMM yyyy HH:mm' }}</span>
+                      </div>
+                    </div>
+                    <div class="rating-mini">
+                      <ion-icon [name]="s" class="fs-16" [class.active]="s === 'star'"
+                        *ngFor="let s of getRatingStars(comment.rating)"></ion-icon>
+                    </div>
+                  </div>
+                  <p class="content">{{ comment.content }}</p>
+                  <div class="bubble-footer" *ngIf="canDeleteComment(comment)">
+                    <span></span>
+                    <div class="actions">
+                      <button (click)="startEditing(comment)" title="Editar"><ion-icon
+                          name="create-outline"></ion-icon></button>
+                      <button class="delete" (click)="deleteComment(comment._id!)" title="Eliminar"><ion-icon
+                          name="trash-outline"></ion-icon></button>
+                    </div>
+                  </div>
+                </ng-container>
+
+                <!-- MODO EDICIÓN -->
+                <ng-container *ngIf="editingCommentId === comment._id">
+                  <div class="rating-stars-input mb-s">
+                    <ion-icon *ngFor="let i of [1,2,3,4,5]" [name]="i <= editingRating ? 'star' : 'star-outline'"
+                      [class.active]="i <= editingRating" (click)="setRating(i, true)"></ion-icon>
+                  </div>
+                  <ion-textarea mode="md" fill="outline" class="futbol-input mb-s" [(ngModel)]="editingContent"
+                    maxlength="1000" rows="5"></ion-textarea>
+                  <div class="edit-actions d-flex gap-s">
+                    <ion-button fill="clear" color="medium" (click)="cancelEditing()" mode="ios">Cancelar</ion-button>
+                    <ion-button fill="solid" color="primary" (click)="saveCommentEdit()" mode="ios"
+                      shape="round">Actualizar</ion-button>
+                  </div>
+                </ng-container>
+              </div>
+
+              <!-- Paginación Comentarios -->
+              <div class="news-pagination-container mt-base" *ngIf="totalPages() > 1">
+                <ion-button class="fs-13" mode="ios" fill="clear" (click)="prevPage()" [disabled]="currentPage === 1">
+                  <ion-icon name="chevron-back-outline" slot="start"></ion-icon> Anterior
+                </ion-button>
+                <div class="page-indicators">
+                  <ion-button mode="ios" *ngFor="let page of getPages()"
+                    [fill]="currentPage === page ? 'solid' : 'clear'" [class.active]="currentPage === page"
+                    (click)="goToPage(page)">
+                    {{ page }}
+                  </ion-button>
+                </div>
+                <ion-button class="fs-13" mode="ios" fill="clear" (click)="nextPage()"
+                  [disabled]="currentPage === totalPages()">
+                  Siguiente <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+                </ion-button>
+              </div>
+            </div>
           </div>
         </ion-card-content>
       </ion-card>
     </div>
 
-    <!-- COLUMNA LATERAL (4): Perfil, Acciones y Comentarios -->
-    <div class="col-4 col-md-12 sticky-sidebar">
-      <!-- Perfil Principal -->
-      <ion-card class="premium-card profile-main-card mb-base">
-        <div class="profile-hero">
-          <img [src]="player.image_url" (error)="handleImageError($event)" />
-          <div class="position-tag">{{ player.position }}</div>
-          
-          <!-- Acciones Flotantes sobre la Imagen (Favorito, Editar, Borrar) -->
-          <div class="profile-actions-floating">
-            <button class="action-btn favorite" [class.active]="player.isFavorite" (click)="toggleFavorite()">
-              <ion-icon [name]="player.isFavorite ? 'heart' : 'heart-outline'"></ion-icon>
-            </button>
-            <button class="action-btn edit" [routerLink]="['/player-edit', player._id]" *ngIf="isAdmin">
-              <ion-icon name="create-outline"></ion-icon>
-            </button>
-            <button class="action-btn delete" (click)="deletePlayer()" *ngIf="isAdmin">
-              <ion-icon name="trash-outline"></ion-icon>
-            </button>
-          </div>
-        </div>
-        <ion-card-content class="text-center py-base">
-          <h2 class="f-bold text-neutral-9 fs-24 mb-0">{{ player.name }}</h2>
-          <p class="text-neutral-5 fs-15 mb-m f-medium">
-            {{ player.team }}
-            <span *ngIf="player.secondary_team" class="text-neutral-3 mx-xs">/</span>
-            {{ player.secondary_team }}
-          </p>
-          <div class="nationality-badge d-inline-flex align-items-center gap-xs px-base py-xs border-radius-soft">
-            <ion-icon name="flag-outline" color="primary"></ion-icon>
-            <span class="fs-12 f-bold uppercase text-neutral-7">{{ player.nationality }}</span>
-          </div>
-        </ion-card-content>
-      </ion-card>
-
-      <!-- SECCIÓN DE COMENTARIOS -->
-      <ion-card class="premium-card comments-card no-margin-x-mobile">
-        <ion-card-header>
-          <div class="d-flex justify-content-between align-items-center">
-            <ion-card-title class="f-bold fs-18">Opinión de la Grada</ion-card-title>
-            <ion-badge color="primary" mode="ios">{{ player.comments?.length || 0 }}</ion-badge>
-          </div>
-        </ion-card-header>
-        <ion-card-content>
-          <!-- Formulario de nuevo comentario -->
-          <div class="new-comment-box mb-base">
-            <div class="rating-selector mb-s">
-              <div class="stars-row">
-                <ion-icon *ngFor="let i of [1,2,3,4,5]" 
-                          [name]="i <= newRating ? 'star' : 'star-outline'" 
-                          [color]="i <= newRating ? 'warning' : 'medium'"
-                          (click)="setRating(i)"
-                          class="fs-24 pointer"></ion-icon>
-              </div>
+    <!-- COLUMNA DERECHA (4): Perfil y Club -->
+    <div class="col-4 col-md-12 pl-base px-0-sm sticky-sidebar">
+      <ion-card class="player-card mb-base overflow-hidden">
+        <div class="player-profile-sidebar">
+          <div class="player-hero-card side-version shadow-lg">
+            <div class="hero-bg-fallback">
+              <ion-icon name="person-outline"></ion-icon>
             </div>
-            <div class="input-wrapper">
-              <textarea [(ngModel)]="newComment" placeholder="Escribe tu opinión..." rows="3" class="comment-textarea"></textarea>
-              <ion-button fill="clear" color="primary" class="btn-send" (click)="submitComment()" [disabled]="!newComment.trim() || isSubmittingComment">
-                <ion-icon [name]="isSubmittingComment ? 'refresh-outline' : 'send-outline'" slot="icon-only" [class.animate-spin]="isSubmittingComment"></ion-icon>
-              </ion-button>
-            </div>
-          </div>
-
-          <!-- Lista de comentarios -->
-          <div class="comments-scroll-area">
-            <div class="comment-bubble-premium" *ngFor="let comment of player.comments">
-              <div class="bubble-header-premium">
-                <div class="user-meta">
-                  <span class="user-name">{{ comment.autor_name }}</span>
-                  <span class="post-date">{{ comment.created_at | date:'shortDate' }}</span>
-                </div>
-                <div class="stars-mini">
-                  <ion-icon *ngFor="let star of getRatingStars(comment.rating)" [name]="star" color="warning"></ion-icon>
-                </div>
+            <div class="hero-bg" [style.background-image]="'url(' + player.image_url + ')'"></div>
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+              <div class="number-top-right">#{{ player.number || '00' }}</div>
+              <div class="info-bottom-left">
+                <h1 class="player-name-side">{{ player.name }}</h1>
+                <div class="position-badge mb-xs">{{ player.position }}</div>
+                <p class="player-team-side m-0">
+                  <ion-icon name="shield-outline" class="mr-xs"></ion-icon>
+                  {{ player.team }}
+                </p>
               </div>
-              
-              <p class="comment-body text-neutral-7">{{ comment.content }}</p>
-              
-              <div class="bubble-actions-premium" *ngIf="canDeleteComment(comment)">
-                <button class="mini-action-btn edit" (click)="editComment(comment)">
+              <div class="actions-bottom-right">
+                <button class="side-action-btn favorite" [class.active]="player.isFavorite"
+                  (click)="toggleFavorite($event)" *ngIf="isOwner">
+                  <ion-icon [name]="player.isFavorite ? 'heart' : 'heart-outline'"></ion-icon>
+                </button>
+                <button class="side-action-btn edit" [routerLink]="['/player-edit', player._id]"
+                  *ngIf="isAdmin || isOwner">
                   <ion-icon name="create-outline"></ion-icon>
                 </button>
-                <button class="mini-action-btn delete" (click)="deleteComment(comment._id!)">
+                <button class="side-action-btn delete" (click)="deletePlayer()" *ngIf="isAdmin || isOwner">
                   <ion-icon name="trash-outline"></ion-icon>
                 </button>
               </div>
             </div>
+          </div>
+        </div>
 
-            <div class="empty-state text-center py-m" *ngIf="!player.comments || player.comments.length === 0">
-              <ion-icon name="chatbubble-outline" color="medium" class="fs-40 mb-s opacity-50"></ion-icon>
-              <p class="text-neutral-5 fs-14">¡Sé el primero en comentar!</p>
+        <ion-card-content>
+          <div class="detail-row">
+            <div class="d-flex fl-align-center gap-s">
+              <ion-icon class="fs-16" name="flag-outline" color="primary"></ion-icon>
+              <span class="label">Nacionalidad</span>
+            </div>
+            <span class="value">{{ player.nationality }}</span>
+          </div>
+          <div class="detail-row" *ngIf="player.birth_place">
+            <div class="d-flex fl-align-center gap-s">
+              <ion-icon class="fs-16" name="location-outline" color="primary"></ion-icon>
+              <span class="label">Origen</span>
+            </div>
+            <span class="value">{{ player.birth_place }}</span>
+          </div>
+          <div class="detail-row">
+            <div class="d-flex fl-align-center gap-s">
+              <ion-icon class="fs-16" name="calendar-outline" color="primary"></ion-icon>
+              <span class="label">Edad Actual</span>
+            </div>
+            <span class="value">{{ player.age }} años</span>
+          </div>
+
+          <div class="social-card-section pt-xs" *ngIf="player.social_media">
+            <div class="d-flex gap-s">
+              <a [href]="'https://' + player.social_media.instagram" target="_blank" class="social-pill instagram"
+                *ngIf="player.social_media.instagram"><ion-icon name="logo-instagram"></ion-icon></a>
+              <a [href]="'https://' + player.social_media.facebook" target="_blank" class="social-pill facebook"
+                *ngIf="player.social_media.facebook"><ion-icon name="logo-facebook"></ion-icon></a>
+              <a [href]="'https://' + player.social_media.twitter" target="_blank" class="social-pill twitter"
+                *ngIf="player.social_media.twitter"><ion-icon name="logo-twitter"></ion-icon></a>
+              <a [href]="'https://' + player.social_media.website" target="_blank" class="social-pill website"
+                *ngIf="player.social_media.website"><ion-icon name="globe-outline"></ion-icon></a>
             </div>
           </div>
         </ion-card-content>
       </ion-card>
+
+      <!-- INFO DEL CLUB -->
+      <div class="mb-base" *ngIf="teamDetails.length > 0">
+        <div class="team-info-card player-card mb-base" *ngFor="let team of teamDetails">
+          <div class="team-banner"
+            [style.backgroundImage]="'url(' + (team.strFanart1 || 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=800') + ')'">
+          </div>
+          <div class="team-horizontal-content">
+            <div class="team-logo-container">
+              <ion-icon name="shield"></ion-icon>
+              <img [src]="team.strTeamBadge" class="team-logo-main" (error)="handleImageError($event)">
+            </div>
+            <div class="team-main-data">
+              <h3>{{ team.strTeam }}</h3>
+              <p>{{ team.strCountry }}</p>
+            </div>
+          </div>
+          <div class="p-base">
+            <div class="detail-row"><span>Liga</span><span>{{ team.strLeague }}</span></div>
+            <div class="detail-row"><span>Estadio</span><span><ion-icon name="business-outline"></ion-icon> {{
+                team.strStadium }}</span></div>
+            <div class="detail-row"><span>Fundación</span><span>{{ team.intFormedYear }}</span></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Cargando -->
-<div class="loader-wrapper" *ngIf="isLoading">
-  <div class="loader-content">
-    <ion-spinner name="crescent" color="primary"></ion-spinner>
-    <p class="text-neutral-6 mt-s">Analizando ficha técnica...</p>
+<!-- CARGADOR UNIFICADO -->
+<div class="player-loader" *ngIf="isLoading">
+  <div class="loader-box">
+    <ion-spinner name="crescent"></ion-spinner>
+    <span>Sincronizando Perfil Técnico...</span>
   </div>
 </div>
-

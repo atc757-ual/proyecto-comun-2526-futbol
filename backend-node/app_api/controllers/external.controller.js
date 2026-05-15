@@ -9,6 +9,7 @@ const searchTSDBPlayers = async (req, res) => {
     try {
         const { name } = req.query;
         if (!name) return sendApiResult(res, 400, "El nombre es obligatorio");
+        
         const players = await tsdbService.searchPlayers(name);
         return sendApiResult(res, 200, "Búsqueda TSDB realizada", players);
     } catch (error) {
@@ -67,6 +68,17 @@ const getTSDBPlayersByTeam = async (req, res) => {
     }
 };
 
+const searchTSDBPlayersByTeam = async (req, res) => {
+    try {
+        const { team } = req.query;
+        if (!team) return sendApiResult(res, 400, "El nombre del equipo es obligatorio");
+        const players = await tsdbService.searchPlayersByTeam(team);
+        return sendApiResult(res, 200, "Búsqueda por equipo realizada", players);
+    } catch (error) {
+        return sendApiResult(res, 500, "Error TSDB: " + error.message);
+    }
+};
+
 const getTSDBLeagues = async (req, res) => {
     try {
         const leagues = await tsdbService.getLeagues();
@@ -87,11 +99,13 @@ const searchTSDBLeagues = async (req, res) => {
     }
 };
 
-const getTSDBTVBySport = async (req, res) => {
+
+const getTSDBLiveScores = async (req, res) => {
     try {
-        const { sport } = req.params;
-        const results = await tsdbService.getTVBySport(sport || 'soccer');
-        return sendApiResult(res, 200, "Datos de TV recuperados", results);
+        console.log('[BACKEND-DEBUG] Petición Livescore recibida');
+        const results = await tsdbService.getLiveScores('soccer');
+        console.log(`[BACKEND-DEBUG] Livescore Results: ${results?.length || 0} encontrados`);
+        return sendApiResult(res, 200, "Live scores recuperados", results);
     } catch (error) {
         return sendApiResult(res, 500, "Error TSDB: " + error.message);
     }
@@ -127,6 +141,27 @@ const getTSDBPlayerHonours = async (req, res) => {
     }
 };
 
+const getTSDBPlayerMilestones = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const milestones = await tsdbService.getPlayerMilestones(id);
+        return sendApiResult(res, 200, "Hitos del jugador recuperados", milestones);
+    } catch (error) {
+        return sendApiResult(res, 500, "Error TSDB: " + error.message);
+    }
+};
+
+const getTSDBTVByCountry = async (req, res) => {
+    try {
+        const { country } = req.params;
+        console.log(`[BACKEND-DEBUG] Petición TV por País: ${country}`);
+        const results = await tsdbService.getTVByCountry(country || 'Spain');
+        return sendApiResult(res, 200, "Eventos de TV por país recuperados", results);
+    } catch (error) {
+        return sendApiResult(res, 500, "Error TSDB: " + error.message);
+    }
+};
+
 module.exports = {
     searchTSDBPlayers,
     getTSDBPlayerDetails,
@@ -134,10 +169,13 @@ module.exports = {
     getTSDBLeagueDetails,
     searchTSDBTeams,
     getTSDBPlayersByTeam,
+    searchTSDBPlayersByTeam,
     getTSDBLeagues,
     searchTSDBLeagues,
-    getTSDBTVBySport,
+    getTSDBLiveScores,
     getTSDBTeamsByLeague,
     getTSDBPlayerTeams,
-    getTSDBPlayerHonours
+    getTSDBPlayerHonours,
+    getTSDBPlayerMilestones,
+    getTSDBTVByCountry
 };

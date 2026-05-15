@@ -1,14 +1,16 @@
 <div class="row">
   <!-- COLUMNA PRINCIPAL (8): Gestión de Entradas y Búsqueda -->
   <div class="col-8 col-sm-12 px-0-sm pr-base">
-    
+
     <!-- Segmento de selección de modo (solo en creación) -->
     <ion-card class="premium-card mb-base" *ngIf="!isEditMode">
       <ion-card-header class="pb-0">
         <ion-segment [(ngModel)]="entryMode" mode="ios" (ionChange)="segmentChanged($event)">
           <ion-segment-button value="import" layout="icon-start">
             <ion-icon name="cloud-download-outline"></ion-icon>
-            <ion-label class="f-semibold">Cargar datos</ion-label>
+            <div class="d-flex fl-direction-column fl-align-center">
+              <ion-label class="f-semibold">Buscar Jugador</ion-label>
+            </div>
           </ion-segment-button>
           <ion-segment-button value="manual" layout="icon-start">
             <ion-icon name="create-outline"></ion-icon>
@@ -16,10 +18,11 @@
           </ion-segment-button>
         </ion-segment>
       </ion-card-header>
-      
+
       <ion-card-content>
         <!-- MODO IMPORTACIÓN: Buscador e Inteligencia -->
-        <div class="animate-fade-in" *ngIf="entryMode === 'import'">
+        <!-- MODO IMPORTACIÓN: Buscador e Inteligencia -->
+        <div class="animate-fade-in" *ngIf="isImportMode()">
           <!-- Buscador Principal -->
           <div class="custom-searchbar mb-base">
             <ion-searchbar mode="ios" placeholder="Escribe el nombre del crack a buscar..." [(ngModel)]="apiSearchQuery"
@@ -38,17 +41,22 @@
           <div class="api-results-list animate-fade-in" *ngIf="!isSearchingApi && apiResults.length > 0">
             <div class="d-flex fl-justify-between fl-align-center mb-s px-xs">
               <h3 class="f-bold fs-14 text-neutral-8 m-0">{{ apiResults.length }} encontrados</h3>
-              <span class="fs-12 text-neutral-7 f-medium uppercase">Pulsa para seleccionar</span>
+              <ion-button fill="clear" size="small" (click)="selectAll11()" class="f-semibold fs-12 p-0 m-0"
+                *ngIf="apiResults.length > 0">
+                Seleccionar 11
+              </ion-button>
             </div>
 
             <div class="minimal-list-container">
               <div *ngFor="let res of pagedResults" class="minimal-result-item" [class.selected]="isSelected(res)"
+                [class.disabled-item]="!isSelected(res) && selectedApiPlayers.length >= 11"
                 [class.already-in-staff]="isInStaff(res.externalId)"
-                (click)="!isInStaff(res.externalId) && toggleApiSelection(res)">
+                (click)="(!isInStaff(res.externalId) && (isSelected(res) || selectedApiPlayers.length < 11)) && toggleApiSelection(res)">
 
                 <div class="item-content-wrapper">
                   <ion-avatar class="mini-avatar">
-                    <img [src]="res.image_url" (error)="res.image_url = 'assets/img/player-placeholder.png'" />
+                    <ion-icon name="person-outline"></ion-icon>
+                    <img [src]="res.image_url" (error)="handleImageError($event)" />
                   </ion-avatar>
 
                   <div class="player-info-main">
@@ -65,6 +73,7 @@
                       <ion-badge color="danger" mode="ios" class="fs-9">YA EN STAFF</ion-badge>
                     </div>
                     <ion-checkbox *ngIf="!isInStaff(res.externalId)" [checked]="isSelected(res)" mode="md"
+                      [disabled]="!isSelected(res) && selectedApiPlayers.length >= 11"
                       style="pointer-events: none;"></ion-checkbox>
                   </div>
                 </div>
@@ -94,16 +103,26 @@
           </div>
 
           <!-- No hay resultados -->
-          <div class="text-center py-base animate-fade-in" *ngIf="!isSearchingApi && hasSearchedApi && apiResults.length === 0">
+          <div class="text-center py-base animate-fade-in"
+            *ngIf="!isSearchingApi && hasSearchedApi && apiResults.length === 0">
             <ion-icon name="football-outline" class="text-neutral-3 fs-36 mb-s"></ion-icon>
             <h2 class="text-neutral-9 f-semibold fs-18">Sin coincidencias</h2>
-            <p class="text-neutral-7 fs-14 px-base">No hemos encontrado jugadores que coincidan con "<strong>{{ apiSearchQuery }}</strong>".</p>
+            <p class="text-neutral-7 fs-14 px-base">No hemos encontrado cracks que coincidan con "<strong>{{
+                apiSearchQuery }}</strong>".</p>
+          </div>
+
+          <!-- Estado Inicial (Antes de buscar) -->
+          <div class="text-center py-base animate-fade-in" *ngIf="!isSearchingApi && !hasSearchedApi">
+            <ion-icon name="search-outline" class="text-neutral-3 fs-36 mb-s"></ion-icon>
+            <h2 class="text-neutral-9 f-semibold fs-18">Búsqueda Global</h2>
+            <p class="text-neutral-7 fs-14 px-base">Escribe un nombre arriba para ver los resultados aquí
+              abajo.</p>
           </div>
         </div>
 
         <!-- MODO MANUAL O EDICIÓN: Formulario -->
         <div class="animate-fade-in" *ngIf="entryMode === 'manual' || isEditMode">
-          <h2 class="f-semibold text-neutral-9 mb-s fs-22 fs-sm-18 margin-none">Información Personal</h2>
+          <h2 class="f-semibold text-neutral-9 mb-s fs-18 fs-sm-16 margin-none">Información Personal</h2>
           <div class="separator mb-base"></div>
 
           <div class="row gap-base gap-0-sm">
@@ -130,12 +149,13 @@
             <div class="form-item col-12">
               <ion-input #fullNameModel="ngModel" mode="md" fill="outline" label="Nombre Completo (Oficial)"
                 labelPlacement="stacked" [(ngModel)]="player.fullname" name="fullname" class="futbol-input"
-                placeholder="Ej: Neymar da Silva Santos Júnior" (ionFocus)="setFocus('fullname')" (ionBlur)="setFocus(null)">
+                placeholder="Ej: Neymar da Silva Santos Júnior" (ionFocus)="setFocus('fullname')"
+                (ionBlur)="setFocus(null)">
               </ion-input>
             </div>
           </div>
 
-          <h2 class="f-semibold text-neutral-9 mb-s fs-22 fs-sm-18 margin-none mt-base">Nacimiento y Origen</h2>
+          <h2 class="f-semibold text-neutral-9 mb-s fs-18 fs-sm-16 margin-none ">Nacimiento y Origen</h2>
           <div class="separator mb-base"></div>
           <div class="row gap-base gap-0-sm">
             <div class="form-item col-6 col-sm-12">
@@ -150,8 +170,9 @@
             </div>
           </div>
 
-          <h2 class="f-semibold text-neutral-9 mb-s fs-22 fs-sm-18 margin-none mt-base">Información Técnica</h2>
-          <div class="separator mb-base"></div>
+          <h2 class="f-semibold text-neutral-9 mb-s fs-18 fs-sm-16 margin-none ">Información Técnica</h2>
+          <div class=" separator mb-base">
+          </div>
           <div class="row gap-base gap-0-sm">
             <div class="form-item col-6 col-sm-12">
               <ion-input #teamModel="ngModel" mode="md" fill="outline" label="Equipo Actual" labelPlacement="stacked"
@@ -168,19 +189,46 @@
               </ion-input>
             </div>
           </div>
-          
-          <div class="form-item col-12 mt-base">
-            <ion-select mode="md" fill="outline" label="Posición" labelPlacement="stacked" [(ngModel)]="player.position"
-              name="position" class="futbol-input" interface="popover">
-              <ion-icon slot="start" name="stats-chart-outline" class="fs-20 mr-s"></ion-icon>
-              <ion-select-option value="Goalkeeper">Portero</ion-select-option>
-              <ion-select-option value="Defender">Defensa</ion-select-option>
-              <ion-select-option value="Midfielder">Centrocampista</ion-select-option>
-              <ion-select-option value="Attacker">Delantero</ion-select-option>
-            </ion-select>
+
+          <div class="row gap-base gap-0-sm mt-base">
+            <div class="form-item col-4 col-sm-12">
+              <ion-input mode="md" fill="outline" label="Altura (cm)" labelPlacement="stacked"
+                [(ngModel)]="player.height" name="height" class="futbol-input" placeholder="Ej: 185">
+                <ion-icon slot="start" name="resize-outline" class="fs-20 mr-s"></ion-icon>
+              </ion-input>
+            </div>
+            <div class="form-item col-4 col-sm-12">
+              <ion-input mode="md" fill="outline" label="Peso (kg)" labelPlacement="stacked" [(ngModel)]="player.weight"
+                name="weight" class="futbol-input" placeholder="Ej: 78">
+                <ion-icon slot="start" name="stats-chart-outline" class="fs-20 mr-s"></ion-icon>
+              </ion-input>
+            </div>
+            <div class="form-item col-4 col-sm-12">
+              <ion-input type="number" mode="md" fill="outline" label="Dorsal" labelPlacement="stacked"
+                [(ngModel)]="player.number" name="number" class="futbol-input" placeholder="Ej: 10">
+                <ion-icon slot="start" name="shirt-outline" class="fs-20 mr-s"></ion-icon>
+              </ion-input>
+            </div>
           </div>
 
-          <h2 class="f-semibold text-neutral-9 mb-s fs-22 fs-sm-18 margin-none mt-base">Biografía</h2>
+          <div class="row gap-base gap-0-sm mt-base">
+            <div class="form-item col-6 col-sm-12">
+              <ion-select mode="md" fill="outline" label="Posición" labelPlacement="stacked"
+                [(ngModel)]="player.position" name="position" class="futbol-input" interface="popover">
+                <ion-icon slot="start" name="stats-chart-outline" class="fs-20 mr-s"></ion-icon>
+                <ion-select-option *ngFor="let pos of positions" [value]="pos.value">{{ pos.label }}</ion-select-option>
+              </ion-select>
+            </div>
+            <div class="form-item col-6 col-sm-12">
+              <ion-select mode="md" fill="outline" label="Pie Hábil" labelPlacement="stacked" [(ngModel)]="player.side"
+                name="side" class="futbol-input" interface="popover">
+                <ion-icon slot="start" name="football-outline" class="fs-20 mr-s"></ion-icon>
+                <ion-select-option *ngFor="let f of feet" [value]="f">{{ f }}</ion-select-option>
+              </ion-select>
+            </div>
+          </div>
+
+          <h2 class="f-semibold text-neutral-9 mb-s fs-18 fs-sm-16 margin-none">Biografía</h2>
           <div class="separator mb-base"></div>
           <ion-textarea mode="md" fill="outline" label="Resumen" labelPlacement="stacked" [(ngModel)]="player.summary"
             name="summary" class="futbol-input" placeholder="Escribe una breve biografía..." auto-grow="true" rows="4">
@@ -192,112 +240,171 @@
 
   <!-- COLUMNA LATERAL (4): Acciones y Media -->
   <div class="col-4 col-sm-12 pl-base px-0-sm">
-    
+
     <!-- MODO IMPORTACIÓN: Resumen de Selección -->
-    <div class="animate-fade-in" *ngIf="!isEditMode && entryMode === 'import'">
-      <ion-card class="premium-card mb-base overflow-hidden" *ngIf="selectedApiPlayers.length > 0">
-        <ion-card-content class="p-0">
-          <div class="bg-success-light p-base d-flex fl-justify-between fl-align-center">
-            <span class="f-bold fs-16 text-neutral-8">Confirmar Selección</span>
-            <ion-badge color="primary" class="fs-12">{{ selectedApiPlayers.length }}</ion-badge>
-          </div>
-          <div class="px-s py-xs">
+    <ion-card class="animate-fade-in margin-none mb-base">
+      <div class="bg-success-light d-flex fl-justify-between fl-align-center px-base py-s" *ngIf="isImportMode()">
+        <span class="f-bold fs-16 text-neutral-8">Confirmar Selección</span>
+        <ion-badge color="primary" class="py-xs px-s fs-12">{{ selectedApiPlayers.length }}</ion-badge>
+      </div>
+      <ion-card-content>
+        <!-- Alerta de Límite Máximo (Banner Style) -->
+        <div *ngIf="selectedApiPlayers.length >= 11 && isImportMode()" class="limit-tag animate-fade-in">
+          <ion-icon name="information-circle-outline" class="mr-xs"></ion-icon>
+          <span>Límite de 11 cracks alcanzado</span>
+        </div>
+
+        <div class="mb-base overflow-hidden" *ngIf="isImportMode()">
+          <!-- Lista de seleccionados -->
+          <div *ngIf="selectedApiPlayers.length > 0">
             <ion-list lines="none">
-              <ion-item *ngFor="let p of getSelectedPlayersArray()" class="selected-queue-item">
-                <ion-img class="api-thumbnail" [src]="p.image_url"></ion-img>
-                <ion-label>
-                  <h3 class="f-semibold fs-14">{{ p.name }}</h3>
-                  <p class="fs-12">{{ p.team }}</p>
-                </ion-label>
-                <ion-button fill="clear" color="danger" slot="end" (click)="toggleApiSelection(p)">
-                  <ion-icon name="trash-outline" slot="icon-only" class="fs-18"></ion-icon>
-                </ion-button>
-              </ion-item>
+              <ng-container *ngFor="let p of getSelectedPlayersArray(); let last = last">
+                <ion-item class="selected-queue-item">
+                  <div class="api-thumbnail-container">
+                    <ion-icon name="person"></ion-icon>
+                    <ion-img class="api-thumbnail" [src]="p.image_url" (ionError)="handleImageError($event)"></ion-img>
+                  </div>
+                  <ion-label>
+                    <h3 class="f-semibold fs-14">{{ p.name }}</h3>
+                    <p class="fs-12">{{ p.team }}</p>
+                  </ion-label>
+                  <ion-button fill="clear" color="danger" slot="end" (click)="toggleApiSelection(p)">
+                    <ion-icon name="trash-outline" slot="icon-only" class="fs-18"></ion-icon>
+                  </ion-button>
+                </ion-item>
+                <div class="separator my-s" *ngIf="!last"></div>
+              </ng-container>
             </ion-list>
           </div>
-        </ion-card-content>
-      </ion-card>
 
-      <!-- Botón de Importación -->
-      <ion-button expand="block" mode="ios" shape="round" color="primary" class="f-bold" 
-        (click)="importSelectedPlayers()" [disabled]="selectedApiPlayers.length === 0">
-        <ion-icon name="cloud-done-outline" slot="start"></ion-icon>
-        <ion-label class="ml-s"> {{ selectedApiPlayers.length <= 1 ? 'Guardar jugador' : 'Guardar jugadores' }}</ion-label>
-      </ion-button>
-    </div>
-
-    <!-- MODO MANUAL O EDICIÓN: Multimedia y GPS -->
-    <div class="animate-fade-in" *ngIf="entryMode === 'manual' || isEditMode">
-      
-      <!-- Foto del Crack -->
-      <div class="premium-card p-base mb-base">
-        <ion-card-title class="f-bold fs-16 mb-base">Foto del jugador</ion-card-title>
-        <div class="image-preview-container mb-base" *ngIf="previewImage">
-          <img [src]="previewImage" alt="Preview">
-          <div class="preview-actions">
-            <ion-button mode="ios" fill="clear" class="preview-fab reload-btn" (click)="fileInput.click()">
-              <ion-icon name="sync-outline" slot="icon-only"></ion-icon>
-            </ion-button>
-            <ion-button mode="ios" fill="clear" class="preview-fab remove-btn" (click)="removeImage()">
-              <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
-            </ion-button>
+          <!-- Estado vacío de la cola -->
+          <div class="text-center py-base" *ngIf="selectedApiPlayers.length === 0 &&  isImportMode()">
+            <p class="text-neutral-5 fs-13 m-0">No hay jugadores seleccionados para importar.</p>
           </div>
         </div>
-        <div class="image-upload-area" *ngIf="!previewImage">
-          <div class="upload-options d-flex gap-m w-100">
-            <div class="upload-box flex-1" (click)="fileInput.click()">
-              <ion-icon name="cloud-upload-outline"></ion-icon>
-              <span>Galería</span>
+
+
+
+        <!-- SECCIÓN GPS Y MAPA: Siempre visible o relevante -->
+        <div class="animate-fade-in margin-none mb-base">
+          <div class="separator my-xs"></div>
+          <div class="gps-section">
+            <!-- ESTADO 1: PERMISOS ACTIVOS (Success) -->
+            <div *ngIf="hasGeoPermission" class="permission-item-row mb-base bg-permission-active animate-fade-in">
+              <ion-icon name="navigate-circle-outline" class="text-success fs-36 pulse-animation"></ion-icon>
+              <ion-label>
+                <h3 class="f-bold fs-16 text-success">Ubicación GPS Activa</h3>
+                <p class="fs-14 text-neutral-7">Permisos concedidos.</p>
+              </ion-label>
+              <ion-toggle slot="end" mode="ios" class="ml-auto" color="success" [checked]="true"
+                [disabled]="true"></ion-toggle>
             </div>
-            <div class="upload-box flex-1" (click)="takePhoto()">
-              <ion-icon name="camera-outline"></ion-icon>
-              <span>Cámara</span>
+
+            <!-- ESTADO 2: PERMISOS REQUERIDOS (Warning/Red) -->
+            <div *ngIf="!hasGeoPermission" class="permission-item-row mb-base bg-permission-denied animate-fade-in">
+              <ion-icon name="alert-circle-outline" color="danger" class="fs-24"></ion-icon>
+              <ion-label>
+                <h3 class="f-bold fs-16">Ubicación GPS</h3>
+                <p class="fs-14 text-neutral-7">Permisos necesarios.</p>
+              </ion-label>
+              <ion-toggle slot="end" mode="ios" color="danger" class="ml-auto" [checked]="hasGeoPermission"
+                (ionChange)="handlePermissionToggle($event)"></ion-toggle>
+            </div>
+
+            <!-- Mapa de Ubicación -->
+            <div class="map-container-wrapper animate-fade-in mb-base" *ngIf="hasLocation">
+              <div id="player-map" class="mini-scouting-map"></div>
+              <div class="map-info-footer d-flex fl-justify-between px-s py-xs">
+                <span class="fs-10 text-neutral-5"><ion-icon name="resize-outline"
+                    class="mr-xs"></ion-icon>Ajustable</span>
+                <span class="fs-10 text-primary f-bold" *ngIf="player.location?.coordinates">
+                  {{ (player.location!.coordinates![1] || 0) | number:'1.4-4' }},
+                  {{ (player.location!.coordinates![0] || 0) | number:'1.4-4' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Botón de Importación (Solo en modo import) -->
+            <div *ngIf="isImportMode()">
+              <ion-button expand="block" mode="ios" shape="round" color="primary" class="f-bold"
+                (click)="importSelectedPlayers()" [disabled]="isImporting || selectedApiPlayers.length === 0">
+                <ion-spinner name="crescent" color="light" *ngIf="isImporting" class="mr-s"></ion-spinner>
+                <ion-icon name="cloud-done-outline" slot="start" *ngIf="!isImporting"></ion-icon>
+                <ion-label class="ml-s" *ngIf="!isImporting">
+                  {{ selectedApiPlayers.length <= 1 ? 'Guardar jugador' : 'Guardar jugadores' }} </ion-label>
+              </ion-button>
             </div>
           </div>
-          <p class="fs-12 text-neutral-5 mt-base text-center w-100">Máximo 100KB</p>
-        </div>
-        <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;">
-      </div>
 
-      <!-- Geolocalización -->
-      <div class="gps-section mb-base">
-        <!-- ESTADO 1: PERMISOS ACTIVOS (Success) -->
-        <div *ngIf="hasGeoPermission" class="permission-item-row mb-base bg-permission-active animate-fade-in">
-          <ion-icon name="navigate-circle-outline" class="text-success fs-36 pulse-animation"></ion-icon>
-          <ion-label>
-            <h3 class="f-bold fs-16 text-success">Ubicación GPS Activa</h3>
-            <p class="fs-14 text-neutral-7">Permisos concedidos.</p>
-          </ion-label>
-          <ion-toggle slot="end" mode="ios" color="success" [checked]="true" [disabled]="true"></ion-toggle>
-        </div>
+          <div class="animate-fade-in" *ngIf="isManualMode()">
+            <!-- SECCIÓN CÁMARA: Permisos y Multimedia (NUEVA UBICACIÓN) -->
+            <div class="camera-permission-section mb-base">
+              <!-- ESTADO 1: PERMISOS ACTIVOS (Success/Blue) -->
+              <div *ngIf="hasCameraPermission" class="permission-item-row bg-permission-info animate-fade-in">
+                <ion-icon name="camera-outline" class="text-primary fs-24 pulse-animation"></ion-icon>
+                <ion-label>
+                  <h3 class="f-bold fs-16 text-primary">Cámara Activa</h3>
+                  <p class="fs-14 text-neutral-7">Permisos concedidos.</p>
+                </ion-label>
+                <ion-toggle slot="end" mode="ios" class="ml-auto" color="primary" [checked]="true"
+                  [disabled]="true"></ion-toggle>
+              </div>
 
-        <!-- ESTADO 2: PERMISOS REQUERIDOS (Warning/Red) -->
-        <div *ngIf="!hasGeoPermission" class="permission-item-row mb-base bg-permission-denied animate-fade-in">
-          <ion-icon name="alert-circle-outline" color="danger" class="fs-24"></ion-icon>
-          <ion-label>
-            <h3 class="f-bold fs-16">Ubicación GPS</h3>
-            <p class="fs-14 text-neutral-7">Permisos necesarios.</p>
-          </ion-label>
-          <ion-toggle slot="end" mode="ios" color="danger" [checked]="hasGeoPermission" (ionChange)="handlePermissionToggle($event)"></ion-toggle>
-        </div>
+              <!-- ESTADO 2: PERMISOS REQUERIDOS (Blue Theme) -->
+              <div *ngIf="!hasCameraPermission" class="permission-item-row bg-permission-info animate-fade-in">
+                <ion-icon name="camera-outline" color="primary" class="fs-24 pulse-animation"></ion-icon>
+                <ion-label>
+                  <h3 class="f-bold fs-16">Permisos de Cámara</h3>
+                  <p class="fs-14 text-neutral-7">Necesario para fotos.</p>
+                </ion-label>
+                <ion-toggle slot="end" mode="ios" color="primary" class="ml-auto" [checked]="hasCameraPermission"
+                  (ionChange)="requestCameraPermission()"></ion-toggle>
+              </div>
+            </div>
 
-        <!-- Mapa de Ubicación -->
-        <div class="map-container-wrapper animate-fade-in" *ngIf="hasLocation">
-          <div id="player-map" class="mini-scouting-map"></div>
-          <div class="map-info-footer d-flex fl-justify-between px-s py-xs">
-            <span class="fs-10 text-neutral-5"><ion-icon name="resize-outline" class="mr-xs"></ion-icon>Ajustable</span>
-            <span class="fs-10 text-primary f-bold">{{ player.location?.coordinates![1] | number:'1.4-4' }}, {{ player.location?.coordinates![0] | number:'1.4-4' }}</span>
+            <div class="margin-none mb-base">
+              <div class="f-bold fs-16 mb-s">Foto del jugador</div>
+              <div class="image-preview-container mb-base" *ngIf="previewImage">
+                <img [src]="previewImage" alt="Preview">
+                <div class="preview-actions">
+                  <ion-button mode="ios" fill="clear" class="preview-fab reload-btn"
+                    (click)=" hasCameraPermission &&fileInput.click()">
+                    <ion-icon name="sync-outline" slot="icon-only"></ion-icon>
+                  </ion-button>
+                  <ion-button mode="ios" fill="clear" class="preview-fab remove-btn"
+                    (click)="hasCameraPermission && removeImage()">
+                    <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+                  </ion-button>
+                </div>
+              </div>
+              <div class="image-upload-area" *ngIf="!previewImage">
+                <div class="upload-options d-flex gap-m w-100">
+                  <div class="upload-box flex-1" (click)="fileInput.click()">
+                    <ion-icon name="cloud-upload-outline"></ion-icon>
+                    <span>Galería</span>
+                  </div>
+                  <div class="upload-box flex-1" (click)="hasCameraPermission && takePhoto()"
+                    [class.disabled-box]="!hasCameraPermission">
+                    <ion-icon name="camera-outline"></ion-icon>
+                    <span>Cámara</span>
+                  </div>
+                </div>
+                <p class="fs-12 text-neutral-5 mt-base text-center w-100">Máximo 100KB</p>
+              </div>
+              <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;">
+
+              <!-- Botón Guardar Principal (Manual/Edit) -->
+              <ion-button expand="block" mode="ios" shape="round" color="primary" class="mt-base" (click)="onSave()"
+                [disabled]="isPublishing || !player.name || !player.team">
+                <ion-spinner name="crescent" color="light" *ngIf="isPublishing" class="mr-s"></ion-spinner>
+                <ion-icon name="save-outline" slot="start" *ngIf="!isPublishing"></ion-icon>
+                <span class="ml-s" *ngIf="!isPublishing">Guardar jugador</span>
+              </ion-button>
+
+            </div>
           </div>
         </div>
-      </div>
-
-      <!-- Botón Guardar -->
-      <ion-button expand="block" mode="ios" shape="round" color="primary" class="f-bold" 
-        (click)="onSave()" [disabled]="isPublishing || !player.name || !player.team">
-        <ion-icon name="save-outline" slot="start"></ion-icon>
-        <span>Guardar jugador</span>
-      </ion-button>
-    </div>
-
+      </ion-card-content>
+    </ion-card>
   </div>
 </div>

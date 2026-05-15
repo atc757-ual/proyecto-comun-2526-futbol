@@ -26,7 +26,8 @@ export class NewsPage implements OnInit, OnDestroy {
   private navCtrl = inject(NavController);
 
   newsList: NewsItem[] = [];
-  selectedNews: NewsItem | null = null;
+  featuredNews: NewsItem[] = []; // Nueva lista para el sidebar
+  selectedNew: NewsItem | null = null;
   isAdmin = false;
   isLoading = true;
   activeSpotlightIndex = -1; // Empezamos en -1 para que nada tenga foco al cargar
@@ -59,6 +60,7 @@ export class NewsPage implements OnInit, OnDestroy {
 
     this.isAdmin = this.authService.isAdmin(); // Usamos la instancia inyectada
     this.loadNews();
+    this.loadFeatured(); // Carga independiente para el sidebar
 
     // Si es Desktop, activamos el primer foco inmediatamente
     if (this.platformService.isDesktop) {
@@ -112,6 +114,16 @@ export class NewsPage implements OnInit, OnDestroy {
     });
   }
 
+  loadFeatured() {
+    this.newsService.getFeatured().subscribe({
+      next: (news) => {
+        // Mostramos solo las 5 primeras en el sidebar
+        this.featuredNews = news.slice(0, 5);
+      },
+      error: (err) => console.error('Error cargando destacadas:', err)
+    });
+  }
+
   updateVisibleNews() {
     const start = (this.currentPage - 1) * this.itemsPerPage;
     const end = start + this.itemsPerPage;
@@ -142,7 +154,10 @@ export class NewsPage implements OnInit, OnDestroy {
   }
 
   selectNews(news: NewsItem) {
-    this.selectedNews = news;
+    // Update selected news for UI highlight
+    this.selectedNew = news;
+    // Navigate to the detail page for the chosen news item
+    this.navCtrl.navigateForward(['/news', news.id]);
   }
 
   goToDetail(id: string | undefined) {

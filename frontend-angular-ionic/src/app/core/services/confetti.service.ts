@@ -40,6 +40,37 @@ export class ConfettiService {
   }
 
   /**
+   * Celebración Dorada Premium
+   */
+  goldCelebrate() {
+    const duration = 2 * 1000;
+    const end = Date.now() + duration;
+    const goldColors = ['#FFD700', '#FDB931', '#FFCC00', '#FFF700', '#D4AF37'];
+
+    const frame = () => {
+      confetti({
+        particleCount: 3,
+        angle: 60,
+        spread: 60,
+        origin: { x: 0, y: 0.6 },
+        colors: goldColors
+      });
+      confetti({
+        particleCount: 3,
+        angle: 120,
+        spread: 60,
+        origin: { x: 1, y: 0.6 },
+        colors: goldColors
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    };
+    frame();
+  }
+
+  /**
    * Disparo único central
    */
   cannon() {
@@ -48,6 +79,18 @@ export class ConfettiService {
       spread: 70,
       origin: { y: 0.6 },
       colors: ['#004d99', '#ffffff', '#db0011']
+    });
+  }
+
+  /**
+   * Cañonazo Dorado
+   */
+  goldCannon() {
+    confetti({
+      particleCount: 200,
+      spread: 80,
+      origin: { y: 0.7 },
+      colors: ['#FFD700', '#FDB931', '#FFCC00', '#FFF700', '#D4AF37']
     });
   }
 }

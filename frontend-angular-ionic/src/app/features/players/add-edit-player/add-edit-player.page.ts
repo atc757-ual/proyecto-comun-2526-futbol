@@ -31,7 +31,7 @@ import {
   alertCircleOutline, lockClosedOutline
 } from 'ionicons/icons';
 import { PlayerService, Player } from '@core/services/player.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { LayoutService } from '@core/services/layout.service';
 import { StorageService } from '@core/services/storage.service';
 import { CameraPlugin } from '@core/plugins/camera-plugin';
@@ -49,7 +49,7 @@ import { AuthService } from '@core/services/auth.service';
     CommonModule, FormsModule,
     IonItem, IonAvatar, IonLabel,
     IonInput, IonSelect, IonSelectOption, IonButton, IonIcon,
-    IonCard, IonCardContent, IonCardHeader, IonCardTitle,
+    IonCard, IonCardContent, IonCardHeader,
     IonSpinner,
     IonSegment, IonSegmentButton, IonSearchbar,
     IonCheckbox, IonList, IonBadge, IonImg, IonToggle, IonTextarea
@@ -58,32 +58,34 @@ import { AuthService } from '@core/services/auth.service';
 export class AddEditPlayerPage implements OnInit, OnDestroy {
   private playerService = inject(PlayerService);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private navCtrl = inject(NavController);
   private toastCtrl = inject(ToastController);
   private loadingCtrl = inject(LoadingController);
   private layoutService = inject(LayoutService);
-  private storageService = inject(StorageService);
   private cameraPlugin = inject(CameraPlugin) as CameraPlugin;
   private locationPlugin = inject(LocationPlugin) as LocationPlugin;
   private mapPlugin = inject(MapPlugin) as MapPlugin;
   private confettiService = inject(ConfettiService);
-  private authService = inject(AuthService);
   private http = inject(HttpClient);
+  private authService = inject(AuthService);
 
   public isEditMode = false;
   public playerId: string | null = null;
-  public entryMode: 'manual' | 'import' = 'import'; // Por defecto import para nuevos
+  public entryMode: string = 'import'; // Por defecto import para nuevos
   public apiSearchQuery = '';
   public isSearchingApi = false;
+  public isImporting = false;
   public hasSearchedApi = false;
   public apiResults: any[] = [];
   public selectedApiPlayers: any[] = [];
   public hasGeoPermission = false;
+  public hasCameraPermission = false;
   public localPlayers: Player[] = [];
 
   // Paginación
   public currentPage = 1;
-  public pageSize = 7;
+  public pageSize = 11;
 
   get pagedResults() {
     const start = (this.currentPage - 1) * this.pageSize;
@@ -92,6 +94,14 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
 
   get totalPages() {
     return Math.ceil(this.apiResults.length / this.pageSize);
+  }
+
+  isImportMode() {
+    return this.entryMode === 'import' && !this.isEditMode;
+  }
+
+  isManualMode() {
+    return this.entryMode === 'manual' || this.isEditMode;
   }
 
   calculateAge() {
@@ -167,10 +177,11 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     nationality: '',
     height: '',
     weight: '',
+    side: 'Derecho',
     number: undefined,
     position: 'Midfielder',
     image_url: '',
-    user_id: '', // Se asignará en el constructor/onInit
+    user_id: '',
     summary: '',
     social_media: {
       facebook: '',
@@ -192,6 +203,21 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       league_id: ''
     }
   };
+
+  positions = [
+    { value: 'Goalkeeper', label: 'Portero' },
+    { value: 'Centre-Back', label: 'Central' },
+    { value: 'Right-Back', label: 'Lateral Derecho' },
+    { value: 'Left-Back', label: 'Lateral Izquierdo' },
+    { value: 'Defensive Midfield', label: 'Pivote' },
+    { value: 'Midfielder', label: 'Centrocampista' },
+    { value: 'Attacking Midfield', label: 'Mediapunta' },
+    { value: 'Left Winger', label: 'Extremo Izquierdo' },
+    { value: 'Right Winger', label: 'Extremo Derecho' },
+    { value: 'Centre-Forward', label: 'Delantero Centro' }
+  ];
+
+  feet = ['Derecho', 'Izquierdo', 'Ambidiestro'];
 
   // Estados de los inputs (Patrón Noticias)
   focusedField: string | null = null;
@@ -227,6 +253,13 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
+    // Capturar el ID del usuario actual
+    this.authService.user$.subscribe(user => {
+      if (user) {
+        this.player.user_id = user.uid;
+      }
+    });
+
     this.playerId = this.route.snapshot.paramMap.get('id');
     if (this.playerId) {
       this.isEditMode = true;
@@ -260,14 +293,11 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       }
     ]);
 
-    // Obtener UID real
-    const user = this.authService.currentUser();
-    if (user) {
-      this.player.user_id = user.uid;
-    }
-    
     // Si ya tenemos permisos, capturamos ubicación automáticamente
-    this.checkGeoPermission().then(() => {
+    Promise.all([
+      this.checkGeoPermission(),
+      this.checkCameraPermission()
+    ]).then(() => {
       if (this.hasGeoPermission && !this.isEditMode) {
         console.log('[GPS] Permiso detectado, capturando ubicación...');
         this.captureLocation();
@@ -330,7 +360,29 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       this.showToast('¡Permisos de ubicación activos!', 'success', 'shield-checkmark-outline');
       await this.captureLocation();
     } else {
-      this.showToast('¡GPS bloqueado! 🔒 Usa el candado del navegador.', 'danger', 'lock-closed-outline');
+      this.showToast('¡GPS bloqueado! Usa el candado del navegador.', 'danger', 'lock-closed-outline');
+    }
+  }
+
+  async requestCameraPermission() {
+    try {
+      const result = await this.cameraPlugin.requestCameraPermission();
+      this.hasCameraPermission = result;
+      if (result) {
+        this.showToast('¡Permisos de cámara activos!', 'success', 'camera-outline');
+      } else {
+        this.showToast('¡Cámara bloqueada! Usa el candado del navegador.', 'danger', 'lock-closed-outline');
+      }
+    } catch (e) {
+      console.error('Error al solicitar permiso de cámara:', e);
+    }
+  }
+
+  async checkCameraPermission() {
+    try {
+      this.hasCameraPermission = await this.cameraPlugin.isCameraPermissionGranted();
+    } catch (e) {
+      console.warn('No se pudo verificar el permiso de cámara:', e);
     }
   }
 
@@ -340,23 +392,23 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     // Si el usuario lo activa y no tenemos permiso aún
     if (isChecked && !this.hasGeoPermission) {
       const granted = await this.locationPlugin.requestGeolocationPermission();
-      
+
       if (granted) {
         this.hasGeoPermission = true;
         this.showToast('¡Permisos de ubicación activos!', 'success', 'shield-checkmark-outline');
         await this.captureLocation();
       } else {
         this.hasGeoPermission = false;
-        this.showToast('¡GPS bloqueado! 🔒 Usa el candado del navegador.', 'danger', 'lock-closed-outline');
+        this.showToast('¡GPS bloqueado! Usa el candado del navegador.', 'danger', 'lock-closed-outline');
         // Forzamos el reset visual del toggle
         if (event.target) {
           event.target.checked = false;
         }
       }
     } else if (!isChecked && this.hasGeoPermission) {
-       // Si el usuario apaga el GPS manualmente, ocultamos el mapa
-       this.hasLocation = false;
-       this.hasGeoPermission = false;
+      // Si el usuario apaga el GPS manualmente, ocultamos el mapa
+      this.hasLocation = false;
+      this.hasGeoPermission = false;
     }
   }
 
@@ -367,7 +419,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
 
   segmentChanged(event: any) {
     this.entryMode = event.detail.value;
-    
+
     // Si cambiamos a manual, reseteamos los valores de búsqueda de IA
     if (this.entryMode === 'manual') {
       this.apiSearchQuery = '';
@@ -383,7 +435,8 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   }
 
   handleImageError(event: any) {
-    event.target.src = 'assets/img/player-placeholder.png';
+    // Si la imagen falla, la ocultamos para que se vea el icono de fondo
+    event.target.style.display = 'none';
   }
 
   private searchPlayersApi() {
@@ -403,10 +456,8 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         })).sort((a, b) => {
           const aInStaff = this.isInStaff(a.externalId);
           const bInStaff = this.isInStaff(b.externalId);
-          // Si 'a' está en staff y 'b' no, 'a' va después (1)
-          if (aInStaff && !bInStaff) return 1;
-          // Si 'a' no está y 'b' sí, 'a' va antes (-1)
           if (!aInStaff && bInStaff) return -1;
+          if (aInStaff && !bInStaff) return 1;
           return 0;
         });
         this.currentPage = 1;
@@ -437,53 +488,9 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       // 1. Obtener detalles completos del jugador
       const details = await firstValueFrom(this.playerService.lookupTSDBPlayer(apiPlayer.externalId)) as any;
       if (details) {
-        this.player.name = details.strPlayer;
-        this.player.fullname = details.strPlayerAlternate || details.strPlayer;
-        this.player.nationality = details.strNationality;
-        this.player.team = details.strTeam;
-        this.player.position = details.strPosition;
-        this.player.height = details.strHeight;
-        this.player.weight = details.strWeight;
-        this.player.number = details.strNumber ? parseInt(details.strNumber) : undefined;
-        this.player.birth_date = details.dateBorn;
-        this.player.birth_place = details.strBirthLocation;
-        this.player.birth_country = details.strNationality;
-        this.player.image_url = details.strThumb || apiPlayer.image_url;
-        this.player.external_id = details.idPlayer;
-        this.player.summary = details.strDescriptionES || details.strDescriptionEN || '';
-
-        // Identificadores TSDB
-        this.player.tsdb_ids = {
-          player_id: details.idPlayer,
-          team_id: details.idTeam,
-          team_id2: details.idTeam2,
-          league_id: details.idLeague
-        };
-
-        // Redes Sociales
-        this.player.social_media = {
-          facebook: details.strFacebook,
-          instagram: details.strInstagram,
-          twitter: details.strTwitter,
-          website: details.strWebsite
-        };
-
-        // Múltiples Imágenes Estructuradas
-        this.player.images = {
-          thumb: details.strThumb,
-          poster: details.strPoster,
-          cutout: details.strCutout,
-          cartoon: details.strCartoon,
-          banner: details.strBanner
-        };
-
-        // Calcular edad
-        if (details.dateBorn) {
-          const born = new Date(details.dateBorn);
-          const ageDifMs = Date.now() - born.getTime();
-          const ageDate = new Date(ageDifMs);
-          this.player.age = Math.abs(ageDate.getUTCFullYear() - 1970);
-        }
+        // Usar el mapper centralizado para rellenar el objeto player
+        const mappedPlayer = this.playerService.mapTSDBToPlayer(details, apiPlayer);
+        Object.assign(this.player, mappedPlayer);
 
         // 3. Obtener Liga (sacamos el ID de los detalles)
         const leagueId = details?.idLeague;
@@ -514,6 +521,11 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   }
 
   async toggleApiSelection(apiPlayer: any) {
+    if (!this.isSelected(apiPlayer) && this.selectedApiPlayers.length >= 11) {
+      this.showToast('Has alcanzado el límite de 11 cracks', 'warning', 'alert-circle-outline');
+      return;
+    }
+
     const isAlreadySelected = this.isSelected(apiPlayer);
 
     if (isAlreadySelected) {
@@ -522,7 +534,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     } else {
       // LÍMITE DE 11 JUGADORES
       if (this.selectedApiPlayers.length >= 11) {
-        this.showToast('Solo puedes añadir hasta 11 jugadores a la vez', 'warning', 'alert-circle-outline');
+        this.showToast('Solo puedes añadir hasta 11 cracks a la vez', 'warning', 'alert-circle-outline');
         return;
       }
 
@@ -543,106 +555,64 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     }
   }
 
+  selectAll11() {
+    if (this.apiResults.length === 0) return;
+
+    // Seleccionar los primeros 11 (o todos si hay menos de 11)
+    const toSelect = this.apiResults.slice(0, 11);
+    toSelect.forEach(p => {
+      if (!this.isSelected(p) && !this.isInStaff(p.externalId)) {
+        this.toggleApiSelection(p);
+      }
+    });
+  }
+
   async importSelectedPlayers() {
     if (this.selectedApiPlayers.length === 0) return;
 
-    const playersToImport = [...this.selectedApiPlayers];
-    const loading = await this.loadingCtrl.create({
-      message: `Importando ${playersToImport.length} cracks...`,
-      mode: 'ios'
-    });
-    await loading.present();
+    this.isImporting = true;
 
-    let successCount = 0;
-    for (const apiPlayer of playersToImport) {
-      try {
-        // Usamos los detalles precargados si existen, si no los pedimos ahora
-        const details = apiPlayer.details || await firstValueFrom(this.playerService.lookupTSDBPlayer(apiPlayer.externalId)) as any;
-
-        console.log(`[Import] Mapeando datos para ${apiPlayer.name}`, details);
-
-        const newPlayer: Player = {
-          name: apiPlayer.name,
-          fullname: details?.strPlayerAlternate || details?.strPlayer || apiPlayer.name,
-          team: details?.strTeam || apiPlayer.team,
-          nationality: details?.strNationality || apiPlayer.nationality,
-          position: details?.strPosition || apiPlayer.position,
-          image_url: details?.strThumb || apiPlayer.image_url,
-          external_id: apiPlayer.externalId,
-          is_manual: false,
-          secondary_team: details?.strTeam2,
-          user_id: this.authService.currentUser()?.uid || 'unknown',
-          created_by: this.authService.currentUser()?.email || 'admin',
-          updated_by: this.authService.currentUser()?.email || 'admin',
-          created_at: new Date(),
-          updated_at: new Date(),
-          summary: details?.strDescriptionES || details?.strDescriptionEN || '',
-          tsdb_ids: details ? {
-            player_id: details.idPlayer,
-            team_id: details.idTeam,
-            team_id2: details.idTeam2,
-            league_id: details.idLeague
-          } : {},
-          images: details ? {
-            thumb: details.strThumb,
-            poster: details.strPoster,
-            cutout: details.strCutout,
-            cartoon: details.strCartoon,
-            banner: details.strBanner
-          } : {
-            thumb: apiPlayer.image_url,
-            poster: '',
-            cutout: '',
-            cartoon: '',
-            banner: ''
-          },
-          social_media: details ? {
-            facebook: details.strFacebook,
-            instagram: details.strInstagram,
-            twitter: details.strTwitter,
-            website: details.strWebsite
-          } : {
-            facebook: '',
-            instagram: '',
-            twitter: '',
-            website: ''
-          }
-        };
-
-        console.log(`[Import] Objeto final a guardar:`, newPlayer);
-
-        if (details) {
-          newPlayer.birth_date = details.dateBorn;
-          newPlayer.birth_place = details.strBirthLocation;
-          newPlayer.birth_country = details.strNationality;
-          newPlayer.height = details.strHeight;
-          newPlayer.weight = details.strWeight;
-          newPlayer.number = details.strNumber ? parseInt(details.strNumber) : undefined;
-
-          if (details.dateBorn) {
-            const born = new Date(details.dateBorn);
-            const ageDifMs = Date.now() - born.getTime();
-            const ageDate = new Date(ageDifMs);
-            newPlayer.age = Math.abs(ageDate.getUTCFullYear() - 1970);
-          }
-        }
-
-        await firstValueFrom(this.playerService.addPlayer(newPlayer));
-        successCount++;
-      } catch (err) {
-        console.error('Error importando a', apiPlayer.name, err);
-      }
+    // 1. Asegurar ubicación antes de la importación masiva
+    if (!this.player.location || !this.player.location.coordinates || (this.player.location.coordinates[0] === 0 && this.player.location.coordinates[1] === 0)) {
+      await this.captureLocation();
     }
 
-    loading.dismiss();
-    this.selectedApiPlayers = [];
-    this.apiResults = [];
-    this.apiSearchQuery = '';
+    // 2. Preparar los datos con ubicación y user_id
+    const playersToImport = this.getSelectedPlayersArray().map(p => ({
+      ...p,
+      location: this.player.location,
+      user_id: this.player.user_id
+    }));
 
-    this.confettiService.celebrate();
-    this.showToast(`Se han importado ${successCount} jugadores con éxito`, 'success', 'checkmark-circle-outline');
-
-    setTimeout(() => this.navCtrl.back(), 1500);
+    this.playerService.bulkImportPlayers(playersToImport).subscribe({
+      next: (res: any) => {
+        this.isImporting = false;
+        this.selectedApiPlayers = [];
+        this.apiResults = [];
+        this.apiSearchQuery = '';
+        this.confettiService.celebrate();
+        const count = playersToImport.length;
+        this.showToast(
+          count === 1 
+            ? 'Se ha registrado el jugador con éxito' 
+            : `Se han registrado ${count} jugadores con éxito`, 
+          'success', 
+          'checkmark-circle-outline'
+        );
+        setTimeout(() => this.navCtrl.back(), 1500);
+      },
+      error: (err: any) => {
+        this.isImporting = false;
+        const count = playersToImport.length;
+        this.showToast(
+          count === 1 
+            ? 'Error al registrar el jugador' 
+            : 'Error al registrar los jugadores', 
+          'danger', 
+          'alert-circle-outline'
+        );
+      }
+    });
   }
 
   async takePhoto() {
@@ -671,16 +641,16 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     try {
       const pos = await this.locationPlugin.getCurrentPosition();
       console.log('[GPS] Ubicación capturada:', pos);
-      
+
       if (!pos) {
         throw new Error('No se obtuvo posición');
       }
-      
+
       this.player.location = {
         type: 'Point',
         coordinates: [pos.coords.longitude, pos.coords.latitude]
       };
-      
+
       this.hasLocation = true;
       this.isCapturingLocation = false;
 
@@ -696,11 +666,14 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   }
 
   initMap() {
-    if (!this.player.location) return;
+    if (!this.player.location?.coordinates || this.player.location.coordinates.length < 2) {
+      console.warn('[Map] No hay coordenadas válidas para inicializar el mapa');
+      return;
+    }
 
     const [lng, lat] = this.player.location.coordinates;
     console.log('[Map] Inicializando en:', lat, lng);
-    
+
     // Inicializar el mapa
     const mapObj = this.mapPlugin.initMap('player-map', lat, lng, 15);
     const marker = this.mapPlugin.addMarker(lat, lng, 'Ubicación del Scouting', true);
@@ -760,14 +733,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
 
     this.isPublishing = true;
 
-    // 0. Asegurar auditoría
-    const userEmail = this.authService.currentUser()?.email || 'admin';
-    if (!this.isEditMode) {
-      this.player.created_by = userEmail;
-      this.player.created_at = new Date();
-    }
-    this.player.updated_by = userEmail;
-    this.player.updated_at = new Date();
+    // 0. Marcar si es manual
     if (!this.isEditMode && this.entryMode === 'manual') {
       this.player.is_manual = true;
     }
@@ -783,43 +749,24 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     });
     await loading.present();
 
-    try {
-      // 1. Manejo de Imagen en Firebase Storage
-      if (this.selectedFile) {
-        // Subir nueva imagen
-        const newImageUrl = await this.storageService.uploadImage(this.selectedFile, 'players');
-        this.player.image_url = newImageUrl;
+    this.isPublishing = true;
 
-        // Si editamos y había una previa en Firebase, borrarla
-        if (this.isEditMode && this.initialPreviewImage && this.initialPreviewImage.includes('firebasestorage')) {
-          await this.storageService.deleteImageByUrl(this.initialPreviewImage);
-        }
-      }
-
-      // 2. Guardar en Base de Datos
-      const request = this.isEditMode
-        ? this.playerService.updatePlayer(this.playerId!, this.player)
-        : this.playerService.addPlayer(this.player);
-
-      request.subscribe({
-        next: () => {
-          loading.dismiss();
-          this.isPublishing = false;
-          this.confettiService.celebrate(); // ¡La Chaya!
+    this.playerService.savePlayer(this.playerId, this.player, this.selectedFile, this.initialPreviewImage as string | null).subscribe({
+      next: (res: any) => {
+        loading.dismiss();
+        this.isPublishing = false;
+        this.confettiService.celebrate();
+        if (res && res._id) {
           this.showToast(`Jugador ${this.isEditMode ? 'actualizado' : 'creado'} con éxito`, 'success', 'checkmark-circle-outline');
-          setTimeout(() => this.navCtrl.back(), 1500); // Dar tiempo al confeti
-        },
-        error: (err) => {
-          loading.dismiss();
-          this.isPublishing = false;
-          this.showToast('Error al guardar: ' + (err.error?.message || 'Error del servidor'), 'danger', 'alert-circle-outline');
+          setTimeout(() => this.router.navigate(['/players']), 1500);
         }
-      });
-    } catch (error) {
-      loading.dismiss();
-      this.isPublishing = false;
-      this.showToast('Error al procesar la imagen', 'danger', 'alert-circle-outline');
-    }
+      },
+      error: (err: any) => {
+        this.isPublishing = false;
+        console.error('[SAVE-PLAYER] Error:', err);
+        this.showToast('Error al guardar el crack', 'danger', 'alert-circle-outline');
+      }
+    });
   }
 
   setFocus(field: string | null) {
@@ -838,7 +785,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     if (this.player.name) {
       this.player.name = this.player.name
         .split(' ')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
         .join(' ');
     }
   }

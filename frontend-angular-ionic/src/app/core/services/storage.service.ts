@@ -32,9 +32,10 @@ export class StorageService {
   /**
    * Elimina una imagen de Firebase Storage dada su URL
    * @param url La URL completa del archivo en storage
+   * @param expectedFolder Opcional: Carpeta esperada (ej: 'news') para validar que el archivo pertenece a este contexto
    */
-  async deleteImageByUrl(url: string): Promise<void> {
-    console.log(`[STORAGE] Intento de borrado para URL: ${url}`);
+  async deleteImageByUrl(url: string, expectedFolder?: string): Promise<void> {
+    console.log(`[STORAGE] Intento de borrado para URL: ${url} (Carpeta esperada: ${expectedFolder || 'Cualquiera'})`);
     
     if (!url || !url.includes('firebasestorage.googleapis.com')) {
       console.warn('[STORAGE] La URL no es de Firebase Storage o está vacía. Saltando borrado.');
@@ -42,8 +43,6 @@ export class StorageService {
     }
 
     try {
-      // Extraer la ruta del archivo de la URL
-      // Formato: .../o/news%2Ffilename?alt=media...
       const decodedUrl = decodeURIComponent(url);
       const startIndex = decodedUrl.indexOf('/o/') + 3;
       const endIndex = decodedUrl.indexOf('?');
@@ -54,15 +53,25 @@ export class StorageService {
       }
 
       const filePath = decodedUrl.substring(startIndex, endIndex);
-      console.log(`[STORAGE] Ruta extraída: "${filePath}". Solicitando borrado a Firebase...`);
+      
+      // VALIDACIÓN DE CARPETA: Si especificamos una, el archivo DEBE estar ahí
+      if (expectedFolder && !filePath.startsWith(`${expectedFolder}/`)) {
+        console.warn(`[STORAGE] 🛡️ Bloqueado: El archivo "${filePath}" no pertenece a la carpeta "${expectedFolder}". Saltando borrado por seguridad.`);
+        return;
+      }
+
+      console.log(`[STORAGE] Ruta validada: "${filePath}". Solicitando borrado a Firebase...`);
 
       const storageRef = ref(this.storage, filePath);
       await deleteObject(storageRef);
       
       console.log(`[STORAGE] ✅ Imagen eliminada con éxito del servidor: ${filePath}`);
-    } catch (error) {
-      console.error('[STORAGE] ❌ Error crítico al eliminar imagen de Firebase:', error);
-      // No lanzamos error para no romper el flujo de la app
+    } catch (error: any) {
+      if (error?.code === 'storage/object-not-found') {
+        console.warn(`[STORAGE] El archivo ya no existe en el servidor (404). Ignorando.`);
+      } else {
+        console.error('[STORAGE] ❌ Error al eliminar imagen de Firebase:', error);
+      }
     }
   }
 }

@@ -21,7 +21,8 @@
               <div class="players-grid">
                 <ng-container *ngFor="let player of pagedPlayers(); let last = last">
                   <!-- VERSIÓN DESKTOP: CARDS -->
-                  <ion-card class="player-premium-card hide-on-phone animate-fade-in">
+                  <ion-card class="player-premium-card hide-on-phone animate-fade-in"
+                    [routerLink]="['/player-detail-public', player._id]">
                     <div class="card-image-container">
                       <img [src]="player.image_url" onerror="this.src='assets/img/player-placeholder.png'" />
                       <div class="card-overlay"></div>
@@ -45,7 +46,8 @@
                   </ion-card>
 
                   <!-- VERSIÓN MÓVIL (Unificada con la principal) -->
-                  <ion-item class="player-mobile-item hide-on-desktop animate-fade-in" lines="none" [button]="false">
+                  <ion-item class="player-mobile-item hide-on-desktop animate-fade-in" lines="none" [button]="true"
+                    [routerLink]="['/player-detail-public', player._id]">
                     <ion-thumbnail slot="start" class="mobile-thumb">
                       <img [src]="player.image_url" onerror="this.src='assets/img/player-placeholder.png'" />
                       <div class="mobile-pos-badge">{{ player.position || 'N/A' }}</div>

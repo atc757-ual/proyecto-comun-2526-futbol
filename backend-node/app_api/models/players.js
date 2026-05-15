@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 // Esquema de Comentarios (Subdocumento)
 const commentSchema = new mongoose.Schema({
-    user_id: { type: String, required: true },
+    user_id: { type: String },
     autor_name: String, // Cambiado de user_name a autor_name
     content: { type: String, required: true },
     rating: { type: Number, required: true, min: 0, max: 5 },
@@ -71,6 +71,7 @@ const playerSchema = new mongoose.Schema({
     weight: String,
     number: Number,
     position: String,
+    side: String, // Pie hábil (Left, Right, Both)
     image_url: String,
     user_id: { type: String, required: true },
     external_id: Number, // Para vincular con API-Football
@@ -95,16 +96,21 @@ const playerSchema = new mongoose.Schema({
         poster: String,
         cutout: String,
         cartoon: String,
-        banner: String
+        banner: String,
+        render: String // Imagen transparente
     },
     tsdb_ids: {
         player_id: String,
         team_id: String,
         team_id2: String,
-        league_id: String
+        league_id: String,
+        transfermarkt_id: String,
+        espn_id: String,
+        wikidata_id: String
     },
     is_manual: { type: Boolean, default: true },
     isFavorite: { type: Boolean, default: false },
+    isFeatured: { type: Boolean, default: false },
     comments: [commentSchema]
 });
 

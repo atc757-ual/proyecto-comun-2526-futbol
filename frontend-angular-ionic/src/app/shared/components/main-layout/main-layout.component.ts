@@ -1,11 +1,11 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import {
   IonIcon, AlertController, ActionSheetController, ModalController,
   IonMenu, IonContent, IonMenuToggle, IonButton, IonItem, IonLabel,
   IonBackButton, IonBreadcrumbs, IonBreadcrumb, IonFooter, IonTabBar,
-  IonTabButton
+  IonTabButton, MenuController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -33,17 +33,18 @@ import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component'
     IonBreadcrumb, IonFooter, IonTabBar, IonTabButton
   ]
 })
-export class MainLayoutComponent implements OnInit {
+export class MainLayoutComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   public authService = inject(AuthService);
   public platformService = inject(PlatformService);
-  public layoutService = inject(LayoutService); // Inyectamos el nuevo servicio
+  public layoutService = inject(LayoutService);
+  private menuCtrl = inject(MenuController);
 
   public appPages = [
     { title: 'Inicio', url: '/home', icon: 'home-outline', adminOnly: false, masterOnly: false },
-    { title: 'Jugadores', url: '/players', icon: 'football-outline', adminOnly: false, masterOnly: false },
+    { title: 'Mis jugadores', url: '/players', icon: 'football-outline', adminOnly: false, masterOnly: false },
     { title: 'Football AI', url: '/ai-team', icon: 'sparkles-outline', adminOnly: false, masterOnly: false },
-    { title: 'Búsqueda', url: '/leagues', icon: 'search-outline', adminOnly: false, masterOnly: false },
+    { title: 'Búsqueda', url: '/busqueda', icon: 'search-outline', adminOnly: false, masterOnly: false },
     { title: 'Noticias', url: '/news', icon: 'newspaper-outline', adminOnly: false, masterOnly: false }
   ];
 
@@ -61,6 +62,13 @@ export class MainLayoutComponent implements OnInit {
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
     });
+  }
+
+  ngOnDestroy() {
+    // Al destruir el layout principal (logout o ir a ruta pública), 
+    // nos aseguramos de que el menú no se quede "colgado"
+    this.menuCtrl.enable(false);
+    this.menuCtrl.close();
   }
 
 

@@ -4,12 +4,15 @@ const fs = require('fs');
 const path = require('path');
 const { sendApiResult } = require('../controllers/apiResult');
 
-// Leer la llave para verificar (Usamos la misma llave para simplificar en este entorno)
-const keyPath = path.join(__dirname, '../../private_key.pem');
+// Leer la llave pública para verificar RS256
+const publicKeyPath = path.join(__dirname, '../../public_key.pem');
 let secretOrKey = process.env.JWT_SECRET || 'clave-por-defecto';
 
-if (fs.existsSync(keyPath)) {
-    secretOrKey = fs.readFileSync(keyPath, 'utf8');
+if (fs.existsSync(publicKeyPath)) {
+    secretOrKey = fs.readFileSync(publicKeyPath, 'utf8');
+    console.log('✅ Llave pública RS256 cargada para verificación');
+} else {
+    console.warn('⚠️ No se encontró public_key.pem, usando secret por defecto');
 }
 
 /**

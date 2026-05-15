@@ -19,13 +19,14 @@
         <div class="text-center my-base">
           <!-- Texto explicativo -->
           <p class="text-neutral-7 fs-16 ">
-            Analizaré los jugadores de tu plantilla para crear el <strong>Once Ideal</strong> y darte consejos
+            Analizaré los jugadores de tu plantilla para crear el <strong>Equipo Ideal</strong> y darte consejos
             tácticos.
           </p>
 
+
           <!-- Estado: Sin jugadores -->
           <div *ngIf="!isLoading && !hasPlayers" class="warning-box animate-fade-in">
-            <div class="d-flex fl-align-center gap-s bg-warning-light p-base border-radius-soft">
+            <div class="d-flex fl-align-center gap-s p-s bg-warning-light mt-base border-radius-soft">
               <ion-icon name="alert-circle-outline" class="fs-24 text-warning"></ion-icon>
               <p class="text-warning-dark f-medium fs-14 m-0">
                 Para que la IA funcione correctamente, debes tener jugadores cargados en tu sistema. :)

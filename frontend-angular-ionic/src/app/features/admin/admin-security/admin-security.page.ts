@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -41,13 +41,21 @@ export class AdminSecurityPage implements OnInit {
   public targetEmail: string = '';
   public isPromoting = signal<boolean>(false);
   public isTogglingStatus = signal<boolean>(false);
-  public isAdmin = false;
+  public isAdmin = signal(false);
   public emailFocused = false;
   public suggestedUsers = signal<any[]>([]);
   public selectedUser = signal<any | null>(null);
 
   constructor() {
-    this.isAdmin = this.authService.isAdmin()
+    // Reactividad: Si el usuario cambia, refrescamos seguridad
+    effect(() => {
+      const user = this.authService.currentUser();
+      this.isAdmin.set(this.authService.isAdmin());
+      if (user) {
+        this.checkSecurityStatus();
+      }
+    });
+
     addIcons({
       shieldCheckmarkOutline, shieldOutline, keyOutline,
       fingerPrintOutline, refreshOutline, alertCircleOutline, personAddOutline,
@@ -75,10 +83,15 @@ export class AdminSecurityPage implements OnInit {
 
     try {
       // 1. Verificar Claims de Firebase (Seguridad nativa)
-      const user = this.auth.currentUser;
+      const user = this.authService.currentUser();
       if (user) {
-        const tokenResult = await user.getIdTokenResult(true); // Forzar refresco para ver cambios del script
-        this.firebaseClaims.set(tokenResult.claims);
+        // Obtenemos el objeto de usuario real de Firebase para pedir el token
+        const fbUser = this.auth.currentUser;
+        if (fbUser) {
+          const tokenResult = await fbUser.getIdTokenResult(true); // Forzar refresco para ver cambios
+          this.firebaseClaims.set(tokenResult.claims);
+          console.log('[SECURITY] Claims detectados:', tokenResult.claims);
+        }
       }
 
       // 2. Verificar Rol del Backend (Seguridad de nuestra API)

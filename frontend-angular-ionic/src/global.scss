@@ -251,7 +251,7 @@ ion-item.action-item {
 
   &.is-red {
     --action-icon-bg: var(--red-010);
-    --action-icon-color: var(--red-75);
+    --action-icon-color: var(--red-075);
     --action-hover-bg: var(--red-010);
 
     &::part(native) {
@@ -265,7 +265,7 @@ ion-item.action-item {
 
   &.is-yellow {
     --action-icon-bg: var(--yellow-010);
-    --action-icon-color: var(--yellow-75);
+    --action-icon-color: var(--yellow-075);
     --action-hover-bg: var(--yellow-010);
 
     &::part(native) {
@@ -352,6 +352,7 @@ ion-item.action-item {
   font-weight: var(--fw-medium);
   --margin: 4px 0 !important;
   --color: var(--color-neutral-8);
+  top: 16px;
 
   &::part(wrapper) {
     overflow: hidden !important;
@@ -378,6 +379,7 @@ ion-item.action-item {
   @media(max-width: 767px) {
     --width: 100% !important;
     margin: 0 !important;
+    top: 0;
 
     &::part(wrapper) {
       width: 100% !important;
@@ -743,7 +745,6 @@ ion-input-password-toggle {
 /* --- BUSCADOR GLOBAL PREMIUM --- */
 
 ion-searchbar {
-  //--background: var(--blue-primary-010) !important;
   --background: var(--color-neutral-0) !important;
   --border-radius: var(--border-radius-soft) !important;
   --box-shadow: none !important;
@@ -754,6 +755,12 @@ ion-searchbar {
   border: 2px solid var(--blue-primary-050) !important;
   border-radius: var(--border-radius-soft) !important;
   padding: 0 !important;
+  transition: all var(--transition-fast) ease;
+
+  &.searchbar-has-focus {
+    --background: var(--blue-primary-010) !important;
+    border-color: var(--color-primary) !important;
+  }
 
   input.searchbar-input {
     font-size: var(--fs-14) !important;

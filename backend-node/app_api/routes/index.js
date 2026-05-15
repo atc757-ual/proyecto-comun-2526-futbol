@@ -6,22 +6,90 @@ const ctrlAuth = require('../controllers/auth');
 const ctrlAI = require('../controllers/ai'); // Nuevo controlador de IA
 const ctrlExternal = require('../controllers/external.controller'); // Nuevo controlador de API externa
 const ctrlNews = require('../controllers/news'); // Controlador de noticias persistentes
+const ctrlPublicComments = require('../controllers/public-comments'); // Nuevo controlador público
 const { authorizeRequest, isAdmin, isMaster } = require('../middleware/auth.middleware');
 
-// --- RUTAS DE NOTICIAS ---
-router.get('/news', ctrlNews.getNews);
-router.get('/news/bulk', authorizeRequest, isAdmin, ctrlNews.bulkCreateNews); // Test GET bulk if needed or just use POST
-router.post('/news/bulk', authorizeRequest, isAdmin, ctrlNews.bulkCreateNews);
-router.get('/news/:id', ctrlNews.getNewsById);
+// ... (en la sección de comentarios públicos)
+
+/**
+ * @openapi
+ * /news:
+ *   get:
+ *     summary: Obtiene todas las noticias
+ *     responses:
+ *       200:
+ *         description: Lista de noticias recuperada
+ *   post:
+ *     summary: Crea una noticia (Admin)
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title: { type: string }
+ *               content: { type: string }
+ *               summary: { type: string }
+ *               imageUrl: { type: string }
+ *     responses:
+ *       201:
+ *         description: Noticia creada
+ */
+router.get('/news', authorizeRequest, ctrlNews.getNews);
 router.post('/news', authorizeRequest, isAdmin, ctrlNews.createNews);
+
+/**
+ * @openapi
+ * /news/{id}:
+ *   get:
+ *     summary: Obtiene una noticia por ID (Registrados)
+ *     security:
+ *       - bearerAuth: []
+...
+ */
+router.get('/news/:id', authorizeRequest, ctrlNews.getNewsById);
 router.put('/news/:id', authorizeRequest, isAdmin, ctrlNews.updateNews);
 router.delete('/news/:id', authorizeRequest, isAdmin, ctrlNews.deleteNews);
 
-// --- RUTAS DE AUTENTICACIÓN ---
+// Rutas de carga masiva
+router.post('/news/bulk', authorizeRequest, isAdmin, ctrlNews.bulkCreateNews);
+
+/**
+ * @openapi
+ * /auth/signin:
+ *   post:
+ *     summary: Inicia sesión con Firebase
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               idToken: { type: string }
+ *     responses:
+ *       200:
+ *         description: Login exitoso
+ */
 router.post('/auth/signin', ctrlAuth.loginFirebase);
+
+/**
+ * @openapi
+ * /auth/users:
+ *   get:
+ *     summary: Lista todos los usuarios (Master Only)
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de usuarios
+ */
+router.get('/auth/users', authorizeRequest, isMaster, ctrlAuth.getUsers);
 router.post('/auth/make-admin', authorizeRequest, isMaster, ctrlAuth.setAdminRole);
 router.post('/auth/remove-admin', authorizeRequest, isMaster, ctrlAuth.removeAdminRole);
-router.get('/auth/users', authorizeRequest, isMaster, ctrlAuth.getUsers);
 router.post('/auth/toggle-status', authorizeRequest, isMaster, ctrlAuth.toggleUserStatus);
 
 // --- SERVICIO DE CARGA (Desactivado temporalmente) ---
@@ -78,80 +146,29 @@ router.get('/players/public', ctrlPlayers.playersPublicList);
 
 router
     .route('/players')
-    .get(ctrlPlayers.playersList)
-    .post((req, res, next) => { req.auth = { uid: "admin_uid" }; next(); }, ctrlPlayers.playersCreate);
+    .get(authorizeRequest, ctrlPlayers.playersList)
+    .post(authorizeRequest, ctrlPlayers.playersCreate);
+
 
 /**
  * @openapi
- * /players/{playerid}:
+ * /players/all:
  *   get:
- *     summary: Obtiene un jugador por ID
- *     parameters:
- *       - in: path
- *         name: playerid
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Datos del jugador
- *       404:
- *         description: Jugador no encontrado
- *   put:
- *     summary: Actualiza un jugador existente
- *     parameters:
- *       - in: path
- *         name: playerid
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/Player'
- *     responses:
- *       200:
- *         description: Jugador actualizado
- *   delete:
- *     summary: Elimina un jugador
- *     parameters:
- *       - in: path
- *         name: playerid
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       204:
- *         description: Jugador eliminado
+ *     summary: Obtiene la lista COMPLETA de jugadores de la DB
+ *     security:
+ *       - bearerAuth: []
  */
+router.get('/players/all', authorizeRequest, ctrlPlayers.playersListAll);
+
+router.get('/players/public/:playerid', ctrlPlayers.playersReadOne);
+
 router.route('/players/:playerid')
     .get(authorizeRequest, ctrlPlayers.playersReadOne)
-    .put(authorizeRequest, isAdmin, ctrlPlayers.playersUpdateOne)
-    .delete(authorizeRequest, isAdmin, ctrlPlayers.playersDeleteOne);
+    .put(authorizeRequest, ctrlPlayers.playersUpdateOne)
+    .delete(authorizeRequest, ctrlPlayers.playersDeleteOne);
 
-/**
- * @openapi
- * /players/{playerid}/comments:
- *   post:
- *     summary: Añade un comentario a un jugador
- *     parameters:
- *       - in: path
- *         name: playerid
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/Comment'
- *     responses:
- *       201:
- *         description: Comentario añadido
- */
+router.post('/players/public/:playerid/comments', ctrlComments.commentsCreate);
+
 router.route('/players/:playerid/comments')
     .post(authorizeRequest, ctrlComments.commentsCreate);
 
@@ -214,24 +231,53 @@ router.route('/players/:playerid/comments')
  *         description: Comentario eliminado
  */
 router.route('/players/:playerid/comments/:commentid')
-    .get(ctrlComments.commentsReadOne)
+    .get(authorizeRequest, ctrlComments.commentsReadOne)
     .put(authorizeRequest, ctrlComments.commentsUpdateOne)
     .delete(authorizeRequest, ctrlComments.commentsDeleteOne);
 
-// --- RUTA DE IA (Análisis de Equipo) ---
+/**
+ * @openapi
+ * /ai/analyze:
+ *   post:
+ *     summary: Análisis de equipo con IA
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Análisis generado
+ */
 router.post('/ai/analyze', authorizeRequest, ctrlAI.analyzeMyTeam);
 
-// --- RUTAS DE API EXTERNA (TheSportsDB) ---
+/**
+ * @openapi
+ * /external/tsdb/search:
+ *   get:
+ *     summary: Buscar jugadores en TSDB
+ *     security:
+ *       - bearerAuth: []
+ */
 router.get('/external/tsdb/search', authorizeRequest, ctrlExternal.searchTSDBPlayers);
 router.get('/external/tsdb/search-teams', authorizeRequest, ctrlExternal.searchTSDBTeams);
+router.get('/external/tsdb/search-players-team', authorizeRequest, ctrlExternal.searchTSDBPlayersByTeam);
 router.get('/external/tsdb/team-players/:id', authorizeRequest, ctrlExternal.getTSDBPlayersByTeam);
 router.get('/external/tsdb/player/:id', authorizeRequest, ctrlExternal.getTSDBPlayerDetails);
 router.get('/external/tsdb/team/:id', authorizeRequest, ctrlExternal.getTSDBTeamDetails);
 router.get('/external/tsdb/leagues', authorizeRequest, ctrlExternal.getTSDBLeagues);
 router.get('/external/tsdb/search-leagues', authorizeRequest, ctrlExternal.searchTSDBLeagues);
-router.get('/external/tsdb/tv/:sport', authorizeRequest, ctrlExternal.getTSDBTVBySport);
+router.get('/external/tsdb/tv-country/:country', authorizeRequest, ctrlExternal.getTSDBTVByCountry);
+
+/**
+ * @openapi
+ * /external/tsdb/live:
+ *   get:
+ *     summary: Marcadores en vivo (TSDB)
+ *     security:
+ *       - bearerAuth: []
+ */
+router.get('/external/tsdb/live', authorizeRequest, ctrlExternal.getTSDBLiveScores);
 router.get('/external/tsdb/teams-by-league/:id', authorizeRequest, ctrlExternal.getTSDBTeamsByLeague);
 router.get('/external/tsdb/player-teams/:id', authorizeRequest, ctrlExternal.getTSDBPlayerTeams);
 router.get('/external/tsdb/player-honours/:id', authorizeRequest, ctrlExternal.getTSDBPlayerHonours);
+router.get('/external/tsdb/player-milestones/:id', authorizeRequest, ctrlExternal.getTSDBPlayerMilestones);
 
 module.exports = router;

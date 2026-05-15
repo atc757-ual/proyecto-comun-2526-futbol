@@ -9,13 +9,14 @@ const tracingMiddleware = (req, res, next) => {
     
     // Lo guardamos en el objeto request para uso posterior
     req.transactionId = transactionId;
+    const originalLog = console.log;
+    originalLog(`[TRACING] Incoming: ${req.method} ${req.url} | ID: ${transactionId}`);
     
     // Lo añadimos a la respuesta para trazabilidad desde el cliente
     res.setHeader('X-Transaction-Id', transactionId);
 
     // Sobrescribimos temporalmente el console.log para este flujo (Opcional, pero útil para el ejemplo)
     // Nota: En producción usaríamos un logger como Winston o Bunyan con AsyncLocalStorage
-    const originalLog = console.log;
     console.log = (...args) => {
         originalLog(`[NODE] [${transactionId}]`, ...args);
     };

@@ -47,6 +47,18 @@ export class AuthService {
 
   constructor() {
     console.log('[AUTH] Inicializado');
+    
+    // Auto-sincronización al detectar usuario de Firebase (Persistencia)
+    this.user$.subscribe(async (fbUser) => {
+      if (fbUser && !this.userData()) {
+        console.log('[AUTH] Usuario detectado al inicio, sincronizando con backend...');
+        try {
+          await this.syncUserWithBackend();
+        } catch (err) {
+          console.error('[AUTH] Error en auto-sincronización:', err);
+        }
+      }
+    });
   }
 
   /**
@@ -88,7 +100,7 @@ export class AuthService {
   /**
    * Sincroniza el usuario de Firebase con el backend de Node.js para obtener el JWT
    */
-  private async syncUserWithBackend() {
+  async syncUserWithBackend() {
     const firebaseUser = this.auth.currentUser;
     if (!firebaseUser) return;
 

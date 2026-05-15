@@ -1,0 +1,295 @@
+<div class="row leagues-drilldown-container animate-fade-in">
+
+  <!-- COLUMNA PRINCIPAL (8): Búsqueda y Resultados -->
+  <div class="col-8 col-sm-12 mr-base mr-0-sm order-1">
+
+    <!-- CABECERA DE BÚSQUEDA (SIEMPRE VISIBLE) -->
+    <ion-card class="premium-card mb-base scouting-search-header animate-fade-in">
+      <ion-card-content class="p-base">
+        <!-- Selector de Modo -->
+        <ion-segment [(ngModel)]="searchType" mode="ios" class="futbol-segment mb-base" (ionChange)="clearAll()">
+          <ion-segment-button value="player">
+            <ion-icon name="person-outline"></ion-icon>
+            <ion-label>Jugador</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="team">
+            <ion-icon name="shield-outline"></ion-icon>
+            <ion-label>Equipo</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="league">
+            <ion-icon name="trophy-outline"></ion-icon>
+            <ion-label>Liga</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+
+        <!-- Buscador Premium -->
+        <div class="search-input-wrapper">
+          <ion-searchbar mode="ios" [placeholder]="getSearchPlaceholder()" [(ngModel)]="apiSearchQuery"
+            (ionInput)="onSearchInput()" (ionClear)="clearAll()" class="scouting-searchbar" animated="true">
+          </ion-searchbar>
+        </div>
+
+
+
+        <!-- JERARQUÍA DE NAVEGACIÓN (Píldoras) -->
+        <div class="hierarchy-pills animate-fade-in my-base" *ngIf="selectedLeague || selectedTeam">
+          <ion-chip class="nav-pill" (click)="clearAll()">
+            <ion-icon name="search-outline"></ion-icon>
+            <ion-label>Explorar</ion-label>
+          </ion-chip>
+
+          <span class="pill-sep" *ngIf="selectedLeague">/</span>
+
+          <ion-chip class="nav-pill" [class.is-active]="!selectedTeam" (click)="backToTeams()" *ngIf="selectedLeague">
+            <ion-icon name="trophy-outline"></ion-icon>
+            <ion-label>{{ selectedLeague.strLeague }}</ion-label>
+            <ion-icon name="close-circle" *ngIf="!selectedTeam"
+              (click)="backToLeagues(); $event.stopPropagation()"></ion-icon>
+          </ion-chip>
+
+          <span class="pill-sep" *ngIf="selectedTeam">/</span>
+
+          <ion-chip class="nav-pill is-active" *ngIf="selectedTeam" (click)="backToTeams()">
+            <ion-icon name="shield-outline"></ion-icon>
+            <ion-label>{{ selectedTeam.strTeam }}</ion-label>
+            <ion-icon name="close-circle" (click)="backToTeams(); $event.stopPropagation()"></ion-icon>
+          </ion-chip>
+        </div>
+
+        <!-- ÁREA DE RESULTADOS -->
+        <div class="results-container mt-base">
+          <!-- Loader Central -->
+          <div *ngIf="isLoading" class="empty-selection-state animate-fade-in">
+            <div class="empty-content text-center">
+              <ion-spinner name="crescent" color="primary" class="fs-40"></ion-spinner>
+              <p class="text-neutral-5 mt-base">Escaneando bases de datos internacionales...</p>
+            </div>
+          </div>
+
+          <!-- LISTA DE RESULTADOS (Ligas/Equipos/Jugadores) -->
+          <div *ngIf="!isLoading">
+            <!-- Estado vacío inicial (Si no hay búsqueda activa ni selección) -->
+            <div
+              *ngIf="apiSearchQuery.length < 3 && players.length === 0 && leagueResults.length === 0 && teamResults.length === 0"
+              class="empty-selection-state animate-fade-in">
+              <div class="empty-content text-center py-xxl">
+                <div class="icon-circle mb-base">
+                  <ion-icon name="search-outline" class="fs-28 text-primary"></ion-icon>
+                </div>
+                <h2 class="f-semibold fs-18 text-neutral-8">Buscador de jugadores</h2>
+                <p class="text-neutral-5 px-xxl">Introduce el nombre de un jugador, club o liga para empezar</p>
+              </div>
+            </div>
+            <!-- Resultados de Ligas -->
+            <ng-container *ngIf="searchType === 'league' && leagueResults.length > 0 && !selectedLeague">
+              <div class="section-header py-s border-bottom mb-s">
+                <h3 class="f-bold text-neutral-9 fs-14 m-0">Ligas encontradas</h3>
+              </div>
+              <div *ngFor="let league of pagedResults" (click)="selectLeague(league)"
+                class="minimal-result-item animate-fade-in">
+                <div class="item-content-wrapper">
+                  <div class="mini-avatar">
+                    <img *ngIf="league.strBadge" [src]="league.strBadge" (error)="handleImageError($event)">
+                    <ion-icon *ngIf="!league.strBadge" name="trophy-outline"></ion-icon>
+                  </div>
+                  <div class="player-info-main">
+                    <h4 class="f-bold fs-15 text-neutral-9 m-0">{{ league.strLeague }}</h4>
+                    <p class="team-tag">{{ league.strCountry || 'Internacional' }}</p>
+                  </div>
+                  <div class="item-check-container">
+                    <ion-button fill="outline" size="small" mode="ios" class="action-btn-mini">
+                      <span class="fs-11 f-semibold">Ver Clubes</span>
+                      <ion-icon name="shield-outline" slot="end" class="fs-14"></ion-icon>
+                    </ion-button>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Resultados de Equipos -->
+            <ng-container
+              *ngIf="(searchType === 'team' || (searchType === 'league' && selectedLeague)) && teamResults.length > 0 && !selectedTeam">
+              <div class="section-header py-s border-bottom mb-s">
+                <h3 class="f-bold text-neutral-9 fs-14 m-0">
+                  {{ selectedLeague ? 'Clubes en ' + selectedLeague.strLeague : 'Clubes encontrados' }}
+                </h3>
+              </div>
+              <div *ngFor="let team of pagedResults" (click)="selectTeam(team)"
+                class="minimal-result-item animate-fade-in">
+                <div class="item-content-wrapper">
+                  <div class="mini-avatar">
+                    <img *ngIf="team.strTeamBadge" [src]="team.strTeamBadge" (error)="handleImageError($event)">
+                    <ion-icon *ngIf="!team.strTeamBadge" name="shield-outline"></ion-icon>
+                  </div>
+                  <div class="player-info-main">
+                    <h4 class="f-bold fs-15 text-neutral-9 m-0">{{ team.strTeam }}</h4>
+                    <p class="team-tag">{{ team.strLeague }}</p>
+                  </div>
+                  <div class="item-check-container">
+                    <ion-button fill="outline" size="small" mode="ios" class="action-btn-mini">
+                      <span class="fs-11 f-semibold">Ver Plantilla</span>
+                      <ion-icon name="people-outline" slot="end" class="fs-14"></ion-icon>
+                    </ion-button>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- RESULTADOS DE JUGADORES -->
+            <ng-container *ngIf="players.length > 0 && !isLoading">
+              <div class="section-header d-flex fl-justify-between fl-align-center pb-base bg-white border-bottom">
+                <div>
+                  <h3 class="f-bold text-neutral-9 fs-16 m-0">{{ selectedTeam?.strTeam || 'Resultados' }}</h3>
+                  <p class="text-neutral-5 fs-12 m-0">{{ players.length }} perfiles encontrados</p>
+                </div>
+                <ion-button fill="clear" size="small" (click)="selectAll()" class="f-semibold fs-12">
+                  Seleccionar 11
+                </ion-button>
+              </div>
+
+              <div *ngFor="let player of pagedResults" class="minimal-result-item animate-fade-in"
+                [class.selected]="selectedPlayers.has(player.idPlayer)"
+                [class.already-in-staff]="isAlreadyAdded(player.strPlayer)"
+                (click)="!isAlreadyAdded(player.strPlayer) && togglePlayer(player)">
+
+                <div class="item-content-wrapper">
+                  <div class="mini-avatar">
+                    <ion-icon name="person-outline"></ion-icon>
+                    <img *ngIf="player.strCutout && player.strCutout !== '' && player.strCutout !== 'null'"
+                      [src]="player.strCutout" (error)="handleImageError($event)">
+                    <img
+                      *ngIf="(!player.strCutout || player.strCutout === '' || player.strCutout === 'null') && player.strThumb && player.strThumb !== '' && player.strThumb !== 'null'"
+                      [src]="player.strThumb" (error)="handleImageError($event)">
+                  </div>
+
+                  <div class="player-info-main">
+                    <div class="d-flex fl-align-center">
+                      <h4 class="f-bold fs-16 text-neutral-9 m-0">{{ player.strPlayer }}</h4>
+                      <span class="pos-tag">{{ player.strPosition || 'N/A' }}</span>
+                    </div>
+                    <p class="team-tag">{{ player.strTeam }}</p>
+                  </div>
+
+                  <div class="item-check-container">
+                    <div *ngIf="isAlreadyAdded(player.strPlayer)" class="staff-alert-wrapper">
+                      <ion-badge color="danger" mode="ios" class="fs-10">EN STAFF</ion-badge>
+                    </div>
+                    <ion-checkbox *ngIf="!isAlreadyAdded(player.strPlayer)"
+                      [checked]="selectedPlayers.has(player.idPlayer)" mode="md"
+                      style="pointer-events: none;"></ion-checkbox>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Paginación Global -->
+            <div class="news-pagination-container animate-fade-in my-base" *ngIf="totalPages > 1">
+              <ion-button mode="ios" fill="clear" color="primary" (click)="prevPage()" [disabled]="activePage === 1"
+                class="nav-btn">
+                <ion-icon name="chevron-back-outline" slot="start"></ion-icon>
+                <span>Anterior</span>
+              </ion-button>
+              <div class="page-indicators">
+                <ion-button mode="ios" *ngFor="let page of getPages()" [fill]="activePage === page ? 'solid' : 'clear'"
+                  [color]="activePage === page ? 'primary' : 'dark'" class="page-btn"
+                  [class.active]="activePage === page" (click)="goToPage(page)">
+                  {{ page }}
+                </ion-button>
+              </div>
+              <ion-button mode="ios" fill="clear" color="primary" (click)="nextPage()"
+                [disabled]="activePage === totalPages" class="nav-btn">
+                <span>Siguiente</span>
+                <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+              </ion-button>
+            </div>
+
+            <!-- No hay resultados (Si hubo búsqueda activa larga) -->
+            <div
+              *ngIf="apiSearchQuery.length >= 3 && players.length === 0 && leagueResults.length === 0 && teamResults.length === 0"
+              class="empty-selection-state animate-fade-in">
+              <div class="empty-content text-center py-xxl">
+                <div class="icon-circle mb-base">
+                  <ion-icon name="football-outline" class="fs-28 text-neutral-4"></ion-icon>
+                </div>
+                <h2 class="f-semibold fs-18 text-neutral-8">Sin coincidencias</h2>
+                <p class="text-neutral-5 px-base">No hemos encontrado resultados para "<strong>{{
+                    apiSearchQuery }}</strong>". Prueba a cambiar el modo de búsqueda.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </ion-card-content>
+    </ion-card>
+
+
+  </div>
+
+  <!-- COLUMNA SELECCIÓN (4): El "Basket" de Scouting -->
+  <div class="col-4 col-sm-12 pl-base px-0-sm order-2">
+    <ion-card class="premium-card selection-basket-card animate-fade-in">
+      <!-- Header del Basket -->
+      <div class="basket-header d-flex fl-justify-between fl-align-center">
+        <div>
+          <h3 class="f-bold text-neutral-8 fs-16 m-0">Tu Selección</h3>
+          <p class="text-neutral-6 fs-12 m-0">Máximo 11 jugadores</p>
+        </div>
+        <div class="basket-counter text-right">
+          <span class="fs-20 f-black text-neutral-6" [class.text-danger]="selectedPlayers.size >= 11">{{
+            selectedPlayers.size
+            }}</span>
+          <span class="fs-20 text-neutral-7">/11</span>
+        </div>
+      </div>
+      <ion-card-content>
+        <!-- MENSAJE DE LÍMITE (NUEVA UBICACIÓN) -->
+        <div *ngIf="selectedPlayers.size >= 11" class="limit-alert-top animate-fade-in">
+          <ion-icon name="information-circle"></ion-icon>
+          <span>Has alcanzado el límite máximo de 11 jugadores.</span>
+        </div>
+
+        <!-- Lista de elegidos -->
+        <div class="empty-basket text-center py-base" *ngIf="selectedPlayers.size === 0">
+          <ion-icon name="footsteps-outline" class="fs-32 text-neutral-4 mb-s"></ion-icon>
+          <p class="text-neutral-5 fs-14 m-0">No has seleccionado jugadores todavía</p>
+        </div>
+
+        <ion-list lines="none" class="selected-players-list" *ngIf="selectedPlayers.size > 0">
+          <ng-container *ngFor="let id of getSelectedPlayersList(); let last = last">
+            <ion-item class="selected-item-mini">
+              <ion-avatar slot="start" class="mini-avatar-xs">
+                <ion-icon name="person"></ion-icon>
+                <img *ngIf="getPlayerThumb(id)" [src]="getPlayerThumb(id)" (error)="handleImageError($event)">
+              </ion-avatar>
+              <ion-label>
+                <h4 class="f-bold fs-14 m-0 text-ellipsis">{{ getPlayerName(id) }}</h4>
+                <p class="fs-12 m-0">{{ getPlayerTeam(id) }}</p>
+              </ion-label>
+              <ion-button fill="clear" color="danger" slot="end" (click)="togglePlayer({idPlayer: id})">
+                <ion-icon name="close-circle-outline" slot="icon-only" class="fs-18"></ion-icon>
+              </ion-button>
+            </ion-item>
+            <div class="separator my-xs" *ngIf="!last && selectedPlayers.size > 0"></div>
+          </ng-container>
+        </ion-list>
+
+
+        <!-- Acciones -->
+        <div class="separator mb-base" *ngIf="selectedPlayers.size > 0"></div>
+        <div class="basket-footer" *ngIf="selectedPlayers.size > 0">
+          <ion-button expand="block" mode="ios" color="primary" shape="round" class="f-semibold"
+            [disabled]="isImporting || selectedPlayers.size === 0" (click)="importPlayers()">
+            <ion-spinner name="crescent" *ngIf="isImporting" class="mr-s"></ion-spinner>
+            <ion-icon name="cloud-upload-outline" slot="start" *ngIf="!isImporting" class="pr-s"></ion-icon>
+            {{ selectedPlayers.size === 1 ? 'Importar Jugador' : 'Importar ' + selectedPlayers.size + ' Jugadores' }}
+          </ion-button>
+
+          <ion-button class="fs-14 mt-base f-semibold text-primary" expand="block" mode="ios" fill="clear"
+            color="medium" size="small" (click)="clearSelection()">
+            Limpiar selección
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</div>

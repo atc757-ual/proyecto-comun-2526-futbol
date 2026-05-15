@@ -2,9 +2,10 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
-  IonHeader, IonTitle, IonToolbar, IonSearchbar,
+  IonSearchbar,
   IonCard, IonCardContent, IonCardHeader, IonCardTitle,
-  IonButton, IonIcon, IonSpinner, IonLabel, IonItem, IonThumbnail
+  IonButton, IonIcon, IonSpinner, IonLabel, IonItem, IonThumbnail,
+  NavController
 } from '@ionic/angular/standalone';
 import { RouterModule } from '@angular/router';
 import { addIcons } from 'ionicons';
@@ -13,9 +14,10 @@ import {
   eyeOutline, closeCircleOutline, chevronBackOutline,
   chevronForwardOutline, footballOutline, personOutline
 } from 'ionicons/icons';
-import { PlayerService, Player } from '../../../core/services/player.service';
-import { LayoutService } from '../../../core/services/layout.service';
-import { PlatformService } from '../../../core/services/platform.service';
+import { PlayerService, Player } from '../../../../core/services/player.service';
+import { LayoutService } from '../../../../core/services/layout.service';
+import { PlatformService } from '../../../../core/services/platform.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-players-public',
@@ -24,15 +26,17 @@ import { PlatformService } from '../../../core/services/platform.service';
   standalone: true,
   imports: [
     CommonModule, FormsModule, RouterModule,
-    IonSearchbar, IonCard, IonCardContent,
-    IonCardHeader, IonCardTitle, IonButton, IonIcon,
-    IonSpinner, IonLabel, IonItem, IonThumbnail
+    IonSearchbar, 
+    IonCard, IonCardContent, IonCardHeader, IonCardTitle, 
+    IonButton, IonIcon, IonSpinner, IonLabel, IonItem, IonThumbnail
   ]
 })
 export class PlayersPublicPage implements OnInit {
   private playerService = inject(PlayerService);
   private layoutService = inject(LayoutService);
   public platformService = inject(PlatformService);
+  private authService = inject(AuthService);
+  private navCtrl = inject(NavController);
 
   // Signals
   public _allPlayers = signal<Player[]>([]);
@@ -86,6 +90,13 @@ export class PlayersPublicPage implements OnInit {
   }
 
   ngOnInit() {
+    // Si hay sesión iniciada, expulsamos al usuario a la home privada
+    if (this.authService.currentUser()) {
+      console.warn('[PlayersPublic] Sesión activa detectada. Redirigiendo a Home.');
+      this.navCtrl.navigateRoot('/home');
+      return;
+    }
+
     this.layoutService.setHeader({
       title: 'Nuestros jugadores',
       subtitle: 'Descubre el talento de nuestra base de datos pública',

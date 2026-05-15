@@ -13,7 +13,7 @@ import {
   addOutline, filterOutline, personOutline, happyOutline,
   thumbsUpOutline, sadOutline, shieldOutline, searchOutline, trashOutline, createOutline,
   personAddOutline, optionsOutline, flagOutline, chevronForwardOutline, calendarOutline, settingsOutline,
-  closeCircleOutline, chevronBackOutline, eyeOutline, alertCircleOutline, checkmarkCircleOutline
+  closeCircleOutline, chevronBackOutline, eyeOutline, alertCircleOutline, checkmarkCircleOutline, peopleOutline
 } from 'ionicons/icons';
 import { PlayerService, Player } from '../../../core/services/player.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -136,7 +136,8 @@ export class PlayersPage implements OnInit {
       checkmarkCircleOutline,
       happyOutline,
       thumbsUpOutline,
-      sadOutline
+      sadOutline,
+      peopleOutline
     });
   }
 
@@ -287,6 +288,7 @@ export class PlayersPage implements OnInit {
   }
 
   handleImageError(event: any) {
-    event.target.src = 'assets/img/player-placeholder.png';
+    // Si la imagen falla, la ocultamos para que se vea el icono de fondo
+    event.target.style.display = 'none';
   }
 }

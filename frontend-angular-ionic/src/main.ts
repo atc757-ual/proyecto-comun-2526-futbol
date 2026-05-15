@@ -20,10 +20,12 @@ if (environment.production) {
 }
 
 import { register } from 'swiper/element/bundle';
-import { defineCustomElements } from '@ionic/pwa-elements/loader';
+import { defineCustomElements as defineIonicElements } from '@ionic/pwa-elements/loader';
+import { defineCustomElements as defineFootballElements } from '../../stencil-library/loader';
 
 register();
-defineCustomElements(window);
+defineIonicElements(window);
+defineFootballElements(window);
 
 bootstrapApplication(AppComponent, {
   providers: [

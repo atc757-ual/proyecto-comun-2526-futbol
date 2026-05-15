@@ -108,8 +108,11 @@ const loginFirebase = async (req, res) => {
         return sendApiResult(res, 200, "Login exitoso", {
             token,
             user: {
+                id: user._id,
+                firebaseUid: user.firebaseUid,
                 name: user.name,
-                email: user.email
+                email: user.email,
+                role: user.role
             }
         });
 

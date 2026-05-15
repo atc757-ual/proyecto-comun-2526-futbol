@@ -17,6 +17,7 @@ const commentsCreate = async (req, res) => {
         sendApiResult(res, 201, "Procesamiento concluído exitosamente", lastComment);
         
     } catch (err) {
+        console.error('[BACKEND] Error en commentsCreate:', err);
         sendApiResult(res, 400, "Error al añadir comentario: " + err.message);
     }
 };
@@ -78,7 +79,7 @@ const commentsUpdateOne = async (req, res) => {
         // Actualizar campos del subdocumento
         if (req.body.content) comment.content = req.body.content;
         if (req.body.rating) comment.rating = req.body.rating;
-        if (req.body.user_name) comment.user_name = req.body.user_name;
+        if (req.body.autor_name) comment.autor_name = req.body.autor_name;
         
         await player.save();
         sendApiResult(res, 200, "Comentario actualizado con éxito", comment);

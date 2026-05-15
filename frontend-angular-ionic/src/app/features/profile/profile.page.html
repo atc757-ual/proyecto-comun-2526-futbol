@@ -1,0 +1,101 @@
+<div class="row fl-col-rev-sm">
+  <!-- COLUMNA IZQUIERDA (8): Configuración y Seguridad -->
+  <div class="col-8 col-sm-12 mr-base mx-0-sm">
+    <ion-card class="premium-card mb-base">
+      <ion-card-header>
+        <ion-card-title class="f-bold fs-18">Seguridad y Acceso</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="settings-list">
+          <!-- ÚLTIMO ACCESO -->
+          <ion-item lines="none" class="action-item is-blue mb-s no-click">
+            <ion-icon slot="start" name="time-outline"></ion-icon>
+            <ion-label>
+              <h3 class="f-bold">Último acceso</h3>
+              <p>{{ currentUserInfo.lastLogin }}</p>
+            </ion-label>
+          </ion-item>
+
+          <div class="separator my-s"></div>
+
+          <!-- SEGURIDAD DE RED (Solo Admins) -->
+          <ion-item lines="none" class="action-item is-blue" *ngIf="isMaster" detail="true"
+            routerLink="/admin-security">
+            <ion-icon slot="start" name="shield-checkmark-outline"></ion-icon>
+            <ion-label>
+              <h3 class="f-bold">Seguridad de Red</h3>
+              <p>Gestión de accesos y registros globales</p>
+            </ion-label>
+          </ion-item>
+
+          <div class="separator my-s" *ngIf="isMaster"></div>
+
+          <!-- CAMBIAR CLAVE -->
+          <ion-item lines="none" class="action-item" [class.is-yellow]="resetCooldown" [class.is-blue]="!resetCooldown"
+            [class.disabled]="resetCooldown" (click)="sendPasswordReset()">
+            <ion-icon slot="start" *ngIf="resetCooldown" name="time-outline"></ion-icon>
+            <ion-icon slot="start" *ngIf="!resetCooldown" name="key-outline"></ion-icon>
+            <ion-label>
+              <h3 class="f-bold">{{ resetCooldown ? 'Cooldown de Seguridad' : 'Cambiar Contraseña' }}</h3>
+              <p>{{ resetCooldown ? 'Debes esperar unos minutos' : 'Recibirás un email de recuperación' }}</p>
+            </ion-label>
+            <ion-spinner *ngIf="isSendingReset" slot="end" name="crescent" size="small"></ion-spinner>
+          </ion-item>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="premium-card">
+      <ion-card-header>
+        <ion-card-title class="f-bold fs-18">Preferencias del Sistema</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="settings-list">
+          <!-- SELECCIÓN DE BACKEND -->
+          <ion-item lines="none" class="action-item is-green mt-0">
+            <ion-icon slot="start" name="server-outline"></ion-icon>
+            <div>
+              <ion-label>Conectado a {{ useSpringBoot ? 'Spring Boot' : 'NodeJS' }}</ion-label>
+              <p>Entorno de Servidor</p>
+            </div>
+            <ion-toggle slot="end" mode="ios" color="primary" [checked]="useSpringBoot"
+              (ionChange)="onBackendToggle($event)"></ion-toggle>
+          </ion-item>
+        </div>
+      </ion-card-content>
+      <ion-button (click)="confirmLogout()" expand="block" mode="ios" fill="outline" color="danger" shape="round"
+        class="mx-base mb-base mt-0 hide-on-desktop">
+        <ion-icon name="log-out-outline" class="mr-s" slot="start"></ion-icon>
+        Cerrar Sesión
+      </ion-button>
+    </ion-card>
+  </div>
+
+  <!-- COLUMNA DERECHA (4): Tarjeta Principal de Usuario -->
+  <div class="col-4 col-sm-12 pl-base px-0-sm ">
+    <ion-card class="mb-base">
+      <ion-card-content class="text-center">
+        <div class="avatar-wrapper mb-s">
+          <img [src]="currentUserInfo.avatar" (error)="handleAvatarError($event)" class="profile-avatar shadow-lg" />
+          <div class="role-badge" [class.admin]="isAdmin">
+            <ion-icon *ngIf="isAdmin" name="shield-checkmark-outline"></ion-icon>
+            <ion-icon *ngIf="!isAdmin" name="person-outline"></ion-icon>
+          </div>
+        </div>
+        <div class="profile-name">{{ currentUserInfo.name }}</div>
+        <div class="profile-email mb-s">{{ currentUserInfo.email }}</div>
+        <ion-badge color="primary" mode="ios" class="px-base py-xs round-badge">
+          {{ currentUserInfo.role }}
+        </ion-badge>
+      </ion-card-content>
+      <!-- ACCIÓN DE CIERRE DE SESIÓN (Desktop) -->
+      <ion-button (click)="confirmLogout()" expand="block" mode="ios" fill="outline" color="danger" shape="round"
+        class="mx-base mb-base mt-0 hide-on-phone">
+        <ion-icon name="log-out-outline" class="mr-s" slot="start"></ion-icon>
+        Cerrar Sesión
+      </ion-button>
+    </ion-card>
+
+
+  </div>
+</div>

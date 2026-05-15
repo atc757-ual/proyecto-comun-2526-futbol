@@ -1,4 +1,4 @@
-<div class="main-wrapper" id="main-content">
+<div class="main-wrapper" id="public-content">
   <!-- HEADER PREMIUM (CLON DE MAIN) -->
   <header class="main-header" [class.no-border]="layoutService.showHero()">
     <!-- FILA 1: Branding y Perfil -->
@@ -26,11 +26,29 @@
 
         <div class="header-right">
           <div class="auth-actions">
-            <!-- Acciones de Registro -->
-            <a routerLink="/register" class="auth-btn" style="margin-left: 15px;">
-              <ion-icon name="person-add-outline" color="primary"></ion-icon>
-              <span class="hide-on-phone">¡Regístrate!</span>
-            </a>
+            <!-- Caso: Usuario NO está logueado -->
+            <ng-container *ngIf="!authService.userData()">
+              <a routerLink="/login" class="auth-btn">
+                <ion-icon name="log-in-outline" color="primary"></ion-icon>
+                <span class="hide-on-phone">Iniciar Sesión</span>
+              </a>
+              <a routerLink="/register" class="auth-btn" style="margin-left: 15px;">
+                <ion-icon name="person-add-outline" color="primary"></ion-icon>
+                <span class="hide-on-phone">¡Regístrate!</span>
+              </a>
+            </ng-container>
+
+            <!-- Caso: Usuario YA está logueado (ej: Patrick navegando por el público) -->
+            <ng-container *ngIf="authService.userData()">
+              <a routerLink="/profile" class="auth-btn">
+                <ion-icon name="person-circle-outline" color="primary"></ion-icon>
+                <span class="hide-on-phone">Mi Perfil</span>
+              </a>
+              <a (click)="logout()" class="auth-btn logout clickable" style="margin-left: 15px;">
+                <ion-icon name="log-out-outline"></ion-icon>
+                <span class="hide-on-phone">Cerrar Sesión</span>
+              </a>
+            </ng-container>
           </div>
         </div>
       </div>

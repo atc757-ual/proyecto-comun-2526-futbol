@@ -12,7 +12,14 @@ const swaggerDocs = require('./app_api/routes/api-docs');
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'X-API-KEY', 
+    'x-user-role', 'X-User-Role', 'x-transaction-id', 'X-Transaction-Id'
+  ]
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 

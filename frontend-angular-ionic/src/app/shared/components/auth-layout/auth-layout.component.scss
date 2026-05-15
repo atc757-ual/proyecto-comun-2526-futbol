@@ -21,6 +21,8 @@
   flex: 1;
   --background: var(--color-neutral-0);
   height: 100%;
+  position: relative;
+  z-index: 10;
 
   &::part(scroll) {
     display: flex;

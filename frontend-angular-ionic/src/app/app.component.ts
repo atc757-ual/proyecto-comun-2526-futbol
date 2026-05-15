@@ -41,7 +41,7 @@ export class AppComponent implements OnInit {
 
     Promise.all([minSplash, authCheck]).then(([, ruta]) => {
       this.showSplash = false;
-      
+
       const currentUrl = this.router.url;
       // Solo redirigir si el usuario está en la página de inicio o raíz
       // Esto evita que el router intente activar un outlet que ya está cargando una URL profunda

@@ -27,7 +27,7 @@
             <img [src]="news.imageUrl || 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=800'"
               onerror="this.src='https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=800'"
               class="main-news-img">
-            <div class="main-news-badge">{{ news.category }}</div>
+            <div class="main-news-badge" [ngClass]="news.category | lowercase">{{ news.category }}</div>
           </div>
 
           <div class="main-news-content">
@@ -72,7 +72,23 @@
     </ion-card>
   </div>
   <!-- COLUMNA 4: LISTADO (Después en HTML -> Derecha en Desktop) -->
-  <div class="col-4 col-sm-12 pl-base px-0-sm mb-base">
+  <div class="col-4 col-sm-12 pl-base px-0-sm">
+    <!-- LISTA REAL DE NOTICIAS DESTACADAS -->
+    <ion-list *ngIf="!isLoading && featuredNews.length > 0" lines="none" class="side-news-list">
+      <ion-list-header>
+        <ion-label class="f-bold mb-base fs-20 text-neutral-8">Noticias Destacadas</ion-label>
+      </ion-list-header>
+      <ng-container *ngFor="let news of featuredNews; let i = index">
+        <ion-item button detail="false" class="side-news-item" [class.active]="news.id === selectedNew?.id"
+          (click)="selectNews(news)">
+          <div class="side-news-rank" slot="start">{{ i + 1 }}</div>
+          <ion-label>
+            <h2 class="side-news-title">{{ news.title }}</h2>
+          </ion-label>
+        </ion-item>
+        <div *ngIf="i < featuredNews.length - 1" class="separator my-s"></div>
+      </ng-container>
+    </ion-list>
     <ion-card *ngIf="isAdmin">
       <ion-card-header>
         <ion-card-title class="fs-20 fs-sm-18 f-semibold">Administrador</ion-card-title>

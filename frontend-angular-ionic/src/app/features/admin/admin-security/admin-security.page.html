@@ -1,13 +1,13 @@
 <!-- TARJETA: FIREBASE CLAIMS   -->
-<div class="row fl-col-rev-sm mt-base" *ngIf="isAdmin">
+<div class="row fl-col-rev-sm mt-base" *ngIf="isAdmin()">
   <div class="col-8 col-sm-12 pr-base px-0-sm mb-base">
 
     <ion-card class="premium-card">
       <ion-card-header>
         <div class="header-section">
-          <div class="shield-icon" [class.secured]="firebaseClaims()">
-            <ion-icon name="shield-checkmark-outline" *ngIf="firebaseClaims()"></ion-icon>
-            <ion-icon name="shield-outline" *ngIf="!firebaseClaims()"></ion-icon>
+          <div class="shield-icon" [class.secured]="firebaseClaims()?.admin">
+            <ion-icon name="shield-checkmark-outline" *ngIf="firebaseClaims()?.admin"></ion-icon>
+            <ion-icon name="shield-outline" *ngIf="!firebaseClaims()?.admin"></ion-icon>
           </div>
           <h2>Estado de Protección</h2>
           <p>Verificación de identidad y privilegios de Firebase Custom Claims</p>
@@ -17,8 +17,8 @@
       <ion-card-header>
         <div class="card-header-flex">
           <ion-card-title>Seguridad Nativa Firebase</ion-card-title>
-          <ion-badge [class.success]="firebaseClaims()" [class.error]="!firebaseClaims()">
-            {{ firebaseClaims() ? 'Activo' : 'No detectado' }}
+          <ion-badge [class.success]="firebaseClaims()?.admin" [class.error]="!firebaseClaims()?.admin">
+            {{ firebaseClaims()?.admin ? 'Activo' : 'No detectado' }}
           </ion-badge>
         </div>
       </ion-card-header>

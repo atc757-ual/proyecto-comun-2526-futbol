@@ -367,6 +367,16 @@
       font-weight: var(--fw-semibold) !important;
     }
 
+    &.has-url {
+      &::part(native) {
+        cursor: pointer !important;
+      }
+      
+      &:hover {
+        color: var(--color-primary);
+      }
+    }
+
     &:not(.has-url) {
       &::part(native) {
         cursor: default !important;
@@ -663,6 +673,10 @@ ion-footer.main-app-footer {
 // --- MENU MÓVIL REFINADO ---
 .mobile-only-menu {
   --width: 330px;
+
+  @media (min-width: 768px) {
+    display: none !important;
+  }
 
   &::part(backdrop) {
     background: rgb(101 98 145 / 79%);

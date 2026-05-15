@@ -30,16 +30,16 @@ class AIService {
         // Definimos el esquema de respuesta estructurada con Zod
         this.parser = StructuredOutputParser.fromZodSchema(
             z.object({
-                analysis: z.string().describe("Un análisis táctico general del plantel"),
-                formation: z.string().describe("La formación táctica sugerida (ej: 4-3-3, 4-4-2)"),
+                analysis: z.string().describe("Un análisis táctico general del plantel. Si faltan jugadores para llegar a 11, menciónalo cordialmente."),
+                formation: z.string().describe("La formación táctica sugerida (ej: 4-3-3, 4-4-2) o 'Incompleta' si hay muy pocos jugadores"),
                 idealEleven: z.array(z.object({
                     name: z.string(),
                     position: z.string().describe("Posición específica simplificada (PO, DF, MC, DL)"),
                     role: z.string().describe("Rol táctico detallado (ej: Portero, Central Izquierdo, Extremo Derecho)")
-                })).describe("Los 11 jugadores elegidos para el equipo titular con sus posiciones"),
+                })).describe("Los jugadores elegidos para el equipo titular (máximo 11)"),
                 starPlayer: z.string().describe("El jugador estrella del equipo"),
-                justification: z.string().describe("Justificación técnica de la elección del 11 ideal"),
-                tacticalRecommendations: z.array(z.string()).describe("Recomendaciones para mejorar la alineación y el rendimiento")
+                justification: z.string().describe("Justificación técnica de la elección de los jugadores"),
+                tacticalRecommendations: z.array(z.string()).describe("Recomendaciones para mejorar la alineación o completar el equipo")
             })
         );
 
@@ -48,20 +48,22 @@ class AIService {
             this.chain = RunnableSequence.from([
                 PromptTemplate.fromTemplate(
                     "Eres un Director Técnico de Élite y experto analista de Big Data futbolístico.\n" +
-                    "Tu tarea es armar el EQUIPO IDEAL (11 titulares) basado en los datos REALES de rendimiento proporcionados.\n\n" +
+                    "Tu tarea es armar el MEJOR EQUIPO POSIBLE (máximo 11 titulares) basado ÚNICAMENTE en los datos de los jugadores proporcionados.\n\n" +
+                    "REGLA DE ORO: Si el usuario tiene menos de 11 jugadores, NO inventes jugadores. Usa los que hay y explica en el análisis que el equipo está incompleto pero que esta es la mejor disposición para ellos.\n" +
+                    "Si tiene más de 11, selecciona a los mejores 11 para la formación ideal.\n\n" +
                     "INSTRUCCIÓN CRÍTICA: Responde ÚNICAMENTE con el objeto JSON solicitado.\n" +
                     "Estructura esperada:\n" +
                     "{{\n" +
-                    "  \"analysis\": \"Un análisis profundo basado en las estadísticas.\",\n" +
-                    "  \"formation\": \"La formación táctica (ej: 4-3-3)\",\n" +
+                    "  \"analysis\": \"Un análisis profundo. Si hay menos de 11 jugadores, indica cuántos faltan para un equipo completo.\",\n" +
+                    "  \"formation\": \"La formación táctica (ej: 4-3-3) o 'Incompleta'\",\n" +
                     "  \"idealEleven\": [\n" +
                     "    {{ \"name\": \"Nombre\", \"position\": \"PO|DF|MC|DL\", \"role\": \"Rol específico\" }}\n" +
                     "  ],\n" +
                     "  \"starPlayer\": \"Jugador estrella\",\n" +
-                    "  \"justification\": \"Por qué elegiste esta táctica.\",\n" +
-                    "  \"tacticalRecommendations\": [\"Consejos\"]\n" +
+                    "  \"justification\": \"Por qué elegiste esta táctica con los jugadores disponibles.\",\n" +
+                    "  \"tacticalRecommendations\": [\"Consejos para mejorar el plantel o completar posiciones faltantes\"]\n" +
                     "}}\n\n" +
-                    "DATOS DEL PLANTEL:\n{players_data}"
+                    "DATOS DEL PLANTEL DEL USUARIO:\n{players_data}"
                 ),
                 this.model
             ]);

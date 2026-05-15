@@ -7,7 +7,7 @@ import { NewsService, NewsItem } from 'src/app/core/services/news.service';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { PlatformService } from 'src/app/core/services/platform.service';
 import { addIcons } from 'ionicons';
-import { alertCircleOutline, arrowBackOutline, newspaperOutline, homeOutline, addCircleOutline, createOutline, trashOutline, checkmarkCircleOutline } from 'ionicons/icons';
+import { alertCircleOutline, arrowBackOutline, newspaperOutline, eyeOutline, eyeOffOutline, homeOutline, addCircleOutline, createOutline, trashOutline, checkmarkCircleOutline, cloudDoneOutline, cloudOfflineOutline } from 'ionicons/icons';
 import { LayoutService } from 'src/app/core/services/layout.service';
 import { StorageService } from 'src/app/core/services/storage.service';
 @Component({
@@ -45,7 +45,11 @@ export class NewsDetailPage {
     // El Layout se configurará dinámicamente en loadData al recibir los datos
   }
   constructor() {
-    addIcons({ alertCircleOutline, arrowBackOutline, addCircleOutline, newspaperOutline, homeOutline, createOutline, trashOutline, checkmarkCircleOutline });
+    addIcons({
+      alertCircleOutline, arrowBackOutline, addCircleOutline,
+      eyeOutline, eyeOffOutline, newspaperOutline, homeOutline, createOutline, trashOutline, checkmarkCircleOutline,
+      cloudDoneOutline, cloudOfflineOutline
+    });
     this.isAdmin = this.authService.isAdmin();
   }
 
@@ -95,11 +99,11 @@ export class NewsDetailPage {
     const toast = await this.toastCtrl.create({
       message,
       duration: 3000,
-      position: 'bottom',
-      color: color,
-      buttons: [{ icon: icon, side: 'start', handler: () => { } }]
+      position: 'top',
+      cssClass: color === 'success' ? 'toast-success' : 'toast-error',
+      icon: icon
     });
-    toast.present();
+    await toast.present();
   }
 
   private loadSidebarList() {
@@ -132,7 +136,51 @@ export class NewsDetailPage {
   }
 
 
+  getCategoryColor(category: string): string {
+    if (!category) return 'rgba(0,0,0,0.7)';
+    const cat = category.toLowerCase();
+    if (cat.includes('internacional')) return 'var(--color-primary)';
+    if (cat.includes('fichajes')) return 'var(--color-warning)';
+    if (cat.includes('crónica') || cat.includes('cronica')) return 'var(--color-tertiary)';
+    if (cat.includes('táctica') || cat.includes('tactica')) return 'var(--color-success)';
+    if (cat.includes('opinión') || cat.includes('opinion')) return 'var(--color-secondary)';
+    return 'rgba(0,0,0,0.7)';
+  }
+
   // --- ACCIONES DE ADMINISTRADOR ---
+  isUpdatingStatus = false;
+
+  toggleVisibility() {
+    if (!this.selectedNew || this.isUpdatingStatus) return;
+
+    this.isUpdatingStatus = true;
+    const updatedStatus = !this.selectedNew.isActive;
+
+    // Clonamos la noticia y cambiamos el estado
+    const updatedNews: NewsItem = {
+      ...this.selectedNew,
+      isActive: updatedStatus
+    };
+
+    // Llamamos al servicio (saveNews maneja el update si hay ID)
+    this.newsService.updateNews(updatedNews).subscribe({
+      next: () => {
+        if (this.selectedNew) this.selectedNew.isActive = updatedStatus;
+        this.isUpdatingStatus = false;
+
+        const message = updatedStatus ? '¡Noticia publicada con éxito!' : 'Noticia movida a borradores';
+        const icon = updatedStatus ? 'cloud-done-outline' : 'cloud-offline-outline';
+        const color = updatedStatus ? 'success' : 'medium';
+
+        this.showToast(message, color, icon);
+      },
+      error: (err) => {
+        this.isUpdatingStatus = false;
+        this.showToast('Error al actualizar el estado', 'danger', 'alert-circle-outline');
+        console.error('[STATUS-UPDATE] Error:', err);
+      }
+    });
+  }
 
   editNews() {
     if (this.selectedNew) {

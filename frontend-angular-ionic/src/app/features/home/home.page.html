@@ -1,9 +1,9 @@
 <!-- CARRUSEL DE NOTICIAS (SWIPER) -->
 <div *ngIf="!isLoadingFeatured && featuredNews.length > 0" class="news-swiper-wrapper">
   <swiper-container #swiperRef navigation-prev-el=".custom-prev" navigation-next-el=".custom-next"
-    [attr.loop]="featuredNews.length > 1 ? 'true' : 'false'" [attr.looped-slides]="featuredNews.length"
-    pagination="true" pagination-clickable="true" observer="true" observe-parents="true" autoplay="true"
-    autoplay-delay="3000" autoplay-disable-on-interaction="false" slides-per-view="1" space-between="0"
+    [attr.loop]="featuredNews.length > 1" [attr.looped-slides]="featuredNews.length" pagination="true"
+    pagination-clickable="true" observer="true" observe-parents="true" autoplay="true" autoplay-delay="4000"
+    autoplay-disable-on-interaction="false" slides-per-view="1" space-between="0" watch-slides-progress="true"
     class="featured-swiper">
     <swiper-slide *ngFor="let news of featuredNews">
       <div class="slide-content" [style.background-image]="'url(' + news.image + ')'">
@@ -47,80 +47,177 @@
   </div>
 </div>
 
-<div class="row">
-  <!-- COLUMNA 8: DETALLE (Primero en HTML -> Izquierda en Desktop) -->
-  <div class="col-8 col-sm-12 pr-base px-0-sm">
-    <ion-card class="card-acceso mb-base" *ngIf="isAdmin">
-      <ion-card-content>
-        <div class="card-acceso-item" routerLink="/add-news">
-          <ion-icon class="fs-28" name="newspaper-outline" color="primary"></ion-icon>
-          <ion-label class="f-regular text-neutral-8 fs-12">Crear Noticia</ion-label>
-        </div>
-        <div class="card-acceso-item" routerLink="/manage-news">
-          <ion-icon class="fs-28" name="settings-outline" color="primary"></ion-icon>
-          <ion-label class="f-regular text-neutral-8 fs-12">Gestionar Noticia</ion-label>
+
+<div class="row ">
+  <!-- COLUMNA 8: DETALLE -->
+  <div class="col-8 col-sm-12 mr-base mr-0-sm">
+    <!-- WIDGET FOOTBALL AI STATUS -->
+    <ion-card class="premium-card ai-scout-card mb-base animate-fade-in" routerLink="/ai-team">
+      <div class="ai-glow"></div>
+      <ion-card-content class="d-flex fl-align-center fl-justify-between py-base">
+        <div>
+          <div class="ai-status-badge mb-s d-inline-block">
+            <ion-icon name="sparkles-outline" class="mr-xs"></ion-icon> FOOTBALL AI STATUS
+          </div>
+          <ion-card-title class="f-bold mb-xs text-neutral-0">
+            {{ playerCount >= 11 ? '¡Tu equipo está listo!' : 'Necesitas más jugadores' }}
+          </ion-card-title>
+          <p class="m-0 opacity-70 fs-14">
+            {{ playerCount >= 11 ? 'Tienes un plantel completo. Analiza tu táctica ideal ahora.' : 'Tienes ' +
+            playerCount + ' jugadores. Ficha 11 para un análisis completo.' }}
+          </p>
         </div>
       </ion-card-content>
     </ion-card>
+    <!-- ACCESOS RÁPIDOS ADMIN -->
+    <ion-card class=" mb-base shadow-sm" *ngIf="isAdmin">
+      <ion-card-content class="p-0">
+        <div class="card-acceso">
+          <div class="card-acceso-item text-center pointer" routerLink="/players">
+            <ion-icon class="fs-24 fs-sm-20 mb-xs" name="people-outline" color="primary"></ion-icon>
+            <div class="f-medium text-neutral-8 fs-14 fs-sm-12">Gestionar Jugadores</div>
+          </div>
+          <div class="card-acceso-item text-center pointer" routerLink="/add-news">
+            <ion-icon class="fs-24 fs-sm-20 mb-xs" name="newspaper-outline" color="primary"></ion-icon>
+            <div class="f-medium text-neutral-8 fs-14 fs-sm-12">Creación de Noticias</div>
+          </div>
+          <div class="card-acceso-item text-center pointer" routerLink="/manage-news">
+            <ion-icon class="fs-24 fs-sm-20 mb-xs" name="settings-outline" color="primary"></ion-icon>
+            <div class="f-medium text-neutral-8 fs-14 fs-sm-12">Gestión de Noticias</div>
+          </div>
+          <div class="card-acceso-item text-center pointer" routerLink="/admin-security">
+            <ion-icon class="fs-24 fs-sm-20 mb-xs" name="shield-checkmark-outline" color="primary"></ion-icon>
+            <div class="f-medium text-neutral-8 fs-14 fs-sm-12">Seguridad Admin</div>
+          </div>
+        </div>
+
+      </ion-card-content>
+    </ion-card>
+
+    <!-- WIDGETS STENCIL EN COL-8 -->
+    <div class="row gap-base mb-base">
+      <div class="col-6 col-sm-12">
+        <div class="animate-fade-in h-100">
+          <player-list *ngIf="myPlayersJson !== '[]'" [attr.players]="myPlayersJson" widget-title="Mis Fichajes"
+            (viewMoreClicked)="onViewMorePlayers()" (playerClicked)="onPlayerClicked($event)">
+          </player-list>
+
+          <!-- ESTADO VACÍO -->
+          <ion-card class="premium-card empty-state-card h-100 m-0 d-flex fl-column jc-center ai-center t-center"
+            *ngIf="myPlayersJson === '[]'">
+            <ion-card-content class="d-flex fl-column ai-center jc-center py-base">
+              <div class="empty-icon-wrapper mb-base">
+                <ion-icon name="football-outline" color="primary" class="fs-36"></ion-icon>
+              </div>
+              <h3 class="f-semibold text-neutral-8 fs-18 mb-xs">¡Tu banquillo está vacío!</h3>
+              <p class="text-neutral-6 fs-14 mb-base px-m">Aún no has fichado a ningún jugador para tu equipo ideal.</p>
+
+              <ion-button mode="ios" shape="round" size="small" class=" fw-medium futbol-btn-primary px-m"
+                routerLink="/player-add">
+                <ion-icon name="person-add-outline" class="pr-s " slot="start"></ion-icon>
+                Crear mi primer jugador
+              </ion-button>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </div>
+      <div class="col-6 col-sm-12">
+        <div class="animate-fade-in" *ngIf="!isLoadingSchedule">
+          <tv-schedule-widget [attr.schedule]="tvScheduleJson" widget-title="Próximos partidos de Fútbol">
+          </tv-schedule-widget>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- COLUMNA 4: LISTADO (Después en HTML -> Derecha en Desktop) -->
+  <!-- COLUMNA 4: MARCADORES EN VIVO Y TENDENCIAS -->
   <div class="col-4 col-sm-12 pl-base px-0-sm">
-    <ion-card class="premium-card profile-card animate-fade-in">
+    <ion-card>
       <ion-card-content>
-
-        <!-- Header del Perfil -->
-        <div class="d-flex fl-align-center gap-s ">
-          <ion-avatar style="width: 60px; height: 60px;">
-            <img [src]="currentUserInfo.avatar" (error)="handleAvatarError($event)" alt="Avatar" />
-          </ion-avatar>
-          <div class="d-flex fl-column ">
-            <div class="f-medium text-neutral-9 fs-16 ">{{ currentUserInfo.name }}</div>
-            <div class=" d-flex fl-align-center text-neutral-7 fs-14 text-ellipsis">
-              <ion-icon name="mail-outline" class="mr-xs"></ion-icon>{{currentUserInfo.email}}
-            </div>
-            <div>
-              <ion-badge [class.bg-primary]="isAdmin" [class.bg-neutral-2]="!isAdmin"
-                class="mt-xs py-xs px-s f-medium fs-12 round-badge">
-                <ion-icon *ngIf="isAdmin" name="shield-checkmark-outline" class="mr-xs"></ion-icon>
-                <ion-icon *ngIf="!isAdmin" name="person-outline" class="mr-xs"></ion-icon>
-                {{ currentUserInfo.role }}
-              </ion-badge>
-            </div>
-          </div>
+        <div class="d-flex fl-align-center gap-s">
+          <ion-badge color="danger" mode="ios" class="animate-pulse px-s py-xs display-flex fl-align-center"
+            *ngIf="liveScores.length > 0">
+            <ion-icon name="radio-outline" class="mr-xs fs-14"></ion-icon>
+            <ion-label class="fs-12">LIVE</ion-label>
+          </ion-badge>
+          <h3 class="m-0 f-bold text-neutral-8 fs-18 ls-1">
+            Partidos en Directo <span *ngIf="liveScores.length > 0">({{ liveScores.length }})</span>
+          </h3>
         </div>
         <div class="separator my-s"></div>
-        <!-- Estadísticas Rápidas -->
-        <ion-item lines="none" class="action-item is-blue">
-          <ion-icon slot="start" name="time-outline"></ion-icon>
-          <div>
-            <ion-label>Último acceso</ion-label>
-            <p>{{ currentUserInfo.lastLogin }}</p>
+
+        <!-- LISTADO DE PARTIDOS EN VIVO CON SWIPER (PAGINACIÓN) -->
+        <div class="live-scores-wrapper" *ngIf="!isLoadingLive && liveScores.length > 0">
+          <swiper-container class="live-scores-swiper" pagination="true" slides-per-view="1" space-between="0">
+
+            <swiper-slide *ngFor="let page of liveScorePages">
+              <div class="match-cards-container">
+                <div class="modern-match-card animate-in" *ngFor="let match of page"
+                  [routerLink]="['/matches', match.idEvent]">
+
+                  <!-- Team Home -->
+                  <div class="team-block home">
+                    <div class="team-accent-stripe home" [style.background]="match.customGradient"></div>
+                    <div class="team-logo-wrap">
+                      <img [src]="match.strHomeTeamBadge || 'assets/imgs/default-team.png'" alt="Home">
+                    </div>
+                    <span class="team-name-small">{{ match.strHomeTeam }}</span>
+                  </div>
+
+                  <!-- Center Info (Score/Status) -->
+                  <div class="match-info-center">
+                    <div class="league-tiny-tag">{{ match.strLeague }}</div>
+                    <div class="match-status-wrap">
+                      <div class="live-dot-mini animate-pulse-red"
+                        *ngIf="match.strStatus === 'NS' || match.strProgress"></div>
+                      <span class="match-status-text">
+                        {{ match.strProgress ? match.strProgress + "'" : (match.strStatus || 'Final') }}
+                      </span>
+                    </div>
+                    <div class="score-row-large">
+                      <span class="win-marker left" *ngIf="match.intHomeScore > match.intAwayScore">◀</span>
+                      <span class="score-num">{{ match.intHomeScore }} - {{ match.intAwayScore }}</span>
+                      <span class="win-marker right" *ngIf="match.intAwayScore > match.intHomeScore">▶</span>
+                    </div>
+                  </div>
+
+                  <!-- Team Away -->
+                  <div class="team-block away">
+                    <div class="team-accent-stripe away" [style.background]="match.customGradient"></div>
+                    <div class="team-logo-wrap">
+                      <img [src]="match.strAwayTeamBadge || 'assets/imgs/default-team.png'" alt="Away">
+                    </div>
+                    <span class="team-name-small">{{ match.strAwayTeam }}</span>
+                  </div>
+                </div>
+              </div>
+            </swiper-slide>
+          </swiper-container>
+        </div>
+
+        <!-- ESTADO VACÍO: NO HAY PARTIDOS -->
+        <div class="empty-live-card p-base text-center shadow-sm" *ngIf="!isLoadingLive && liveScores.length === 0">
+          <div class="empty-live-icon mb-s">
+            <ion-icon name="football-outline" color="medium"></ion-icon>
           </div>
-        </ion-item>
-        <div class="separator my-s"></div>
-        <!-- Botones de Acción -->
-        <ion-item [button]="true" lines="none" detail="true" class="action-item is-green" routerLink="/admin-security">
-          <ion-icon slot="start" name="shield-checkmark-outline"></ion-icon>
-          <div>
-            <ion-label>Seguridad</ion-label>
-            <p>Gestiona los permisos de tus usuarios</p>
-          </div>
-        </ion-item>
-        <div class="separator my-s"></div>
-        <ion-item [button]="!resetCooldown" lines="none" [detail]="!resetCooldown" class="action-item is-blue"
-          [class.is-disabled]="resetCooldown" (click)="sendPasswordReset()">
-          <ion-icon slot="start" *ngIf="resetCooldown " name="time-outline"></ion-icon>
-          <ion-icon slot="start" *ngIf="!resetCooldown " name="key-outline"></ion-icon>
-          <div>
-            <ion-label>{{ resetCooldown ? 'Espera 5 min' : 'Cambiar clave' }}</ion-label>
-            <p>{{ resetCooldown ? 'Por seguridad, debes esperar un poco' : 'Te enviaremos un email con indicaciones' }}
-            </p>
-          </div>
-          <ion-spinner *ngIf="isSendingReset" slot="end" name="crescent" size="small"></ion-spinner>
-        </ion-item>
+          <p class="m-0 f-semibold text-neutral-7 fs-14">No hay partidos en vivo</p>
+          <p class="m-0 text-neutral-5 fs-12 mt-xs">Vuelve más tarde para ver resultados en tiempo real.</p>
+        </div>
+
+        <!-- SKELETON LOADING -->
+        <div *ngIf="isLoadingLive" class="live-skeletons">
+          <ion-card class="m-0 mb-s shadow-sm" *ngFor="let i of [1,2,3]">
+            <ion-card-content class="p-s">
+              <ion-skeleton-text animated style="width: 60%; height: 12px;"></ion-skeleton-text>
+              <div class="d-flex fl-justify-between mt-s">
+                <ion-skeleton-text animated style="width: 30px; height: 30px; border-radius: 50%;"></ion-skeleton-text>
+                <ion-skeleton-text animated style="width: 40px; height: 20px;"></ion-skeleton-text>
+                <ion-skeleton-text animated style="width: 30px; height: 30px; border-radius: 50%;"></ion-skeleton-text>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </div>
       </ion-card-content>
     </ion-card>
   </div>
-
 </div>

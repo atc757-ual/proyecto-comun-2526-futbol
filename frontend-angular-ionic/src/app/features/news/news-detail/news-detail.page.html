@@ -20,27 +20,39 @@
 
     <ion-card class="main-article" *ngIf="selectedNew">
       <div class="article-image-container">
-        <img [src]="selectedNew.imageUrl">
-        <div class="article-badge">{{ selectedNew.category }}</div>
+        <img [src]="selectedNew.imageUrl || 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=800'"
+          onerror="this.src='https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=800'">
+        <div class="article-badge" [style.background]="getCategoryColor(selectedNew.category)">
+          {{ selectedNew.category }}
+        </div>
       </div>
 
       <ion-card-content>
-        <div class="mb-base" *ngIf="selectedNew.tags.length > 0">
-          <span class="news-tag" *ngFor="let tag of selectedNew.tags">#{{ tag }}</span>
-        </div>
         <div class="article-content">
+          <!-- CABECERA EDITORIAL -->
+          <div *ngIf="selectedNew.tags.length > 0">
+            <span class="news-tag" *ngFor="let tag of selectedNew.tags">#{{ tag }}</span>
+          </div>
+
           <h1 class="article-title">{{ selectedNew.title }}</h1>
 
+          <!-- METADATOS: Justo bajo el título -->
+          <div class="article-meta">
+            <ion-icon name="person-circle-outline" class="mr-xs text-primary fs-18"></ion-icon>
+            <span class="article-author">{{ selectedNew.author }}</span>
+            <span class="article-dot">•</span>
+            <ion-icon name="calendar-outline" class="mr-xs text-neutral-5 fs-16"></ion-icon>
+            <span class="article-date">{{ selectedNew.date | date:'dd/MM/yyyy' }}</span>
+          </div>
+
+          <!-- EXTRACTO (Lid) -->
           <p class="article-excerpt" *ngIf="selectedNew.summary">
             {{ selectedNew.summary }}
           </p>
-          <div class="article-meta">
-            <span class="article-author">{{ selectedNew.author }}</span>
-            <span class="article-dot">•</span>
-            <span class="article-date">{{ selectedNew.date | date:'dd/MM/yyyy' }}</span>
-          </div>
+
+          <!-- CUERPO DE LA NOTICIA -->
           <div class="article-full-text">
-            <span>{{ selectedNew.content }}</span>
+            {{ selectedNew.content }}
           </div>
         </div>
       </ion-card-content>
@@ -72,36 +84,51 @@
     <!-- ADMIN CARD -->
     <ion-card *ngIf="isAdmin" class="mb-base">
       <ion-card-header>
-        <ion-card-title class="fs-20 fs-sm-18 f-semibold">Administrador</ion-card-title>
+        <ion-card-title class="fs-18 f-bold">Control de Publicación</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <ion-item [button]="true" lines="none" detail="true" class="action-item mb-s" routerLink="/add-news">
-          <ion-icon slot="start" color="primary" aria-hidden="true" class="fs-28" name="add-circle-outline"></ion-icon>
-          <ion-label>Crear noticia</ion-label>
+        <!-- Widget de Estado -->
+        <div class="status-widget mb-base" [class.is-published]="selectedNew?.isActive">
+          <div class="status-header">
+            <span class="status-tag">
+              <ion-icon [name]="selectedNew?.isActive ? 'eye-outline' : 'eye-off-outline'"></ion-icon>
+              {{ selectedNew?.isActive ? 'PUBLICADO' : 'BORRADOR' }}
+            </span>
+            <ion-toggle mode="ios" [checked]="selectedNew?.isActive" (ionChange)="toggleVisibility()"
+              [disabled]="isUpdatingStatus">
+            </ion-toggle>
+          </div>
+          <p class="status-desc">
+            {{ selectedNew?.isActive ? 'Noticia visible para todos los usuarios.' : 'La noticia no es visible para el
+            público.' }}
+          </p>
+        </div>
+
+        <div class="separator my-s"></div>
+
+        <ion-item [button]="true" lines="none" detail="true" class="action-item is-blue" routerLink="/add-news">
+          <ion-icon slot="start" aria-hidden="true" name="add-circle-outline"></ion-icon>
+          <ion-label>Nueva noticia</ion-label>
         </ion-item>
 
-        <div *ngIf="selectedNew" class="separator my-s"></div>
-
-        <ion-item *ngIf="selectedNew" [button]="true" lines="none" detail="true" class="action-item mb-s"
+        <ion-item *ngIf="selectedNew" [button]="true" lines="none" detail="true" class="action-item is-green"
           (click)="editNews()">
-          <ion-icon slot="start" color="primary" aria-hidden="true" class="fs-28" name="create-outline"></ion-icon>
-          <ion-label>Editar noticia</ion-label>
+          <ion-icon slot="start" aria-hidden="true" name="create-outline"></ion-icon>
+          <ion-label>Editar contenido</ion-label>
         </ion-item>
 
-        <div *ngIf="selectedNew" class="separator my-s"></div>
-
-        <ion-item *ngIf="selectedNew" [button]="true" lines="none" detail="true" class="action-item"
+        <ion-item *ngIf="selectedNew" [button]="true" lines="none" detail="true" class="action-item is-red"
           (click)="confirmDelete()">
-          <ion-icon slot="start" color="primary" aria-hidden="true" class="fs-28" name="trash-outline"></ion-icon>
-          <ion-label class="ml-s f-medium">Eliminar noticia</ion-label>
+          <ion-icon slot="start" aria-hidden="true" name="trash-outline"></ion-icon>
+          <ion-label>Eliminar permanente</ion-label>
         </ion-item>
       </ion-card-content>
     </ion-card>
 
     <!-- LISTA REAL -->
-    <ion-list *ngIf="!isLoading && newsList.length > 0" lines="none">
+    <ion-list class="side-news-list" *ngIf="!isLoading && newsList.length > 0" lines="none">
       <ion-list-header>
-        <ion-label class="f-bold mb-base fs-20 text-neutral-8">Noticias Destacadas</ion-label>
+        <ion-label class="f-bold mb-base fs-18 text-neutral-8">Noticias Destacadas</ion-label>
       </ion-list-header>
       <ng-container *ngFor="let news of newsList; let i = index">
         <ion-item button detail="false" class="side-news-item" [class.active]="news.id === selectedNew?.id"
@@ -114,6 +141,5 @@
         <div *ngIf="i < newsList.length - 1" class="separator my-s"></div>
       </ng-container>
     </ion-list>
-
   </div>
 </div>

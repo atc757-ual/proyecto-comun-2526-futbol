@@ -55,8 +55,8 @@
             <ion-textarea #contentModel="ngModel" mode="md" fill="outline" label="Contenido Completo"
               labelPlacement="stacked" [(ngModel)]="newsData.content" name="content" required minlength="20"
               maxlength="5000" counter="true" [counterFormatter]="contentCounterFormatter"
-              placeholder="Escribe aquí el cuerpo completo de la noticia..." class="futbol-input" [autoGrow]="true" rows="4"
-              helperText="Cuerpo principal de la noticia" errorText="Min. 20 carácteres"
+              placeholder="Escribe aquí el cuerpo completo de la noticia..." class="futbol-input" [autoGrow]="true"
+              rows="4" helperText="Cuerpo principal de la noticia" errorText="Min. 20 carácteres"
               (ionFocus)="setFocus('content')" (ionBlur)="setFocus(null)"
               [class.is-focused]="focusedField === 'content'"
               [class.input-error]="contentModel.invalid && contentModel.touched" style="min-height: 150px;">
@@ -180,9 +180,12 @@
 
           <!-- Área de Carga (Solo visible si NO hay imagen) -->
           <div class="image-upload-area" *ngIf="!previewImage" (click)="fileInput.click()">
-            <div class="upload-content">
-              <ion-icon name="cloud-upload-outline"></ion-icon>
-              <span>Subir imagen de portada</span>
+            <div class="upload-content" style="flex-direction: column; gap: 4px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <ion-icon name="cloud-upload-outline"></ion-icon>
+                <span>Subir imagen de portada</span>
+              </div>
+              <span class="fs-12 mt-s f-regular text-primary">Imagen 1920x1080px (recomendada)</span>
             </div>
           </div>
           <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;">

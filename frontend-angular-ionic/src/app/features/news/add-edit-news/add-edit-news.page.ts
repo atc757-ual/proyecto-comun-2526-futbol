@@ -27,7 +27,6 @@ import { StorageService } from '../../../core/services/storage.service';
 export class AddEditNewsPage implements OnInit {
   private newsService = inject(NewsService);
   private authService = inject(AuthService);
-  private storageService = inject(StorageService);
   private toastCtrl = inject(ToastController);
   private navCtrl = inject(NavController);
   private layoutService = inject(LayoutService);
@@ -301,7 +300,7 @@ export class AddEditNewsPage implements OnInit {
   }
 
   removeTag(tag: string) {
-    this.newsData.tags = this.newsData.tags.filter(t => t !== tag);
+    this.newsData.tags = this.newsData.tags.filter((t: string) => t !== tag);
     this.forceTagCounterUpdate();
   }
 
@@ -328,17 +327,6 @@ export class AddEditNewsPage implements OnInit {
       return;
     }
 
-    // Asegurar que el creador esté presente si es nueva
-    const userData = this.authService.getUserData();
-    const adminName = userData?.name || userData?.email || 'Admin';
-
-    if (!this.isEditMode) {
-      if (!this.newsData.createdBy) this.newsData.createdBy = adminName;
-      this.newsData.updatedBy = adminName; // En creación, ambos son el mismo
-    } else {
-      this.newsData.updatedBy = adminName; // En edición, solo actualizamos este
-    }
-
     if (this.isEditMode && !this.hasChanges) {
       this.showToast('No se han detectado cambios para actualizar', 'warning');
       return;
@@ -346,58 +334,19 @@ export class AddEditNewsPage implements OnInit {
 
     this.isPublishing = true;
 
-    try {
-        // 1. Manejo de Imagen en Firebase Storage
-        if (this.selectedFile) {
-          if (!this.authService.isAdmin()) {
-            this.showToast('No tienes permisos para ejecutar esta acción', 'danger');
-            this.isPublishing = false;
-            return;
-          }
-          
-          const oldImageUrl = this.initialPreviewImage; // Guardamos la vieja antes de nada
-          console.log('[PUBLISH] Subiendo nueva imagen...');
-          const newImageUrl = await this.storageService.uploadImage(this.selectedFile, 'news');
-
-          // Borrar la antigua SOLO si era distinta y de Firebase
-          if (this.isEditMode && oldImageUrl && oldImageUrl.includes('firebasestorage') && oldImageUrl !== newImageUrl) {
-            console.log('[PUBLISH] Borrando imagen antigua:', oldImageUrl);
-            await this.storageService.deleteImageByUrl(oldImageUrl);
-          }
-
-          this.newsData.imageUrl = newImageUrl;
-      } else if (!this.previewImage && this.initialPreviewImage) {
-        // ... resto de lógica si se quita la imagen ...
-        if (this.initialPreviewImage.includes('firebasestorage')) {
-          await this.storageService.deleteImageByUrl(this.initialPreviewImage);
-        }
-        this.newsData.imageUrl = '';
+    this.newsService.saveNews(this.newsData, this.selectedFile, this.initialPreviewImage).subscribe({
+      next: (res) => {
+        this.isPublishing = false;
+        const msg = this.isEditMode ? '¡Noticia actualizada con éxito!' : '¡Noticia publicada con éxito en CORBA!';
+        this.showToast(msg, 'success');
+        this.navCtrl.navigateRoot('/manage-news');
+      },
+      error: (err) => {
+        this.isPublishing = false;
+        console.error('[PUBLISH] Error al procesar noticia:', err);
+        this.showToast('Error al guardar la noticia (CORBA/Storage)', 'danger');
       }
-
-      // 2. Enviar a CORBA
-      const request = this.isEditMode
-        ? this.newsService.updateNews(this.newsData)
-        : this.newsService.addNews(this.newsData);
-
-      request.subscribe({
-        next: (res) => {
-          this.isPublishing = false;
-          const msg = this.isEditMode ? '¡Noticia actualizada con éxito!' : '¡Noticia publicada con éxito en CORBA!';
-          this.showToast(msg, 'success');
-          this.navCtrl.navigateRoot('/manage-news');
-        },
-        error: (err) => {
-          this.isPublishing = false;
-          console.error('Error al procesar la noticia:', err);
-          this.showToast('Error al conectar con el servidor CORBA', 'danger');
-        }
-      });
-
-    } catch (error) {
-      this.isPublishing = false;
-      console.error('[PUBLISH] Error en el flujo de publicación:', error);
-      this.showToast('Error al procesar la imagen en Storage', 'danger');
-    }
+    });
   }
 
   onCancel() {

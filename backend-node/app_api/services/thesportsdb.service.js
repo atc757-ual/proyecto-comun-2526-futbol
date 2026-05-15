@@ -25,15 +25,24 @@ const searchPlayers = async (name) => {
         if (!players) return [];
         if (!Array.isArray(players)) players = [players];
 
-        return players.map(p => ({
+        // FILTRO ESTRICTO: Solo fútbol
+        const playersFiltered = players.filter(p => p.strSport && p.strSport.toLowerCase() === 'soccer');
+
+        return playersFiltered.map(p => ({
             idPlayer: p.idPlayer,
             idTeam: p.idTeam,
+            idTeam2: p.idTeam2,
+            idLeague: p.idLeague,
             strPlayer: p.strPlayer,
+            strSport: p.strSport,
             strTeam: p.strTeam,
+            strTeam2: p.strTeam2,
             strThumb: p.strThumb,
             strCutout: p.strCutout,
+            strRender: p.strRender,
             strNationality: p.strNationality,
-            strPosition: p.strPosition
+            strPosition: p.strPosition,
+            strSide: p.strSide
         }));
     } catch (error) {
         console.error('Error in TSDB searchPlayers V2:', error.message);
@@ -55,17 +64,35 @@ const getPlayerDetails = async (id) => {
         return {
             idPlayer: p.idPlayer,
             idTeam: p.idTeam,
+            idTeam2: p.idTeam2,
+            idLeague: p.idLeague,
+            idTransferMkt: p.idTransferMkt,
+            idESPN: p.idESPN,
+            idWikidata: p.idWikidata,
             strPlayer: p.strPlayer,
             strNationality: p.strNationality,
             strTeam: p.strTeam,
+            strTeam2: p.strTeam2,
             strPosition: p.strPosition,
+            strSide: p.strSide,
             strHeight: p.strHeight,
             strWeight: p.strWeight,
             strNumber: p.strNumber,
             dateBorn: p.dateBorn,
             strBirthLocation: p.strBirthLocation,
             strThumb: p.strThumb,
-            strDescriptionES: p.strDescriptionES || p.strDescriptionEN
+            strDescriptionES: p.strDescriptionES || p.strDescriptionEN,
+            // Imágenes adicionales
+            strPoster: p.strPoster,
+            strCutout: p.strCutout,
+            strCartoon: p.strCartoon,
+            strBanner: p.strBanner,
+            strRender: p.strRender,
+            // Redes Sociales
+            strFacebook: p.strFacebook,
+            strInstagram: p.strInstagram,
+            strTwitter: p.strTwitter,
+            strWebsite: p.strWebsite
         };
     } catch (error) {
         console.error('Error in TSDB getPlayerDetails V2:', error.message);
@@ -88,11 +115,14 @@ const getTeamDetails = async (id) => {
             idTeam: t.idTeam,
             strTeam: t.strTeam,
             strTeamBadge: t.strBadge || t.strTeamBadge, // V2 usa strBadge
+            strLeague: t.strLeague,
             strCountry: t.strCountry,
             intFormedYear: t.intFormedYear,
             strStadium: t.strStadium,
             strStadiumLocation: t.strStadiumLocation,
             strStadiumThumb: t.strStadiumThumb,
+            strFanart1: t.strFanart1, // Banner del equipo
+            strWebsite: t.strWebsite,
             idLeague: t.idLeague
         };
     } catch (error) {
@@ -122,20 +152,6 @@ const getLeagueDetails = async (id) => {
     }
 };
 
-const getLeagues = async () => {
-    try {
-        const url = `${getBaseUrl()}/all/leagues`;
-        const response = await axios.get(url, {
-            headers: getHeaders()
-        });
-        // V2 usa "all" para el endpoint /all/leagues
-        return response.data.all || response.data.leagues || response.data.countries || [];
-    } catch (error) {
-        console.error('Error in TSDB getLeagues V2:', error.message);
-        throw error;
-    }
-};
-
 const searchTeams = async (name) => {
     try {
         const url = `${getBaseUrl()}/search/team/${encodeURIComponent(name)}`;
@@ -147,15 +163,54 @@ const searchTeams = async (name) => {
         if (!teams) return [];
         if (!Array.isArray(teams)) teams = [teams];
 
-        return teams.map(t => ({
+        // FILTRO ESTRICTO: Solo fútbol
+        const teamsFiltered = teams.filter(t => t.strSport && t.strSport.toLowerCase() === 'soccer');
+
+        return teamsFiltered.map(t => ({
             idTeam: t.idTeam,
             strTeam: t.strTeam,
-            strTeamBadge: t.strBadge || t.strTeamBadge, // V2 usa strBadge
+            strTeamBadge: t.strBadge || t.strTeamBadge, 
             strLeague: t.strLeague,
-            strCountry: t.strCountry
+            strCountry: t.strCountry,
+            strSport: t.strSport
         }));
     } catch (error) {
         console.error('Error in TSDB searchTeams V2:', error.message);
+        throw error;
+    }
+};
+
+const searchPlayersByTeam = async (teamName) => {
+    try {
+        const url = `${getBaseUrl()}/search/player?t=${encodeURIComponent(teamName)}`;
+        console.log(`[TSDB-DEBUG] Buscando jugadores por NOMBRE de equipo: "${teamName}"`);
+
+        const response = await axios.get(url, {
+            headers: getHeaders()
+        });
+
+        let players = response.data.search || response.data.player || response.data.results;
+        if (!players) {
+            console.log(`[TSDB-DEBUG] No se encontraron jugadores para el equipo: "${teamName}"`);
+            return [];
+        }
+        if (!Array.isArray(players)) players = [players];
+
+        // FILTRO ESTRICTO: Solo fútbol
+        const playersFiltered = players.filter(p => p.strSport && p.strSport.toLowerCase() === 'soccer');
+        console.log(`[TSDB-DEBUG] Búsqueda por nombre finalizada: ${playersFiltered.length} jugadores de fútbol encontrados`);
+
+        return playersFiltered.map(p => ({
+            idPlayer: p.idPlayer,
+            idTeam: p.idTeam,
+            strPlayer: p.strPlayer,
+            strTeam: p.strTeam,
+            strThumb: p.strThumb,
+            strCutout: p.strCutout,
+            strPosition: p.strPosition
+        }));
+    } catch (error) {
+        console.error('Error in TSDB searchPlayersByTeam V2:', error.message);
         throw error;
     }
 };
@@ -166,7 +221,7 @@ const getTeamsByLeague = async (idLeague) => {
         const response = await axios.get(url, {
             headers: getHeaders()
         });
-        const teams = response.data.list || [];
+        const teams = response.data.list || response.data.teams || response.data.results || [];
 
         return teams.map(t => ({
             idTeam: t.idTeam,
@@ -177,7 +232,6 @@ const getTeamsByLeague = async (idLeague) => {
             strColour1: t.strColour1,
             strColour2: t.strColour2,
             strCountry: t.strCountry,
-            // Compatibilidad con código antiguo
             strTeamBadge: t.strBadge
         }));
     } catch (error) {
@@ -193,9 +247,15 @@ const getPlayersByTeam = async (idTeam) => {
             headers: getHeaders()
         });
 
-        let players = response.data.list;
-        if (!players) return [];
+        console.log(`[TSDB-DEBUG] Consultando Plantilla Oficial para Team ID: ${idTeam}`);
+        let players = response.data.list || response.data.player || response.data.results;
+        if (!players) {
+            console.log(`[TSDB-DEBUG] No se encontró plantilla oficial para ID: ${idTeam}`);
+            return [];
+        }
         if (!Array.isArray(players)) players = [players];
+
+        console.log(`[TSDB-DEBUG] Plantilla Oficial recuperada: ${players.length} registros`);
 
         return players.map(p => ({
             idPlayer: p.idPlayer,
@@ -225,7 +285,10 @@ const searchLeagues = async (name) => {
         if (!leagues) return [];
         if (!Array.isArray(leagues)) leagues = [leagues];
 
-        return leagues.map(l => ({
+        // FILTRO ESTRICTO: Solo fútbol
+        const leaguesFiltered = leagues.filter(l => l.strSport && l.strSport.toLowerCase() === 'soccer');
+
+        return leaguesFiltered.map(l => ({
             idLeague: l.idLeague,
             strLeague: l.strLeague,
             strSport: l.strSport,
@@ -244,9 +307,40 @@ const getPlayerHonours = async (idPlayer) => {
         const response = await axios.get(url, {
             headers: getHeaders()
         });
-        return response.data.lookup || [];
+        const data = response.data.lookup || [];
+        const mapped = data.map(h => ({
+            strTeam: h.strHonour,
+            strTeamBadge: h.strHonourTrophy || h.strTeamBadge,
+            strSeason: h.strSeason
+        }));
+        // Ordenar por año descendente
+        return mapped.sort((a, b) => {
+            const yearA = parseInt(a.strSeason?.substring(0, 4)) || 0;
+            const yearB = parseInt(b.strSeason?.substring(0, 4)) || 0;
+            return yearB - yearA;
+        });
     } catch (error) {
         console.error('Error in TSDB getPlayerHonours V2:', error.message);
+        throw error;
+    }
+};
+
+const getPlayerMilestones = async (idPlayer) => {
+    try {
+        const url = `${getBaseUrl()}/lookup/player_milestones/${idPlayer}`;
+        const response = await axios.get(url, {
+            headers: getHeaders()
+        });
+        const data = response.data.lookup || [];
+        const mapped = data.map(m => ({
+            strTeam: m.strMilestone,
+            strTeamBadge: m.strMilestoneLogo,
+            strSeason: m.dateMilestone ? m.dateMilestone.substring(0, 4) : ''
+        }));
+        // Ordenar por año descendente
+        return mapped.sort((a, b) => (parseInt(b.strSeason) || 0) - (parseInt(a.strSeason) || 0));
+    } catch (error) {
+        console.error('Error in TSDB getPlayerMilestones V2:', error.message);
         throw error;
     }
 };
@@ -257,23 +351,54 @@ const getPlayerTeamsHistory = async (idPlayer) => {
         const response = await axios.get(url, {
             headers: getHeaders()
         });
-        return response.data.lookup || [];
+        const data = response.data.lookup || [];
+        const mapped = data.map(t => ({
+            strTeam: t.strFormerTeam,
+            strTeamBadge: t.strBadge,
+            strSeason: `${t.strJoined}${t.strDeparted ? ' - ' + t.strDeparted : ' - Presente'}`,
+            _year: parseInt(t.strJoined) || 0
+        }));
+        // Ordenar por año de inicio descendente
+        return mapped.sort((a, b) => b._year - a._year);
     } catch (error) {
         console.error('Error in TSDB getPlayerTeamsHistory V2:', error.message);
         throw error;
     }
 };
 
-const getTVBySport = async (sport) => {
+
+const getTVByCountry = async (country) => {
     try {
-        const url = `${getBaseUrl()}/filter/tv/sport/${encodeURIComponent(sport)}`;
+        const url = `${getBaseUrl()}/filter/tv/country/${encodeURIComponent(country)}`;
+        console.log(`[TSDB-BACKEND] Consultando TV País: ${url}`);
         const response = await axios.get(url, {
             headers: getHeaders()
         });
-        // En v2 los filtros suelen devolver "results" o el nombre de la sección
-        return response.data.results || response.data.tv || [];
+        console.log(`[TSDB-DEBUG] Raw Response Keys:`, Object.keys(response.data));
+        const data = response.data.results || response.data.tv || response.data.filter || [];
+        // Filtramos estrictamente por fútbol para evitar otros deportes en la agenda
+        const filteredData = data.filter(item => item.strSport && item.strSport.toLowerCase() === 'soccer');
+        console.log(`[TSDB-BACKEND] TV País recuperada (Filtro Soccer): ${filteredData.length} eventos`);
+        return filteredData;
     } catch (error) {
-        console.error('Error in TSDB getTVBySport V2:', error.message);
+        console.error('Error in TSDB getTVByCountry V2:', error.message);
+        throw error;
+    }
+};
+
+const getLiveScores = async (sport = 'soccer') => {
+    try {
+        const url = `${getBaseUrl()}/livescore/${encodeURIComponent(sport)}`;
+        console.log(`[TSDB-BACKEND] Consultando Livescore (V2): ${url}`);
+        const response = await axios.get(url, {
+            headers: getHeaders()
+        });
+        // En V2 el key suele ser 'livescore' o 'results'
+        const data = response.data.livescore || response.data.results || [];
+        console.log(`[TSDB-BACKEND] Livescore recuperado: ${data.length} partidos`);
+        return data;
+    } catch (error) {
+        console.error('Error in TSDB getLiveScores V2:', error.message);
         throw error;
     }
 };
@@ -282,13 +407,15 @@ module.exports = {
     searchPlayers,
     searchTeams,
     searchLeagues,
-    getTVBySport,
-    getTeamsByLeague,
     getPlayerHonours,
+    getPlayerMilestones,
     getPlayerTeamsHistory,
-    getPlayersByTeam,
     getPlayerDetails,
     getTeamDetails,
     getLeagueDetails,
-    getLeagues
+    getTeamsByLeague,
+    getPlayersByTeam,
+    searchPlayersByTeam,
+    getTVByCountry,
+    getLiveScores
 };

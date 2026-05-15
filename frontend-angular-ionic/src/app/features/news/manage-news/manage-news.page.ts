@@ -225,19 +225,27 @@ export class ManageNewsPage implements OnInit {
     
     reader.onload = (e: any) => {
       try {
-        const json = JSON.parse(e.target.result);
+        let json = JSON.parse(e.target.result);
+        
+        // Si no es un array, lo convertimos en uno de un solo elemento para compatibilidad
+        if (!Array.isArray(json)) {
+          json = [json];
+        }
+
         this.newsService.bulkAddNews(json).subscribe({
           next: () => {
-            this.showToast(`¡Éxito! Noticias cargadas correctamente.`, 'success', 'checkmark-circle-outline');
+            this.showToast(`¡Éxito! ${json.length} noticias cargadas correctamente.`, 'success', 'checkmark-circle-outline');
             this.isUploadingBulk = false;
-            this.showBulkPanel = false; // Cerrar al terminar
+            this.showBulkPanel = false;
             this.selectedBulkFile = null;
             this.bulkFileName = '';
             this.loadNews();
           },
-          error: () => {
+          error: (err) => {
             this.isUploadingBulk = false;
-            this.showToast('Error en el servidor al procesar la carga masiva', 'danger', 'alert-circle-outline');
+            const errorMsg = err.error?.result?.descriptionDetail || err.message || 'Error desconocido';
+            this.showToast(`Error: ${errorMsg}`, 'danger', 'alert-circle-outline');
+            console.error('[BULK] Error en el servidor:', err);
           }
         });
       } catch (err) {

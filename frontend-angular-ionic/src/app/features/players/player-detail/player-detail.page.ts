@@ -154,37 +154,47 @@ export class PlayerDetailPage implements OnInit {
 
     // Verificar permisos de geolocalización iniciales (sin disparar onboarding)
     this.checkGeoPermission();
+
+    // Onboarding automático solo la primera vez (con cooldown)
+    this.permissionTimeout = setTimeout(() => {
+      this.showPermissionModal(true); // true indica que es automático
+    }, 1500);
   }
 
   /**
-   * Lógica de onboarding de permisos con cooldown de 24h
-   * Dispara el permiso directamente para ahorrar clics
+   * Lógica disparada por el BOTÓN de la card.
+   * Pide permiso DIRECTAMENTE sin pasar por el modal.
    */
   public async checkPermissionsOnboarding() {
-    console.log('[PLAYER-DETAIL] Intentando autorizar ubicación directamente...');
+    console.log('[PLAYER-DETAIL] Botón pulsado: Pidiendo permiso directamente...');
     
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        console.log('[PLAYER-DETAIL] Permiso concedido directamente.');
+        console.log('[PLAYER-DETAIL] Permiso concedido vía botón.');
         this.hasGeoPermission.set(true);
         localStorage.setItem('last_permission_prompt_player_detail', Date.now().toString());
       },
-      async (err) => {
-        console.warn('[PLAYER-DETAIL] Error o denegado, abriendo modal informativo:', err);
-        await this.showPermissionModal();
+      (err) => {
+        // Solo mostramos error si no es un timeout (aunque ya no debería haberlos) o si es denegado explícitamente
+        if (err.code !== 3) {
+          console.warn('[PLAYER-DETAIL] Petición fallida o denegada:', err);
+          this.showToast('No se pudo obtener la ubicación. Por favor, revisa los permisos de tu navegador.', 'danger');
+        }
       },
-      { enableHighAccuracy: true, timeout: 5000 }
+      { enableHighAccuracy: true } // Quitamos el timeout para esperar al usuario
     );
   }
 
   /**
-   * Modal informativo de apoyo si falla el directo
+   * Muestra el modal informativo de permisos
+   * @param isAuto Si es true, respeta el cooldown de 24h
    */
-  private async showPermissionModal() {
+  private async showPermissionModal(isAuto: boolean = true) {
     const lastPrompt = localStorage.getItem('last_permission_prompt_player_detail');
     const now = Date.now();
 
-    if (lastPrompt && (now - parseInt(lastPrompt)) < 24 * 60 * 60 * 1000) {
+    // Si es automático y hay cooldown, no molestamos
+    if (isAuto && lastPrompt && (now - parseInt(lastPrompt)) < 24 * 60 * 60 * 1000) {
       return;
     }
 

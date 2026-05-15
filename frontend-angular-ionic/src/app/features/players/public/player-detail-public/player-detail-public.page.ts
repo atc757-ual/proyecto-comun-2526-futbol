@@ -171,11 +171,6 @@ export class PlayerDetailPublicPage implements OnInit {
 
     // Verificar permisos de geolocalización iniciales
     this.checkGeoPermission();
-
-    // Lanzamos el onboarding de permisos con un pequeño retardo
-    this.permissionTimeout = setTimeout(() => {
-      this.checkPermissionsOnboarding();
-    }, 1500);
   }
 
   /**

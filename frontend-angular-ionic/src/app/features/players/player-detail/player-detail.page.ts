@@ -152,13 +152,8 @@ export class PlayerDetailPage implements OnInit {
     // Iniciar Autoplay de Stats
     this.startStatsAutoplay();
 
-    // Verificar permisos de geolocalización iniciales
+    // Verificar permisos de geolocalización iniciales (sin disparar onboarding)
     this.checkGeoPermission();
-
-    // Lanzamos el onboarding de permisos con un pequeño retardo
-    this.permissionTimeout = setTimeout(() => {
-      this.checkPermissionsOnboarding();
-    }, 1500);
   }
 
   /**

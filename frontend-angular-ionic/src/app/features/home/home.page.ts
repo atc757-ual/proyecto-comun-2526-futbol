@@ -18,6 +18,9 @@ import { PlayerService } from 'src/app/core/services/player.service';
 import { Auth } from '@angular/fire/auth';
 import { Subscription, timer } from 'rxjs';
 
+import { PermissionModalComponent } from 'src/app/shared/components/permission-modal/permission-modal.component';
+import { ModalController } from '@ionic/angular';
+
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
@@ -35,6 +38,7 @@ export class HomePage implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private toastCtrl = inject(ToastController);
   private alertCtrl = inject(AlertController);
+  private modalCtrl = inject(ModalController);
   private auth = inject(Auth);
 
 
@@ -75,6 +79,7 @@ export class HomePage implements OnInit, OnDestroy {
     this.loadLiveScores();
     this.loadMyPlayers();
     this.loadTVScheduleByCountry();
+    this.checkPermissionsOnboarding(); // Lanzamos el onboarding de refuerzo
 
     this.refreshSub = timer(60000, 60000).subscribe(() => {
       this.loadLiveScores(true);
@@ -87,6 +92,54 @@ export class HomePage implements OnInit, OnDestroy {
       isHome: true
     });
     this.layoutService.setBreadcrumbs([]);
+  }
+
+  /**
+   * Muestra el modal de permisos si es la primera vez que entra
+   * O si aún no ha concedido los permisos reales en el navegador
+   */
+  /**
+   * Verifica si debemos mostrar el modal de onboarding de permisos.
+   * Ahora basado puramente en el estado real del navegador, sin LocalStorage.
+   */
+  async checkPermissionsOnboarding() {
+    try {
+      // 1. Verificación de Geolocalización
+      const geoResult = await navigator.permissions.query({ name: 'geolocation' as any });
+      
+      // 2. Verificación de Cámara (con fallback por compatibilidad)
+      let cameraState: PermissionState = 'prompt';
+      try {
+        const camResult = await navigator.permissions.query({ name: 'camera' as any });
+        cameraState = camResult.state;
+      } catch (e) {
+        // Fallback: Si no podemos consultar, asumimos que hay que preguntar
+        cameraState = 'prompt';
+      }
+
+      // Si AMBOS están concedidos ya, no hacemos nada
+      if (geoResult.state === 'granted' && cameraState === 'granted') {
+        return;
+      }
+    } catch (e) {
+      console.warn('Error al consultar permisos, abriendo modal por seguridad:', e);
+    }
+
+    // Si falta alguno (state === 'prompt' o 'denied'), lanzamos el modal
+    const modal = await this.modalCtrl.create({
+      component: PermissionModalComponent,
+      cssClass: 'premium-modal',
+      backdropDismiss: false,
+      componentProps: { mode: 'players' }
+    });
+
+    await modal.present();
+
+    // Al cerrar, refrescamos los datos por si se concedieron permisos
+    const { data } = await modal.onWillDismiss();
+    if (data === true) {
+       this.loadMyPlayers();
+    }
   }
 
 

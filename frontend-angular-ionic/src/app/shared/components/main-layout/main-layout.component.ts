@@ -71,6 +71,42 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     this.menuCtrl.close();
   }
 
+  /**
+   * Lógica de navegación inteligente para marcar secciones activas
+   */
+  isTabActive(tabUrl: string): boolean {
+    const currentUrl = this.router.url.toLowerCase();
+    const targetUrl = tabUrl.toLowerCase();
+
+    // 1. HOME: Solo si es exactamente /home
+    if (targetUrl === '/home') {
+      return currentUrl === '/home';
+    }
+
+    // 2. JUGADORES: Si incluye 'player' pero NO 'public'
+    if (targetUrl === '/players') {
+      return currentUrl.includes('player') && !currentUrl.includes('public');
+    }
+
+    // 3. NOTICIAS: Si incluye 'new' (news, add-news, manage-news)
+    if (targetUrl === '/news') {
+      return currentUrl.includes('new');
+    }
+
+    // 4. IA: Si incluye 'ai', 'ia' o 'analysis'
+    if (targetUrl === '/ai-team') {
+      return currentUrl.includes('ai-team');
+    }
+
+    // 5. BÚSQUEDA: Si incluye 'busqueda' o 'search'
+    if (targetUrl === '/busqueda') {
+      return currentUrl.includes('busqueda');
+    }
+
+    // Por defecto, coincidencia simple
+    return currentUrl.includes(targetUrl);
+  }
+
 
   private actionSheetCtrl = inject(ActionSheetController);
   private alertCtrl = inject(AlertController);

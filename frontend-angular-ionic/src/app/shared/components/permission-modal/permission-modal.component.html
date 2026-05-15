@@ -1,0 +1,91 @@
+<div class="permission-modal-main-container animate-fade-in">
+  <div class="permission-wrapper">
+
+    <!-- HEADER DINÁMICO -->
+    <div class="permission-header" [class.location-mode]="mode === 'commenting'">
+      <div class="ai-glow-orb" [class.location-glow]="mode === 'commenting'"></div>
+      <div class="header-icon-box" [class.location-box]="mode === 'commenting'">
+        <ion-icon *ngIf="mode === 'commenting'" name="location-outline"></ion-icon>
+        <ion-icon *ngIf="mode !== 'commenting'" name="sparkles-outline"></ion-icon>
+      </div>
+      
+      <h1 class="f-bold fs-22 text-neutral-9 m-0 mt-base">
+        {{ mode === 'commenting' ? 'Activa tu ubicación' : 'Mejora tu experiencia' }}
+      </h1>
+      
+      <p class="text-neutral-7 fs-14 mt-s px-s">
+        {{ mode === 'commenting' 
+          ? 'Para poder comentar, geolocalizar tus informes y mejorar tu experiencia.' 
+          : 'Tú decides qué accesos conceder para mejorar tu experiencia en la app.' 
+        }}
+      </p>
+    </div>
+
+    <div class="permissions-list px-base">
+
+      <!-- PERMISO: UBICACIÓN -->
+      <div class="permission-item mb-base" [class.accepted]="locationAccepted">
+        <div class="icon-circle location">
+          <ion-icon name="location-outline"></ion-icon>
+        </div>
+        <div class="permission-text">
+          <h3 class="m-0 f-semibold text-neutral-9 fs-16">Ubicación</h3>
+          <p class="m-0 text-neutral-7 fs-14 mt-xs">
+            Necesaria para registrar jugadores en el mapa y registrar tus comentarios.
+          </p>
+        </div>
+        <div class="permission-action">
+          <ion-button *ngIf="!locationAccepted" class="action-btn-soft"
+            [disabled]="isLoadingLocation"
+            (click)="requestLocation()">
+            <ion-spinner *ngIf="isLoadingLocation" name="crescent"></ion-spinner>
+            <span *ngIf="!isLoadingLocation">Permitir</span>
+          </ion-button>
+          <ion-icon *ngIf="locationAccepted" name="checkmark-circle-outline" color="success" class="fs-28"></ion-icon>
+        </div>
+      </div>
+
+      <!-- PERMISO: CÁMARA (Solo en modo players) -->
+      <div class="permission-item mb-base" *ngIf="mode === 'players'" [class.accepted]="cameraAccepted">
+        <div class="icon-circle camera">
+          <ion-icon name="camera-outline"></ion-icon>
+        </div>
+        <div class="permission-text">
+          <h3 class="m-0 f-semibold text-neutral-9 fs-16">Cámara y Galería</h3>
+          <p class="m-0 text-neutral-7 fs-14 mt-xs">
+            Captura fotos de tus jugadores o sube imágenes de tu galería para completar su ficha técnica.
+          </p>
+        </div>
+        <div class="permission-action">
+          <ion-button *ngIf="!cameraAccepted" class="action-btn-soft"
+            [disabled]="isLoadingCamera"
+            (click)="requestCamera()">
+            <ion-spinner *ngIf="isLoadingCamera" name="crescent"></ion-spinner>
+            <span *ngIf="!isLoadingCamera">Permitir</span>
+          </ion-button>
+          <ion-icon *ngIf="cameraAccepted" name="checkmark-circle-outline" color="success" class="fs-28"></ion-icon>
+        </div>
+      </div>
+
+      <!-- SECCIÓN DE PRIVACIDAD -->
+      <div class="privacy-note d-flex fl-align-center gap-s p-s mb-base">
+        <ion-icon name="shield-checkmark-outline" color="primary"></ion-icon>
+        <span class="fs-12 f-medium text-neutral-7">Tus datos están cifrados y solo se usan dentro de la
+          aplicación.</span>
+      </div>
+    </div>
+
+    <!-- ACCIONES (Solo Cierre) -->
+    <div class="permission-footer px-base pb-base">
+      <ion-button *ngIf="locationAccepted || cameraAccepted" expand="block" mode="ios" shape="round" fill="outline"
+        (click)="dismiss()">
+        Listo
+      </ion-button>
+      <ion-button *ngIf="!locationAccepted && !cameraAccepted" expand="block" mode="ios" shape="round" fill="outline"
+        (click)="dismiss()">
+        Quizás más tarde
+      </ion-button>
+    </div>
+
+  </div>
+</div>

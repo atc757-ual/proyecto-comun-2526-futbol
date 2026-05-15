@@ -11,7 +11,7 @@ import {
   IonSpinner, IonText, ToastController, NavController, LoadingController,
   IonSegment, IonSegmentButton, AlertController, IonToggle, IonSearchbar,
   IonCheckbox, IonList, IonListHeader, IonBadge, IonImg, IonTextarea,
-  IonThumbnail, IonChip
+  IonThumbnail, IonChip, ModalController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -39,6 +39,7 @@ import { LocationPlugin } from '@core/plugins/location-plugin';
 import { MapPlugin } from '@core/plugins/maps-plugin';
 import { ConfettiService } from '@core/services/confetti.service';
 import { AuthService } from '@core/services/auth.service';
+import { PermissionModalComponent } from 'src/app/shared/components/permission-modal/permission-modal.component';
 
 @Component({
   selector: 'app-add-edit-player',
@@ -69,6 +70,8 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   private confettiService = inject(ConfettiService);
   private http = inject(HttpClient);
   private authService = inject(AuthService);
+  private modalCtrl = inject(ModalController);
+  private activePermissionModal: any = null;
 
   public isEditMode = false;
   public playerId: string | null = null;
@@ -102,6 +105,13 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
 
   isManualMode() {
     return this.entryMode === 'manual' || this.isEditMode;
+  }
+
+  ionViewWillLeave() {
+    if (this.activePermissionModal) {
+      this.activePermissionModal.dismiss();
+      this.activePermissionModal = null;
+    }
   }
 
   calculateAge() {
@@ -253,6 +263,13 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
+    console.log('[ADD-PLAYER] ngOnInit disparado');
+    
+    // Lanzamos el onboarding de permisos con un pequeño retardo para asegurar que la vista cargó
+    setTimeout(() => {
+      this.checkPermissionsOnboarding();
+    }, 1500);
+
     // Capturar el ID del usuario actual
     this.authService.user$.subscribe(user => {
       if (user) {
@@ -305,6 +322,66 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     });
 
     this.loadLocalPlayers();
+  }
+
+  /**
+   * Lógica de onboarding de permisos con recordatorio de 24h
+   */
+  private async checkPermissionsOnboarding() {
+    console.log('[ADD-PLAYER] Verificando onboarding de permisos...');
+    const lastPrompt = localStorage.getItem('last_permission_prompt_add_player');
+    const now = Date.now();
+    const oneDay = 24 * 60 * 60 * 1000;
+
+    // 1. Si ya preguntamos en las últimas 24h, respetamos al usuario y salimos
+    if (lastPrompt && (now - parseInt(lastPrompt)) < oneDay) {
+      console.log('[ADD-PLAYER] Cooldown de 24h activo. No se muestra el modal.');
+      return;
+    }
+
+    // 2. Verificación de permisos reales
+    try {
+      const geoResult = await navigator.permissions.query({ name: 'geolocation' as any });
+      let cameraState: PermissionState = 'prompt';
+      try {
+        const camResult = await navigator.permissions.query({ name: 'camera' as any });
+        cameraState = camResult.state;
+      } catch (e) {
+        cameraState = 'prompt';
+      }
+
+      console.log('[ADD-PLAYER] Estado Real:', { geolocation: geoResult.state, camera: cameraState });
+
+      // Si AMBOS están concedidos ya, no hay nada que preguntar
+      if (geoResult.state === 'granted' && cameraState === 'granted') {
+        console.log('[ADD-PLAYER] Permisos ya concedidos. Saliendo...');
+        return;
+      }
+    } catch (e) {
+      console.warn('[ADD-PLAYER] Error consultando permisos:', e);
+    }
+
+    // 3. Abrimos el modal
+    console.log('[ADD-PLAYER] Intentando abrir modal de permisos...');
+    try {
+      const modal = await this.modalCtrl.create({
+        component: PermissionModalComponent,
+        cssClass: 'premium-modal',
+        backdropDismiss: false,
+        componentProps: { mode: 'players' }
+      });
+
+      this.activePermissionModal = modal;
+      console.log('[ADD-PLAYER] Modal creado, llamando a present()...');
+      await modal.present();
+
+      // REGISTRO DE HORA: Solo cuando el usuario cierra o termina con el modal
+      const { data } = await modal.onWillDismiss();
+      console.log('[ADD-PLAYER] Modal cerrado con data:', data);
+      localStorage.setItem('last_permission_prompt_add_player', now.toString());
+    } catch (error) {
+      console.error('[ADD-PLAYER] ERROR FATAL al abrir modal:', error);
+    }
   }
 
   loadLocalPlayers() {

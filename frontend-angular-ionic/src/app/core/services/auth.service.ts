@@ -22,7 +22,7 @@ export class AuthService {
   private injector = inject(EnvironmentInjector);
 
   // --- SIGNALS DE ESTADO ---
-  private _userData = signal<any>(this.loadInitialUserData());
+  private _userData = signal<any>(null); // Ya no cargamos de LocalStorage al inicio
   public userData = this._userData.asReadonly();
 
   // Signal computado para obtener solo el primer nombre
@@ -40,18 +40,13 @@ export class AuthService {
     map(user => !!user && !!localStorage.getItem('jwt_token'))
   );
 
-  private loadInitialUserData() {
-    const data = localStorage.getItem('user_data');
-    return data ? JSON.parse(data) : null;
-  }
-
   constructor() {
     console.log('[AUTH] Inicializado');
     
     // Auto-sincronización al detectar usuario de Firebase (Persistencia)
     this.user$.subscribe(async (fbUser) => {
-      if (fbUser && !this.userData()) {
-        console.log('[AUTH] Usuario detectado al inicio, sincronizando con backend...');
+      if (fbUser) {
+        console.log('[AUTH] Usuario detectado, sincronizando estado en memoria...');
         try {
           await this.syncUserWithBackend();
         } catch (err) {
@@ -76,6 +71,7 @@ export class AuthService {
    */
   async logout() {
     localStorage.removeItem('jwt_token');
+    // Eliminamos cualquier rastro de user_data si existiera por versiones antiguas
     localStorage.removeItem('user_data');
     this._userData.set(null);
     return signOut(this.auth);
@@ -106,24 +102,20 @@ export class AuthService {
 
     try {
       const idToken = await firebaseUser.getIdToken();
-      console.log('--- DEBUG: FIREBASE ID TOKEN ---');
-      console.log(idToken);
-      console.log('--------------------------------');
-
       const fullUrl = `${environment.nodeApiUrl}/auth/signin`;
-      console.log(`[AUTH-DEBUG] Disparando petición a: ${fullUrl}`);
+      
       const response: any = await firstValueFrom(
         this.http.post(fullUrl, { idToken })
       );
 
       if (response && response.data && response.data.token) {
+        // SOLO PERSISTIMOS EL JWT
         localStorage.setItem('jwt_token', response.data.token);
-        localStorage.setItem('user_data', JSON.stringify(response.data.user));
+        
+        // EL OBJETO DE USUARIO SOLO QUEDA EN EL SIGNAL (MEMORIA)
         this._userData.set(response.data.user);
 
-        console.log('--- DEBUG: BACKEND JWT (NUESTRO) ---');
-        console.log(response.data.token);
-        console.log('Usuario sincronizado con el backend Node.js. JWT almacenado.');
+        console.log('[AUTH] Sincronización exitosa. Token guardado, datos en memoria.');
       }
     } catch (error) {
       console.error('Error al sincronizar con el backend Node.js:', error);
@@ -136,7 +128,6 @@ export class AuthService {
    */
   async sendResetPasswordEmail(email: string) {
     const actionCodeSettings: ActionCodeSettings = {
-      // URL de vuelta para Web (Debe estar autorizada en Firebase Console)
       url: 'http://localhost:8101/auth/login',
       handleCodeInApp: true,
     };
@@ -166,11 +157,10 @@ export class AuthService {
   }
 
   /**
-   * Obtiene los datos del usuario guardados tras la sincronización con el backend
+   * Obtiene los datos del usuario (Solo si están en memoria)
    */
   getUserData() {
-    const data = localStorage.getItem('user_data');
-    return data ? JSON.parse(data) : null;
+    return this.userData();
   }
 
   /**

@@ -972,3 +972,151 @@
     opacity: 0;
   }
 }
+
+/* --- PERMISOS Y VERIFICACIÓN --- */
+.verified-geo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ecfdf5; // Success 010
+  color: #10b981; // Success
+  padding: 6px 14px;
+  border-radius: 10px;
+  font-size: var(--fs-14);
+  font-weight: 700;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.08);
+  margin-bottom: 16px;
+
+  ion-icon {
+    font-size: 18px;
+  }
+}
+
+.permission-needed-box {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+
+  .permission-flex-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      text-align: center;
+      gap: 12px;
+    }
+  }
+
+  .permission-info-side {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: 8px;
+    }
+  }
+
+  .text-content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .lock-icon-container {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.12);
+    margin: 0 auto 12px;
+
+    ion-icon {
+      font-size: 24px;
+      color: #10b981; // Success Green
+      position: relative;
+      z-index: 2;
+    }
+
+    .icon-pulse {
+      position: absolute;
+      inset: -4px;
+      background: rgba(16, 185, 129, 0.15);
+      border-radius: 50%;
+      animation: geoPulse 2s infinite ease-out;
+      z-index: 1;
+    }
+  }
+}
+
+@keyframes geoPulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+.animate-fade-in {
+  animation: fadeInGeo 0.5s ease-out forwards;
+}
+
+.btn-white-bg {
+  --background: #ffffff !important;
+  --background-hover: #f2f2f2 !important;
+  --background-activated: #f2f2f2 !important;
+  --background-focused: #f2f2f2 !important;
+  --color: #10b981 !important;
+  --ripple-color: #10b981 !important;
+  --border-color: #10b981 !important;
+  --border-style: solid !important;
+  --border-width: 1px !important;
+  font-weight: 700;
+}
+
+@keyframes fadeInGeo {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- AJUSTES DE ALINEACIÓN FORMULARIO --- */
+.editor-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  
+  span {
+    line-height: 1;
+    display: flex;
+    align-items: center;
+  }
+}
+
+.rating-stars-input {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  
+  ion-icon {
+    font-size: 24px;
+    color: #ffd700;
+    cursor: pointer;
+    transition: transform 0.2s;
+
+    &:hover {
+      transform: scale(1.2);
+    }
+
+    &.active {
+      color: #ffb400;
+    }
+  }
+}

@@ -222,8 +222,10 @@
           </div>
 
           <div class="community-container-v">
-            <!-- FORMULARIO INLINE PREMIUM -->
-            <div class="new-comment-form shadow-sm p-base border-radius-soft">
+            <!-- FORMULARIO INLINE PREMIUM (SOLO SI TIENE PERMISO) -->
+            <div class="new-comment-form shadow-sm p-base border-radius-soft animate-fade-in" *ngIf="hasGeoPermission()">
+              
+
               <div class="form-inline-grid">
                 <!-- COLUMNA IZQUIERDA: IDENTIDAD Y RATING -->
                 <div class="form-identity">
@@ -236,7 +238,9 @@
                   </div>
 
                   <div class="d-flex fs-16 f-medium fl-align-center gap-s">
-                    <ion-icon slot="start" name="person-circle-outline" class="fs-16" aria-hidden="true"></ion-icon>
+                    <ion-avatar class="mini-avatar-form shadow-sm">
+                      <img src="https://ui-avatars.com/api/?name={{authService.userData()?.name || 'U'}}&background=002eff&color=fff" />
+                    </ion-avatar>
                     {{authService.userData()?.name || 'Usuario'}}
                   </div>
                 </div>
@@ -253,6 +257,12 @@
                 </div>
 
                 <div class="form-opinion">
+                  <!-- Badge de Ubicación Verificada (Encima del Textarea) -->
+                  <div class="verified-geo-badge mb-s" *ngIf="hasGeoPermission()">
+                    <ion-icon name="checkmark-circle"></ion-icon>
+                    <span>Ubicación verificada</span>
+                  </div>
+
                   <ion-textarea mode="md" label="Tu opinión" label-placement="stacked" fill="outline"
                     placeholder="Escribe aquí tu opinión sobre el jugador..." class="futbol-input h-100"
                     [(ngModel)]="newComment" [counter]="true" maxlength="1000" rows="7"
@@ -260,6 +270,30 @@
                     [class.is-focused]="commentFocused">
                     <ion-icon slot="start" name="analytics-outline" class="fs-16" aria-hidden="true"></ion-icon>
                   </ion-textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- BANNER DE PERMISO NECESARIO (SI NO TIENE PERMISO) -->
+            <div class="permission-needed-box p-base border-radius-soft animate-fade-in" *ngIf="!hasGeoPermission()">
+              <div class="permission-flex-container">
+                <div class="permission-info-side">
+                  <div class="lock-icon-container">
+                    <div class="icon-pulse"></div>
+                    <ion-icon name="location-outline"></ion-icon>
+                  </div>
+                  <div class="text-content">
+                    <h4 class="f-bold fs-16 text-neutral-9 m-0">¿Quieres dejar un comentario?</h4>
+                    <p class="text-neutral-7 fs-12 mt-xs m-0">
+                      Autoriza compartir tu ubicación para mejorar la integridad de la comunidad.
+                    </p>
+                  </div>
+                </div>
+                <div class="permission-action-side">
+                  <ion-button (click)="checkPermissionsOnboarding()" mode="ios" fill="solid" class="f-bold fs-12 px-s btn-white-bg" shape="round">
+                    <ion-icon slot="start" name="location-outline"></ion-icon>
+                    Autorizar Ubicación
+                  </ion-button>
                 </div>
               </div>
             </div>
@@ -330,7 +364,7 @@
 
               <!-- Paginación Comentarios -->
               <div class="news-pagination-container mt-base" *ngIf="totalPages() > 1">
-                <ion-button class="fs-13" mode="ios" fill="clear" (click)="prevPage()" [disabled]="currentPage === 1">
+                <ion-button class="fs-12" mode="ios" fill="clear" (click)="prevPage()" [disabled]="currentPage === 1">
                   <ion-icon name="chevron-back-outline" slot="start"></ion-icon> Anterior
                 </ion-button>
                 <div class="page-indicators">
@@ -340,7 +374,7 @@
                     {{ page }}
                   </ion-button>
                 </div>
-                <ion-button class="fs-13" mode="ios" fill="clear" (click)="nextPage()"
+                <ion-button class="fs-12" mode="ios" fill="clear" (click)="nextPage()"
                   [disabled]="currentPage === totalPages()">
                   Siguiente <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
                 </ion-button>

@@ -16,7 +16,15 @@ const playersPublicList = async (req, res) => {
 // GET /api/players
 const playersList = async (req, res) => {
     try {
-        const userIdFromToken = req.user.firebaseUid; // ID de la sesión autenticada correctamente
+        // Log de depuración usando el sistema de tracing
+        if (req.log) req.log('Iniciando recuperación de jugadores para el usuario');
+
+        if (!req.user || !req.user.firebaseUid) {
+            if (req.log) req.log('ERROR: req.user o firebaseUid no disponibles');
+            return sendApiResult(res, 401, "No se pudo identificar al usuario activo");
+        }
+
+        const userIdFromToken = req.user.firebaseUid; 
         const { name, team } = req.query;
         
         // Filtro obligatorio: solo vemos lo NUESTRO
@@ -29,8 +37,11 @@ const playersList = async (req, res) => {
         }
 
         const players = await Player.find(query).exec();
+        
+        if (req.log) req.log(`Jugadores encontrados: ${players.length}`);
         sendApiResult(res, 200, "Procesamiento concluído exitosamente", players);
     } catch (err) {
+        if (req.log) req.log('Error crítico en playersList:', err.message);
         sendApiResult(res, 500, "Error al listar jugadores: " + err.message);
     }
 };

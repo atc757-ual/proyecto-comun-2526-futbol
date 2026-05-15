@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -87,13 +87,21 @@ export class PlayersPublicPage implements OnInit {
       eyeOutline, closeCircleOutline, chevronBackOutline,
       chevronForwardOutline, footballOutline, personOutline
     });
+
+    // Redirección reactiva
+    effect(() => {
+      if (this.authService.currentUser()) {
+        console.warn('[PlayersPublic] Sesión detectada. Redirigiendo...');
+        this.navCtrl.navigateRoot('/players');
+      }
+    });
   }
 
   ngOnInit() {
-    // Si hay sesión iniciada, expulsamos al usuario a la home privada
+    // Si hay sesión iniciada, expulsamos al usuario a la lista privada
     if (this.authService.currentUser()) {
-      console.warn('[PlayersPublic] Sesión activa detectada. Redirigiendo a Home.');
-      this.navCtrl.navigateRoot('/home');
+      console.warn('[PlayersPublic] Sesión activa detectada. Redirigiendo a Players.');
+      this.navCtrl.navigateRoot('/players');
       return;
     }
 

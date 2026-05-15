@@ -35,8 +35,8 @@
           <ng-container *ngFor="let p of appPages">
             <ion-menu-toggle auto-hide="false"
               *ngIf="(!p.adminOnly && !p.masterOnly) || (p.adminOnly && authService.isAdmin()) || (p.masterOnly && authService.isMasterAdmin())">
-              <ion-item lines="none" class="nav-item pointer" [routerLink]="p.url" routerLinkActive="active-item"
-                [routerLinkActiveOptions]="{exact: true}">
+              <ion-item lines="none" class="nav-item pointer" [routerLink]="p.url" 
+                [class.active-item]="isTabActive(p.url)">
                 <ion-icon slot="start" [name]="p.icon"></ion-icon>
                 <ion-label>{{ p.title }}</ion-label>
               </ion-item>
@@ -128,10 +128,10 @@
       <div class="main-content content">
         <ul class="nav-links-centered">
           <ng-container *ngFor="let p of appPages">
-            <li
-              *ngIf="(!p.adminOnly && !p.masterOnly) || (p.adminOnly && authService.isAdmin()) || (p.masterOnly && authService.isMasterAdmin())"
-              [routerLink]="p.url" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
-              [class.nav-item-ai]="p.title === 'Football AI'">
+              <li
+                *ngIf="(!p.adminOnly && !p.masterOnly) || (p.adminOnly && authService.isAdmin()) || (p.masterOnly && authService.isMasterAdmin())"
+                [routerLink]="p.url" [class.active]="isTabActive(p.url)"
+                [class.nav-item-ai]="p.title === 'Football AI'">
               <ion-icon *ngIf="p.icon !== 'home' && p.icon !== 'people' && p.icon !== 'cart' && p.icon !== 'newspaper'"
                 [name]="p.icon" class="nav-icon-mini"></ion-icon>
               {{ p.title }}
@@ -203,7 +203,7 @@
       <ng-container *ngFor="let p of appPages; let i = index">
         <ion-tab-button
           *ngIf="(!p.adminOnly && !p.masterOnly) || (p.adminOnly && authService.isAdmin()) || (p.masterOnly && authService.isMasterAdmin())"
-          [tab]="p.title" [routerLink]="p.url" routerLinkActive="tab-selected" [routerLinkActiveOptions]="{exact: true}"
+          [tab]="p.title" [routerLink]="p.url" [class.tab-selected]="isTabActive(p.url)"
           [class.ai-tab-special]="i === 2">
 
           <!-- Icono normal para todos menos el tercero -->

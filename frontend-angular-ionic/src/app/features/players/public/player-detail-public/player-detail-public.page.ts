@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, Input } from '@angular/core';
+import { Component, Input, inject, OnInit, ChangeDetectorRef, effect, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -17,7 +17,7 @@ import {
   statsChartOutline, chatbubbleOutline, chatbubblesOutline, createOutline, trashOutline,
   closeCircleOutline, flagOutline, earthOutline, logoInstagram,
   logoFacebook, logoTwitter, globeOutline, sendOutline,
-  checkmarkCircleOutline, alertCircleOutline, heart, heartOutline,
+  checkmarkCircleOutline, checkmarkCircle, alertCircleOutline, heart, heartOutline,
   trophyOutline, chevronUpOutline, chevronDownOutline, personCircleOutline,
   timeOutline, clipboardOutline, businessOutline,
   walkOutline, barbellOutline, resizeOutline, chevronDown, chevronUp,
@@ -29,6 +29,7 @@ import { PlayerService } from '../../../../core/services/player.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { LayoutService } from '../../../../core/services/layout.service';
 import { ConfettiService } from '../../../../core/services/confetti.service';
+import { PermissionModalComponent } from 'src/app/shared/components/permission-modal/permission-modal.component';
 
 @Component({
   selector: 'app-player-detail-public',
@@ -43,8 +44,15 @@ import { ConfettiService } from '../../../../core/services/confetti.service';
   ]
 })
 export class PlayerDetailPublicPage implements OnInit {
+  private _playerId: string = '';
   @Input() set id(playerId: string) {
     if (playerId) {
+      this._playerId = playerId;
+      // Si ya hay sesión, redirigimos inmediatamente
+      if (this.authService.currentUser()) {
+        this.navCtrl.navigateRoot(`/player-detail/${playerId}`);
+        return;
+      }
       this.player = null; // Limpiamos rastro anterior
       this.loadPlayer(playerId);
     }
@@ -63,6 +71,8 @@ export class PlayerDetailPublicPage implements OnInit {
   public player: Player | null = null;
   public leagueDetails: any = null;
   public isLoading = true;
+  public hasGeoPermission = signal(false);
+  private activePermissionModal: any = null;
   public isAdmin = false;
 
   // Lógica de "Ver más"
@@ -99,30 +109,48 @@ export class PlayerDetailPublicPage implements OnInit {
   // Control de Swiper de Stats
   currentStatPage: number = 0;
   private statsInterval: any;
+  private permissionTimeout: any = null;
 
   constructor() {
     addIcons({
-      star, starOutline, footballOutline, shieldOutline,
+      star, starOutline, football, footballOutline, shieldOutline,
       locationOutline, calendarOutline, personOutline,
-      statsChartOutline, chatbubbleOutline, createOutline,
-      trashOutline, closeCircleOutline, flagOutline,
-      earthOutline, logoInstagram, logoFacebook, logoTwitter,
-      globeOutline, sendOutline, checkmarkCircleOutline,
-      alertCircleOutline, heart, heartOutline,
-      trophyOutline, chevronUpOutline, chevronDownOutline,
-      personCircleOutline, timeOutline, clipboardOutline, businessOutline,
-      walkOutline, barbellOutline, resizeOutline,
-      chatbubblesOutline, chevronDown, chevronUp,
+      statsChartOutline, chatbubbleOutline, chatbubblesOutline, createOutline, trashOutline,
+      closeCircleOutline, flagOutline, earthOutline, logoInstagram,
+      logoFacebook, logoTwitter, globeOutline, sendOutline,
+      checkmarkCircleOutline, checkmarkCircle, alertCircleOutline, heart, heartOutline,
+      trophyOutline, chevronUpOutline, chevronDownOutline, personCircleOutline,
+      timeOutline, clipboardOutline, businessOutline,
+      walkOutline, barbellOutline, resizeOutline, chevronDown, chevronUp,
       peopleOutline, chatbubbleEllipsesOutline, paperPlaneOutline,
       chevronBackOutline, chevronForwardOutline, addCircleOutline, lockClosedOutline
     });
+
+    // Redirección reactiva
+    effect(() => {
+      if (this.authService.currentUser()) {
+        console.warn('[PlayerDetailPublic] Sesión detectada. Redirigiendo...');
+        this.navCtrl.navigateRoot(`/player-detail/${this._playerId}`);
+      }
+    });
   }
 
+  ionViewWillLeave() {
+    if (this.permissionTimeout) {
+      clearTimeout(this.permissionTimeout);
+    }
+    if (this.activePermissionModal) {
+      this.activePermissionModal.dismiss();
+      this.activePermissionModal = null;
+    }
+  }
+
+
   async ngOnInit() {
-    // Si hay sesión iniciada, expulsamos al usuario a la home privada
+    // Si hay sesión iniciada, expulsamos al usuario al detalle privado
     if (this.authService.currentUser()) {
-      console.warn('[PlayerDetailPublic] Sesión activa detectada. Redirigiendo a Home.');
-      this.navCtrl.navigateRoot('/home');
+      console.warn('[PlayerDetailPublic] Sesión activa detectada. Redirigiendo a Detalle Privado.');
+      this.navCtrl.navigateRoot(`/player-detail/${this._playerId}`);
       return;
     }
 
@@ -140,10 +168,75 @@ export class PlayerDetailPublicPage implements OnInit {
     
     // Iniciar Autoplay de Stats
     this.startStatsAutoplay();
+
+    // Verificar permisos de geolocalización iniciales
+    this.checkGeoPermission();
+
+    // Lanzamos el onboarding de permisos con un pequeño retardo
+    this.permissionTimeout = setTimeout(() => {
+      this.checkPermissionsOnboarding();
+    }, 1500);
+  }
+
+  /**
+   * Lógica de onboarding de permisos con cooldown de 24h
+   */
+  public async checkPermissionsOnboarding() {
+    console.log('[PLAYER-DETAIL-PUBLIC] Abriendo modal de permisos...');
+    
+    const lastPrompt = localStorage.getItem('last_permission_prompt_player_detail_public');
+    const now = Date.now();
+
+    // Solo mostramos si no hay cooldown (24h)
+    if (lastPrompt && (now - parseInt(lastPrompt)) < 24 * 60 * 60 * 1000) {
+       console.log('[PLAYER-DETAIL-PUBLIC] Cooldown activo, pero abrimos igual.');
+    }
+
+    const modal = await this.modalCtrl.create({
+      component: PermissionModalComponent,
+      cssClass: 'premium-modal',
+      backdropDismiss: false,
+      componentProps: { mode: 'commenting' }
+    });
+
+    this.activePermissionModal = modal;
+    await modal.present();
+
+    const { data } = await modal.onWillDismiss();
+    this.checkGeoPermission();
+    localStorage.setItem('last_permission_prompt_player_detail_public', Date.now().toString());
+  }
+
+  /**
+   * Verifica el estado real de la geolocalización en el navegador
+   */
+  async checkGeoPermission() {
+    try {
+      if ('permissions' in navigator) {
+        const status = await navigator.permissions.query({ name: 'geolocation' as any });
+        this.hasGeoPermission.set(status.state === 'granted');
+        
+        status.onchange = () => {
+          this.hasGeoPermission.set(status.state === 'granted');
+        };
+      } else {
+        (navigator as any).geolocation.getCurrentPosition(
+          () => this.hasGeoPermission.set(true),
+          () => this.hasGeoPermission.set(false)
+        );
+      }
+    } catch (e) {
+      console.warn('[PLAYER-DETAIL-PUBLIC] Error verificando permisos:', e);
+    }
   }
 
   ngOnDestroy() {
     if (this.statsInterval) clearInterval(this.statsInterval);
+    if (this.permissionTimeout) clearTimeout(this.permissionTimeout);
+    if (this.activePermissionModal) {
+      this.activePermissionModal.dismiss();
+      this.activePermissionModal = null;
+    }
   }
 
   startStatsAutoplay() {
@@ -323,6 +416,23 @@ export class PlayerDetailPublicPage implements OnInit {
 
     if (user?.uid) {
       commentData.user_id = user.uid;
+    }
+
+    // Intentar capturar ubicación si tenemos permiso
+    if (this.hasGeoPermission()) {
+      try {
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, { 
+            enableHighAccuracy: true, 
+            timeout: 5000 
+          });
+        });
+        commentData.latitude = position.coords.latitude;
+        commentData.longitude = position.coords.longitude;
+        console.log('[PLAYER-DETAIL-PUBLIC] Ubicación capturada:', commentData.latitude, commentData.longitude);
+      } catch (err) {
+        console.warn('[PLAYER-DETAIL-PUBLIC] Error capturando ubicación rápida:', err);
+      }
     }
 
     this.playerService.addPublicComment(this.player._id, commentData).subscribe({

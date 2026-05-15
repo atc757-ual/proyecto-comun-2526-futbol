@@ -180,16 +180,36 @@ export class PlayerDetailPublicPage implements OnInit {
 
   /**
    * Lógica de onboarding de permisos con cooldown de 24h
+   * Intenta pedir permiso directamente para ahorrar clics
    */
   public async checkPermissionsOnboarding() {
-    console.log('[PLAYER-DETAIL-PUBLIC] Abriendo modal de permisos...');
+    console.log('[PLAYER-DETAIL-PUBLIC] Intentando autorizar ubicación directamente...');
     
+    // Aprovechamos el gesto del usuario para disparar el permiso oficial
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        console.log('[PLAYER-DETAIL-PUBLIC] Permiso concedido directamente.');
+        this.hasGeoPermission.set(true);
+        localStorage.setItem('last_permission_prompt_player_detail_public', Date.now().toString());
+      },
+      async (err) => {
+        console.warn('[PLAYER-DETAIL-PUBLIC] Error o denegado, abriendo modal como fallback:', err);
+        // Solo si falla el directo abrimos el modal informativo
+        await this.showPermissionModal();
+      },
+      { enableHighAccuracy: true, timeout: 5000 }
+    );
+  }
+
+  /**
+   * Muestra el modal informativo de permisos como apoyo
+   */
+  private async showPermissionModal() {
     const lastPrompt = localStorage.getItem('last_permission_prompt_player_detail_public');
     const now = Date.now();
 
-    // Solo mostramos si no hay cooldown (24h)
     if (lastPrompt && (now - parseInt(lastPrompt)) < 24 * 60 * 60 * 1000) {
-       console.log('[PLAYER-DETAIL-PUBLIC] Cooldown activo, pero abrimos igual.');
+      return;
     }
 
     const modal = await this.modalCtrl.create({

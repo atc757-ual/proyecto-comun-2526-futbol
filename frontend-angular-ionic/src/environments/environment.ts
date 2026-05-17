@@ -16,7 +16,7 @@ export const environment = {
     appId: "1:1085547830836:web:1452a0b0e687315cfc3461",
     measurementId: "G-VGXNVZRTL8"
   },
-  useJavaBackend: true // Activado por defecto
+  useJavaBackend: false // Desactivado por defecto (Node.js)
 };
 
 /*

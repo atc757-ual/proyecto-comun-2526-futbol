@@ -104,7 +104,7 @@ export class ProfilePage implements OnInit {
     this.platformService.toggleBackend();
     this.useSpringBoot = this.platformService.getUseJavaBackend();
     const newVal = this.useSpringBoot;
-    
+
     const toast = await this.toastCtrl.create({
       message: `Backend cambiado a ${newVal ? 'Java' : 'Node'} al instante`,
       duration: 2000,
@@ -129,7 +129,6 @@ export class ProfilePage implements OnInit {
         duration: 5000,
         position: 'top',
         cssClass: 'toast-success',
-        color: 'success',
         icon: 'checkmark-circle-outline',
         mode: 'ios',
         buttons: [{ role: 'cancel', icon: 'close-outline' }]
@@ -142,7 +141,6 @@ export class ProfilePage implements OnInit {
         duration: 3000,
         position: 'top',
         cssClass: 'toast-error',
-        color: 'danger',
         icon: 'alert-circle-outline',
         mode: 'ios',
         buttons: [{ role: 'cancel', icon: 'close-outline' }]

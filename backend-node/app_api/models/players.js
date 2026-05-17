@@ -93,11 +93,8 @@ const playerSchema = new mongoose.Schema({
     },
     images: {
         thumb: String,
-        poster: String,
         cutout: String,
-        cartoon: String,
-        banner: String,
-        render: String // Imagen transparente
+        banner: String
     },
     tsdb_ids: {
         player_id: String,

@@ -1,6 +1,6 @@
 package com.futbol.client.player.exceptions;
 
-import com.futbol.client.player.dto.ApiResult;
+import com.futbol.common.dto.ApiResult;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,10 +19,9 @@ public class ControllerExceptionHandler {
     // Error 404: Resource not found (Custom exception)
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ApiResult<Object>> handleNotFound(NotFoundException ex) {
-        ApiResult<Object> resp = new ApiResult<>(
+        ApiResult<Object> resp = ApiResult.error(
             String.valueOf(HttpStatus.NOT_FOUND.value()), 
-            ex.getMessage(),
-            null
+            ex.getMessage()
         );
         return new ResponseEntity<>(resp, HttpStatus.NOT_FOUND);
     }
@@ -30,10 +29,9 @@ public class ControllerExceptionHandler {
     // Error 409: Conflict (Database integrity violation like Unique or Primary Key)
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResult<Object>> handleConflict(DataIntegrityViolationException ex) {
-        ApiResult<Object> resp = new ApiResult<>(
+        ApiResult<Object> resp = ApiResult.error(
             String.valueOf(HttpStatus.CONFLICT.value()), 
-            "Database integrity violation: Record might already exist or violates constraints.",
-            null
+            "Database integrity violation: Record might already exist or violates constraints."
         );
         return new ResponseEntity<>(resp, HttpStatus.CONFLICT);
     }
@@ -46,10 +44,9 @@ public class ControllerExceptionHandler {
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .collect(Collectors.joining(", "));
         
-        ApiResult<Object> resp = new ApiResult<>(
+        ApiResult<Object> resp = ApiResult.error(
             String.valueOf(HttpStatus.BAD_REQUEST.value()), 
-            errors,
-            null
+            errors
         );
         return new ResponseEntity<>(resp, HttpStatus.BAD_REQUEST);
     }
@@ -57,10 +54,9 @@ public class ControllerExceptionHandler {
     // Error 400: Type mismatch (e.g., sending text instead of ID number)
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiResult<Object>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-        ApiResult<Object> resp = new ApiResult<>(
+        ApiResult<Object> resp = ApiResult.error(
             String.valueOf(HttpStatus.BAD_REQUEST.value()), 
-            "Parameter '" + ex.getName() + "' should be of type " + (ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown"),
-            null
+            "Parameter '" + ex.getName() + "' should be of type " + (ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown")
         );
         return new ResponseEntity<>(resp, HttpStatus.BAD_REQUEST);
     }
@@ -68,10 +64,9 @@ public class ControllerExceptionHandler {
     // Error 405: Method Not Allowed
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ApiResult<Object>> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
-        ApiResult<Object> resp = new ApiResult<>(
+        ApiResult<Object> resp = ApiResult.error(
             String.valueOf(HttpStatus.METHOD_NOT_ALLOWED.value()), 
-            "Method '" + ex.getMethod() + "' is not supported for this endpoint",
-            null
+            "Method '" + ex.getMethod() + "' is not supported for this endpoint"
         );
         return new ResponseEntity<>(resp, HttpStatus.METHOD_NOT_ALLOWED);
     }
@@ -79,10 +74,9 @@ public class ControllerExceptionHandler {
     // Error 415: Unsupported Media Type
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     public ResponseEntity<ApiResult<Object>> handleMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex) {
-        ApiResult<Object> resp = new ApiResult<>(
+        ApiResult<Object> resp = ApiResult.error(
             String.valueOf(HttpStatus.UNSUPPORTED_MEDIA_TYPE.value()), 
-            "Content type '" + (ex.getContentType() != null ? ex.getContentType().toString() : "unknown") + "' is not supported",
-            null
+            "Content type '" + (ex.getContentType() != null ? ex.getContentType().toString() : "unknown") + "' is not supported"
         );
         return new ResponseEntity<>(resp, HttpStatus.UNSUPPORTED_MEDIA_TYPE);
     }
@@ -90,10 +84,9 @@ public class ControllerExceptionHandler {
     // Error 500: Catch-all for any other unexpected error
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResult<Object>> handleGlobalException(Exception ex) {
-        ApiResult<Object> resp = new ApiResult<>(
+        ApiResult<Object> resp = ApiResult.error(
             String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()), 
-            "An unexpected error occurred: " + ex.getMessage(),
-            null
+            "An unexpected error occurred: " + ex.getMessage()
         );
         return new ResponseEntity<>(resp, HttpStatus.INTERNAL_SERVER_ERROR);
     }

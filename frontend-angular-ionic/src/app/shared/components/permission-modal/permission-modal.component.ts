@@ -1,4 +1,4 @@
-import { Component, Input, inject, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { Component, Input, inject, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ModalController, ToastController, IonIcon, IonButton, IonSpinner
@@ -29,6 +29,7 @@ export class PermissionModalComponent implements OnInit {
 
   private toastCtrl = inject(ToastController);
   private cdr = inject(ChangeDetectorRef);
+  private ngZone = inject(NgZone);
 
   constructor() {
     addIcons({
@@ -44,17 +45,29 @@ export class PermissionModalComponent implements OnInit {
   }
 
   async ngOnInit() {
-    console.log('[MODAL-PERMISOS] ngOnInit iniciado. Modo:', this.mode);
     try {
       if (navigator.permissions) {
+        // Comprobar estado de geolocalización
         const geoStatus = await navigator.permissions.query({ name: 'geolocation' as any });
         this.locationAccepted = geoStatus.state === 'granted';
-        console.log('[MODAL-PERMISOS] Estado Geolocation inicial:', geoStatus.state);
+
+        // Comprobar estado de cámara
+        try {
+          const camStatus = await navigator.permissions.query({ name: 'camera' as any });
+          this.cameraAccepted = camStatus.state === 'granted';
+        } catch (e) {
+          // Fallback: intentar con mediaDevices si la Permissions API no soporta 'camera'
+          try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            this.cameraAccepted = devices.some(d => d.kind === 'videoinput' && d.label !== '');
+          } catch {
+            this.cameraAccepted = false;
+          }
+        }
       }
     } catch (error) {
       console.warn('[MODAL-PERMISOS] Error verificando permisos iniciales:', error);
     }
-    console.log('[MODAL-PERMISOS] ngOnInit finalizado.');
   }
 
   dismiss(accepted: boolean = false) {
@@ -62,76 +75,99 @@ export class PermissionModalComponent implements OnInit {
   }
 
   /**
-   * Manejadores para los Toggles
-   */
-  handleToggleLocation(ev: any) {
-    const isChecked = ev.detail.checked;
-    if (isChecked && !this.locationAccepted) {
-      this.requestLocation();
-    } else {
-      this.locationAccepted = isChecked;
-    }
-  }
-
-  handleToggleCamera(ev: any) {
-    const isChecked = ev.detail.checked;
-    if (isChecked && !this.cameraAccepted) {
-      this.requestCamera();
-    } else {
-      this.cameraAccepted = isChecked;
-    }
-  }
-
-  /**
-   * Petición individual de Ubicación
+   * Petición de Ubicación robusta.
+   * Esperamos explícitamente a que el estado deje de ser 'prompt'.
    */
   async requestLocation() {
     this.isLoadingLocation = true;
+    this.cdr.detectChanges();
+
     try {
+      // 1. Disparamos el prompt del navegador
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          this.locationAccepted = true;
-          this.isLoadingLocation = false;
-          this.showSuccessToast('Ubicación activada con éxito');
-          this.cdr.detectChanges();
-        },
-        (err) => {
-          console.warn('Error al obtener ubicación:', err);
-          this.locationAccepted = false;
-          this.isLoadingLocation = false;
-          this.cdr.detectChanges();
-        },
-        { enableHighAccuracy: true, timeout: 15000 }
+        () => { /* Se maneja en la lógica de estado abajo */ },
+        () => { /* Se maneja en la lógica de estado abajo */ },
+        { timeout: 15000 }
       );
+
+      // 2. Intentamos usar la Permissions API para esperar el cambio
+      if (navigator.permissions) {
+        try {
+          const status = await navigator.permissions.query({ name: 'geolocation' as any });
+
+          if (status.state === 'prompt') {
+            // Esperamos a que cambie (el usuario haga clic)
+            await new Promise<void>((resolve) => {
+              const onChange = () => {
+                status.removeEventListener('change', onChange);
+                resolve();
+              };
+              status.addEventListener('change', onChange);
+              // Timeout de seguridad por si el diálogo se cierra o falla
+              setTimeout(resolve, 15000);
+            });
+          }
+          
+          const finalStatus = await navigator.permissions.query({ name: 'geolocation' as any });
+          this.finishLocationRequest(finalStatus.state === 'granted');
+          return;
+        } catch (e) {
+          // Si falla query (algunos navegadores), vamos al fallback
+        }
+      }
+
+      // 3. Fallback: Esperar un poco a que getCurrentPosition resuelva (navegadores antiguos)
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      navigator.geolocation.getCurrentPosition(
+        () => this.finishLocationRequest(true),
+        () => this.finishLocationRequest(false),
+        { timeout: 5000 }
+      );
+
     } catch (error) {
-      console.error('Error GPS:', error);
-      this.locationAccepted = false;
-      this.isLoadingLocation = false;
-      this.cdr.detectChanges();
+      console.error('[PermissionModal] Error:', error);
+      this.finishLocationRequest(false);
     }
   }
 
   /**
-   * Petición individual de Cámara
+   * Centraliza la actualización del estado de ubicación
+   */
+  private finishLocationRequest(accepted: boolean) {
+    this.ngZone.run(() => {
+      this.locationAccepted = accepted;
+      this.isLoadingLocation = false;
+      if (accepted) {
+        this.showSuccessToast('Ubicación activada con éxito');
+      }
+      this.cdr.detectChanges();
+    });
+  }
+
+  /**
+   * Petición de Cámara
    */
   async requestCamera() {
     this.isLoadingCamera = true;
+    this.cdr.detectChanges();
+
     try {
       if (navigator.mediaDevices) {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         stream.getTracks().forEach(track => track.stop());
-        this.cameraAccepted = true;
-        this.isLoadingCamera = false;
-        this.showSuccessToast('Cámara activada con éxito');
-        this.cdr.detectChanges();
+        this.ngZone.run(() => {
+          this.cameraAccepted = true;
+          this.isLoadingCamera = false;
+          this.showSuccessToast('Cámara activada con éxito');
+        });
       } else {
         this.isLoadingCamera = false;
       }
     } catch (error) {
-      console.error('Error Cámara:', error);
-      this.cameraAccepted = false;
-      this.isLoadingCamera = false;
-      this.cdr.detectChanges();
+      this.ngZone.run(() => {
+        this.cameraAccepted = false;
+        this.isLoadingCamera = false;
+      });
     }
   }
 
@@ -142,13 +178,9 @@ export class PermissionModalComponent implements OnInit {
       position: 'top',
       mode: 'ios',
       cssClass: 'toast-success',
-      buttons: [
-        {
-          icon: 'checkmark-circle-outline',
-          role: 'cancel'
-        }
-      ]
+      icon: 'checkmark-circle-outline'
     });
     await toast.present();
   }
 }
+

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -7,20 +7,25 @@ import { catchError } from 'rxjs/operators';
 import {
   IonButton, IonIcon, IonSearchbar, IonList, IonItem, IonLabel, IonCheckbox, IonSpinner,
   IonBadge, IonCard, IonCardContent, IonAvatar, IonThumbnail, IonSegment, IonSegmentButton, IonChip,
-  ToastController
+  ToastController, ModalController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
   trophyOutline, shieldOutline, personOutline, addOutline,
-  chevronBackOutline, checkmarkCircleOutline, footballOutline,
+  chevronBackOutline, checkmarkCircleOutline, footballOutline, informationCircleOutline,
   searchOutline, arrowBackOutline, closeOutline, checkmarkDoneOutline,
   closeCircleOutline, closeCircle, chevronForwardOutline, chevronDownOutline,
   chevronUpOutline, cloudDownloadOutline, cloudUploadOutline, footstepsOutline,
-  alertCircleOutline, peopleOutline
+  alertCircleOutline, peopleOutline, navigateOutline, navigateCircleOutline,
+  shieldCheckmarkOutline, lockClosedOutline, locationOutline,
+  person, informationCircle
 } from 'ionicons/icons';
-import { PlayerService } from '../../../core/services/player.service';
 import { LayoutService } from '../../../core/services/layout.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { LocationPlugin } from '../../../core/plugins/location-plugin';
+import { MapPlugin } from '../../../core/plugins/maps-plugin';
+import { PermissionModalComponent } from '../../../shared/components/permission-modal/permission-modal.component';
+import { PLAYER_SERVICE_TOKEN } from '../../../core/services/player.service.token';
 import confetti from 'canvas-confetti';
 
 @Component({
@@ -30,17 +35,31 @@ import confetti from 'canvas-confetti';
   standalone: true,
   imports: [
     CommonModule, FormsModule, RouterModule,
-    IonButton, IonIcon, IonSearchbar, IonItem, IonSpinner,
-    IonBadge, IonCard, IonCardContent, IonAvatar, IonSegment, IonSegmentButton,
-    IonLabel, IonList, IonChip, IonCheckbox
+    IonButton, IonIcon, IonSearchbar, IonList, IonItem, IonLabel, IonCheckbox, IonSpinner,
+    IonBadge, IonCard, IonCardContent, IonAvatar, IonThumbnail, IonSegment, IonSegmentButton, IonChip
   ]
 })
 export class BusquedaListPage implements OnInit {
-  private playerService = inject(PlayerService);
+  private playerService = inject(PLAYER_SERVICE_TOKEN);
   private layoutService = inject(LayoutService);
   private authService = inject(AuthService);
+  private ngZone = inject(NgZone);
   private router = inject(Router);
   private toastCtrl = inject(ToastController);
+  private locationPlugin = inject(LocationPlugin);
+  private modalCtrl = inject(ModalController);
+  private mapPlugin = inject(MapPlugin);
+  private cdr = inject(ChangeDetectorRef);
+
+  // Estado de permisos GPS
+  public hasGeoPermission = false;
+  public hasLocation = false;
+  public isCapturingLocation = false;
+  public currentLocation: { type: string; coordinates: number[] } | null = null;
+  private activePermissionModal: any = null;
+
+  public currentAddress: string = 'Localizando...';
+  public isRevGeocoding: boolean = false;
 
   public searchType: 'player' | 'team' | 'league' = 'player';
   public apiSearchQuery = '';
@@ -129,12 +148,14 @@ export class BusquedaListPage implements OnInit {
 
   constructor() {
     addIcons({
-      trophyOutline, shieldOutline, personOutline, addOutline,
+      trophyOutline, shieldOutline, personOutline, addOutline, informationCircleOutline,
       chevronBackOutline, checkmarkCircleOutline, footballOutline,
       searchOutline, arrowBackOutline, closeOutline, closeCircle, footstepsOutline,
       closeCircleOutline, chevronForwardOutline, chevronDownOutline, chevronUpOutline,
       checkmarkDoneOutline, cloudDownloadOutline, cloudUploadOutline, alertCircleOutline,
-      peopleOutline
+      peopleOutline, navigateOutline, navigateCircleOutline, shieldCheckmarkOutline, lockClosedOutline,
+      'location-outline': locationOutline,
+      person, 'information-circle': informationCircle
     });
   }
 
@@ -149,6 +170,189 @@ export class BusquedaListPage implements OnInit {
       { label: 'Búsqueda', url: '' },
     ]);
     this.loadMyPlayers();
+
+    // Verificar permisos y lanzar modal de onboarding si hace falta
+    this.checkGeoPermission().then(() => {
+      this.checkPermissionsOnboarding();
+      if (this.hasGeoPermission) {
+        this.captureLocation(true);
+      }
+    });
+  }
+
+  async checkGeoPermission() {
+    try {
+      this.hasGeoPermission = await this.locationPlugin.isGeolocationPermissionGranted();
+    } catch (e) {
+      this.hasGeoPermission = false;
+    }
+  }
+
+  async checkPermissionsOnboarding() {
+    if (this.hasGeoPermission) return;
+    const now = Date.now();
+    const lastPrompt = Number(localStorage.getItem('last_permission_prompt_busqueda') || '0');
+    const hoursSince = (now - lastPrompt) / (1000 * 60 * 60);
+    if (hoursSince < 24) return;
+
+    try {
+      const modal = await this.modalCtrl.create({
+        component: PermissionModalComponent,
+        cssClass: 'premium-modal',
+        backdropDismiss: false,
+        componentProps: { mode: 'commenting' }
+      });
+      this.activePermissionModal = modal;
+      await modal.present();
+
+      await modal.onWillDismiss();
+      localStorage.setItem('last_permission_prompt_busqueda', now.toString());
+
+      await this.checkGeoPermission();
+      if (this.hasGeoPermission && !this.hasLocation) {
+        this.captureLocation(true);
+      }
+    } catch (error) {
+      console.error('[BUSQUEDA] Error al abrir modal de permisos:', error);
+    }
+  }
+
+  async handlePermissionToggle() {
+    this.isCapturingLocation = true;
+    this.cdr.detectChanges();
+
+    try {
+      // 1. Disparamos el prompt del navegador
+      navigator.geolocation.getCurrentPosition(
+        () => { /* Se maneja en la lógica de estado abajo */ },
+        () => { /* Se maneja en la lógica de estado abajo */ },
+        { timeout: 15000 }
+      );
+
+      // 2. Intentamos usar la Permissions API para esperar el cambio
+      if (navigator.permissions) {
+        try {
+          const status = await navigator.permissions.query({ name: 'geolocation' as any });
+
+          if (status.state === 'prompt') {
+            // Esperamos a que cambie (el usuario haga clic)
+            await new Promise<void>((resolve) => {
+              const onChange = () => {
+                status.removeEventListener('change', onChange);
+                resolve();
+              };
+              status.addEventListener('change', onChange);
+              setTimeout(resolve, 15000);
+            });
+          }
+
+          const finalStatus = await navigator.permissions.query({ name: 'geolocation' as any });
+
+          this.ngZone.run(async () => {
+            this.hasGeoPermission = finalStatus.state === 'granted';
+            this.isCapturingLocation = false;
+            if (this.hasGeoPermission) {
+              this.showToast('¡Permisos de ubicación activos!', 'success', 'shield-checkmark-outline');
+              await this.captureLocation();
+            }
+            this.cdr.detectChanges();
+          });
+          return;
+        } catch (e) {
+          // Fallback
+        }
+      }
+
+      // Fallback para navegadores sin Permissions API
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      navigator.geolocation.getCurrentPosition(
+        async () => {
+          this.ngZone.run(async () => {
+            this.hasGeoPermission = true;
+            this.isCapturingLocation = false;
+            this.showToast('¡Permisos de ubicación activos!', 'success', 'shield-checkmark-outline');
+            await this.captureLocation();
+            this.cdr.detectChanges();
+          });
+        },
+        () => {
+          this.ngZone.run(() => {
+            this.hasGeoPermission = false;
+            this.isCapturingLocation = false;
+            this.cdr.detectChanges();
+          });
+        },
+        { timeout: 5000 }
+      );
+
+    } catch (error) {
+      this.ngZone.run(() => {
+        this.isCapturingLocation = false;
+        this.cdr.detectChanges();
+      });
+    }
+  }
+
+  async captureLocation(silent: boolean = false) {
+    if (this.isCapturingLocation) return;
+    this.isCapturingLocation = true;
+    try {
+      const pos = await this.locationPlugin.getCurrentPosition();
+      if (!pos) throw new Error('Sin posición');
+      this.currentLocation = {
+        type: 'Point',
+        coordinates: [pos.coords.longitude, pos.coords.latitude]
+      };
+      this.hasLocation = true;
+      this.isCapturingLocation = false;
+      this.cdr.detectChanges(); // Forzar renderizado del ngIf
+
+      // Inicializar el mapa tras obtener la ubicación
+      setTimeout(() => this.initMap(), 500);
+    } catch (error: any) {
+      this.isCapturingLocation = false;
+      this.hasGeoPermission = false;
+      this.hasLocation = false;
+      this.currentLocation = null;
+    }
+  }
+
+  initMap() {
+    if (!this.currentLocation?.coordinates || this.currentLocation.coordinates.length < 2) return;
+    const [lng, lat] = this.currentLocation.coordinates;
+    const mapObj = this.mapPlugin.initMap('busqueda-map', lat, lng, 14);
+    const marker = this.mapPlugin.addMarker(lat, lng, 'Ubicación de Scouting', true);
+    setTimeout(() => mapObj.invalidateSize(), 400);
+    marker.on('dragend', (event: any) => {
+      const pos = event.target.getLatLng();
+      this.currentLocation = {
+        type: 'Point',
+        coordinates: [pos.lng, pos.lat]
+      };
+      this.updateAddress();
+    });
+
+    // Carga inicial
+    this.updateAddress();
+  }
+
+  updateAddress() {
+    if (this.currentLocation?.coordinates) {
+      this.isRevGeocoding = true;
+      const [lng, lat] = this.currentLocation.coordinates;
+      this.playerService.reverseGeocode(lat, lng).subscribe({
+        next: (addr) => {
+          this.currentAddress = addr;
+          this.isRevGeocoding = false;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.currentAddress = 'Ubicación de búsqueda';
+          this.isRevGeocoding = false;
+          this.cdr.detectChanges();
+        }
+      });
+    }
   }
 
   loadMyPlayers() {
@@ -389,13 +593,27 @@ export class BusquedaListPage implements OnInit {
 
   importPlayers() {
     if (this.selectedPlayers.size === 0) return;
+    if (!this.hasLocation || !this.currentLocation) {
+      this.showToast('Activa el GPS antes de importar jugadores.', 'warning', 'navigate-outline');
+      return;
+    }
+
+    // Validar formato GeoJSON antes de enviar
+    const locationPayload = {
+      type: 'Point' as const,
+      coordinates: [
+        this.currentLocation.coordinates[0], // lng
+        this.currentLocation.coordinates[1]  // lat
+      ]
+    };
+    console.log('[BUSQUEDA] Ubicación GeoJSON a adjuntar:', JSON.stringify(locationPayload));
 
     const playersToImport = Array.from(this.selectedPlayers.values());
     this.isImporting = true;
 
     let importedCount = 0;
     playersToImport.forEach(p => {
-      const newPlayer = {
+      const newPlayer: any = {
         name: p.strPlayer,
         team: this.selectedTeam?.strTeam || p.strTeam || 'Desconocido',
         secondary_team: p.strTeam2 || '',
@@ -410,6 +628,7 @@ export class BusquedaListPage implements OnInit {
         updated_by: this.authService.currentUser()?.email || 'admin',
         created_at: new Date(),
         updated_at: new Date(),
+        location: locationPayload,
         tsdb_ids: {
           player_id: p.idPlayer,
           team_id: p.idTeam,
@@ -418,7 +637,7 @@ export class BusquedaListPage implements OnInit {
         }
       };
 
-      this.playerService.addPlayer(newPlayer as any).subscribe(() => {
+      this.playerService.addPlayer(newPlayer).subscribe(() => {
         importedCount++;
         if (importedCount === playersToImport.length) {
           this.finishImport();
@@ -430,8 +649,12 @@ export class BusquedaListPage implements OnInit {
   finishImport() {
     this.isImporting = false;
     this.fireConfetti();
-    this.showToast(`¡Fichajes completados! Se han importado ${this.selectedPlayers.size} jugadores.`, 'success');
-    
+    const count = this.selectedPlayers.size;
+    const msg = count === 1 
+      ? '¡Fichaje completado! Se ha importado 1 jugador.' 
+      : `¡Fichajes completados! Se han importado ${count} jugadores.`;
+    this.showToast(msg, 'success');
+
     setTimeout(() => {
       this.router.navigate(['/players']);
     }, 2000);

@@ -190,6 +190,7 @@ services:
       - FIREBASE_SERVICE_ACCOUNT=/app/firebase-credentials.json
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
       - JWT_SECRET=${JWT_SECRET}
+      - CORBA_BRIDGE_URL=http://corba-bridge:8080/corba-bridge/api/noticias
     volumes:
       - ./firebase-credentials.json:/app/firebase-credentials.json
     depends_on:
@@ -198,15 +199,21 @@ services:
       - football-network
 
   frontend:
-    build: ./frontend-angular-ionic
+    build:
+      context: .
+      dockerfile: frontend-angular-ionic/Dockerfile
     container_name: football-frontend
     ports:
-      - "8100:80"
+      - "80:80"
     depends_on:
       backend-node:
         condition: service_started
       gateway:
         condition: service_started
+      corba-bridge:
+        condition: service_started
+    networks:
+      - football-network
 
   corba-naming:
     build:

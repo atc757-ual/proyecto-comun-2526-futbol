@@ -2,10 +2,11 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { IonicModule, ToastController, LoadingController } from '@ionic/angular';
+import { IonicModule, ToastController, LoadingController, NavController } from '@ionic/angular';
 import { AuthService } from 'src/app/core/services/auth.service';
+import { PlatformService } from 'src/app/core/services/platform.service';
 import { addIcons } from 'ionicons';
-import { atOutline, lockClosedOutline, checkmarkCircleOutline, alertCircleOutline, peopleOutline } from 'ionicons/icons';
+import { atOutline, lockClosedOutline, checkmarkCircleOutline, alertCircleOutline, peopleOutline, cafeOutline, logoNodejs } from 'ionicons/icons';
 import { LayoutService } from 'src/app/core/services/layout.service';
 
 @Component({
@@ -30,14 +31,20 @@ export class LoginPage implements OnInit {
 
   private authService = inject(AuthService);
   private router = inject(Router);
+  private navCtrl = inject(NavController);
   private toastController = inject(ToastController);
   private layoutService = inject(LayoutService);
+  public platformService = inject(PlatformService);
 
   constructor() {
     addIcons({
       atOutline, lockClosedOutline, checkmarkCircleOutline,
-      alertCircleOutline, peopleOutline
+      alertCircleOutline, peopleOutline, cafeOutline, logoNodejs
     });
+  }
+
+  toggleBackend() {
+    this.platformService.toggleBackend();
   }
 
   ngOnInit() {
@@ -74,10 +81,11 @@ export class LoginPage implements OnInit {
     if (!this.isFormValid()) return;
 
     this.isLoading = true;
-    // Firebase login devuelve una Promesa
     try {
       await this.authService.login(this.userEmail, this.userPass);
-
+      
+      console.log('[LOGIN] Login completado con éxito. Navegando a Home...');
+      
       const successToast = await this.toastController.create({
         message: '¡Sesión iniciada con éxito!',
         duration: 2000,
@@ -86,20 +94,24 @@ export class LoginPage implements OnInit {
         icon: 'checkmark-circle-outline',
         buttons: [{ role: 'cancel' }]
       });
-      successToast.present();
+      await successToast.present();
 
-      this.router.navigate(['/home']);
+      // Navegamos
+      await this.navCtrl.navigateRoot('/home');
+      
     } catch (error: any) {
-      this.isLoading = false;
+      console.error('[LOGIN] Error en el proceso de login:', error);
       const toast = await this.toastController.create({
-        message: 'Credenciales inválidas',
+        message: error.message || 'Credenciales inválidas',
         duration: 4000,
         position: 'top',
         cssClass: 'toast-error',
         icon: 'alert-circle-outline',
         buttons: [{ role: 'cancel' }]
       });
-      toast.present();
+      await toast.present();
+    } finally {
+      this.isLoading = false;
     }
   }
 

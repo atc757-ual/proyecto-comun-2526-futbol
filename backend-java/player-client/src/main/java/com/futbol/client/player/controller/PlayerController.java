@@ -1,5 +1,6 @@
 package com.futbol.client.player.controller;
 
+import com.futbol.comment.feign.client.CommentClient;
 import com.futbol.client.player.domain.Player;
 import com.futbol.client.player.repository.PlayerRepository;
 import com.futbol.client.player.exceptions.NotFoundException;
@@ -25,6 +26,9 @@ public class PlayerController {
 
     @Autowired
     private PlayerRepository playerRepository;
+
+    @Autowired
+    private CommentClient commentClient;
 
     @Operation(summary = "Listar jugadores (Vista Pública)", description = "Obtiene 10 jugadores aleatorios con información mínima (Nombre, Foto) sin necesidad de token")
     @GetMapping("/public")
@@ -91,7 +95,18 @@ public class PlayerController {
         if (!playerRepository.existsById(id)) {
             throw new NotFoundException("Jugador no encontrado con ID: " + id);
         }
+        
+        // Eliminación en Cascada (Homologación con Node/Mongo)
+        // Eliminamos los comentarios asociados al jugador en el otro microservicio
+        try {
+            commentClient.deleteByPlayerId(id);
+        } catch (Exception e) {
+            // Logeamos pero continuamos borrando el jugador si el servicio de comentarios falla
+            // (Opcional: podrías abortar si la consistencia es crítica)
+            System.err.println("Error al borrar comentarios en cascada para player " + id + ": " + e.getMessage());
+        }
+
         playerRepository.deleteById(id);
-        return ResponseEntity.ok(ApiResult.success("Jugador eliminado exitosamente", null));
+        return ResponseEntity.ok(ApiResult.success("Jugador eliminado exitosamente (incluyendo comentarios)", null));
     }
 }

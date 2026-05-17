@@ -33,6 +33,10 @@
 }
 
 /* --- PADDING INDIVIDUAL --- */
+.pt-none {
+   padding-top: 0 !important;
+}
+
 .pt-xs {
    padding-top: var(--space-xs) !important;
 }

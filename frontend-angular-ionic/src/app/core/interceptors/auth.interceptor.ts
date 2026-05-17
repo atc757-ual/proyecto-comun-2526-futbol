@@ -10,7 +10,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const token = localStorage.getItem('jwt_token');
 
   let request = req;
-  if (token) {
+  if (token && !req.url.includes('/auth/signin')) {
     request = req.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`

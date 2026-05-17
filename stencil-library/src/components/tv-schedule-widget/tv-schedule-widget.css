@@ -10,7 +10,7 @@
 
 .widget-container {
   background: var(--bg-card);
-  border-radius: 12px;
+  border-radius: 8px;
   border: 1px solid var(--border-color);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   overflow: hidden;
@@ -26,7 +26,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
 }
 
 h3 {
@@ -110,24 +109,28 @@ h3 {
 }
 
 .channel-group-v2 {
-  margin-bottom: 4px; /* Margen reducido entre canales */
+  margin-bottom: 4px;
+  /* Margen reducido entre canales */
 }
 
 .channel-group-v2:last-child {
-  margin-bottom: 8px; /* Espacio extra para el último grupo */
+  margin-bottom: 8px;
+  /* Espacio extra para el último grupo */
 }
 
 .channel-header-mini {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 16px; /* Padding reducido */
+  padding: 4px 16px;
+  /* Padding reducido */
   background: #f8fafc;
   border-bottom: 1px solid #f1f5f9;
 }
 
 .logo-dark-bg {
-  background: #111827; /* Fondo oscuro para resaltar logos blancos */
+  background: #111827;
+  /* Fondo oscuro para resaltar logos blancos */
   padding: 2px 4px;
   border-radius: 4px;
   display: flex;
@@ -137,7 +140,8 @@ h3 {
 }
 
 .channel-logo-corner {
-  height: 18px; /* Altura exacta pedida */
+  height: 18px;
+  /* Altura exacta pedida */
   width: auto;
   max-width: 32px;
   object-fit: contain;
@@ -165,8 +169,10 @@ h3 {
   display: grid;
   grid-template-columns: 45px 1fr auto;
   align-items: center;
-  padding: 4px 16px; /* Padding vertical reducido */
-  gap: 8px; /* Gap reducido */
+  padding: 4px 16px;
+  /* Padding vertical reducido */
+  gap: 8px;
+  /* Gap reducido */
   /* border-bottom eliminado según pedido */
 }
 
@@ -182,7 +188,8 @@ h3 {
   font-size: 11px;
   font-weight: 800;
   color: var(--primary-color);
-  text-align: center; /* Hora centrada por TOC */
+  text-align: center;
+  /* Hora centrada por TOC */
 }
 
 .entry-details {
@@ -244,6 +251,11 @@ h3 {
 }
 
 @keyframes fadeInQuick {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }

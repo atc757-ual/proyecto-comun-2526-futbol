@@ -1,6 +1,6 @@
 package com.futbol.client.comment.config;
 
-import com.futbol.client.comment.dto.ApiResult;
+import com.futbol.common.dto.ApiResult;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -26,6 +26,7 @@ public class ResponseWrapper implements ResponseBodyAdvice<Object> {
             return body;
         }
 
-        return new ApiResult<>("200", "Procesamiento concluído exitosamente", body);
+        // Si es un objeto "suelto", lo envolvemos ahora
+        return ApiResult.success("Procesamiento concluído exitosamente", body);
     }
 }

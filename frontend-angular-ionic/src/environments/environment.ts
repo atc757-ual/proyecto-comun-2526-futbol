@@ -5,6 +5,7 @@
 export const environment = {
   production: false,
   nodeApiUrl: 'http://localhost:3000/api',
+  javaApiUrl: 'http://localhost:8080/api',
   corbaApiUrl: 'http://127.0.0.1:8089/corba-bridge/api',
   firebaseConfig: {
     apiKey: "AIzaSyAC7hh8gwRLaqdfHCN04DSDBiv8nsLWx30",
@@ -14,7 +15,8 @@ export const environment = {
     messagingSenderId: "1085547830836",
     appId: "1:1085547830836:web:1452a0b0e687315cfc3461",
     measurementId: "G-VGXNVZRTL8"
-  }
+  },
+  useJavaBackend: true // Activado por defecto
 };
 
 /*

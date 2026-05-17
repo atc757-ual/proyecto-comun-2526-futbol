@@ -83,11 +83,8 @@ const getPlayerDetails = async (id) => {
             strThumb: p.strThumb,
             strDescriptionES: p.strDescriptionES || p.strDescriptionEN,
             // Imágenes adicionales
-            strPoster: p.strPoster,
             strCutout: p.strCutout,
-            strCartoon: p.strCartoon,
             strBanner: p.strBanner,
-            strRender: p.strRender,
             // Redes Sociales
             strFacebook: p.strFacebook,
             strInstagram: p.strInstagram,

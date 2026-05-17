@@ -11,6 +11,9 @@ public class PlayerDTO {
     private LocalDate entryDate;
 
     private String userId;
+    private String position;
+    private String nationality;
+    private Boolean isFavorite;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -26,4 +29,10 @@ public class PlayerDTO {
     public void setEntryDate(LocalDate entryDate) { this.entryDate = entryDate; }
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
+    public String getPosition() { return position; }
+    public void setPosition(String position) { this.position = position; }
+    public String getNationality() { return nationality; }
+    public void setNationality(String nationality) { this.nationality = nationality; }
+    public Boolean getIsFavorite() { return isFavorite; }
+    public void setIsFavorite(Boolean isFavorite) { this.isFavorite = isFavorite; }
 }

@@ -1,25 +1,28 @@
-import { Component, Input, inject, CUSTOM_ELEMENTS_SCHEMA, ViewChild } from '@angular/core';
+import { Component, Input, inject, CUSTOM_ELEMENTS_SCHEMA, ViewChild, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { IonicModule, IonContent, AlertController, ToastController, NavController, ModalController } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
 import { ConfirmModalComponent } from 'src/app/shared/components/confirm-modal/confirm-modal.component';
-import { NewsService, NewsItem } from 'src/app/core/services/news.service';
+import { NewsItem } from 'src/app/core/models/news.model';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { PlatformService } from 'src/app/core/services/platform.service';
 import { addIcons } from 'ionicons';
 import { alertCircleOutline, arrowBackOutline, newspaperOutline, eyeOutline, eyeOffOutline, homeOutline, addCircleOutline, createOutline, trashOutline, checkmarkCircleOutline, cloudDoneOutline, cloudOfflineOutline } from 'ionicons/icons';
 import { LayoutService } from 'src/app/core/services/layout.service';
 import { StorageService } from 'src/app/core/services/storage.service';
+import { NEWS_SERVICE_TOKEN } from '../../../core/services/news.service.token';
+
 @Component({
   selector: 'app-news-detail',
   templateUrl: './news-detail.page.html',
   styleUrls: ['./news-detail.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule],
+  imports: [IonicModule, CommonModule, FormsModule, RouterModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class NewsDetailPage {
-  private newsService = inject(NewsService);
+export class NewsDetailPage implements OnInit {
+  private newsService = inject(NEWS_SERVICE_TOKEN);
   private authService = inject(AuthService);
   private router = inject(Router);
   public platformService = inject(PlatformService); // Aseguramos que sea public

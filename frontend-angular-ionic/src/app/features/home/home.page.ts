@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { IonicModule, ToastController, AlertController, Platform } from '@ionic/angular';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { addIcons } from 'ionicons';
@@ -12,26 +13,25 @@ import {
 } from 'ionicons/icons';
 import { RouterModule, Router } from '@angular/router';
 import { LayoutService } from 'src/app/core/services/layout.service';
-import { NewsService } from 'src/app/core/services/news.service';
 import { AuthService } from 'src/app/core/services/auth.service';
-import { PlayerService } from 'src/app/core/services/player.service';
 import { Auth } from '@angular/fire/auth';
 import { Subscription, timer } from 'rxjs';
-
 import { PermissionModalComponent } from 'src/app/shared/components/permission-modal/permission-modal.component';
 import { ModalController } from '@ionic/angular';
+import { PLAYER_SERVICE_TOKEN } from 'src/app/core/services/player.service.token';
+import { NEWS_SERVICE_TOKEN } from 'src/app/core/services/news.service.token';
 
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule],
+  imports: [IonicModule, CommonModule, FormsModule, RouterModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class HomePage implements OnInit, OnDestroy {
-  private newsService = inject(NewsService);
-  private playerService = inject(PlayerService);
+  private newsService = inject(NEWS_SERVICE_TOKEN);
+  private playerService = inject(PLAYER_SERVICE_TOKEN);
   private router = inject(Router);
   private layoutService = inject(LayoutService);
   private platform = inject(Platform);
@@ -103,10 +103,17 @@ export class HomePage implements OnInit, OnDestroy {
    * Ahora basado puramente en el estado real del navegador, sin LocalStorage.
    */
   async checkPermissionsOnboarding() {
+    // Evitar molestar constantemente si ya preguntamos hace menos de 24h
+    const lastPrompt = localStorage.getItem('last_permission_prompt_home');
+    if (lastPrompt) {
+      const hoursSince = (Date.now() - parseInt(lastPrompt, 10)) / (1000 * 60 * 60);
+      if (hoursSince < 24) return;
+    }
+
     try {
       // 1. Verificación de Geolocalización
       const geoResult = await navigator.permissions.query({ name: 'geolocation' as any });
-      
+
       // 2. Verificación de Cámara (con fallback por compatibilidad)
       let cameraState: PermissionState = 'prompt';
       try {
@@ -137,8 +144,12 @@ export class HomePage implements OnInit, OnDestroy {
 
     // Al cerrar, refrescamos los datos por si se concedieron permisos
     const { data } = await modal.onWillDismiss();
+
+    // Registramos en LS que ya se mostró el onboarding
+    localStorage.setItem('last_permission_prompt_home', Date.now().toString());
+
     if (data === true) {
-       this.loadMyPlayers();
+      this.loadMyPlayers();
     }
   }
 
@@ -174,7 +185,7 @@ export class HomePage implements OnInit, OnDestroy {
     this.playerService.getTSDBLiveScores().subscribe({
       next: (scores) => {
         const sorted = (scores || []).sort((a, b) => (a.strLeague || '').localeCompare(b.strLeague || ''));
-        
+
         const gradients = [
           'linear-gradient(135deg, #002eff, #6b8cff)', // Azul Champions
           'linear-gradient(135deg, #ff002e, #ff6b8c)', // Rojo Pasión

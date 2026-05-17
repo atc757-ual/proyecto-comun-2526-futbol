@@ -24,9 +24,9 @@ const playersList = async (req, res) => {
             return sendApiResult(res, 401, "No se pudo identificar al usuario activo");
         }
 
-        const userIdFromToken = req.user.firebaseUid; 
+        const userIdFromToken = req.user.firebaseUid;
         const { name, team } = req.query;
-        
+
         // Filtro obligatorio: solo vemos lo NUESTRO
         let query = { user_id: userIdFromToken };
 
@@ -37,7 +37,7 @@ const playersList = async (req, res) => {
         }
 
         const players = await Player.find(query).exec();
-        
+
         if (req.log) req.log(`Jugadores encontrados: ${players.length}`);
         sendApiResult(res, 200, "Procesamiento concluído exitosamente", players);
     } catch (err) {
@@ -49,10 +49,11 @@ const playersList = async (req, res) => {
 // POST /api/players
 const playersCreate = async (req, res) => {
     try {
+        console.log('[BACKEND] Creando jugador con datos:', JSON.stringify(req.body.location));
         // Inyectamos el ID de usuario desde el objeto req.user inyectado por el middleware
-        const playerData = { 
-            ...req.body, 
-            user_id: req.user.firebaseUid 
+        const playerData = {
+            ...req.body,
+            user_id: req.user.firebaseUid
         };
         const newPlayer = await Player.create(playerData);
         sendApiResult(res, 201, "Procesamiento concluído exitosamente", newPlayer);
@@ -89,7 +90,7 @@ const playersReadOne = async (req, res) => {
 const playersUpdateOne = async (req, res) => {
     try {
         const player = await Player.findById(req.params.playerid).exec();
-        
+
         if (!player) {
             return sendApiResult(res, 404, "No se encontró el jugador para actualizar");
         }
@@ -102,10 +103,12 @@ const playersUpdateOne = async (req, res) => {
             return sendApiResult(res, 403, "Acceso denegado: No tienes permiso para editar este jugador");
         }
 
+        console.log('[BACKEND] Actualizando jugador con location:', JSON.stringify(req.body.location));
+
         // Actualizamos los campos
         Object.assign(player, req.body);
         const updatedPlayer = await player.save();
-        
+
         sendApiResult(res, 200, "Jugador actualizado con éxito", updatedPlayer);
     } catch (err) {
         sendApiResult(res, 400, "Error al actualizar el jugador: " + err.message);
@@ -115,7 +118,7 @@ const playersUpdateOne = async (req, res) => {
 const playersDeleteOne = async (req, res) => {
     try {
         const player = await Player.findById(req.params.playerid).exec();
-        
+
         if (!player) {
             return sendApiResult(res, 404, "No se encontró el jugador para borrar");
         }

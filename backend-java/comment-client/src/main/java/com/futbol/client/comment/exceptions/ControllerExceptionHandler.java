@@ -1,6 +1,6 @@
 package com.futbol.client.comment.exceptions;
 
-import com.futbol.client.comment.dto.ApiResult;
+import com.futbol.common.dto.ApiResult;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,20 +15,18 @@ public class ControllerExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ApiResult<Object>> handleNotFound(NotFoundException ex) {
-        ApiResult<Object> resp = new ApiResult<>(
+        ApiResult<Object> resp = ApiResult.error(
             String.valueOf(HttpStatus.NOT_FOUND.value()), 
-            ex.getMessage(),
-            null
+            ex.getMessage()
         );
         return new ResponseEntity<>(resp, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResult<Object>> handleConflict(DataIntegrityViolationException ex) {
-        ApiResult<Object> resp = new ApiResult<>(
+        ApiResult<Object> resp = ApiResult.error(
             String.valueOf(HttpStatus.CONFLICT.value()), 
-            "Database integrity violation: Possible duplicate or constraint error.",
-            null
+            "Database integrity violation: Record might already exist or violates constraints."
         );
         return new ResponseEntity<>(resp, HttpStatus.CONFLICT);
     }
@@ -40,20 +38,18 @@ public class ControllerExceptionHandler {
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .collect(Collectors.joining(", "));
         
-        ApiResult<Object> resp = new ApiResult<>(
+        ApiResult<Object> resp = ApiResult.error(
             String.valueOf(HttpStatus.BAD_REQUEST.value()), 
-            errors,
-            null
+            errors
         );
         return new ResponseEntity<>(resp, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResult<Object>> handleGlobalException(Exception ex) {
-        ApiResult<Object> resp = new ApiResult<>(
+        ApiResult<Object> resp = ApiResult.error(
             String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()), 
-            ex.getMessage(),
-            null
+            "An unexpected error occurred: " + ex.getMessage()
         );
         return new ResponseEntity<>(resp, HttpStatus.INTERNAL_SERVER_ERROR);
     }

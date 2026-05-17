@@ -42,6 +42,30 @@
     </ion-input>
   </div>
 
+  <!-- SELECTOR DE BACKEND PRE-LOGIN -->
+  <div class="backend-switcher-login mb-m">
+    <div class="d-flex fl-justify-between fl-align-center p-s br-soft border-neutral-2"
+      [class.bg-primary-light]="platformService.getUseJavaBackend()"
+      [class.bg-success-light]="!platformService.getUseJavaBackend()">
+      <div class="d-flex fl-align-center gap-s">
+        <div class="icon-circle-s" [class.bg-primary]="platformService.getUseJavaBackend()"
+          [class.bg-success]="!platformService.getUseJavaBackend()">
+          <ion-icon *ngIf="platformService.getUseJavaBackend()" name="cafe-outline" class="text-white fs-24"></ion-icon>
+          <ion-icon *ngIf="!platformService.getUseJavaBackend()" name="logo-nodejs" class="text-white fs-24"></ion-icon>
+        </div>
+        <div class="fl-direction-column">
+          <div class="fs-14 f-bold text-neutral-8 mr-xs ">{{ platformService.getUseJavaBackend() ? 'Java Microservicios'
+            : 'Node.js
+            Express' }}</div>
+          <div class="fs-12 text-neutral-7">Backend seleccionado</div>
+
+        </div>
+      </div>
+      <ion-toggle mode="ios" [color]="platformService.getUseJavaBackend() ?  'primary' : 'success'"
+        [checked]="platformService.getUseJavaBackend()" (ionChange)="toggleBackend()"></ion-toggle>
+    </div>
+  </div>
+
   <!-- BOTÓN DE ACCIÓN -->
   <ion-button mode="ios" type="submit" expand="block" shape="round" class="futbol-btn-primary f-bold fs-16"
     [disabled]="!isFormValid() || isLoading">

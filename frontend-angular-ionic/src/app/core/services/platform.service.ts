@@ -1,6 +1,7 @@
 import { Injectable, inject, HostListener } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { BehaviorSubject } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +13,10 @@ export class PlatformService {
   private isDesktopSub = new BehaviorSubject<boolean>(window.innerWidth >= 768);
   private isMobileAppSub = new BehaviorSubject<boolean>(false);
   private isWebMobileSub = new BehaviorSubject<boolean>(false);
+  
+  // Nuevo: Estado reactivo del backend
+  private useJavaBackendSub = new BehaviorSubject<boolean>(this.getInitialBackend());
+  useJavaBackend$ = this.useJavaBackendSub.asObservable();
 
   // Observables públicos
   isDesktop$ = this.isDesktopSub.asObservable();
@@ -43,4 +48,26 @@ export class PlatformService {
   get isDesktop(): boolean { return this.isDesktopSub.value; }
   get isMobileApp(): boolean { return this.isMobileAppSub.value; }
   get isWebMobile(): boolean { return this.isWebMobileSub.value; }
+
+  /**
+   * Gestión dinámica del backend (Java vs Node)
+   */
+  private getInitialBackend(): boolean {
+    const val = localStorage.getItem('use_java_backend');
+    if (val === null) return environment.useJavaBackend; 
+    return val === 'true';
+  }
+
+  toggleBackend() {
+    this.setUseJavaBackend(!this.getUseJavaBackend());
+  }
+
+  getUseJavaBackend(): boolean {
+    return this.useJavaBackendSub.value;
+  }
+
+  setUseJavaBackend(value: boolean) {
+    localStorage.setItem('use_java_backend', value.toString());
+    this.useJavaBackendSub.next(value);
+  }
 }

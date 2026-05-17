@@ -30,7 +30,9 @@ export class MapPlugin {
    * Inicializa el mapa en un contenedor específico
    */
   initMap(elementId: string, lat: number, lng: number, zoom: number = 13): L.Map {
+    console.log(`[MAP-PLUGIN] Inicializando mapa en #${elementId} para [${lat}, ${lng}]`);
     if (this.map) {
+      console.log('[MAP-PLUGIN] Eliminando instancia anterior del mapa');
       this.map.remove();
     }
 

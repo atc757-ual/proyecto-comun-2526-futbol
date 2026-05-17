@@ -1,8 +1,8 @@
 package com.futbol.common.dto;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import java.time.Instant;
 import java.io.Serializable;
-import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @JsonPropertyOrder({ "transactionId", "code", "description", "descriptionDetail", "responseTimestamp" })
@@ -15,7 +15,7 @@ public class Result implements Serializable {
 
     public Result() {
         this.transactionId = UUID.randomUUID().toString();
-        this.responseTimestamp = OffsetDateTime.now().toString();
+        this.responseTimestamp = Instant.now().toString();
     }
 
     public Result(String code, String description, String descriptionDetail) {

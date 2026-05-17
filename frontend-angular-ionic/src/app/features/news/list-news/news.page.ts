@@ -1,8 +1,10 @@
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { IonicModule, LoadingController, NavController } from '@ionic/angular';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
-import { NewsService, NewsItem } from '../../../core/services/news.service';
+import { NewsItem } from '../../../core/models/news.model';
+import { NEWS_SERVICE_TOKEN } from '../../../core/services/news.service.token';
 import { AuthService } from '../../../core/services/auth.service';
 import { PlatformService } from 'src/app/core/services/platform.service';
 import { LayoutService } from 'src/app/core/services/layout.service';
@@ -14,10 +16,10 @@ import { addCircleOutline, newspaperOutline, homeOutline, settingsOutline, chevr
   templateUrl: './news.page.html',
   styleUrls: ['./news.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule]
+  imports: [CommonModule, IonicModule, RouterModule, FormsModule]
 })
 export class NewsPage implements OnInit, OnDestroy {
-  private newsService = inject(NewsService);
+  private newsService = inject(NEWS_SERVICE_TOKEN);
   private authService = inject(AuthService); // Inyectado correctamente aquí
   private route = inject(ActivatedRoute);
   private loadingCtrl = inject(LoadingController);

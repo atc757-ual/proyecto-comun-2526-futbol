@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { map, firstValueFrom } from 'rxjs';
 import { environment } from '@env/environment';
@@ -22,16 +22,18 @@ import {
   cloudDownloadOutline, createOutline,
   chevronBackOutline, chevronForwardOutline,
   trophyOutline, syncOutline, trashOutline,
-  cloudUploadOutline, closeCircleOutline,
+  cloudUploadOutline, closeCircleOutline, linkOutline,
   eyeOutline, statsChartOutline, earthOutline,
   shieldCheckmarkOutline, closeCircle,
   globeOutline, logoInstagram, logoFacebook, logoTwitter, documentTextOutline,
   shieldCheckmark, navigateOutline, navigateCircleOutline, personCircleOutline,
   shirtOutline, calendarOutline, resizeOutline, flagOutline, informationCircleOutline,
-  alertCircleOutline, lockClosedOutline
+  alertCircleOutline, lockClosedOutline, cutOutline, cubeOutline, appsOutline,
+  person, informationCircle
 } from 'ionicons/icons';
-import { PlayerService, Player } from '@core/services/player.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { PLAYER_SERVICE_TOKEN } from '@core/services/player.service.token';
+import { Player } from '@core/models/player.model';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { LayoutService } from '@core/services/layout.service';
 import { StorageService } from '@core/services/storage.service';
 import { CameraPlugin } from '@core/plugins/camera-plugin';
@@ -47,17 +49,17 @@ import { PermissionModalComponent } from 'src/app/shared/components/permission-m
   styleUrls: ['./add-edit-player.page.scss'],
   standalone: true,
   imports: [
-    CommonModule, FormsModule,
-    IonItem, IonAvatar, IonLabel,
-    IonInput, IonSelect, IonSelectOption, IonButton, IonIcon,
-    IonCard, IonCardContent, IonCardHeader,
-    IonSpinner,
-    IonSegment, IonSegmentButton, IonSearchbar,
-    IonCheckbox, IonList, IonBadge, IonImg, IonToggle, IonTextarea
+    CommonModule, ReactiveFormsModule, FormsModule, RouterModule,
+    IonItem, IonLabel, IonInput, IonSelect, IonSelectOption, IonButton, IonIcon,
+    IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonAvatar, IonSpinner,
+    IonText, IonSegment, IonSegmentButton, IonToggle, IonSearchbar, IonCheckbox,
+    IonList, IonListHeader, IonBadge, IonImg, IonTextarea, IonThumbnail, IonChip
   ]
 })
 export class AddEditPlayerPage implements OnInit, OnDestroy {
-  private playerService = inject(PlayerService);
+  private playerService = inject(PLAYER_SERVICE_TOKEN);
+  private cdr = inject(ChangeDetectorRef);
+  private ngZone = inject(NgZone);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private navCtrl = inject(NavController);
@@ -85,6 +87,8 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   public hasGeoPermission = false;
   public hasCameraPermission = false;
   public localPlayers: Player[] = [];
+  public currentAddress: string = 'Localizando...';
+  public isRevGeocoding: boolean = false;
 
   // Paginación
   public currentPage = 1;
@@ -179,6 +183,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     name: '',
     fullname: '',
     team: '',
+    secondary_team: '',
     league: '',
     age: undefined,
     birth_date: '',
@@ -204,7 +209,8 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       poster: '',
       cutout: '',
       cartoon: '',
-      banner: ''
+      banner: '',
+      render: ''
     },
     tsdb_ids: {
       player_id: '',
@@ -246,6 +252,26 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   public hasLocation = false;
   public isCapturingLocation = false;
 
+  // Gestión Multimedia Avanzada
+  public imageTypes = [
+    { key: 'image_url', label: 'Foto Principal (Thumb)', icon: 'person-outline', helper: 'Imagen principal para el avatar y listas.' },
+    { key: 'cutout', label: 'Recorte (Acción)', icon: 'cut-outline', helper: 'Foto sin fondo para el efecto de volteo.' },
+    { key: 'banner', label: 'Banner Dashboard', icon: 'image-outline', helper: 'Fondo decorativo para las estadísticas.' }
+  ];
+
+  public globalMediaMode: 'upload' | 'url' = 'url';
+
+  // Previsualizaciones específicas para cada tipo
+  public previews: { [key: string]: string | null } = {};
+
+  setGlobalMediaMode(mode: 'upload' | 'url') {
+    this.globalMediaMode = mode;
+    // Si pasamos a upload y no hay cámara, lanzamos onboarding
+    if (mode === 'upload' && !this.hasCameraPermission) {
+      this.checkPermissionsOnboarding();
+    }
+  }
+
   constructor() {
     addIcons({
       cameraOutline, searchOutline, saveOutline, shieldOutline, footballOutline,
@@ -257,18 +283,19 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       closeCircle, globeOutline, logoInstagram, logoFacebook, logoTwitter,
       documentTextOutline, navigateOutline, navigateCircleOutline, earthOutline,
       shirtOutline, calendarOutline, resizeOutline, flagOutline, informationCircleOutline,
-      alertCircleOutline,
-      'lock-closed-outline': lockClosedOutline
+      alertCircleOutline, linkOutline,
+      'lock-closed-outline': lockClosedOutline,
+      'location-outline': locationOutline,
+      person, 'information-circle': informationCircle,
+      cutOutline, cubeOutline, appsOutline
     });
   }
 
   async ngOnInit() {
     console.log('[ADD-PLAYER] ngOnInit disparado');
-    
-    // Lanzamos el onboarding de permisos con un pequeño retardo para asegurar que la vista cargó
-    setTimeout(() => {
-      this.checkPermissionsOnboarding();
-    }, 1500);
+
+    // El onboarding se lanzará solo cuando el usuario pase a modo MANUAL
+    // para evitar intrusión al cargar la página en modo búsqueda.
 
     // Capturar el ID del usuario actual
     this.authService.user$.subscribe(user => {
@@ -296,28 +323,25 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     }
 
     this.layoutService.setBreadcrumbs([
-      {
-        label: '',
-        url: '/home',
-        icon: 'home-outline'
-      }, {
-        label: 'Jugadores',
-        url: '/players',
-      },
-      {
-        label: this.playerId ? 'Editar Jugador' : 'Nuevo Jugador',
-        url: '',
-      }
+      { label: '', url: '/home', icon: 'home-outline' },
+      { label: 'Jugadores', url: '/players' },
+      { label: this.playerId ? 'Editar Jugador' : 'Nuevo Jugador', url: '' }
     ]);
+
+    // Inicializar previsualizaciones si ya hay datos
+    this.syncPreviews();
 
     // Si ya tenemos permisos, capturamos ubicación automáticamente
     Promise.all([
       this.checkGeoPermission(),
       this.checkCameraPermission()
     ]).then(() => {
+      // Mostrar el modal de permisos si faltan
+      this.checkPermissionsOnboarding();
+
       if (this.hasGeoPermission && !this.isEditMode) {
-        console.log('[GPS] Permiso detectado, capturando ubicación...');
-        this.captureLocation();
+        console.log('[GPS] Permiso detectado, capturando ubicación silenciosamente...');
+        this.captureLocation(true); // Modo silencioso al cargar
       }
     });
 
@@ -327,7 +351,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   /**
    * Lógica de onboarding de permisos con recordatorio de 24h
    */
-  private async checkPermissionsOnboarding() {
+  public async checkPermissionsOnboarding() {
     console.log('[ADD-PLAYER] Verificando onboarding de permisos...');
     const lastPrompt = localStorage.getItem('last_permission_prompt_add_player');
     const now = Date.now();
@@ -379,6 +403,18 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       const { data } = await modal.onWillDismiss();
       console.log('[ADD-PLAYER] Modal cerrado con data:', data);
       localStorage.setItem('last_permission_prompt_add_player', now.toString());
+
+      // REFRESCAR TARJETAS: Actualizamos el estado tras cerrar el modal
+      await Promise.all([
+        this.checkGeoPermission(),
+        this.checkCameraPermission()
+      ]);
+
+      // Si concedió GPS desde el modal y no hay ubicación previa, la capturamos
+      if (this.hasGeoPermission && !this.isEditMode && !this.hasLocation) {
+        this.captureLocation(true);
+      }
+
     } catch (error) {
       console.error('[ADD-PLAYER] ERROR FATAL al abrir modal:', error);
     }
@@ -417,6 +453,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
           setTimeout(() => this.initMap(), 500);
         }
         loading.dismiss();
+        this.syncPreviews();
       },
       error: () => {
         this.showToast('Error al cargar el jugador', 'danger');
@@ -434,24 +471,52 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     const granted = await this.locationPlugin.requestGeolocationPermission();
     this.hasGeoPermission = granted;
     if (granted) {
+      this.cdr.detectChanges();
       this.showToast('¡Permisos de ubicación activos!', 'success', 'shield-checkmark-outline');
       await this.captureLocation();
-    } else {
-      this.showToast('¡GPS bloqueado! Usa el candado del navegador.', 'danger', 'lock-closed-outline');
     }
   }
 
   async requestCameraPermission() {
     try {
-      const result = await this.cameraPlugin.requestCameraPermission();
+      let result = false;
+      try {
+        result = await this.cameraPlugin.requestCameraPermission();
+      } catch (capacitorError: any) {
+        // Fallback for Web (si Capacitor falla por estar en navegador)
+        if (navigator.mediaDevices) {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          stream.getTracks().forEach(track => track.stop());
+          result = true;
+        } else {
+          throw capacitorError;
+        }
+      }
+
       this.hasCameraPermission = result;
       if (result) {
         this.showToast('¡Permisos de cámara activos!', 'success', 'camera-outline');
       } else {
         this.showToast('¡Cámara bloqueada! Usa el candado del navegador.', 'danger', 'lock-closed-outline');
       }
+      return result;
     } catch (e) {
-      console.error('Error al solicitar permiso de cámara:', e);
+      console.warn('Cámara bloqueada o no disponible:', e);
+      this.showToast('¡Cámara bloqueada! Usa el candado del navegador.', 'danger', 'lock-closed-outline');
+      return false;
+    }
+  }
+
+  async handleCameraToggle(event: any) {
+    const isChecked = event.detail.checked;
+
+    if (isChecked && !this.hasCameraPermission) {
+      const granted = await this.requestCameraPermission();
+      if (!granted && event.target) {
+        event.target.checked = false; // Reset visual si se rechaza o bloquea
+      }
+    } else if (!isChecked && this.hasCameraPermission) {
+      this.hasCameraPermission = false;
     }
   }
 
@@ -463,29 +528,79 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     }
   }
 
-  async handlePermissionToggle(event: any) {
-    const isChecked = event.detail.checked;
+  async handlePermissionToggle() {
+    this.isCapturingLocation = true;
+    this.cdr.detectChanges();
 
-    // Si el usuario lo activa y no tenemos permiso aún
-    if (isChecked && !this.hasGeoPermission) {
-      const granted = await this.locationPlugin.requestGeolocationPermission();
+    try {
+      // 1. Disparamos el prompt del navegador
+      navigator.geolocation.getCurrentPosition(
+        () => { /* Se maneja en la lógica de estado abajo */ },
+        () => { /* Se maneja en la lógica de estado abajo */ },
+        { timeout: 15000 }
+      );
 
-      if (granted) {
-        this.hasGeoPermission = true;
-        this.showToast('¡Permisos de ubicación activos!', 'success', 'shield-checkmark-outline');
-        await this.captureLocation();
-      } else {
-        this.hasGeoPermission = false;
-        this.showToast('¡GPS bloqueado! Usa el candado del navegador.', 'danger', 'lock-closed-outline');
-        // Forzamos el reset visual del toggle
-        if (event.target) {
-          event.target.checked = false;
+      // 2. Intentamos usar la Permissions API para esperar el cambio
+      if (navigator.permissions) {
+        try {
+          const status = await navigator.permissions.query({ name: 'geolocation' as any });
+
+          if (status.state === 'prompt') {
+            // Esperamos a que cambie (el usuario haga clic)
+            await new Promise<void>((resolve) => {
+              const onChange = () => {
+                status.removeEventListener('change', onChange);
+                resolve();
+              };
+              status.addEventListener('change', onChange);
+              setTimeout(resolve, 15000);
+            });
+          }
+          
+          const finalStatus = await navigator.permissions.query({ name: 'geolocation' as any });
+          
+          this.ngZone.run(async () => {
+            this.hasGeoPermission = finalStatus.state === 'granted';
+            this.isCapturingLocation = false;
+            if (this.hasGeoPermission) {
+              this.showToast('¡Permisos de ubicación activos!', 'success', 'shield-checkmark-outline');
+              await this.captureLocation();
+            }
+            this.cdr.detectChanges();
+          });
+          return;
+        } catch (e) {
+          // Fallback
         }
       }
-    } else if (!isChecked && this.hasGeoPermission) {
-      // Si el usuario apaga el GPS manualmente, ocultamos el mapa
-      this.hasLocation = false;
-      this.hasGeoPermission = false;
+
+      // Fallback para navegadores sin Permissions API
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      navigator.geolocation.getCurrentPosition(
+        async () => {
+          this.ngZone.run(async () => {
+            this.hasGeoPermission = true;
+            this.isCapturingLocation = false;
+            this.showToast('¡Permisos de ubicación activos!', 'success', 'shield-checkmark-outline');
+            await this.captureLocation();
+            this.cdr.detectChanges();
+          });
+        },
+        () => {
+          this.ngZone.run(() => {
+            this.hasGeoPermission = false;
+            this.isCapturingLocation = false;
+            this.cdr.detectChanges();
+          });
+        },
+        { timeout: 5000 }
+      );
+
+    } catch (error) {
+      this.ngZone.run(() => {
+        this.isCapturingLocation = false;
+        this.cdr.detectChanges();
+      });
     }
   }
 
@@ -497,12 +612,15 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   segmentChanged(event: any) {
     this.entryMode = event.detail.value;
 
-    // Si cambiamos a manual, reseteamos los valores de búsqueda de IA
+    // Si cambiamos a manual, reseteamos los valores de búsqueda de IA y lanzamos onboarding si hace falta
     if (this.entryMode === 'manual') {
       this.apiSearchQuery = '';
       this.apiResults = [];
       this.selectedApiPlayers = [];
       this.currentPage = 1;
+
+      // Lanzamos onboarding solo aquí para no molestar en la búsqueda inicial
+      this.checkPermissionsOnboarding();
     }
   }
 
@@ -646,18 +764,27 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
 
   async importSelectedPlayers() {
     if (this.selectedApiPlayers.length === 0) return;
+    if (!this.hasLocation || !this.player.location?.coordinates) {
+      this.showToast('Activa el GPS antes de guardar jugadores.', 'warning', 'navigate-outline');
+      return;
+    }
 
     this.isImporting = true;
 
-    // 1. Asegurar ubicación antes de la importación masiva
-    if (!this.player.location || !this.player.location.coordinates || (this.player.location.coordinates[0] === 0 && this.player.location.coordinates[1] === 0)) {
-      await this.captureLocation();
-    }
+    // Construir el payload GeoJSON explícito para la BD
+    const locationPayload = {
+      type: 'Point' as const,
+      coordinates: [
+        this.player.location.coordinates[0], // lng
+        this.player.location.coordinates[1]  // lat
+      ]
+    };
+    console.log('[ADD-PLAYER] Ubicación GeoJSON a adjuntar:', JSON.stringify(locationPayload));
 
-    // 2. Preparar los datos con ubicación y user_id
+    // Preparar los datos con ubicación y user_id
     const playersToImport = this.getSelectedPlayersArray().map(p => ({
       ...p,
-      location: this.player.location,
+      location: locationPayload,
       user_id: this.player.user_id
     }));
 
@@ -670,10 +797,10 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         this.confettiService.celebrate();
         const count = playersToImport.length;
         this.showToast(
-          count === 1 
-            ? 'Se ha registrado el jugador con éxito' 
-            : `Se han registrado ${count} jugadores con éxito`, 
-          'success', 
+          count === 1
+            ? 'Se ha registrado el jugador con éxito'
+            : `Se han registrado ${count} jugadores con éxito`,
+          'success',
           'checkmark-circle-outline'
         );
         setTimeout(() => this.navCtrl.back(), 1500);
@@ -682,39 +809,21 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         this.isImporting = false;
         const count = playersToImport.length;
         this.showToast(
-          count === 1 
-            ? 'Error al registrar el jugador' 
-            : 'Error al registrar los jugadores', 
-          'danger', 
+          count === 1
+            ? 'Error al registrar el jugador'
+            : 'Error al registrar los jugadores',
+          'danger',
           'alert-circle-outline'
         );
       }
     });
   }
 
-  async takePhoto() {
-    try {
-      const photo = await this.cameraPlugin.takePhoto();
-      if (photo && photo.webPath) {
-        this.previewImage = photo.webPath;
-        if (this.player.images) {
-          this.player.images.thumb = photo.webPath;
-        }
 
-        const response = await fetch(photo.webPath);
-        const blob = await response.blob();
-        this.selectedFile = new File([blob], `player_${Date.now()}.jpg`, { type: 'image/jpeg' });
-
-        this.showToast('Foto capturada con éxito', 'success', 'checkmark-circle-outline');
-      }
-    } catch (error) {
-      console.error('Error al capturar foto:', error);
-      this.showToast('No se pudo abrir la cámara o galería', 'danger', 'alert-circle-outline');
-    }
-  }
-
-  async captureLocation() {
+  async captureLocation(silent: boolean = false) {
+    if (this.isCapturingLocation) return;
     this.isCapturingLocation = true;
+
     try {
       const pos = await this.locationPlugin.getCurrentPosition();
       console.log('[GPS] Ubicación capturada:', pos);
@@ -730,15 +839,18 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
 
       this.hasLocation = true;
       this.isCapturingLocation = false;
+      this.cdr.detectChanges();
 
       // Esperar a que el *ngIf de Angular pinte el div#player-map
       setTimeout(() => {
         this.initMap();
       }, 500);
-    } catch (error) {
-      console.error('[GPS] Error:', error);
+    } catch (error: any) {
       this.isCapturingLocation = false;
-      this.showToast('No se pudo obtener la ubicación precisa', 'warning');
+
+      // Si el navegador deniega la ubicación, reseteamos el estado visual
+      this.hasGeoPermission = false;
+      this.hasLocation = false;
     }
   }
 
@@ -767,40 +879,120 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         type: 'Point',
         coordinates: [position.lng, position.lat]
       };
-      this.showToast('Ubicación ajustada', 'success', 'resize-outline');
+      this.updateAddress();
     });
+
+    // Carga inicial de dirección
+    this.updateAddress();
   }
 
-  onFileSelected(event: any) {
+  updateAddress() {
+    if (this.player.location?.coordinates) {
+      this.isRevGeocoding = true;
+      const [lng, lat] = this.player.location.coordinates;
+      this.playerService.reverseGeocode(lat, lng).subscribe({
+        next: (addr) => {
+          this.currentAddress = addr;
+          this.isRevGeocoding = false;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.currentAddress = 'Ubicación seleccionada';
+          this.isRevGeocoding = false;
+          this.cdr.detectChanges();
+        }
+      });
+    }
+  }
+
+  hasAnyImage(): boolean {
+    if (this.player.image_url) return true;
+    if (this.player.images) {
+      return Object.values(this.player.images).some(v => !!v);
+    }
+    return false;
+  }
+
+  clearAllImages() {
+    this.player.image_url = '';
+    if (this.player.images) {
+      Object.keys(this.player.images).forEach(k => {
+        (this.player.images as any)[k] = '';
+      });
+    }
+    this.previewImage = null;
+    this.syncPreviews();
+    this.cdr.detectChanges();
+    this.showToast('Multimedia limpiada', 'success', 'trash-outline');
+  }
+
+  clearSelection() {
+    this.selectedApiPlayers = [];
+    this.cdr.detectChanges();
+    this.showToast('Selección limpiada', 'success', 'trash-outline');
+  }
+
+  updatePlayerImage(key: string, value: string) {
+    if (key === 'image_url') {
+      this.player.image_url = value;
+    } else if (this.player.images) {
+      (this.player.images as any)[key] = value;
+    }
+  }
+
+  getPlayerImage(key: string): string {
+    if (key === 'image_url') return this.player.image_url || '';
+    return (this.player.images as any)?.[key] || '';
+  }
+
+  syncPreviews() {
+    this.previews['image_url'] = this.player.image_url || null;
+    if (this.player.images) {
+      Object.keys(this.player.images).forEach(k => {
+        this.previews[k] = (this.player.images as any)[k] || null;
+      });
+    }
+  }
+
+  async onFileSelected(event: any, key: string = 'image_url') {
     const file = event.target.files[0];
     if (file) {
-      // Validación de tamaño (100KB = 100 * 1024 bytes) como en noticias
-      const maxSize = 100 * 1024;
-      if (file.size > maxSize) {
-        this.showToast('La imagen es demasiado pesada. Máximo 100KB', 'danger', 'alert-circle-outline');
-        event.target.value = '';
+      if (file.size > 102400) { // 100KB
+        this.showToast('La imagen supera los 100KB', 'danger');
         return;
       }
 
-      this.selectedFile = file;
       const reader = new FileReader();
-      reader.onload = () => {
-        this.previewImage = reader.result as string;
-        if (this.player.images) {
-          this.player.images.thumb = reader.result as string;
-        }
+      reader.onload = (e: any) => {
+        const base64 = e.target.result;
+        this.updatePlayerImage(key, base64);
+        this.previews[key] = base64;
       };
       reader.readAsDataURL(file);
     }
   }
 
-  removeImage() {
-    this.previewImage = null;
-    this.selectedFile = null;
-    this.player.image_url = '';
-    if (this.player.images) {
-      this.player.images.thumb = '';
+  async takePhoto(key: string = 'image_url') {
+    if (!this.hasCameraPermission) {
+      this.checkPermissionsOnboarding();
+      return;
     }
+
+    try {
+      const photo = await this.cameraPlugin.takePhoto();
+      if (photo) {
+        const base64 = `data:image/jpeg;base64,${photo.base64String}`;
+        this.updatePlayerImage(key, base64);
+        this.previews[key] = base64;
+      }
+    } catch (e) {
+      console.error('Error al tomar foto:', e);
+    }
+  }
+
+  removeImage(key: string = 'image_url') {
+    this.updatePlayerImage(key, '');
+    this.previews[key] = null;
   }
   async onSave() {
     if (!this.player.name || !this.player.team) {
@@ -825,7 +1017,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       mode: 'ios'
     });
     await loading.present();
-
+    console.log('[FRONTEND] Guardando jugador con location:', this.player.location);
     this.isPublishing = true;
 
     this.playerService.savePlayer(this.playerId, this.player, this.selectedFile, this.initialPreviewImage as string | null).subscribe({

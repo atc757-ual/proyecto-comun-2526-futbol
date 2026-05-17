@@ -4,12 +4,16 @@ import { Auth } from '@angular/fire/auth';
 import { environment } from '../../../environments/environment';
 import { StorageService } from './storage.service';
 import { firstValueFrom, map, Observable, switchMap, take, catchError, of, throwError } from 'rxjs';
+import { INewsService } from './news.service.interface';
 
 import { NewsItem } from '../models/news.model';
 export { NewsItem };
 
+/**
+ * Implementación del servicio de noticias para el Backend en Node.js (Express/CORBA Bridge)
+ */
 @Injectable({ providedIn: 'root' })
-export class NewsService {
+export class NodeNewsService implements INewsService {
   private http = inject(HttpClient);
   private auth = inject(Auth);
   private apiUrl = environment.nodeApiUrl + '/news';
@@ -29,7 +33,6 @@ export class NewsService {
     return this.http.get<any>(`${this.apiUrl}?all=true`, { headers }).pipe(
       map(response => {
         const processed = (response.data || []).map((n: any) => this.mapToNews(n));
-        localStorage.setItem('cached_news_admin', JSON.stringify(processed));
         return processed;
       }),
       catchError((err: any) => {
@@ -51,12 +54,10 @@ export class NewsService {
     return this.http.get<any>(this.feedUrl, { headers }).pipe(
       map(response => {
         const processed = (response.data || []).map((n: any) => this.mapToNews(n));
-        localStorage.setItem('cached_news_feed', JSON.stringify(processed));
         return processed;
       }),
       catchError(() => {
-        const cached = localStorage.getItem('cached_news_feed');
-        return of(cached ? JSON.parse(cached) : []);
+        return of([]);
       })
     );
   }
@@ -113,13 +114,7 @@ export class NewsService {
     return this.http.get<any>(`${this.apiUrl}/${id}`, { headers }).pipe(
       map(response => this.mapToNews(response.data)),
       catchError((err: any) => {
-        console.warn(`[NewsService] Error al obtener noticia ${id}, buscando en caché local...`);
-        const cachedStr = localStorage.getItem('cached_news_admin');
-        if (cachedStr) {
-          const cachedNews: NewsItem[] = JSON.parse(cachedStr);
-          const found = cachedNews.find(n => n.id === id || (n as any)._id === id);
-          if (found) return of(this.mapToNews(found));
-        }
+        console.warn(`[NewsService] Error al obtener noticia ${id}`);
         return of(null);
       })
     );

@@ -7,7 +7,11 @@ const ctrlAI = require('../controllers/ai'); // Nuevo controlador de IA
 const ctrlExternal = require('../controllers/external.controller'); // Nuevo controlador de API externa
 const ctrlNews = require('../controllers/news'); // Controlador de noticias persistentes
 const ctrlPublicComments = require('../controllers/public-comments'); // Nuevo controlador público
+const ctrlGeocoding = require('../controllers/geocoding'); // Nuevo controlador de geocoding
 const { authorizeRequest, isAdmin, isMaster } = require('../middleware/auth.middleware');
+
+// --- RUTAS DE GEOCODING ---
+router.get('/geo', ctrlGeocoding.reverseGeocode);
 
 // ... (en la sección de comentarios públicos)
 
@@ -256,15 +260,16 @@ router.post('/ai/analyze', authorizeRequest, ctrlAI.analyzeMyTeam);
  *     security:
  *       - bearerAuth: []
  */
-router.get('/external/tsdb/search', authorizeRequest, ctrlExternal.searchTSDBPlayers);
-router.get('/external/tsdb/search-teams', authorizeRequest, ctrlExternal.searchTSDBTeams);
-router.get('/external/tsdb/search-players-team', authorizeRequest, ctrlExternal.searchTSDBPlayersByTeam);
-router.get('/external/tsdb/team-players/:id', authorizeRequest, ctrlExternal.getTSDBPlayersByTeam);
-router.get('/external/tsdb/player/:id', authorizeRequest, ctrlExternal.getTSDBPlayerDetails);
-router.get('/external/tsdb/team/:id', authorizeRequest, ctrlExternal.getTSDBTeamDetails);
-router.get('/external/tsdb/leagues', authorizeRequest, ctrlExternal.getTSDBLeagues);
-router.get('/external/tsdb/search-leagues', authorizeRequest, ctrlExternal.searchTSDBLeagues);
-router.get('/external/tsdb/tv-country/:country', authorizeRequest, ctrlExternal.getTSDBTVByCountry);
+router.get('/external/tsdb/search', ctrlExternal.searchTSDBPlayers);
+router.get('/external/tsdb/search-teams', ctrlExternal.searchTSDBTeams);
+router.get('/external/tsdb/search-players-team', ctrlExternal.searchTSDBPlayersByTeam);
+router.get('/external/tsdb/team-players/:id', ctrlExternal.getTSDBPlayersByTeam);
+router.get('/external/tsdb/player/:id', ctrlExternal.getTSDBPlayerDetails);
+router.get('/external/tsdb/team/:id', ctrlExternal.getTSDBTeamDetails);
+router.get('/external/tsdb/leagues', ctrlExternal.getTSDBLeagues);
+router.get('/external/tsdb/league/:id', ctrlExternal.getTSDBLeagueDetails);
+router.get('/external/tsdb/search-leagues', ctrlExternal.searchTSDBLeagues);
+router.get('/external/tsdb/tv-country/:country', ctrlExternal.getTSDBTVByCountry);
 
 /**
  * @openapi
@@ -274,10 +279,10 @@ router.get('/external/tsdb/tv-country/:country', authorizeRequest, ctrlExternal.
  *     security:
  *       - bearerAuth: []
  */
-router.get('/external/tsdb/live', authorizeRequest, ctrlExternal.getTSDBLiveScores);
-router.get('/external/tsdb/teams-by-league/:id', authorizeRequest, ctrlExternal.getTSDBTeamsByLeague);
-router.get('/external/tsdb/player-teams/:id', authorizeRequest, ctrlExternal.getTSDBPlayerTeams);
-router.get('/external/tsdb/player-honours/:id', authorizeRequest, ctrlExternal.getTSDBPlayerHonours);
-router.get('/external/tsdb/player-milestones/:id', authorizeRequest, ctrlExternal.getTSDBPlayerMilestones);
+router.get('/external/tsdb/live', ctrlExternal.getTSDBLiveScores);
+router.get('/external/tsdb/teams-by-league/:id', ctrlExternal.getTSDBTeamsByLeague);
+router.get('/external/tsdb/player-teams/:id', ctrlExternal.getTSDBPlayerTeams);
+router.get('/external/tsdb/player-honours/:id', ctrlExternal.getTSDBPlayerHonours);
+router.get('/external/tsdb/player-milestones/:id', ctrlExternal.getTSDBPlayerMilestones);
 
 module.exports = router;

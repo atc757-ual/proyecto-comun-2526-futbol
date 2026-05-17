@@ -4,8 +4,8 @@ import { FormsModule } from '@angular/forms';
 import {
   IonItem, IonLabel, IonThumbnail,
   IonIcon, IonButton, IonSkeletonText, IonSearchbar, IonSpinner,
-  ToastController, IonCardTitle,
-  NavController, IonCard, IonCardContent, ModalController, IonCardHeader
+  IonCard, IonCardContent, IonCardHeader, IonCardTitle,
+  ToastController, NavController, ModalController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -16,12 +16,13 @@ import {
   cloudUploadOutline, chevronDownOutline, chevronUpOutline,
   documentTextOutline, downloadOutline
 } from 'ionicons/icons';
-import { NewsService, NewsItem } from '../../../core/services/news.service';
+import { NewsItem } from '../../../core/models/news.model';
 import { StorageService } from '../../../core/services/storage.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { LayoutService } from 'src/app/core/services/layout.service';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 import { RouterModule } from '@angular/router';
+import { NEWS_SERVICE_TOKEN } from '../../../core/services/news.service.token';
 
 @Component({
   selector: 'app-manage-news',
@@ -30,13 +31,20 @@ import { RouterModule } from '@angular/router';
   standalone: true,
   imports: [
     CommonModule, FormsModule, RouterModule,
-    IonItem,
-    IonLabel, IonThumbnail, IonIcon, IonButton,
-    IonSkeletonText, IonSearchbar, IonSpinner,
+    IonItem, IonLabel, IonThumbnail,
+    IonIcon, IonButton, IonSkeletonText, IonSearchbar, IonSpinner,
     IonCard, IonCardContent, IonCardHeader, IonCardTitle
   ]
 })
 export class ManageNewsPage implements OnInit {
+  private newsService = inject(NEWS_SERVICE_TOKEN);
+  private storageService = inject(StorageService);
+  private authService = inject(AuthService);
+  private layoutService = inject(LayoutService);
+  private modalCtrl = inject(ModalController);
+  private toastCtrl = inject(ToastController);
+  private navCtrl = inject(NavController);
+
   news: NewsItem[] = [];
   filteredNews: NewsItem[] = [];
   isLoading = true;
@@ -47,23 +55,14 @@ export class ManageNewsPage implements OnInit {
   itemsPerPage = 5;
   totalPages = 1;
   pagedNews: NewsItem[] = [];
-  
+
   // Carga Masiva
   showBulkPanel = false;
   isUploadingBulk = false;
   selectedBulkFile: File | null = null;
   bulkFileName = '';
 
-  private storageService = inject(StorageService);
-  private authService = inject(AuthService);
-  private layoutService = inject(LayoutService);
-
-  constructor(
-    private newsService: NewsService,
-    private modalCtrl: ModalController,
-    private toastCtrl: ToastController,
-    private navCtrl: NavController
-  ) {
+  constructor() {
     addIcons({
       createOutline, trashOutline, eyeOutline,
       newspaperOutline, alertCircleOutline, searchOutline,
@@ -222,11 +221,11 @@ export class ManageNewsPage implements OnInit {
 
     this.isUploadingBulk = true;
     const reader = new FileReader();
-    
+
     reader.onload = (e: any) => {
       try {
         let json = JSON.parse(e.target.result);
-        
+
         // Si no es un array, lo convertimos en uno de un solo elemento para compatibilidad
         if (!Array.isArray(json)) {
           json = [json];
@@ -253,7 +252,7 @@ export class ManageNewsPage implements OnInit {
         this.showToast('El archivo no tiene un formato JSON válido', 'danger', 'close-circle-outline');
       }
     };
-    
+
     reader.readAsText(this.selectedBulkFile);
   }
 
@@ -273,7 +272,7 @@ export class ManageNewsPage implements OnInit {
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
-    
+
     this.showToast('Exportación completada', 'success', 'checkmark-circle-outline');
   }
 

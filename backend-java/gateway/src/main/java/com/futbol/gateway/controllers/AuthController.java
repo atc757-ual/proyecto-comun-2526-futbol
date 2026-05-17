@@ -43,13 +43,24 @@ public class AuthController {
             User user;
             
             if (userOpt.isEmpty()) {
-                // Registro inicial
-                user = new User();
-                user.setFirebaseUid(uid);
-                user.setEmail(email);
-                user.setName(name != null ? name : email.split("@")[0]);
-                user.setRole(isAdmin ? "admin" : "user");
-                userRepository.save(user);
+                // Buscar por email como fallback (por si se creó por otra vía y aún no tiene el firebaseUid actualizado)
+                Optional<User> userByEmailOpt = userRepository.findByEmail(email);
+                
+                if (userByEmailOpt.isPresent()) {
+                    user = userByEmailOpt.get();
+                    user.setFirebaseUid(uid);
+                    user.setName(name != null ? name : user.getName());
+                    user.setRole(isAdmin ? "admin" : "user");
+                    userRepository.save(user);
+                } else {
+                    // Registro inicial
+                    user = new User();
+                    user.setFirebaseUid(uid);
+                    user.setEmail(email);
+                    user.setName(name != null ? name : email.split("@")[0]);
+                    user.setRole(isAdmin ? "admin" : "user");
+                    userRepository.save(user);
+                }
             } else {
                 // Actualizar datos existentes
                 user = userOpt.get();

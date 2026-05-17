@@ -1,6 +1,7 @@
 export const environment = {
   production: true,
   nodeApiUrl: '/node-api',
+  javaApiUrl: '/java-api',
   corbaApiUrl: '/corba-api',
   firebaseConfig: {
     apiKey: "AIzaSyAC7hh8gwRLaqdfHCN04DSDBiv8nsLWx30",
@@ -10,5 +11,6 @@ export const environment = {
     messagingSenderId: "1085547830836",
     appId: "1:1085547830836:web:1452a0b0e687315cfc3461",
     measurementId: "G-VGXNVZRTL8"
-  }
+  },
+  useJavaBackend: true
 };

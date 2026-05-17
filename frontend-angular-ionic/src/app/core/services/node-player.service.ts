@@ -1,18 +1,22 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, firstValueFrom } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, of, firstValueFrom, throwError } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { StorageService } from './storage.service';
 import { AuthService } from './auth.service';
 
 import { Player } from '../models/player.model';
+import { IPlayerService } from './player.service.interface';
 export { Player };
 
+/**
+ * Implementación del servicio de jugadores para el Backend en Node.js (Express/MongoDB)
+ */
 @Injectable({
   providedIn: 'root'
 })
-export class PlayerService {
+export class NodePlayerService implements IPlayerService {
   private storageService = inject(StorageService);
   private authService = inject(AuthService);
 
@@ -292,6 +296,24 @@ export class PlayerService {
     );
   }
 
+  reverseGeocode(lat: number, lng: number): Observable<string> {
+    const url = `${environment.nodeApiUrl}/geo`;
+    console.log(`[PLAYER-SERVICE] Consultando geocoding para: ${lat}, ${lng}`);
+    
+    return this.http.get<any>(url, {
+      params: { lat, lng }
+    }).pipe(
+      map(res => {
+        console.log('[PLAYER-SERVICE] Respuesta recibida:', res);
+        return res.data?.displayAddress || 'Ubicación desconocida';
+      }),
+      catchError((err: any) => {
+        console.error('[PLAYER-SERVICE] Error en petición de geocoding:', err);
+        return throwError(() => err);
+      })
+    );
+  }
+
   // --- MAPPER CENTRALIZADO ---
   mapTSDBToPlayer(details: any, apiPlayer?: any): any {
     if (!details) return null;
@@ -306,6 +328,7 @@ export class PlayerService {
       image_url: details.strThumb || apiPlayer?.image_url,
       external_id: details.idPlayer || apiPlayer?.externalId,
       is_manual: false,
+      location: apiPlayer?.location,
       secondary_team: details.strTeam2,
       summary: details.strDescriptionES || details.strDescriptionEN || '',
       birth_date: details.dateBorn,
@@ -331,11 +354,8 @@ export class PlayerService {
       },
       images: {
         thumb: details.strThumb,
-        poster: details.strPoster,
         cutout: details.strCutout,
-        cartoon: details.strCartoon,
-        banner: details.strBanner,
-        render: details.strRender || apiPlayer?.strRender
+        banner: details.strBanner
       }
     };
 

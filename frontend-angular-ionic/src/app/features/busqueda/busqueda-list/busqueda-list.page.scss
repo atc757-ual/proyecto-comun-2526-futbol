@@ -68,7 +68,7 @@
     &.is-active {
       --background: var(--blue-primary-010);
       --color: var(--color-primary);
-      border: 1px solid var(--color-primary-020);
+      border: 1px solid var(--color-primary-025);
 
       ion-icon {
         color: var(--color-primary);
@@ -184,7 +184,7 @@
   ion-chip {
     margin: 0;
     --background: var(--blue-primary-010);
-    border: 1px solid var(--color-primary-020);
+    border: 1px solid var(--color-primary-025);
 
     ion-label {
       font-weight: var(--fw-bold);
@@ -551,4 +551,79 @@
     color: var(--red-100);
     line-height: 1.3;
   }
+}
+
+/* --- GPS PERMISSION CARD --- */
+.permission-item-row {
+  background: var(--color-neutral-1);
+  border-radius: var(--border-radius-soft);
+  border: 1px solid var(--color-neutral-2);
+  transition: all 0.3s ease;
+  padding: var(--space-s);
+  display: flex;
+  align-items: center;
+
+  &.bg-permission-active {
+    background: var(--color-success-010);
+    border-color: var(--color-success-100);
+  }
+
+  &.bg-permission-denied {
+    background: rgba(255, 68, 68, 0.05);
+    border-color: rgba(255, 68, 68, 0.3);
+  }
+
+  &.bg-permission-info {
+    background: var(--blue-primary-010);
+    border-color: var(--color-primary);
+  }
+
+  ion-icon[slot="start"] {
+    margin-right: 12px;
+
+    &.pulse-animation {
+      animation: pulse-ring 2s infinite ease-in-out;
+    }
+  }
+}
+
+.action-btn-mini {
+  margin-top: var(--space-base)
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.9);
+    filter: drop-shadow(0 0 0 rgba(56, 128, 255, 0.7));
+  }
+
+  70% {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 12px rgba(56, 128, 255, 0));
+  }
+
+  100% {
+    transform: scale(0.9);
+    filter: drop-shadow(0 0 0 rgba(56, 128, 255, 0));
+  }
+}
+
+/* --- MAPA MINI (BUSQUEDA) --- */
+.map-container-wrapper {
+  border: 1px solid var(--blue-primary-025);
+  border-radius: var(--space-s);
+  overflow: hidden;
+  background: var(--color-white);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+}
+
+.mini-scouting-map {
+  height: 180px;
+  width: 100%;
+  z-index: 1;
+}
+
+.map-info-footer {
+  background: var(--color-neutral-010);
+  border-top: 1px solid var(--color-neutral-2);
 }

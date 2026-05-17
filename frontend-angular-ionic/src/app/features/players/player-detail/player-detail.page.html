@@ -31,7 +31,15 @@
 
   <div class="row fl-col-rev-sm">
     <!-- COLUMNA IZQUIERDA (8): Toda la Info y Comentarios -->
-    <div class="col-8 col-md-12 pr-base px-0-sm">
+    <div class="col-8 col-md-12 mr-base mx-0-sm">
+
+      <!-- BANNER DE DASHBOARD (NUEVO) -->
+      <div class="dashboard-hero-banner mb-base animate-fade-in" *ngIf="player.images?.banner">
+        <img [src]="player.images?.banner" alt="Banner Dashboard">
+        <div class="banner-overlay"></div>
+        <div class="banner-content">
+        </div>
+      </div>
 
       <!-- DASHBOARD TÉCNICO -->
       <div class="stats-dashboard" (scroll)="onStatScroll($event)" (mousedown)="onMouseDown($event)"
@@ -93,7 +101,6 @@
         <ion-card-content class="p-base">
           <div class="d-flex fl-align-center mb-base">
             <span class="fs-16 f-bold text-neutral-8 pr-s ls-1">Biografía</span>
-            <ion-badge color="light" mode="ios" class="text-primary ml-auto py-xs px-s f-bold fs-12">OFICIAL</ion-badge>
           </div>
           <div class="bio-wrapper" [class.expanded]="isSummaryExpanded">
             <p class="bio-text m-0 lh-1-6">{{ player.summary || 'No hay descripción disponible.' }}</p>
@@ -223,53 +230,53 @@
 
           <div class="community-container-v">
             <!-- FORMULARIO INLINE PREMIUM (SOLO SI TIENE PERMISO) -->
-            <div class="new-comment-form shadow-sm p-base border-radius-soft animate-fade-in" *ngIf="hasGeoPermission()">
-              
+            <div class="new-comment-form border-radius-soft animate-fade-in" *ngIf="hasGeoPermission()">
 
-              <div class="form-inline-grid">
-                <!-- COLUMNA IZQUIERDA: IDENTIDAD Y RATING -->
-                <div class="form-identity">
-                  <div class="editor-header d-flex fl-align-center mb-base">
-                    <span class="fs-16 f-bold text-neutral-8 pr-s ls-1">¿Cómo lo valoras?</span>
-                    <div class="rating-stars-input">
-                      <ion-icon *ngFor="let i of [1,2,3,4,5]" [name]="i <= newRating ? 'star' : 'star-outline'"
-                        [class.active]="i <= newRating" (click)="setRating(i)"></ion-icon>
-                    </div>
+
+              <div class="compact-comment-form animate-fade-in">
+                <!-- CABECERA: RATING + TAG -->
+                <div class="d-flex fl-align-center mb-base">
+                  <span class="f-medium fs-12 text-neutral-8 pr-s">Rating:</span>
+                  <div class="rating-stars-input">
+                    <ion-icon *ngFor="let i of [1,2,3,4,5]" [name]="i <= newRating ? 'star' : 'star-outline'"
+                      [class.active]="i <= newRating" (click)="setRating(i)"></ion-icon>
                   </div>
-
-                  <div class="d-flex fs-16 f-medium fl-align-center gap-s">
-                    <ion-avatar class="mini-avatar-form shadow-sm">
-                      <img src="https://ui-avatars.com/api/?name={{authService.userData()?.name || 'U'}}&background=002eff&color=fff" />
-                    </ion-avatar>
-                    {{authService.userData()?.name || 'Usuario'}}
+                  <div class="verified-geo-badge m-0 ml-auto d-flex fl-align-center gap-xs" *ngIf="hasGeoPermission()">
+                    <span>Ubicación verificada</span>
+                    <ion-icon name="checkmark-circle" class="text-success"></ion-icon>
                   </div>
                 </div>
 
-                <div class="form-actions">
-                  <ion-button [disabled]="!newComment.trim() || isSubmittingComment || newRating === 0"
-                    (click)="submitComment()" mode="ios" shape="round" class="futbol-btn-primary f-bold w-100">
+                <!-- CUERPO: TEXTAREA -->
+                <div class="mb-xs">
+                  <ion-textarea mode="md" fill="outline" label="Tu Opinión Técnica" labelPlacement="stacked"
+                    placeholder="Escribe aquí tu valoración técnica sobre el rendimiento del jugador..."
+                    class="futbol-input" [(ngModel)]="newComment" [counter]="true" maxlength="1000" rows="4"
+                    (ionFocus)="commentFocused = true" (ionBlur)="commentFocused = false"
+                    [class.is-focused]="commentFocused"
+                    [helperText]="userCoords() ? '📍 Ubicación verificada: ' + (userCoords()?.lat | number:'1.1-4') + ', ' + (userCoords()?.lng | number:'1.1-4') : '⏳ Capturando señal GPS...'">
+                  </ion-textarea>
+                </div>
+
+                <!-- ACCIÓN: BOTÓN Y FIRMA -->
+                <div class="d-flex fl-align-center fl-justify-between gap-s">
+                  <ion-button
+                    [disabled]="!newComment.trim() || !hasGeoPermission() || isSubmittingComment || newRating === 0"
+                    (click)="submitComment()" mode="ios" shape="round" class="futbol-btn-primary f-bold flex-grow-1 m-0"
+                    style="min-height: 42px;">
                     <ion-spinner name="crescent" *ngIf="isSubmittingComment" slot="start" size="small"></ion-spinner>
                     <span *ngIf="!isSubmittingComment">Publicar Opinión</span>
                     <span *ngIf="isSubmittingComment">Publicando...</span>
                     <ion-icon class="ml-s fs-20" name="paper-plane-outline" slot="end"
                       *ngIf="!isSubmittingComment"></ion-icon>
                   </ion-button>
-                </div>
 
-                <div class="form-opinion">
-                  <!-- Badge de Ubicación Verificada (Encima del Textarea) -->
-                  <div class="verified-geo-badge mb-s" *ngIf="hasGeoPermission()">
-                    <span>Ubicación verificada</span>
-                    <ion-icon name="checkmark-circle"></ion-icon>
+                  <div class="author-signature text-right pl-s">
+                    <span class="fs-10 text-neutral-5 d-block text-uppercase ls-1" style="white-space: nowrap;">Firma
+                      como</span>
+                    <span class="fs-12 f-bold text-primary" style="white-space: nowrap;">{{ getFormattedUserName()
+                      }}</span>
                   </div>
-
-                  <ion-textarea mode="md" label="Tu opinión" label-placement="stacked" fill="outline"
-                    placeholder="Escribe aquí tu opinión sobre el jugador..." class="futbol-input h-100"
-                    [(ngModel)]="newComment" [counter]="true" maxlength="1000" rows="7"
-                    (ionFocus)="commentFocused = true" (ionBlur)="commentFocused = false"
-                    [class.is-focused]="commentFocused">
-                    <ion-icon slot="start" name="analytics-outline" class="fs-16" aria-hidden="true"></ion-icon>
-                  </ion-textarea>
                 </div>
               </div>
             </div>
@@ -290,21 +297,20 @@
                   </div>
                 </div>
                 <div class="permission-action-side">
-                  <ion-button (click)="checkPermissionsOnboarding()" mode="ios" fill="solid" class="f-bold fs-12 px-s btn-white-bg" shape="round">
-                    <ion-icon slot="start" name="location-outline"></ion-icon>
-                    Autorizar Ubicación
+                  <ion-button (click)="checkPermissionsOnboarding()" mode="ios" fill="solid"
+                    class="f-bold fs-12 px-s btn-white-bg" shape="round" [disabled]="isRequestingPermission">
+                    <ion-spinner *ngIf="isRequestingPermission" name="crescent" slot="start" size="small"></ion-spinner>
+                    <ion-icon *ngIf="!isRequestingPermission" slot="start" name="location-outline"></ion-icon>
+                    {{ isRequestingPermission ? 'Procesando...' : 'Autorizar Ubicación' }}
                   </ion-button>
                 </div>
               </div>
             </div>
-
+            <div class="separatos my-s"></div>
             <!-- FEED DE COMENTARIOS (ANCHO COMPLETO) -->
-            <div class="community-feed-full mt-base">
+            <div class="community-feed-full">
               <div *ngIf="player.comments && player.comments.length > 0" class="d-flex fl-align-center mb-base">
-                <span class="fs-16 f-bold text-neutral-8 pr-s ls-1">Comentarios</span>
-                <ion-badge color="light" mode="ios" class="text-primary ml-auto py-xs px-s f-bold fs-18">
-                  {{ player.comments.length }}
-                </ion-badge>
+                <span class="fs-16 f-bold text-neutral-8 pr-s ls-1">Comentario ({{ player.comments.length }})</span>
               </div>
 
               <div class="empty-reports-state" *ngIf="!player.comments || player.comments.length === 0">
@@ -386,39 +392,56 @@
     </div>
 
     <!-- COLUMNA DERECHA (4): Perfil y Club -->
-    <div class="col-4 col-md-12 pl-base px-0-sm sticky-sidebar">
+    <div class="col-4 col-md-12 pl-base px-0-sm">
       <ion-card class="player-card mb-base overflow-hidden">
-        <div class="player-profile-sidebar">
-          <div class="player-hero-card side-version shadow-lg">
-            <div class="hero-bg-fallback">
-              <ion-icon name="person-outline"></ion-icon>
+        <div class="player-hero-container shadow-lg">
+          <!-- BOTÓN DE ACCIÓN (CROSS-FADE TRIGGER) -->
+          <div class="card-action-trigger" *ngIf="player.images?.cutout"
+            (click)="toggleCardView(); $event.stopPropagation()">
+            <ion-icon [name]="showCutout ? 'person-outline' : 'sync-outline'"></ion-icon>
+            <span>{{ showCutout ? 'VER PERFIL' : 'VER ACCIÓN' }}</span>
+          </div>
+
+          <!-- IMAGEN PRINCIPAL (CLUB - TEAM 1) -->
+          <div class="hero-image-wrapper" [class.is-hidden]="showCutout">
+            <div class="hero-bg" [style.background-image]="'url(' + (player.images?.cutout || player.image_url) + ')'">
             </div>
-            <div class="hero-bg" [style.background-image]="'url(' + player.image_url + ')'"></div>
-            <div class="hero-overlay"></div>
-            <div class="hero-content">
-              <div class="number-top-right">#{{ player.number || '00' }}</div>
-              <div class="info-bottom-left">
-                <h1 class="player-name-side">{{ player.name }}</h1>
-                <div class="position-badge mb-xs">{{ player.position }}</div>
-                <p class="player-team-side m-0">
-                  <ion-icon name="shield-outline" class="mr-xs"></ion-icon>
-                  {{ player.team }}
-                </p>
-              </div>
-              <div class="actions-bottom-right">
-                <button class="side-action-btn favorite" [class.active]="player.isFavorite"
-                  (click)="toggleFavorite($event)" *ngIf="isOwner">
-                  <ion-icon [name]="player.isFavorite ? 'heart' : 'heart-outline'"></ion-icon>
-                </button>
-                <button class="side-action-btn edit" [routerLink]="['/player-edit', player._id]"
-                  *ngIf="isAdmin || isOwner">
-                  <ion-icon name="create-outline"></ion-icon>
-                </button>
-                <button class="side-action-btn delete" (click)="deletePlayer()" *ngIf="isAdmin || isOwner">
-                  <ion-icon name="trash-outline"></ion-icon>
-                </button>
-              </div>
+          </div>
+
+          <!-- IMAGEN DE ACCIÓN (PAÍS - TEAM 2) -->
+          <div class="hero-image-wrapper cutout-wrapper" [class.is-visible]="showCutout">
+            <div class="hero-bg action-bg" [style.background-image]="'url(' + player.image_url + ')'"></div>
+          </div>
+
+          <div class="hero-overlay"></div>
+
+          <div class="hero-content">
+            <div class="number-top-right">#{{ player.number || '00' }}</div>
+            <div class="info-bottom-left">
+              <h1 class="player-name-side">{{ player.name }}</h1>
+              <div class="position-badge my-s">{{ showCutout ? (teamInfo2?.strTeam || 'NATIONAL TEAM') :
+                (teamInfo1?.strTeam || 'CLUB') }}</div>
+              <p class="player-team-side m-0">
+                <ion-icon name="shield-outline" class="mr-xs"></ion-icon>
+                {{ showCutout ? (teamInfo2?.strTeam || 'Argentina') : (teamInfo1?.strTeam || player.team) }}
+              </p>
             </div>
+          </div>
+
+          <!-- ACCIONES RÁPIDAS (MODO SIDEBAR) -->
+          <div class="actions-bottom-right">
+            <button class="side-action-btn favorite" [class.active]="player.isFavorite"
+              (click)="toggleFavorite($event); $event.stopPropagation()" *ngIf="isOwner">
+              <ion-icon [name]="player.isFavorite ? 'heart' : 'heart-outline'"></ion-icon>
+            </button>
+            <button class="side-action-btn edit" [routerLink]="['/player-edit', player._id]" *ngIf="isAdmin || isOwner"
+              (click)="$event.stopPropagation()">
+              <ion-icon name="create-outline"></ion-icon>
+            </button>
+            <button class="side-action-btn delete" (click)="deletePlayer(); $event.stopPropagation()"
+              *ngIf="isAdmin || isOwner">
+              <ion-icon name="trash-outline"></ion-icon>
+            </button>
           </div>
         </div>
 
@@ -460,30 +483,71 @@
         </ion-card-content>
       </ion-card>
 
-      <!-- INFO DEL CLUB -->
+      <!-- INFO DEL CLUB (SWIPER) -->
       <div class="mb-base" *ngIf="teamDetails.length > 0">
-        <div class="team-info-card player-card mb-base" *ngFor="let team of teamDetails">
-          <div class="team-banner"
-            [style.backgroundImage]="'url(' + (team.strFanart1 || 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=800') + ')'">
-          </div>
-          <div class="team-horizontal-content">
-            <div class="team-logo-container">
-              <ion-icon name="shield"></ion-icon>
-              <img [src]="team.strTeamBadge" class="team-logo-main" (error)="handleImageError($event)">
+        <swiper-container pagination="true" slides-per-view="1" space-between="16" class="team-swiper" observer="true"
+          observe-parents="true">
+          <swiper-slide *ngFor="let team of teamDetails">
+            <div class="team-info-card player-card">
+              <div class="team-banner"
+                [style.backgroundImage]="'url(' + (team.strFanart1 || 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=800') + ')'">
+              </div>
+              <div class="team-horizontal-content">
+                <div class="team-logo-container">
+                  <ion-icon name="shield"></ion-icon>
+                  <img [src]="team.strTeamBadge" class="team-logo-main" (error)="handleImageError($event)">
+                </div>
+                <div class="team-main-data">
+                  <h3>{{ team.strTeam }}</h3>
+                  <p>{{ team.strCountry }}</p>
+                </div>
+              </div>
+              <div class="p-base">
+                <div class="detail-row"><span>Liga</span><span>{{ team.strLeague }}</span></div>
+                <div class="detail-row"><span>Estadio</span><span><ion-icon name="business-outline"></ion-icon> {{
+                    team.strStadium }}</span></div>
+                <div class="detail-row"><span>Fundación</span><span>{{ team.intFormedYear }}</span></div>
+              </div>
             </div>
-            <div class="team-main-data">
-              <h3>{{ team.strTeam }}</h3>
-              <p>{{ team.strCountry }}</p>
-            </div>
-          </div>
-          <div class="p-base">
-            <div class="detail-row"><span>Liga</span><span>{{ team.strLeague }}</span></div>
-            <div class="detail-row"><span>Estadio</span><span><ion-icon name="business-outline"></ion-icon> {{
-                team.strStadium }}</span></div>
-            <div class="detail-row"><span>Fundación</span><span>{{ team.intFormedYear }}</span></div>
-          </div>
-        </div>
+          </swiper-slide>
+        </swiper-container>
       </div>
+
+      <!-- UBICACIÓN DE REGISTRO (SCOUTING) -->
+      <ion-card class="player-card mb-base animate-fade-in overflow-hidden" *ngIf="player.location?.coordinates">
+
+        <ng-container *ngIf="isOwner; else notOwnerTemplate">
+          <!-- MAPA EN LA CABECERA DE LA CARD -->
+          <div [id]="'map-' + player._id" class="detail-scouting-map">
+          </div>
+
+          <ion-card-content class="p-s">
+            <div
+              class="location-text-box bg-primary-light  p-s border-radius-soft animate-fade-in d-flex align-items-center">
+              <div *ngIf="isLoadingLocation" class="w-100 text-center py-xs">
+                <ion-spinner name="dots" color="primary"></ion-spinner>
+              </div>
+              <div *ngIf="!isLoadingLocation" class="d-flex gap-s w-100">
+                <ion-icon name="navigate-circle-outline" class="text-primary fs-20 mt-xs flex-shrink-0"></ion-icon>
+                <div class="location-text">
+                  <span class="fs-12 text-neutral-8 f-medium d-block lh-1-4">{{ descriptiveLocation || 'Dirección no
+                    disponible' }}</span>
+                  <span class="fs-12 text-neutral-5 d-block">Coordenadas: {{ player.location!.coordinates![1] |
+                    number:'1.1-4' }}, {{ player.location!.coordinates![0] | number:'1.1-4' }}</span>
+                </div>
+              </div>
+            </div>
+          </ion-card-content>
+        </ng-container>
+
+        <ng-template #notOwnerTemplate>
+          <ion-card-content class="p-base text-center">
+            <ion-icon name="lock-closed-outline" class="fs-32 text-neutral-3 mb-s"></ion-icon>
+            <p class="m-0 fs-12 text-neutral-5">Ubicación protegida. Solo el ojeador propietario puede ver el mapa de
+              scouting.</p>
+          </ion-card-content>
+        </ng-template>
+      </ion-card>
     </div>
   </div>
 </div>

@@ -46,12 +46,7 @@ const loginFirebase = async (req, res) => {
             }
         }
 
-        console.log('--- DEBUG LOGIN ---');
-        console.log('Email detectado:', decodedToken.email);
-        console.log('Email Admin en .env:', process.env.INITIAL_ADMIN_EMAIL);
-
         const isInitialAdmin = decodedToken.email === process.env.INITIAL_ADMIN_EMAIL;
-        console.log('¿Coinciden los emails?:', isInitialAdmin);
 
         firebaseUser = {
             uid: decodedToken.uid,
@@ -59,8 +54,6 @@ const loginFirebase = async (req, res) => {
             name: decodedToken.name || decodedToken.email.split('@')[0],
             isAdmin: decodedToken.admin === true || isInitialAdmin
         };
-        console.log('Resultado isAdmin final:', firebaseUser.isAdmin);
-        console.log('-------------------');
 
         // 2. Sincronizar con MongoDB
         // Primero buscamos por UID

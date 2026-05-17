@@ -1,4 +1,4 @@
-import { Component, Input, inject, OnInit, ChangeDetectorRef, effect, signal } from '@angular/core';
+import { Component, Input, inject, OnInit, ChangeDetectorRef, effect, signal, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -22,14 +22,18 @@ import {
   timeOutline, clipboardOutline, businessOutline,
   walkOutline, barbellOutline, resizeOutline, chevronDown, chevronUp,
   peopleOutline, chatbubbleEllipsesOutline, paperPlaneOutline,
-  chevronBackOutline, chevronForwardOutline, addCircleOutline, lockClosedOutline
+  chevronBackOutline, chevronForwardOutline, addCircleOutline, lockClosedOutline,
+  syncOutline
 } from 'ionicons/icons';
+import { PLAYER_SERVICE_TOKEN } from '../../../../core/services/player.service.token';
 import { Player } from '../../../../core/models/player.model';
-import { PlayerService } from '../../../../core/services/player.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { LayoutService } from '../../../../core/services/layout.service';
 import { ConfettiService } from '../../../../core/services/confetti.service';
 import { PermissionModalComponent } from 'src/app/shared/components/permission-modal/permission-modal.component';
+import { LocationPlugin } from 'src/app/core/plugins/location-plugin';
+import { Geolocation } from '@capacitor/geolocation';
+import { register } from 'swiper/element/bundle';
 
 @Component({
   selector: 'app-player-detail-public',
@@ -38,10 +42,10 @@ import { PermissionModalComponent } from 'src/app/shared/components/permission-m
   standalone: true,
   imports: [
     CommonModule, FormsModule, RouterModule,
-    IonIcon, IonCard, IonCardContent,
-    IonButton, IonSpinner, IonBadge, IonAvatar,
-    IonInput, IonTextarea
-  ]
+    IonIcon, IonCard, IonCardContent, IonButton, IonAvatar, IonBadge,
+    IonSegment, IonSegmentButton, IonLabel, IonSpinner, IonInput, IonTextarea
+  ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class PlayerDetailPublicPage implements OnInit {
   private _playerId: string = '';
@@ -55,10 +59,11 @@ export class PlayerDetailPublicPage implements OnInit {
       }
       this.player = null; // Limpiamos rastro anterior
       this.loadPlayer(playerId);
+      this.captureUserLocation();
     }
   }
 
-  private playerService = inject(PlayerService);
+  private playerService = inject(PLAYER_SERVICE_TOKEN);
   private authService = inject(AuthService);
   private loadingCtrl = inject(LoadingController);
   private navCtrl = inject(NavController);
@@ -67,16 +72,22 @@ export class PlayerDetailPublicPage implements OnInit {
   private toastCtrl = inject(ToastController);
   private modalCtrl = inject(ModalController);
   private confettiService = inject(ConfettiService);
+  private locationService = inject(LocationPlugin);
+  private cdr = inject(ChangeDetectorRef);
 
   public player: Player | null = null;
   public leagueDetails: any = null;
   public isLoading = true;
   public hasGeoPermission = signal(false);
+  public isRequestingPermission = false;
   private activePermissionModal: any = null;
   public isAdmin = false;
 
   // Lógica de "Ver más"
   public isSummaryExpanded = false;
+  public teamDetails: any[] = [];
+  public teamInfo1: any = null;
+  public teamInfo2: any = null;
   activeSegment = 'history'; // Variable para controlar las pestañas
 
   get isOwner(): boolean {
@@ -93,10 +104,31 @@ export class PlayerDetailPublicPage implements OnInit {
   public newComment = '';
   public newRating = 5;
   public isSubmittingComment = false;
+  public userCoords = signal<{ lat: number; lng: number } | null>(null);
   public editingCommentId: string | null = null;
   public editingContent = '';
   public editingRating = 5;
+
+  // Lógica de Media Flip
+  public showCutout = false;
+
+  toggleCardView() {
+    this.showCutout = !this.showCutout;
+  }
   public anonymousName = '';
+
+  /**
+   * Formatea el nombre del usuario (o Invitado) como: Nombre I.
+   */
+  getFormattedUserName(): string {
+    const user = this.authService.currentUser();
+    const name = user?.displayName || this.anonymousName || 'Invitado';
+    const parts = name.split(' ');
+    if (parts.length > 1) {
+      return `${parts[0]} ${parts[parts.length - 1].charAt(0)}.`;
+    }
+    return name;
+  }
 
   // Estados de foco para inputs (Estilo Login)
   nameFocused: boolean = false;
@@ -112,9 +144,10 @@ export class PlayerDetailPublicPage implements OnInit {
   private permissionTimeout: any = null;
 
   constructor() {
+    register();
     addIcons({
       star, starOutline, football, footballOutline, shieldOutline,
-      locationOutline, calendarOutline, personOutline,
+      locationOutline, calendarOutline, personOutline, syncOutline,
       statsChartOutline, chatbubbleOutline, chatbubblesOutline, createOutline, trashOutline,
       closeCircleOutline, flagOutline, earthOutline, logoInstagram,
       logoFacebook, logoTwitter, globeOutline, sendOutline,
@@ -165,17 +198,12 @@ export class PlayerDetailPublicPage implements OnInit {
       { label: 'Jugadores', url: '/players-public', icon: '' },
       { label: 'Detalle de jugador', url: '' }
     ]);
-    
+
     // Iniciar Autoplay de Stats
     this.startStatsAutoplay();
 
     // Verificar permisos de geolocalización iniciales
     this.checkGeoPermission();
-
-    // Onboarding automático solo la primera vez (con cooldown)
-    this.permissionTimeout = setTimeout(() => {
-      this.showPermissionModal(true); // true indica que es automático
-    }, 1500);
   }
 
   /**
@@ -183,23 +211,27 @@ export class PlayerDetailPublicPage implements OnInit {
    * Pide permiso DIRECTAMENTE sin pasar por el modal.
    */
   public async checkPermissionsOnboarding() {
-    console.log('[PLAYER-DETAIL-PUBLIC] Botón pulsado: Pidiendo permiso directamente...');
-    
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        console.log('[PLAYER-DETAIL-PUBLIC] Permiso concedido vía botón.');
-        this.hasGeoPermission.set(true);
+    console.log('[PLAYER-DETAIL-PUBLIC] Botón pulsado: Pidiendo permiso vía LocationPlugin...');
+    this.isRequestingPermission = true;
+    this.cdr.detectChanges();
+
+    try {
+      const granted = await this.locationService.requestGeolocationPermission();
+      this.hasGeoPermission.set(granted);
+
+      if (granted) {
+        console.log('[PLAYER-DETAIL-PUBLIC] Permiso concedido vía plugin.');
         localStorage.setItem('last_permission_prompt_player_detail_public', Date.now().toString());
-      },
-      (err) => {
-        // Ignoramos el timeout (code 3) porque el usuario puede tardar en decidir
-        if (err.code !== 3) {
-          console.warn('[PLAYER-DETAIL-PUBLIC] Petición fallida:', err);
-          this.showToast('No se pudo obtener la ubicación. Por favor, revisa los permisos de tu navegador.', 'danger');
-        }
-      },
-      { enableHighAccuracy: true } // Sin timeout
-    );
+        this.captureUserLocation();
+      } else {
+        console.warn('[PLAYER-DETAIL-PUBLIC] Permiso denegado o cerrado silenciosamente.');
+      }
+    } catch (err) {
+      console.error('[PLAYER-DETAIL-PUBLIC] Error solicitando permisos:', err);
+    } finally {
+      this.isRequestingPermission = false;
+      this.cdr.detectChanges();
+    }
   }
 
   /**
@@ -210,7 +242,14 @@ export class PlayerDetailPublicPage implements OnInit {
     const lastPrompt = localStorage.getItem('last_permission_prompt_player_detail_public');
     const now = Date.now();
 
-    // Si es automático y hay cooldown, no molestamos
+    // 1. RE-VERIFICACIÓN REAL: Consultar al navegador directamente antes de abrir
+    const isGrantedReal = await this.locationService.isGeolocationPermissionGranted();
+    if (isGrantedReal) {
+      this.hasGeoPermission.set(true);
+      return;
+    }
+
+    // 2. Si es automático y hay cooldown de 24h, no molestamos
     if (isAuto && lastPrompt && (now - parseInt(lastPrompt)) < 24 * 60 * 60 * 1000) {
       return;
     }
@@ -234,22 +273,62 @@ export class PlayerDetailPublicPage implements OnInit {
    * Verifica el estado real de la geolocalización en el navegador
    */
   async checkGeoPermission() {
+    const granted = await this.locationService.isGeolocationPermissionGranted();
+    this.hasGeoPermission.set(granted);
+    if (granted) {
+      this.captureUserLocation();
+    }
+  }
+
+  private async captureUserLocation() {
+    console.log('%c[GPS-PUBLIC] INTENTO DE CAPTURA...', 'color: #2dd36f; font-weight: bold; font-size: 12px;');
+
+    if (!this.hasGeoPermission()) {
+      console.warn('[GPS-PUBLIC] Captura abortada: No hay permisos concedidos aún.');
+      return;
+    }
+
     try {
-      if ('permissions' in navigator) {
-        const status = await navigator.permissions.query({ name: 'geolocation' as any });
-        this.hasGeoPermission.set(status.state === 'granted');
-        
-        status.onchange = () => {
-          this.hasGeoPermission.set(status.state === 'granted');
-        };
-      } else {
-        (navigator as any).geolocation.getCurrentPosition(
-          () => this.hasGeoPermission.set(true),
-          () => this.hasGeoPermission.set(false)
-        );
+      console.log('%c[GPS-PUBLIC] PERMISOS OK. BUSCANDO SEÑAL...', 'color: #2dd36f; font-weight: bold; font-size: 12px;');
+
+      const pos = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: false,
+        timeout: 10000
+      });
+
+      if (pos && pos.coords) {
+        this.userCoords.set({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        console.log('%c[GPS-PUBLIC] CAPTURADO CON ÉXITO (Capacitor)', 'background: #2dd36f; color: white; padding: 4px 8px; border-radius: 4px;');
+        console.table({
+          latitud: pos.coords.latitude,
+          longitud: pos.coords.longitude,
+          precision: pos.coords.accuracy + 'm'
+        });
       }
-    } catch (e) {
-      console.warn('[PLAYER-DETAIL-PUBLIC] Error verificando permisos:', e);
+    } catch (err: any) {
+      console.warn('[GPS-PUBLIC] Capacitor falló, intentando fallback nativo...', err);
+
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            this.userCoords.set({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+            console.log('%c[GPS-PUBLIC] CAPTURADO CON ÉXITO (Nativo)', 'background: #2dd36f; color: white; padding: 4px 8px; border-radius: 4px;');
+            console.table({
+              latitud: pos.coords.latitude,
+              longitud: pos.coords.longitude,
+              metodo: 'Nativo Navegador'
+            });
+          },
+          (geoErr) => {
+            console.error('[GPS-PUBLIC] FALLO CRÍTICO:', geoErr.message);
+            this.userCoords.set({ lat: 40.4168, lng: -3.7038 });
+          },
+          { enableHighAccuracy: false, timeout: 5000 }
+        );
+      } else {
+        console.error('[GPS-PUBLIC] Geolocation API no soportada por este navegador.');
+        this.userCoords.set({ lat: 40.4168, lng: -3.7038 });
+      }
     }
   }
 
@@ -284,8 +363,6 @@ export class PlayerDetailPublicPage implements OnInit {
         next: (player) => {
           this.player = player;
           this.isLoading = false;
-
-          this.isLoading = false;
         },
         error: (err) => {
           console.error('[PlayerDetailPublic] Error crítico al cargar jugador:', err);
@@ -301,7 +378,7 @@ export class PlayerDetailPublicPage implements OnInit {
 
   // Lógica de límites dinámicos
   get itemsLimit(): number {
-    return window.innerWidth < 768 ? 3 : 8;
+    return window.innerWidth < 768 ? 2 : 8;
   }
 
   async toggleFavorite(event?: MouseEvent) {
@@ -441,26 +518,19 @@ export class PlayerDetailPublicPage implements OnInit {
       commentData.user_id = user.uid;
     }
 
-    // Intentar capturar ubicación si tenemos permiso
-    if (this.hasGeoPermission()) {
-      try {
-        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, { 
-            enableHighAccuracy: true, 
-            timeout: 5000 
-          });
-        });
-        commentData.latitude = position.coords.latitude;
-        commentData.longitude = position.coords.longitude;
-        console.log('[PLAYER-DETAIL-PUBLIC] Ubicación capturada:', commentData.latitude, commentData.longitude);
-      } catch (err) {
-        console.warn('[PLAYER-DETAIL-PUBLIC] Error capturando ubicación rápida:', err);
-      }
+    // Usar ubicación capturada si existe
+    if (this.userCoords()) {
+      const coords = this.userCoords();
+      commentData.location = {
+        type: 'Point',
+        coordinates: [coords!.lng, coords!.lat]
+      };
+      console.log('[PLAYER-DETAIL-PUBLIC] Enviando con ubicación capturada:', coords);
     }
 
     this.playerService.addPublicComment(this.player._id, commentData).subscribe({
       next: () => {
-        this.showToast('¡Gracias por tu opinión!', 'success', 'chatbubble-outline');
+        this.showToast('¡Gracias por tu comentario!', 'success', 'chatbubble-outline');
         this.newComment = '';
         this.newRating = 5;
         this.isSubmittingComment = false;
@@ -508,11 +578,46 @@ export class PlayerDetailPublicPage implements OnInit {
     if (this.currentPage < this.totalPages()) this.goToPage(this.currentPage + 1);
   }
 
+  loadTeamsInfo(teamId: string, teamId2?: string) {
+    this.teamDetails = [];
+    this.teamInfo1 = null;
+    this.teamInfo2 = null;
+
+    this.playerService.lookupTSDBTeam(teamId).subscribe({
+      next: (res: any) => {
+        if (res) {
+          this.teamInfo1 = res;
+          this.teamDetails.push(res);
+        }
+      },
+      error: (err) => console.error('Error loading team 1 details:', err)
+    });
+
+    if (teamId2) {
+      this.playerService.lookupTSDBTeam(teamId2).subscribe({
+        next: (res: any) => {
+          if (res) {
+            this.teamInfo2 = res;
+            this.teamDetails.push(res);
+          }
+        },
+        error: (err) => console.error('Error loading team 2 details:', err)
+      });
+    }
+  }
+
+  loadLeagueInfo(leagueId: string) {
+    this.playerService.lookupTSDBLeague(leagueId).subscribe({
+      next: (res: any) => { this.leagueDetails = res; },
+      error: (err) => console.warn('Error loading league info:', err)
+    });
+  }
+
   onStatScroll(event: any) {
     const scrollLeft = event.target.scrollLeft;
     const width = event.target.offsetWidth;
     this.currentStatPage = Math.round(scrollLeft / (width * 0.9)); // Ajuste por el gap
-    
+
     // Si el usuario hace scroll manual, pausamos y reiniciamos el autoplay
     this.startStatsAutoplay();
   }

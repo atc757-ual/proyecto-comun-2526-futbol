@@ -12,11 +12,12 @@ import {
   sparklesOutline, footballOutline, alertCircleOutline, chatbubbleEllipsesOutline,
   personAddOutline, peopleOutline, chevronForwardOutline, personCircleOutline, star
 } from 'ionicons/icons';
-import { PlayerService } from '../../core/services/player.service';
+import { PLAYER_SERVICE_TOKEN } from '../../core/services/player.service.token';
 import { LayoutService } from '../../core/services/layout.service';
 import { RouterModule } from '@angular/router';
-
-import { AIService, AIAnalysisResponse } from '../../core/services/ai.service';
+import { Player } from '../../core/models/player.model';
+import { AI_SERVICE_TOKEN } from '../../core/services/ai.service.token';
+import { AIAnalysisResponse } from '../../core/services/ai.service.interface';
 
 @Component({
   selector: 'app-ai-team',
@@ -25,16 +26,15 @@ import { AIService, AIAnalysisResponse } from '../../core/services/ai.service';
   standalone: true,
   imports: [
     CommonModule, FormsModule, RouterModule,
-    IonButton,
-    IonIcon, IonCard, IonCardContent, IonCardHeader, IonCardTitle,
+    IonButton, IonIcon, IonCard, IonCardContent, IonCardHeader, IonCardTitle,
     IonSpinner, IonBadge, IonList, IonItem, IonLabel, IonAvatar
   ]
 })
 export class AiTeamPage implements OnInit {
-  private playerService = inject(PlayerService);
+  private playerService = inject(PLAYER_SERVICE_TOKEN);
   private layoutService = inject(LayoutService);
   private loadingCtrl = inject(LoadingController);
-  private aiService = inject(AIService);
+  private aiService = inject(AI_SERVICE_TOKEN);
   private toastCtrl = inject(ToastController);
 
   public isGenerating = false;

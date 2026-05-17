@@ -87,7 +87,7 @@
               <div class="tag-chips-wrapper mt-s animated fadeIn" *ngIf="newsData.tags.length > 0">
                 <ion-chip *ngFor="let tag of newsData.tags" mode="ios" class="futbol-chip-pill">
                   <ion-label>#{{ tag }}</ion-label>
-                  <ion-icon name="close" (click)="removeTag(tag)"></ion-icon>
+                <ion-icon name="close-outline" (click)="removeTag(tag)"></ion-icon>
                 </ion-chip>
                 <!-- Mensaje de Error Personalizado -->
                 <div class="error-message-container" *ngIf="tagErrorText">

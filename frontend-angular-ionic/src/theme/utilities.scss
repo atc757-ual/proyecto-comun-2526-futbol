@@ -51,6 +51,10 @@
     display: none !important;
 }
 
+.fl-justify-end {
+    justify-content: flex-end !important;
+}
+
 /* Alias de compatibilidad */
 .display-flex {
     display: flex !important;
@@ -318,4 +322,8 @@
 .border-primary-010 {
     border: 2px solid var(--blue-primary-010);
     border-radius: var(--border-radius-soft);
+}
+
+.border-color-neutral-2 {
+    border: 2px solid var(--color-neutral-2);
 }

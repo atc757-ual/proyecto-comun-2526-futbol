@@ -19,7 +19,8 @@ RUN npm install
 # 3. Copiamos el resto del código del frontend
 COPY frontend-angular-ionic/ .
 
-# 4. Construimos la aplicación
+# 4. Construimos la aplicación (más memoria para máquinas pequeñas)
+ENV NODE_OPTIONS="--max-old-space-size=1536"
 RUN npm run build -- --configuration production
 
 # Etapa 2: Servidor de producción (Nginx)

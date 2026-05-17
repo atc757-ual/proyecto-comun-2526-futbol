@@ -14,7 +14,8 @@ import {
   eyeOutline, closeCircleOutline, chevronBackOutline,
   chevronForwardOutline, footballOutline, personOutline
 } from 'ionicons/icons';
-import { PlayerService, Player } from '../../../../core/services/player.service';
+import { PLAYER_SERVICE_TOKEN } from '../../../../core/services/player.service.token';
+import { Player } from '../../../../core/models/player.model';
 import { LayoutService } from '../../../../core/services/layout.service';
 import { PlatformService } from '../../../../core/services/platform.service';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -26,13 +27,12 @@ import { AuthService } from '../../../../core/services/auth.service';
   standalone: true,
   imports: [
     CommonModule, FormsModule, RouterModule,
-    IonSearchbar, 
-    IonCard, IonCardContent, IonCardHeader, IonCardTitle, 
+    IonSearchbar, IonCard, IonCardContent, IonCardHeader, IonCardTitle,
     IonButton, IonIcon, IonSpinner, IonLabel, IonItem, IonThumbnail
   ]
 })
 export class PlayersPublicPage implements OnInit {
-  private playerService = inject(PlayerService);
+  private playerService = inject(PLAYER_SERVICE_TOKEN);
   private layoutService = inject(LayoutService);
   public platformService = inject(PlatformService);
   private authService = inject(AuthService);

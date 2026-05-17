@@ -12,8 +12,19 @@ import java.util.List;
 @Builder
 public class PlayerAnalysisResponse {
     private String analysis;
-    private List<String> idealEleven;
+    private String formation;
+    private List<IdealPlayerDTO> idealEleven;
     private String starPlayer;
     private String justification;
     private List<String> tacticalRecommendations;
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class IdealPlayerDTO {
+        private String name;
+        private String position;
+        private String role;
+    }
 }

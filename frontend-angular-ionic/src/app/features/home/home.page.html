@@ -1,7 +1,6 @@
 <!-- CARRUSEL DE NOTICIAS (SWIPER) -->
 <div *ngIf="!isLoadingFeatured && featuredNews.length > 0" class="news-swiper-wrapper">
-  <swiper-container #swiperRef navigation-prev-el=".custom-prev" navigation-next-el=".custom-next"
-    [attr.loop]="featuredNews.length > 1" [attr.looped-slides]="featuredNews.length" pagination="true"
+  <swiper-container #swiperRef navigation-prev-el=".custom-prev" navigation-next-el=".custom-next" pagination="true"
     pagination-clickable="true" observer="true" observe-parents="true" autoplay="true" autoplay-delay="4000"
     autoplay-disable-on-interaction="false" slides-per-view="1" space-between="0" watch-slides-progress="true"
     class="featured-swiper">
@@ -106,16 +105,16 @@
           <ion-card class="premium-card empty-state-card h-100 m-0 d-flex fl-column jc-center ai-center t-center"
             *ngIf="myPlayersJson === '[]'">
             <ion-card-content class="d-flex fl-column ai-center jc-center py-base">
-              <div class="empty-icon-wrapper mb-base">
+              <div class="empty-icon-wrapper mb-xs">
                 <ion-icon name="football-outline" color="primary" class="fs-36"></ion-icon>
               </div>
               <h3 class="f-semibold text-neutral-8 fs-18 mb-xs">¡Tu banquillo está vacío!</h3>
-              <p class="text-neutral-6 fs-14 mb-base px-m">Aún no has fichado a ningún jugador para tu equipo ideal.</p>
+              <p class="text-neutral-6 fs-14 mb-base">Aún no has fichado a ningún jugador para tu equipo ideal.</p>
 
-              <ion-button mode="ios" shape="round" size="small" class=" fw-medium futbol-btn-primary px-m"
+              <ion-button mode="ios" shape="round" size="small" class="f-medium futbol-btn-primary "
                 routerLink="/player-add">
-                <ion-icon name="person-add-outline" class="pr-s " slot="start"></ion-icon>
-                Crear mi primer jugador
+                <ion-icon name="person-add-outline" class="pr-s" slot="start"></ion-icon>
+                Crear jugador
               </ion-button>
             </ion-card-content>
           </ion-card>
@@ -132,7 +131,7 @@
 
   <!-- COLUMNA 4: MARCADORES EN VIVO Y TENDENCIAS -->
   <div class="col-4 col-sm-12 pl-base px-0-sm">
-    <ion-card>
+    <ion-card class="mb-base">
       <ion-card-content>
         <div class="d-flex fl-align-center gap-s">
           <ion-badge color="danger" mode="ios" class="animate-pulse px-s py-xs display-flex fl-align-center"
@@ -140,7 +139,7 @@
             <ion-icon name="radio-outline" class="mr-xs fs-14"></ion-icon>
             <ion-label class="fs-12">LIVE</ion-label>
           </ion-badge>
-          <h3 class="m-0 f-bold text-neutral-8 fs-18 ls-1">
+          <h3 class="m-0 f-semibold text-neutral-8 fs-18 ls-1">
             Partidos en Directo <span *ngIf="liveScores.length > 0">({{ liveScores.length }})</span>
           </h3>
         </div>
@@ -196,12 +195,12 @@
         </div>
 
         <!-- ESTADO VACÍO: NO HAY PARTIDOS -->
-        <div class="empty-live-card p-base text-center shadow-sm" *ngIf="!isLoadingLive && liveScores.length === 0">
+        <div class="empty-live-card p-base text-center" *ngIf="!isLoadingLive && liveScores.length === 0">
           <div class="empty-live-icon mb-s">
-            <ion-icon name="football-outline" color="medium"></ion-icon>
+            <ion-icon name="football-outline" color="primary" class="fs-30"></ion-icon>
           </div>
-          <p class="m-0 f-semibold text-neutral-7 fs-14">No hay partidos en vivo</p>
-          <p class="m-0 text-neutral-5 fs-12 mt-xs">Vuelve más tarde para ver resultados en tiempo real.</p>
+          <p class="m-0 f-semibold text-neutral-7 fs-16">No hay partidos en vivo</p>
+          <p class="m-0 text-neutral-5 fs-14 mt-xs">Vuelve más tarde para ver resultados en tiempo real.</p>
         </div>
 
         <!-- SKELETON LOADING -->

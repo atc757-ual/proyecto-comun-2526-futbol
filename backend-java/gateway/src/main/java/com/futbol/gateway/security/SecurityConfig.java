@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
@@ -13,10 +14,12 @@ public class SecurityConfig {
 
     private final JsonAuthenticationEntryPoint authenticationEntryPoint;
     private final JsonAccessDeniedHandler accessDeniedHandler;
+    private final JwtWebFilter jwtWebFilter;
 
-    public SecurityConfig(JsonAuthenticationEntryPoint authenticationEntryPoint, JsonAccessDeniedHandler accessDeniedHandler) {
+    public SecurityConfig(JsonAuthenticationEntryPoint authenticationEntryPoint, JsonAccessDeniedHandler accessDeniedHandler, JwtWebFilter jwtWebFilter) {
         this.authenticationEntryPoint = authenticationEntryPoint;
         this.accessDeniedHandler = accessDeniedHandler;
+        this.jwtWebFilter = jwtWebFilter;
     }
 
     @Bean
@@ -27,6 +30,7 @@ public class SecurityConfig {
                 .authenticationEntryPoint(authenticationEntryPoint)
                 .accessDeniedHandler(accessDeniedHandler)
             .and()
+            .addFilterAt(jwtWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
             .authorizeExchange()
             // Rutas Públicas
             .pathMatchers("/api/auth/**").permitAll()
@@ -40,10 +44,7 @@ public class SecurityConfig {
             .pathMatchers(HttpMethod.PUT, "/api/players/**").hasAuthority("ROLE_admin")
             .pathMatchers(HttpMethod.DELETE, "/api/players/**").hasAuthority("ROLE_admin")
             // El resto requiere autenticación básica
-            .anyExchange().authenticated()
-            .and()
-            .oauth2ResourceServer()
-            .jwt();
+            .anyExchange().authenticated();
 
         return http.build();
     }

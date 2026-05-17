@@ -93,12 +93,12 @@
                     <ion-icon *ngIf="!league.strBadge" name="trophy-outline"></ion-icon>
                   </div>
                   <div class="player-info-main">
-                    <h4 class="f-bold fs-15 text-neutral-9 m-0">{{ league.strLeague }}</h4>
+                    <h4 class="f-bold fs-14 text-neutral-9 m-0">{{ league.strLeague }}</h4>
                     <p class="team-tag">{{ league.strCountry || 'Internacional' }}</p>
                   </div>
                   <div class="item-check-container">
                     <ion-button fill="outline" size="small" mode="ios" class="action-btn-mini">
-                      <span class="fs-11 f-semibold">Ver Clubes</span>
+                      <span class="fs-12 f-semibold">Ver Clubes</span>
                       <ion-icon name="shield-outline" slot="end" class="fs-14"></ion-icon>
                     </ion-button>
                   </div>
@@ -122,12 +122,12 @@
                     <ion-icon *ngIf="!team.strTeamBadge" name="shield-outline"></ion-icon>
                   </div>
                   <div class="player-info-main">
-                    <h4 class="f-bold fs-15 text-neutral-9 m-0">{{ team.strTeam }}</h4>
+                    <h4 class="f-bold fs-14 text-neutral-9 m-0">{{ team.strTeam }}</h4>
                     <p class="team-tag">{{ team.strLeague }}</p>
                   </div>
                   <div class="item-check-container">
                     <ion-button fill="outline" size="small" mode="ios" class="action-btn-mini">
-                      <span class="fs-11 f-semibold">Ver Plantilla</span>
+                      <span class="fs-12 f-semibold">Ver Plantilla</span>
                       <ion-icon name="people-outline" slot="end" class="fs-14"></ion-icon>
                     </ion-button>
                   </div>
@@ -235,23 +235,31 @@
           <p class="text-neutral-6 fs-12 m-0">Máximo 11 jugadores</p>
         </div>
         <div class="basket-counter text-right">
-          <span class="fs-20 f-black text-neutral-6" [class.text-danger]="selectedPlayers.size >= 11">{{
+          <span class="fs-20 text-neutral-6" [class.text-danger]="selectedPlayers.size >= 11">{{
             selectedPlayers.size
             }}</span>
           <span class="fs-20 text-neutral-7">/11</span>
         </div>
       </div>
-      <ion-card-content>
+      <ion-card-content class="pt-xs">
         <!-- MENSAJE DE LÍMITE (NUEVA UBICACIÓN) -->
         <div *ngIf="selectedPlayers.size >= 11" class="limit-alert-top animate-fade-in">
           <ion-icon name="information-circle"></ion-icon>
           <span>Has alcanzado el límite máximo de 11 jugadores.</span>
         </div>
 
+        <div class="d-flex fl-justify-end w-100" *ngIf="selectedPlayers.size > 0">
+          <ion-button fill="outline" size="small" mode="ios" class="fs-12 f-semibold text-primary margin-none pr-none"
+            (click)="clearSelection()">
+            Limpiar
+          </ion-button>
+        </div>
+
         <!-- Lista de elegidos -->
-        <div class="empty-basket text-center py-base" *ngIf="selectedPlayers.size === 0">
+        <div class="empty-basket text-center pt-s" *ngIf="selectedPlayers.size === 0">
           <ion-icon name="footsteps-outline" class="fs-32 text-neutral-4 mb-s"></ion-icon>
           <p class="text-neutral-5 fs-14 m-0">No has seleccionado jugadores todavía</p>
+          <div class="separator my-s"></div>
         </div>
 
         <ion-list lines="none" class="selected-players-list" *ngIf="selectedPlayers.size > 0">
@@ -276,18 +284,49 @@
 
         <!-- Acciones -->
         <div class="separator mb-base" *ngIf="selectedPlayers.size > 0"></div>
-        <div class="basket-footer" *ngIf="selectedPlayers.size > 0">
+
+        <!-- TARJETA GPS: Siempre visible -->
+        <div class="permission-item-row mb-base animate-fade-in" [class.bg-permission-active]="hasGeoPermission"
+          [class.bg-permission-denied]="!hasGeoPermission">
+          <ion-icon name="navigate-circle-outline" slot="start" class="fs-30 text-success pulse-animation"
+            *ngIf="hasGeoPermission"></ion-icon>
+          <ion-icon name="navigate-outline" slot="start" class="fs-30 text-error" *ngIf="!hasGeoPermission"></ion-icon>
+          <ion-label class="text-neutral-8">
+            <h3 class="f-bold fs-14">{{ hasGeoPermission ? 'Ubicación compartida' : 'Ubicación no compartida' }}</h3>
+            <p class="fs-12">{{ hasGeoPermission ? 'Se adjuntará a los fichajes.' : 'Permisos necesarios.' }}</p>
+          </ion-label>
+          <div slot="end" class="d-flex fl-align-center fl-justify-end ml-auto">
+            <ion-button *ngIf="!hasGeoPermission" mode="ios" size="small" fill="solid" shape="round"
+              class="btn-white-error" [disabled]="isCapturingLocation" (click)="handlePermissionToggle()">
+              <ion-spinner *ngIf="isCapturingLocation" name="crescent" slot="start"></ion-spinner>
+              <span *ngIf="!isCapturingLocation">Permitir</span>
+            </ion-button>
+            <ion-icon *ngIf="hasGeoPermission" name="checkmark-circle-outline" class="fs-28 text-success"
+              slot="end"></ion-icon>
+          </div>
+        </div>
+
+        <!-- CONTENEDOR DEL MAPA MINI -->
+        <div class="map-container-wrapper animate-fade-in" *ngIf="hasLocation && hasGeoPermission">
+          <div id="busqueda-map" class="mini-scouting-map"></div>
+          <div class="map-info-footer d-flex fl-align-center fl-justify-between p-xs">
+            <div class="d-flex fl-align-center gap-xs overflow-hidden" style="flex: 1; min-width: 0;">
+              <ion-icon name="location-outline" class="text-primary fs-14" style="flex-shrink: 0;"></ion-icon>
+              <span class="fs-10 text-neutral-7 f-regular text-ellipsis" *ngIf="!isRevGeocoding">{{ currentAddress
+                }}</span>
+              <ion-spinner name="dots" *ngIf="isRevGeocoding" style="width: 15px; height: 10px;"></ion-spinner>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-base">
           <ion-button expand="block" mode="ios" color="primary" shape="round" class="f-semibold"
-            [disabled]="isImporting || selectedPlayers.size === 0" (click)="importPlayers()">
+            [disabled]="isImporting || selectedPlayers.size === 0 || !hasLocation" (click)="importPlayers()">
             <ion-spinner name="crescent" *ngIf="isImporting" class="mr-s"></ion-spinner>
             <ion-icon name="cloud-upload-outline" slot="start" *ngIf="!isImporting" class="pr-s"></ion-icon>
-            {{ selectedPlayers.size === 1 ? 'Importar Jugador' : 'Importar ' + selectedPlayers.size + ' Jugadores' }}
-          </ion-button>
+            {{ selectedPlayers.size <= 1 ? 'Importar Jugador' : 'Importar ' + selectedPlayers.size + ' Jugadores' }}
+              </ion-button>
 
-          <ion-button class="fs-14 mt-base f-semibold text-primary" expand="block" mode="ios" fill="clear"
-            color="medium" size="small" (click)="clearSelection()">
-            Limpiar selección
-          </ion-button>
         </div>
       </ion-card-content>
     </ion-card>

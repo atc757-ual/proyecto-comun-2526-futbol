@@ -10,13 +10,16 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ExternalPlayerDTO {
-    private Long externalId;
+    private String idPlayer;
+    private String idTeam;
+    private String idLeague;
     private String name;
-    private String firstname;
-    private String lastname;
-    private Integer age;
-    private String birthDate;
+    private String team;
     private String nationality;
     private String photo;
     private String position;
+    private String height;
+    private String weight;
+    private String dateBorn;
+    private String description;
 }

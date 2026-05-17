@@ -1,31 +1,31 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { IonicModule, ToastController, NavController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
   cloudUploadOutline, sendOutline, arrowBackOutline,
   homeOutline, newspaperOutline, listOutline, personOutline, pricetagsOutline,
   calendarOutline, eyeOutline, closeCircle, starOutline,
-  saveOutline, checkmarkCircleOutline, alertCircleOutline, close, trashOutline, syncOutline,
+  saveOutline, checkmarkCircleOutline, alertCircleOutline, closeOutline, trashOutline, syncOutline,
   chevronDownOutline
 } from 'ionicons/icons';
-import { NewsService, NewsItem } from '../../../core/services/news.service';
+import { NewsItem } from '../../../core/models/news.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { LayoutService } from 'src/app/core/services/layout.service';
 import { PlatformService } from 'src/app/core/services/platform.service';
-import { StorageService } from '../../../core/services/storage.service';
+import { NEWS_SERVICE_TOKEN } from '../../../core/services/news.service.token';
 
 @Component({
   selector: 'app-add-edit-news',
   templateUrl: './add-edit-news.page.html',
   styleUrls: ['./add-edit-news.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule]
+  imports: [IonicModule, CommonModule, FormsModule, RouterModule]
 })
 export class AddEditNewsPage implements OnInit {
-  private newsService = inject(NewsService);
+  private newsService = inject(NEWS_SERVICE_TOKEN);
   private authService = inject(AuthService);
   private toastCtrl = inject(ToastController);
   private navCtrl = inject(NavController);
@@ -164,7 +164,7 @@ export class AddEditNewsPage implements OnInit {
       cloudUploadOutline, sendOutline, arrowBackOutline,
       homeOutline, newspaperOutline, listOutline, personOutline, pricetagsOutline,
       calendarOutline, eyeOutline, closeCircle, starOutline,
-      saveOutline, checkmarkCircleOutline, alertCircleOutline, close, trashOutline, syncOutline,
+      saveOutline, checkmarkCircleOutline, alertCircleOutline, closeOutline, trashOutline, syncOutline,
       chevronDownOutline
     });
   }

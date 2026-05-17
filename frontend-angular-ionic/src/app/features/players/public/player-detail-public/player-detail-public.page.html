@@ -22,6 +22,14 @@
     <!-- COLUMNA IZQUIERDA (8): Toda la Info y Comentarios -->
     <div class="col-8 col-md-12 mr-base mx-0-sm">
 
+      <!-- BANNER DE DASHBOARD (NUEVO) -->
+      <div class="dashboard-hero-banner mb-base animate-fade-in" *ngIf="player.images?.banner">
+        <img [src]="player.images?.banner" alt="Banner Dashboard">
+        <div class="banner-overlay"></div>
+        <div class="banner-content">
+        </div>
+      </div>
+
       <!-- DASHBOARD TÉCNICO -->
       <div class="stats-dashboard" (scroll)="onStatScroll($event)" (mousedown)="onMouseDown($event)"
         (mouseleave)="onMouseLeave()" (mouseup)="onMouseUp()" (mousemove)="onMouseMove($event)">
@@ -79,7 +87,6 @@
         <ion-card-content class="p-base">
           <div class="d-flex fl-align-center mb-base">
             <span class="fs-16 f-bold text-neutral-8 pr-s ls-1">Biografía</span>
-            <ion-badge color="light" mode="ios" class="text-primary ml-auto py-xs px-s f-bold fs-12">OFICIAL</ion-badge>
           </div>
           <div class="bio-wrapper" [class.expanded]="isSummaryExpanded">
             <p class="bio-text m-0 lh-1-6">{{ player.summary || 'No hay descripción disponible.' }}</p>
@@ -110,56 +117,56 @@
 
           <div class="community-container-v">
             <!-- FORMULARIO INLINE PREMIUM (SOLO SI TIENE PERMISO) -->
-            <div class="new-comment-form shadow-sm p-base border-radius-soft animate-fade-in" *ngIf="hasGeoPermission()">
-              
+            <div class="new-comment-form border-radius-soft animate-fade-in" *ngIf="hasGeoPermission()">
 
-              <div class="form-inline-grid">
-                <!-- COLUMNA IZQUIERDA: IDENTIDAD Y RATING -->
-                <div class="form-identity">
-                  <div class="editor-header d-flex fl-align-center mb-base">
-                    <span class="fs-16 f-bold text-neutral-8 pr-s ls-1">¿Cómo lo valoras?</span>
-                    <div class="rating-stars-input">
-                      <ion-icon *ngFor="let i of [1,2,3,4,5]" [name]="i <= newRating ? 'star' : 'star-outline'"
-                        [class.active]="i <= newRating" (click)="setRating(i)"></ion-icon>
-                    </div>
+
+              <div class="compact-comment-form animate-fade-in">
+                <!-- CABECERA: RATING + TAG -->
+                <div class="d-flex fl-align-center mb-base">
+                  <span class="f-medium fs-12 text-neutral-8 pr-s">Rating:</span>
+                  <div class="rating-stars-input">
+                    <ion-icon *ngFor="let i of [1,2,3,4,5]" [name]="i <= newRating ? 'star' : 'star-outline'"
+                      [class.active]="i <= newRating" (click)="setRating(i)"></ion-icon>
                   </div>
-
-                  <div>
-                    <ion-input mode="md" type="text" label="Tu nombre" label-placement="stacked" fill="outline"
-                      placeholder="Ej: Juan Pérez" class="futbol-input" [(ngModel)]="anonymousName"
-                      (ionFocus)="nameFocused = true" (ionBlur)="nameFocused = false" [class.is-focused]="nameFocused">
-                      <ion-icon slot="start" name="person-outline" class="fs-16" aria-hidden="true"></ion-icon>
-                    </ion-input>
+                  <div class="verified-geo-badge m-0 ml-auto d-flex fl-align-center gap-xs" *ngIf="hasGeoPermission()">
+                    <span>Ubicación verificada</span>
+                    <ion-icon name="checkmark-circle" class="text-success"></ion-icon>
                   </div>
-
                 </div>
 
-                <div class="form-actions">
+                <!-- CUERPO: INPUT NOMBRE + TEXTAREA -->
+                <div class="mb-xs">
+                  <ion-input mode="md" fill="outline" label="Firma del Autor" labelPlacement="stacked"
+                    class="futbol-input mb-base" [(ngModel)]="anonymousName" (ionFocus)="nameFocused = true"
+                    (ionBlur)="nameFocused = false" [class.is-focused]="nameFocused" maxlength="20"
+                    placeholder="Ej: Invitado o tu nombre...">
+                    <ion-icon name="person-outline" slot="start" class="fs-20 mr-s"
+                      [color]="nameFocused ? 'primary' : 'medium'"></ion-icon>
+                  </ion-input>
+
+                  <ion-textarea mode="md" fill="outline" label="Tu Opinión Técnica" labelPlacement="stacked"
+                    placeholder="Escribe aquí tu valoración técnica sobre el rendimiento del jugador..."
+                    class="futbol-input" [(ngModel)]="newComment" [counter]="true" maxlength="1000" rows="4"
+                    (ionFocus)="commentFocused = true" (ionBlur)="commentFocused = false"
+                    [class.is-focused]="commentFocused"
+                    [helperText]="userCoords() ? '📍 Ubicación verificada: ' + (userCoords()?.lat | number:'1.1-4') + ', ' + (userCoords()?.lng | number:'1.1-4') : '⏳ Capturando señal GPS...'">
+                  </ion-textarea>
+                </div>
+
+                <!-- ACCIÓN: BOTÓN Y FIRMA -->
+                <div class="d-flex fl-align-center fl-justify-between gap-s">
                   <ion-button
-                    [disabled]="!newComment.trim() || isSubmittingComment || !anonymousName.trim() || newRating === 0"
-                    (click)="submitComment()" mode="ios" shape="round" class="futbol-btn-primary f-bold w-100">
+                    [disabled]="!newComment.trim() || !anonymousName.trim() || !hasGeoPermission() || isSubmittingComment || newRating === 0"
+                    (click)="submitComment()" mode="ios" shape="round" class="futbol-btn-primary f-bold flex-grow-1 m-0"
+                    style="min-height: 42px;">
                     <ion-spinner name="crescent" *ngIf="isSubmittingComment" slot="start" size="small"></ion-spinner>
-                    <span *ngIf="!isSubmittingComment">Enviar Comentario</span>
+                    <span *ngIf="!isSubmittingComment">Publicar Opinión</span>
                     <span *ngIf="isSubmittingComment">Publicando...</span>
                     <ion-icon class="ml-s fs-20" name="paper-plane-outline" slot="end"
                       *ngIf="!isSubmittingComment"></ion-icon>
                   </ion-button>
-                </div>
 
-                <div class="form-opinion">
-                  <!-- Badge de Ubicación Verificada (Encima del Textarea) -->
-                  <div class="verified-geo-badge mb-s" *ngIf="hasGeoPermission()">
-                    <span>Ubicación verificada</span>
-                    <ion-icon name="checkmark-circle"></ion-icon>
-                  </div>
 
-                  <ion-textarea mode="md" label="Tu opinión" label-placement="stacked" fill="outline"
-                    placeholder="Escribe aquí tu opinión sobre el jugador..." class="futbol-input h-100"
-                    [(ngModel)]="newComment" [counter]="true" maxlength="1000" rows="7"
-                    (ionFocus)="commentFocused = true" (ionBlur)="commentFocused = false"
-                    [class.is-focused]="commentFocused">
-                    <ion-icon slot="start" name="chatbubble-outline" class="fs-16" aria-hidden="true"></ion-icon>
-                  </ion-textarea>
                 </div>
               </div>
             </div>
@@ -180,21 +187,20 @@
                   </div>
                 </div>
                 <div class="permission-action-side">
-                  <ion-button (click)="checkPermissionsOnboarding()" mode="ios" fill="solid" class="f-bold fs-12 px-s btn-white-bg" shape="round">
-                    <ion-icon slot="start" name="location-outline"></ion-icon>
-                    Autorizar Ubicación
+                  <ion-button (click)="checkPermissionsOnboarding()" mode="ios" fill="solid"
+                    class="f-bold fs-12 px-s btn-white-bg" shape="round" [disabled]="isRequestingPermission">
+                    <ion-spinner *ngIf="isRequestingPermission" name="crescent" slot="start" size="small"></ion-spinner>
+                    <ion-icon *ngIf="!isRequestingPermission" slot="start" name="location-outline"></ion-icon>
+                    {{ isRequestingPermission ? 'Procesando...' : 'Autorizar Ubicación' }}
                   </ion-button>
                 </div>
               </div>
             </div>
-
+            <div class="separatos my-s"></div>
             <!-- FEED DE COMENTARIOS (ANCHO COMPLETO) -->
             <div class="community-feed-full">
               <div *ngIf="player.comments && player.comments.length > 0" class="d-flex fl-align-center mb-base">
-                <span class="fs-16 f-bold text-neutral-8 pr-s ls-1">Comentarios</span>
-                <ion-badge color="light" mode="ios" class="text-primary ml-auto py-xs px-s f-bold fs-18">
-                  {{ player.comments.length }}
-                </ion-badge>
+                <span class="fs-16 f-bold text-neutral-8 pr-s ls-1">Comentario ({{ player.comments.length }})</span>
               </div>
 
               <div class="empty-reports-state" *ngIf="!player.comments || player.comments.length === 0">
@@ -250,23 +256,36 @@
     <!-- COLUMNA DERECHA (4): Perfil y Club -->
     <div class="col-4 col-md-12 pl-base px-0-sm">
       <ion-card class="player-card mb-base overflow-hidden">
-        <div class="player-profile-sidebar">
-          <div class="player-hero-card side-version shadow-lg">
-            <div class="hero-bg" [style.background-image]="'url(' + player.image_url + ')'"></div>
-            <div class="hero-overlay"></div>
-            <div class="hero-content">
-              <div class="number-top-right">#{{ player.number || '00' }}</div>
-              <div class="info-bottom-left">
-                <h1 class="player-name-side">{{ player.name }}</h1>
-                <div class="position-badge mb-xs">{{ player.position }}</div>
-                <p class="player-team-side m-0">
-                  <ion-icon name="shield-outline" class="mr-xs"></ion-icon>
-                  {{ player.team }}
-                </p>
-              </div>
-              <div class="actions-bottom-right">
-                <!-- No hay acciones en vista pública -->
-              </div>
+        <div class="player-hero-container shadow-lg">
+          <!-- BOTÓN DE ACCIÓN (CROSS-FADE TRIGGER) -->
+          <div class="card-action-trigger" *ngIf="player.images?.cutout"
+            (click)="toggleCardView(); $event.stopPropagation()">
+            <ion-icon [name]="showCutout ? 'person-outline' : 'sync-outline'"></ion-icon>
+            <span>{{ showCutout ? 'VER PERFIL' : 'VER ACCIÓN' }}</span>
+          </div>
+
+          <!-- IMAGEN PRINCIPAL (CLUB - TEAM 1) -->
+          <div class="hero-image-wrapper" [class.is-hidden]="showCutout">
+            <div class="hero-bg" [style.background-image]="'url(' + (player.images?.cutout || player.image_url) + ')'">
+            </div>
+          </div>
+
+          <!-- IMAGEN DE ACCIÓN (PAÍS - TEAM 2) -->
+          <div class="hero-image-wrapper cutout-wrapper" [class.is-visible]="showCutout">
+            <div class="hero-bg action-bg" [style.background-image]="'url(' + player.image_url + ')'"></div>
+          </div>
+
+          <div class="hero-overlay"></div>
+
+          <div class="hero-content">
+            <div class="number-top-right">#{{ player.number || '00' }}</div>
+            <div class="info-bottom-left">
+              <h1 class="player-name-side">{{ player.name }}</h1>
+              <div class="position-badge my-s">{{ player.position || 'PLAYER' }}</div>
+              <p class="player-team-side m-0">
+                <ion-icon name="shield-outline" class="mr-xs"></ion-icon>
+                {{ player.team }}
+              </p>
             </div>
           </div>
         </div>

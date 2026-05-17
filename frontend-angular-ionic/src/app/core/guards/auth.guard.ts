@@ -1,5 +1,6 @@
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { NavController } from '@ionic/angular/standalone';
 import { Auth } from '@angular/fire/auth';
 import { AuthService } from '../services/auth.service';
 import { map, take } from 'rxjs';
@@ -8,7 +9,7 @@ import { map, take } from 'rxjs';
 export const authGuard = () => {
   const auth = inject(Auth);
   const authService = inject(AuthService);
-  const router = inject(Router);
+  const navCtrl = inject(NavController);
 
   // Comprobación síncrona primero (evita race condition con Firebase)
   if (auth.currentUser || localStorage.getItem('jwt_token')) {
@@ -19,7 +20,7 @@ export const authGuard = () => {
     take(1),
     map(user => {
       if (user) return true;
-      router.navigate(['/auth/login']);
+      navCtrl.navigateRoot('/auth/login');
       return false;
     })
   );
@@ -29,12 +30,12 @@ export const authGuard = () => {
 export const startGuard = () => {
   const auth = inject(Auth);
   const authService = inject(AuthService);
-  const router = inject(Router);
+  const navCtrl = inject(NavController);
 
   // Si ya tiene sesión en caché, redirigir directamente sin mostrar StartPage
   if (auth.currentUser) {
     console.log('[START-GUARD] Sesión en caché. Redirigiendo a /home...');
-    router.navigate(['/home']);
+    navCtrl.navigateRoot('/home');
     return false; // No mostrar StartPage
   }
 
@@ -43,7 +44,7 @@ export const startGuard = () => {
     map(user => {
       if (user) {
         console.log('[START-GUARD] Sesión activa. Redirigiendo a /home...');
-        router.navigate(['/home']);
+        navCtrl.navigateRoot('/home');
         return false; // No mostrar StartPage
       }
       return true; // Sin sesión → mostrar StartPage (que luego irá a login)
@@ -53,27 +54,27 @@ export const startGuard = () => {
 // Guard para rutas de administrador: bloquea si no tiene rol de admin
 export const adminGuard = () => {
   const authService = inject(AuthService);
-  const router = inject(Router);
+  const navCtrl = inject(NavController);
 
   if (authService.isAdmin()) {
     return true;
   }
 
   console.warn('[ADMIN-GUARD] Acceso denegado: El usuario no es administrador.');
-  router.navigate(['/home']);
+  navCtrl.navigateRoot('/home');
   return false;
 };
 
 // Guard para rutas de Administrador Maestro: solo el Super Admin puede entrar
 export const masterGuard = () => {
   const authService = inject(AuthService);
-  const router = inject(Router);
+  const navCtrl = inject(NavController);
 
   if (authService.isMasterAdmin()) {
     return true;
   }
 
   console.warn('[MASTER-GUARD] Acceso denegado: Se requieren privilegios de Administrador Maestro.');
-  router.navigate(['/home']);
+  navCtrl.navigateRoot('/home');
   return false;
 };

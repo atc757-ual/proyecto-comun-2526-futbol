@@ -1,7 +1,7 @@
-import { Component, OnInit, inject, Input, signal } from '@angular/core';
+import { Component, OnInit, inject, Input, signal, CUSTOM_ELEMENTS_SCHEMA, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import { forkJoin, firstValueFrom } from 'rxjs';
 import {
   IonIcon, IonCard, IonCardContent, IonButton, IonAvatar, IonBadge, IonSegment, IonSegmentButton, IonLabel,
   IonSpinner, LoadingController, NavController, AlertController, ToastController, ModalController,
@@ -22,14 +22,20 @@ import {
   walkOutline, barbellOutline, resizeOutline, chevronDown, chevronUp,
   peopleOutline, chatbubbleEllipsesOutline, paperPlaneOutline,
   analyticsOutline, closeOutline, checkmarkOutline,
-  chevronBackOutline, chevronForwardOutline, addCircleOutline, lockClosedOutline
+  chevronBackOutline, chevronForwardOutline, addCircleOutline, lockClosedOutline,
+  shield, syncOutline, copyOutline, navigateCircleOutline
 } from 'ionicons/icons';
+import { PLAYER_SERVICE_TOKEN } from '../../../core/services/player.service.token';
 import { Player } from '../../../core/models/player.model';
-import { PlayerService } from '../../../core/services/player.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { Geolocation } from '@capacitor/geolocation';
 import { LayoutService } from '../../../core/services/layout.service';
 import { ConfettiService } from 'src/app/core/services/confetti.service';
 import { PermissionModalComponent } from 'src/app/shared/components/permission-modal/permission-modal.component';
+import { LocationPlugin } from '../../../core/plugins/location-plugin';
+import { MapPlugin } from '../../../core/plugins/maps-plugin';
+
+import { register } from 'swiper/element/bundle';
 
 @Component({
   selector: 'app-player-detail',
@@ -38,20 +44,22 @@ import { PermissionModalComponent } from 'src/app/shared/components/permission-m
   standalone: true,
   imports: [
     CommonModule, FormsModule, RouterModule,
-    IonIcon, IonCard, IonCardContent,
-    IonButton, IonSpinner, IonBadge, IonSegment, IonSegmentButton, IonLabel, IonAvatar,
-    IonTextarea
-  ]
+    IonIcon, IonCard, IonCardContent, IonButton, IonAvatar, IonBadge,
+    IonSegment, IonSegmentButton, IonLabel, IonSpinner, IonTextarea
+  ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class PlayerDetailPage implements OnInit {
   @Input() set id(playerId: string) {
+    console.log('[PLAYER-DETAIL] Setter ID ejecutado con:', playerId);
     if (playerId) {
       this.player = null; // Limpiamos rastro anterior
       this.loadPlayer(playerId);
+      this.captureUserLocation();
     }
   }
 
-  private playerService = inject(PlayerService);
+  private playerService = inject(PLAYER_SERVICE_TOKEN);
   public authService = inject(AuthService);
   private loadingCtrl = inject(LoadingController);
   private navCtrl = inject(NavController);
@@ -61,6 +69,9 @@ export class PlayerDetailPage implements OnInit {
   private modalCtrl = inject(ModalController);
   private activePermissionModal: any = null;
   private confettiService = inject(ConfettiService);
+  private locationService = inject(LocationPlugin);
+  private mapPlugin = inject(MapPlugin);
+  private cdr = inject(ChangeDetectorRef);
 
   public player: Player | null = null;
   public honours: any[] = [];
@@ -70,12 +81,16 @@ export class PlayerDetailPage implements OnInit {
   public isHonoursExpanded = false;
   public isMilestonesExpanded = false;
   public teamDetails: any[] = [];
+  public teamInfo1: any = null;
+  public teamInfo2: any = null;
   public leagueDetails: any = null;
   public isLoading = true;
   public isLoadingExtra = false;
   public isLoadingLocation = false;
   public hasGeoPermission = signal(false);
+  public isRequestingPermission = false;
   public isAdmin = false;
+  public descriptiveLocation: string = '';
 
   // Lógica de "Ver más"
   public isSummaryExpanded = false;
@@ -83,17 +98,25 @@ export class PlayerDetailPage implements OnInit {
 
   get isOwner(): boolean {
     if (!this.player || !this.player.user_id) return false;
-    const currentUser = this.authService.currentUser();
-    return currentUser?.uid === this.player.user_id;
+    const currentUid = this.authService.getUID();
+    return currentUid === this.player.user_id;
   }
 
   // Lógica de Centro de Comentarios
   public newComment = '';
   public newRating = 5;
   public isSubmittingComment = false;
+  public userCoords = signal<{ lat: number; lng: number } | null>(null);
   public editingCommentId: string | null = null;
   public editingContent = '';
   public editingRating = 5;
+
+  // Lógica de Media Flip
+  public showCutout = false;
+
+  toggleCardView() {
+    this.showCutout = !this.showCutout;
+  }
 
   // Paginación de Comentarios
   public currentPage = 1;
@@ -113,6 +136,7 @@ export class PlayerDetailPage implements OnInit {
   private permissionTimeout: any = null;
 
   constructor() {
+    register();
     addIcons({
       star, starOutline, footballOutline, shieldOutline,
       locationOutline, calendarOutline, personOutline,
@@ -127,8 +151,22 @@ export class PlayerDetailPage implements OnInit {
       chatbubblesOutline, chevronDown, chevronUp,
       peopleOutline, chatbubbleEllipsesOutline, paperPlaneOutline,
       analyticsOutline, closeOutline, checkmarkOutline,
-      chevronBackOutline, chevronForwardOutline, addCircleOutline, lockClosedOutline
+      chevronBackOutline, chevronForwardOutline, addCircleOutline, lockClosedOutline,
+      shield, syncOutline, copyOutline, navigateCircleOutline
     });
+  }
+
+  /**
+   * Formatea el nombre del usuario actual (o Invitado) como: Nombre I.
+   */
+  getFormattedUserName(): string {
+    const user = this.authService.currentUser();
+    const name = user?.displayName || 'Invitado';
+    const parts = name.split(' ');
+    if (parts.length > 1) {
+      return `${parts[0]} ${parts[parts.length - 1].charAt(0)}.`;
+    }
+    return name;
   }
 
   ionViewWillLeave() {
@@ -161,28 +199,43 @@ export class PlayerDetailPage implements OnInit {
     }, 1500);
   }
 
+  ionViewDidEnter() {
+    // Si ya tenemos coordenadas, forzamos el redibujo del mapa
+    if (this.player?.location?.coordinates) {
+      console.log('[PLAYER-DETAIL] ionViewDidEnter: Inicializando mapa de respaldo...');
+      setTimeout(() => {
+        this.initDetailMap(this.player!.location!.coordinates![1], this.player!.location!.coordinates![0]);
+      }, 300);
+    }
+  }
+
   /**
    * Lógica disparada por el BOTÓN de la card.
    * Pide permiso DIRECTAMENTE sin pasar por el modal.
    */
   public async checkPermissionsOnboarding() {
-    console.log('[PLAYER-DETAIL] Botón pulsado: Pidiendo permiso directamente...');
+    console.log('[PLAYER-DETAIL] Botón pulsado: Pidiendo permiso vía LocationPlugin...');
+    this.isRequestingPermission = true;
+    this.cdr.detectChanges();
     
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        console.log('[PLAYER-DETAIL] Permiso concedido vía botón.');
-        this.hasGeoPermission.set(true);
+    try {
+      // Usamos el servicio del proyecto para solicitar el permiso
+      const granted = await this.locationService.requestGeolocationPermission();
+      this.hasGeoPermission.set(granted);
+      
+      if (granted) {
+        console.log('[PLAYER-DETAIL] Permiso concedido vía plugin.');
         localStorage.setItem('last_permission_prompt_player_detail', Date.now().toString());
-      },
-      (err) => {
-        // Solo mostramos error si no es un timeout (aunque ya no debería haberlos) o si es denegado explícitamente
-        if (err.code !== 3) {
-          console.warn('[PLAYER-DETAIL] Petición fallida o denegada:', err);
-          this.showToast('No se pudo obtener la ubicación. Por favor, revisa los permisos de tu navegador.', 'danger');
-        }
-      },
-      { enableHighAccuracy: true } // Quitamos el timeout para esperar al usuario
-    );
+        this.captureUserLocation();
+      } else {
+        console.warn('[PLAYER-DETAIL] Permiso denegado o cerrado silenciosamente.');
+      }
+    } catch (err) {
+      console.error('[PLAYER-DETAIL] Error solicitando permisos:', err);
+    } finally {
+      this.isRequestingPermission = false;
+      this.cdr.detectChanges();
+    }
   }
 
   /**
@@ -193,7 +246,14 @@ export class PlayerDetailPage implements OnInit {
     const lastPrompt = localStorage.getItem('last_permission_prompt_player_detail');
     const now = Date.now();
 
-    // Si es automático y hay cooldown, no molestamos
+    // 1. RE-VERIFICACIÓN REAL: Consultar al navegador directamente antes de abrir
+    const isGrantedReal = await this.locationService.isGeolocationPermissionGranted();
+    if (isGrantedReal) {
+      this.hasGeoPermission.set(true);
+      return; 
+    }
+
+    // 2. Si es automático y hay cooldown de 24h, no molestamos
     if (isAuto && lastPrompt && (now - parseInt(lastPrompt)) < 24 * 60 * 60 * 1000) {
       return;
     }
@@ -217,24 +277,10 @@ export class PlayerDetailPage implements OnInit {
    * Verifica el estado real de la geolocalización en el navegador
    */
   async checkGeoPermission() {
-    try {
-      if ('permissions' in navigator) {
-        const status = await navigator.permissions.query({ name: 'geolocation' as any });
-        this.hasGeoPermission.set(status.state === 'granted');
-        
-        // Escuchar cambios en tiempo real si el usuario cambia el permiso desde el navegador
-        status.onchange = () => {
-          this.hasGeoPermission.set(status.state === 'granted');
-        };
-      } else {
-        // Fallback para navegadores antiguos
-        (navigator as any).geolocation.getCurrentPosition(
-          () => this.hasGeoPermission.set(true),
-          () => this.hasGeoPermission.set(false)
-        );
-      }
-    } catch (e) {
-      console.warn('[PLAYER-DETAIL] Error verificando permisos:', e);
+    const granted = await this.locationService.isGeolocationPermissionGranted();
+    this.hasGeoPermission.set(granted);
+    if (granted) {
+      this.captureUserLocation();
     }
   }
 
@@ -245,6 +291,7 @@ export class PlayerDetailPage implements OnInit {
       this.activePermissionModal.dismiss();
       this.activePermissionModal = null;
     }
+    this.mapPlugin.destroyMap();
   }
 
   startStatsAutoplay() {
@@ -268,6 +315,16 @@ export class PlayerDetailPage implements OnInit {
       this.playerService.getPlayer(id).subscribe({
         next: (player) => {
           this.player = player;
+          this.isLoading = false;
+
+          const currentUser = this.authService.currentUser();
+          console.log('[PLAYER-DETAIL] --- INICIO CARGA JUGADOR ---');
+          console.log('[PLAYER-DETAIL] Player ID:', id);
+          console.log('[PLAYER-DETAIL] Player UserID:', player.user_id);
+          console.log('[PLAYER-DETAIL] Current UserUID:', currentUser?.uid);
+          console.log('[PLAYER-DETAIL] ¿isOwner?:', this.isOwner);
+          console.log('[PLAYER-DETAIL] Location Data:', player.location);
+          console.log('[PLAYER-DETAIL] Coordinates:', player.location?.coordinates);
 
           if (player.tsdb_ids?.player_id) {
             this.loadExtraData(player.tsdb_ids.player_id);
@@ -279,6 +336,17 @@ export class PlayerDetailPage implements OnInit {
 
           if (player.tsdb_ids?.league_id) {
             this.loadLeagueInfo(player.tsdb_ids.league_id);
+          }
+
+          const currentUid = this.authService.getUID();
+          const pUserId = player.user_id ? String(player.user_id).trim() : '';
+          const cUid = currentUid ? String(currentUid).trim() : '';
+
+          // CONCEPTO 1: Ubicación Scouting (Solo si soy dueño y hay coordenadas en BD)
+          const reallyIsOwner = pUserId === cUid;
+          
+          if (reallyIsOwner && player.location?.coordinates && player.location.coordinates.length >= 2) {
+            this.loadDescriptiveLocation(player.location.coordinates[1], player.location.coordinates[0]);
           }
 
           setTimeout(() => {
@@ -318,7 +386,7 @@ export class PlayerDetailPage implements OnInit {
 
   // Lógica de límites dinámicos
   get itemsLimit(): number {
-    return window.innerWidth < 768 ? 3 : 8;
+    return window.innerWidth < 768 ? 2 : 8;
   }
 
   // Getters para listas truncadas
@@ -340,13 +408,27 @@ export class PlayerDetailPage implements OnInit {
 
   loadTeamsInfo(teamId: string, teamId2?: string) {
     this.teamDetails = [];
+    this.teamInfo1 = null;
+    this.teamInfo2 = null;
+
     this.playerService.lookupTSDBTeam(teamId).subscribe({
-      next: (res: any) => { if (res) this.teamDetails.push(res); },
+      next: (res: any) => { 
+        if (res) {
+          this.teamInfo1 = res;
+          this.teamDetails.push(res); 
+        }
+      },
       error: (err) => console.error('Error loading team 1 details:', err)
     });
+    
     if (teamId2) {
       this.playerService.lookupTSDBTeam(teamId2).subscribe({
-        next: (res: any) => { if (res) this.teamDetails.push(res); },
+        next: (res: any) => { 
+          if (res) {
+            this.teamInfo2 = res;
+            this.teamDetails.push(res); 
+          }
+        },
         error: (err) => console.error('Error loading team 2 details:', err)
       });
     }
@@ -480,6 +562,7 @@ export class PlayerDetailPage implements OnInit {
     }
   }
 
+
   async submitComment() {
     if (!this.newComment.trim() || !this.player?._id) return;
 
@@ -496,24 +579,26 @@ export class PlayerDetailPage implements OnInit {
     // Intentar capturar ubicación si tenemos permiso
     if (this.hasGeoPermission()) {
       try {
-        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, { 
-            enableHighAccuracy: true, 
-            timeout: 5000 
-          });
+        const coordinates = await Geolocation.getCurrentPosition();
+        console.log('[GEOLOCATION] Coordenadas obtenidas:', coordinates);
+        this.userCoords.set({
+          lat: coordinates.coords.latitude,
+          lng: coordinates.coords.longitude
         });
-        commentData.latitude = position.coords.latitude;
-        commentData.longitude = position.coords.longitude;
-        console.log('[PLAYER-DETAIL] Ubicación capturada para el comentario:', commentData.latitude, commentData.longitude);
+        this.showToast('Ubicación autorizada correctamente', 'success');
+        
+        commentData.location = {
+          type: 'Point',
+          coordinates: [coordinates.coords.longitude, coordinates.coords.latitude]
+        };
       } catch (err) {
-        console.warn('[PLAYER-DETAIL] No se pudo obtener ubicación precisa para el comentario:', err);
-        // Continuamos sin ubicación si falla la obtención rápida
+        console.warn('[PLAYER-DETAIL] No se pudo obtener ubicación vía plugin:', err);
       }
     }
 
     this.playerService.addComment(this.player._id, commentData).subscribe({
       next: () => {
-        this.showToast('¡Gracias por tu informe!', 'success', 'chatbubble-outline');
+        this.showToast('¡Gracias por tu comentario!', 'success', 'chatbubble-outline');
         this.newComment = '';
         this.newRating = 5;
         this.isSubmittingComment = false;
@@ -615,6 +700,122 @@ export class PlayerDetailPage implements OnInit {
       icon: icon
     });
     toast.present();
+  }
+
+  private loadDescriptiveLocation(lat: number, lng: number) {
+    console.group('%c [CONCEPTO 1] API EXTERNA GEOCODING ', 'background: #2196f3; color: #fff; font-weight: bold;');
+    console.log('ENVIANDO ->', { lat, lng });
+    console.groupEnd();
+
+    this.isLoadingLocation = true;
+    this.playerService.reverseGeocode(lat, lng).subscribe({
+      next: (addr) => {
+        console.group('%c [CONCEPTO 1] RESPUESTA API OK ', 'background: #4caf50; color: #fff; font-weight: bold;');
+        console.log('RECIBIDO ->', addr);
+        console.groupEnd();
+
+        this.descriptiveLocation = addr;
+        this.isLoadingLocation = false;
+        
+        // Inicializar mapa
+        setTimeout(() => this.initDetailMap(lat, lng), 1000);
+      },
+      error: (err) => {
+        console.group('%c [CONCEPTO 1] ERROR API ', 'background: #f44336; color: #fff; font-weight: bold;');
+        console.error('ERROR ->', err);
+        console.groupEnd();
+
+        this.isLoadingLocation = false;
+        setTimeout(() => this.initDetailMap(lat, lng), 1000);
+      }
+    });
+  }
+
+  private zone = inject(NgZone);
+
+  private initDetailMap(lat: number, lng: number, retryCount = 0) {
+    if (!this.player?._id) return;
+    const elementId = `map-${this.player._id}`;
+    const mapContainer = document.getElementById(elementId);
+    
+    if (!mapContainer) {
+      if (retryCount < 20) {
+        console.warn(`[PLAYER-DETAIL] Buscando contenedor #${retryCount + 1}... ID: ${elementId}`);
+        setTimeout(() => this.initDetailMap(lat, lng, retryCount + 1), 500);
+      }
+      return;
+    }
+
+    console.log(`[PLAYER-DETAIL] Contenedor ${elementId} encontrado. Lat: ${lat}, Lng: ${lng}`);
+
+    try {
+      this.zone.runOutsideAngular(() => {
+        // Inicializar con el ID dinámico
+        const mapObj = this.mapPlugin.initMap(elementId, lat, lng, 14);
+        
+        if (mapObj) {
+          this.mapPlugin.addMarker(lat, lng, undefined, false);
+          
+          // Refrescar tamaño múltiples veces (crítico en Ionic)
+          [200, 800, 2000, 4000].forEach(delay => {
+            setTimeout(() => {
+              mapObj.invalidateSize();
+              window.dispatchEvent(new Event('resize'));
+            }, delay);
+          });
+        }
+      });
+    } catch (err) {
+      console.error('[PLAYER-DETAIL] Error inicializando mapa:', err);
+    }
+  }
+
+  private async captureUserLocation() {
+    console.log('%c[GPS] INTENTO DE CAPTURA...', 'color: #002eff; font-weight: bold; font-size: 12px;');
+    
+    if (!this.hasGeoPermission()) {
+      console.warn('[GPS] Captura abortada: No hay permisos de geolocalización concedidos aún.');
+      return;
+    }
+
+    try {
+      console.log('%c[GPS] PERMISOS OK. BUSCANDO SEÑAL...', 'color: #002eff; font-weight: bold; font-size: 12px;');
+      
+      const pos = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: false,
+        timeout: 10000
+      });
+
+      if (pos && pos.coords) {
+        this.userCoords.set({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        console.log('%c[GPS] CAPTURADO CON ÉXITO (Capacitor)', 'background: #002eff; color: white; padding: 4px 8px; border-radius: 4px;');
+        console.table({
+          latitud: pos.coords.latitude,
+          longitud: pos.coords.longitude,
+          precision: pos.coords.accuracy + 'm'
+        });
+      }
+    } catch (err: any) {
+      console.warn('[GPS] Capacitor falló, intentando fallback nativo...', err);
+      
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            this.userCoords.set({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+            console.log('%c[GPS] CAPTURADO CON ÉXITO (Nativo)', 'background: #2dd36f; color: white; padding: 4px 8px; border-radius: 4px;');
+            console.table({
+              latitud: pos.coords.latitude,
+              longitud: pos.coords.longitude,
+              metodo: 'Nativo Navegador'
+            });
+          },
+          (geoErr) => {
+            console.error('[GPS] FALLO CRÍTICO:', geoErr.message);
+          },
+          { timeout: 10000 }
+        );
+      }
+    }
   }
 
   handleImageError(event: any) {

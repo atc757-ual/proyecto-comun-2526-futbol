@@ -16,7 +16,8 @@ import {
   closeCircleOutline, closeCircle, chevronBackOutline, eyeOutline, alertCircleOutline, checkmarkCircleOutline, checkmarkCircle,
   peopleOutline, homeOutline, closeOutline
 } from 'ionicons/icons';
-import { PlayerService, Player } from '../../../core/services/player.service';
+import { PLAYER_SERVICE_TOKEN } from '../../../core/services/player.service.token';
+import { Player } from '../../../core/models/player.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { LayoutService } from '../../../core/services/layout.service';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
@@ -34,7 +35,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
   ]
 })
 export class PlayersAllPage implements OnInit {
-  private playerService = inject(PlayerService);
+  private playerService = inject(PLAYER_SERVICE_TOKEN);
   private authService = inject(AuthService);
   private layoutService = inject(LayoutService);
   private modalCtrl = inject(ModalController);

@@ -1,14 +1,18 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ToastController, AlertController, ActionSheetController, ModalController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
   personOutline, mailOutline, timeOutline, keyOutline,
   shieldCheckmarkOutline, logOutOutline, serverOutline,
   checkmarkCircleOutline, alertCircleOutline, closeOutline, chevronForward,
-  key
+  key, homeOutline
 } from 'ionicons/icons';
 import { RouterModule, Router } from '@angular/router';
+import {
+  IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonItem, IonIcon,
+  IonLabel, IonSpinner, IonBadge, IonButton, IonToggle,
+  ToastController, AlertController, ActionSheetController, ModalController
+} from '@ionic/angular/standalone';
 import { LayoutService } from 'src/app/core/services/layout.service';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { PlatformService } from 'src/app/core/services/platform.service';
@@ -20,7 +24,11 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
   templateUrl: './profile.page.html',
   styleUrls: ['./profile.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule]
+  imports: [
+    CommonModule, RouterModule,
+    IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonItem, IonIcon,
+    IonLabel, IonSpinner, IonBadge, IonButton, IonToggle
+  ]
 })
 export class ProfilePage implements OnInit {
   private authService = inject(AuthService);
@@ -58,6 +66,7 @@ export class ProfilePage implements OnInit {
     ]);
 
     this.checkResetCooldown();
+    this.useSpringBoot = this.platformService.getUseJavaBackend();
   }
 
   get isAdmin(): boolean {
@@ -91,8 +100,22 @@ export class ProfilePage implements OnInit {
     };
   }
 
-  onBackendToggle(event: any) {
-    this.useSpringBoot = event.detail.checked;
+  async onBackendToggle(event: any) {
+    const newVal = event.detail.checked;
+    if (newVal === this.useSpringBoot) return;
+    
+    this.useSpringBoot = newVal;
+    this.platformService.setUseJavaBackend(newVal);
+    
+    // Mostramos un mensaje informativo (ya no hace falta recargar)
+    const toast = await this.toastCtrl.create({
+      message: `Backend cambiado a ${newVal ? 'Java' : 'Node'} al instante`,
+      duration: 2000,
+      position: 'bottom',
+      mode: 'ios',
+      color: 'success'
+    });
+    await toast.present();
   }
 
   async sendPasswordReset() {

@@ -12,6 +12,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { firstValueFrom, map } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { PlatformService } from './platform.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -70,9 +71,7 @@ export class AuthService {
    * Cierra la sesión activa
    */
   async logout() {
-    localStorage.removeItem('jwt_token');
-    // Eliminamos cualquier rastro de user_data si existiera por versiones antiguas
-    localStorage.removeItem('user_data');
+    localStorage.clear();
     this._userData.set(null);
     return signOut(this.auth);
   }
@@ -93,8 +92,10 @@ export class AuthService {
     return userCredential;
   }
 
+  private platformService = inject(PlatformService);
+
   /**
-   * Sincroniza el usuario de Firebase con el backend de Node.js para obtener el JWT
+   * Sincroniza el usuario de Firebase con el backend seleccionado (Node/Java) para obtener el JWT
    */
   async syncUserWithBackend() {
     const firebaseUser = this.auth.currentUser;
@@ -102,7 +103,15 @@ export class AuthService {
 
     try {
       const idToken = await firebaseUser.getIdToken();
-      const fullUrl = `${environment.nodeApiUrl}/auth/signin`;
+      
+      // Decidimos el backend dinámicamente
+      const baseUrl = this.platformService.getUseJavaBackend() 
+        ? environment.javaApiUrl 
+        : environment.nodeApiUrl;
+        
+      const fullUrl = `${baseUrl}/auth/signin`;
+      
+      console.log(`[AUTH] Sincronizando con backend: ${this.platformService.getUseJavaBackend() ? 'JAVA' : 'NODE'}`);
       
       const response: any = await firstValueFrom(
         this.http.post(fullUrl, { idToken })
@@ -150,10 +159,33 @@ export class AuthService {
   }
 
   /**
-   * Obtiene el ID único del usuario actual
+   * Obtiene el ID único del usuario actual.
+   * Intenta primero desde Firebase, luego desde los datos en memoria, y finalmente desde el JWT.
    */
-  getUID() {
-    return this.auth.currentUser?.uid;
+  getUID(): string | undefined {
+    // 1. Intentar desde Firebase Auth
+    const fbUid = this.auth.currentUser?.uid;
+    if (fbUid) return fbUid;
+
+    // 2. Intentar desde los datos de usuario en memoria (signal)
+    const userData = this.userData();
+    if (userData && (userData.uid || userData.id || userData.firebaseUid)) {
+      return userData.uid || userData.id || userData.firebaseUid;
+    }
+
+    // 3. Fallback: Decodificar el JWT guardado
+    const token = localStorage.getItem('jwt_token');
+    if (token) {
+      try {
+        const payloadBase64 = token.split('.')[1];
+        const payloadJson = JSON.parse(atob(payloadBase64));
+        return payloadJson.id || payloadJson.uid || payloadJson.user_id || payloadJson.sub;
+      } catch (e) {
+        return undefined;
+      }
+    }
+
+    return undefined;
   }
 
   /**

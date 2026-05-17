@@ -4,27 +4,15 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
-export interface AIPlayer {
-  name: string;
-  position: string;
-  role: string;
-  image_url?: string; // Campo opcional para el matching
-}
+import { IAIService, AIAnalysisResponse } from './ai.service.interface';
 
-export interface AIAnalysisResponse {
-  analysis: string;
-  formation: string;
-  idealEleven: AIPlayer[];
-  starPlayer: string;
-  starPlayerImage?: string; // Campo opcional para el matching
-  justification: string;
-  tacticalRecommendations: string[];
-}
-
+/**
+ * Implementación del orquestador de IA para el Backend en Node.js
+ */
 @Injectable({
   providedIn: 'root'
 })
-export class AIService {
+export class NodeAIService implements IAIService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.nodeApiUrl}/ai`;
 

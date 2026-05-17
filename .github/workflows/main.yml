@@ -174,5 +174,5 @@ jobs:
 
       - name: Docker Build & Push (Corba)
         run: |
-          docker build -f backend-corba/Dockerfile.corba -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PREFIX }}-corba:latest .
+          docker build -f backend-corba/Dockerfile.corba -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PREFIX }}-corba:latest ./backend-corba
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PREFIX }}-corba:latest

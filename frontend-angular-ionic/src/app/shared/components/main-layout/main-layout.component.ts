@@ -149,7 +149,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
               this.authService.logout().then(() => this.router.navigate(['/login']));
             }
           },
-          { text: 'Cancelar', icon: 'close', role: 'cancel' }
+          { text: 'Cancelar', icon: 'close-outline', role: 'cancel' }
         ]
       });
 

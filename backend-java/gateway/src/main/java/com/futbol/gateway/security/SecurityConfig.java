@@ -34,6 +34,7 @@ public class SecurityConfig {
             .authorizeExchange()
             // Rutas Públicas
             .pathMatchers("/api/auth/**").permitAll()
+            .pathMatchers("/actuator/**").permitAll()
             .pathMatchers(HttpMethod.GET, "/api/players/public").permitAll()
             // Rutas Protegidas (Requieren Login)
             .pathMatchers(HttpMethod.POST, "/api/players/*/comments").authenticated()

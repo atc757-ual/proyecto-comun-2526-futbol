@@ -2,7 +2,8 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { IonicModule, ToastController, LoadingController, NavController } from '@ionic/angular';
+import { IonicModule } from '@ionic/angular';
+import { ToastController, NavController } from '@ionic/angular/standalone';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { PlatformService } from 'src/app/core/services/platform.service';
 import { addIcons } from 'ionicons';
@@ -101,8 +102,22 @@ export class LoginPage implements OnInit {
       
     } catch (error: any) {
       console.error('[LOGIN] Error en el proceso de login:', error);
+      
+      let errorMessage = 'Ocurrió un error al iniciar sesión. Inténtalo de nuevo.';
+      if (error.code === 'auth/invalid-credential' || (error.message && error.message.includes('invalid-credential'))) {
+        errorMessage = 'El correo o la contraseña son incorrectos.';
+      } else if (error.code === 'auth/user-not-found') {
+        errorMessage = 'El correo ingresado no está registrado.';
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMessage = 'Acceso bloqueado temporalmente por demasiados intentos fallidos. Inténtalo más tarde.';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'El formato del correo no es válido.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
       const toast = await this.toastController.create({
-        message: error.message || 'Credenciales inválidas',
+        message: errorMessage,
         duration: 4000,
         position: 'top',
         cssClass: 'toast-error',

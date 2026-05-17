@@ -31,7 +31,7 @@ public class AuthController {
             // 1. Verificar token con Firebase
             FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
             String uid = decodedToken.getUid();
-            String email = decodedToken.getEmail();
+            String email = decodedToken.getEmail() != null ? decodedToken.getEmail().toLowerCase() : null;
             String name = (String) decodedToken.getClaims().get("name");
             
             // 2. Leer Custom Claim de Admin
@@ -75,10 +75,17 @@ public class AuthController {
 
             // 5. Responder
             Map<String, Object> response = new HashMap<>();
-            Map<String, String> data = new HashMap<>();
+            Map<String, Object> data = new HashMap<>();
             data.put("token", token);
-            data.put("role", user.getRole());
-            data.put("name", user.getName());
+            
+            Map<String, Object> userMap = new HashMap<>();
+            userMap.put("id", user.getId());
+            userMap.put("firebaseUid", user.getFirebaseUid());
+            userMap.put("name", user.getName());
+            userMap.put("email", user.getEmail());
+            userMap.put("role", user.getRole());
+            
+            data.put("user", userMap);
             
             Map<String, String> result = new HashMap<>();
             result.put("status", "OK");

@@ -688,6 +688,7 @@ export class PlayerDetailPublicPage implements OnInit {
   }
 
   handleImageError(event: any) {
-    event.target.src = 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=800';
+    event.target.onerror = null;
+    event.target.src = 'https://placehold.co/800?text=404&font=roboto';
   }
 }

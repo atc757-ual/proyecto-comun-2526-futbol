@@ -52,8 +52,8 @@
           <div *ngFor="let item of pagedNews; let isLast = last">
             <div class="news-admin-item animate-fade-in">
               <div class="item-media" (click)="viewNews(item)" style="cursor: pointer;">
-                <img [src]="item.imageUrl || 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=800'"
-                  (error)="$any($event.target).src = 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=800'" class="item-img" alt="Noticia">
+                <img [src]="item.imageUrl || 'https://placehold.co/800?text=404&font=roboto'"
+                  (error)="$any($event.target).onerror = null; $any($event.target).src = 'https://placehold.co/800?text=404&font=roboto'" class="item-img" alt="Noticia">
                 <div class="item-badge" [class]="item.category | lowercase">{{ item.category }}</div>
                 <!-- Badge de Borrador -->
                 <div class="inactive-badge" *ngIf="!item.isActive">

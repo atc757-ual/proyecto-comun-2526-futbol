@@ -243,7 +243,8 @@ export class PlayersAllPage implements OnInit {
   }
 
   handleImageError(event: any) {
-    event.target.src = 'assets/img/player-placeholder.png';
+    event.target.onerror = null;
+    event.target.src = 'https://placehold.co/800?text=404&font=roboto';
   }
 
   isMine(p: Player): boolean {

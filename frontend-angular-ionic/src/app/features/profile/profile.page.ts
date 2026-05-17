@@ -5,7 +5,7 @@ import {
   personOutline, mailOutline, timeOutline, keyOutline,
   shieldCheckmarkOutline, logOutOutline, serverOutline,
   checkmarkCircleOutline, alertCircleOutline, closeOutline, chevronForward,
-  key, homeOutline
+  key, homeOutline, cafeOutline, logoNodejs
 } from 'ionicons/icons';
 import { RouterModule, Router } from '@angular/router';
 import {
@@ -50,7 +50,7 @@ export class ProfilePage implements OnInit {
       personOutline, mailOutline, timeOutline, keyOutline,
       shieldCheckmarkOutline, logOutOutline, serverOutline,
       checkmarkCircleOutline, alertCircleOutline, closeOutline, chevronForward,
-      key
+      key, cafeOutline, logoNodejs
     });
   }
 
@@ -100,20 +100,19 @@ export class ProfilePage implements OnInit {
     };
   }
 
-  async onBackendToggle(event: any) {
-    const newVal = event.detail.checked;
-    if (newVal === this.useSpringBoot) return;
+  async toggleBackend() {
+    this.platformService.toggleBackend();
+    this.useSpringBoot = this.platformService.getUseJavaBackend();
+    const newVal = this.useSpringBoot;
     
-    this.useSpringBoot = newVal;
-    this.platformService.setUseJavaBackend(newVal);
-    
-    // Mostramos un mensaje informativo (ya no hace falta recargar)
     const toast = await this.toastCtrl.create({
       message: `Backend cambiado a ${newVal ? 'Java' : 'Node'} al instante`,
       duration: 2000,
-      position: 'bottom',
+      position: 'top',
+      cssClass: 'toast-success',
+      icon: 'checkmark-circle-outline',
       mode: 'ios',
-      color: 'success'
+      buttons: [{ role: 'cancel', icon: 'close-outline' }]
     });
     await toast.present();
   }
@@ -212,7 +211,7 @@ export class ProfilePage implements OnInit {
               this.authService.logout().then(() => this.router.navigate(['/login']));
             }
           },
-          { text: 'Cancelar', icon: 'close', role: 'cancel' }
+          { text: 'Cancelar', icon: 'close-outline', role: 'cancel' }
         ]
       });
 
@@ -221,6 +220,7 @@ export class ProfilePage implements OnInit {
   }
 
   handleAvatarError(event: any) {
+    event.target.onerror = null;
     event.target.src = 'https://ui-avatars.com/api/?name=User&background=e2e8f0&color=0f172a&bold=true';
   }
 }

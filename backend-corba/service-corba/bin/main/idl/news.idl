@@ -7,19 +7,33 @@ module BufferApp {
         string title;     
         string author;
         string content;   
+        string summary;
         string imageUrl;
         string category;
         TagList tags;     
         string date;      
+        boolean isActive;
+        boolean isFeatured;
+        string createdBy;
+        string updatedBy;
+        string createdAt; 
+        string updatedAt;
     };
 
     typedef sequence<NewsItem> NewsList;
 
     interface NewsService {
+        // Métodos de Administración
         void addNews(in NewsItem noticia);
+        void bulkAddNews(in NewsList noticias); // Nuevo método para carga masiva
         boolean updateNews(in NewsItem noticia);
         boolean deleteNews(in string id);
         NewsList getAllNews();
+        
+        // Métodos de Usuario / Públicos
+        NewsList getVisibleNews();
+        NewsList getRecentNews();
+        NewsList getFeaturedNews(); // Nuevo método para obtener destacadas
         NewsItem getNewsById(in string id);
         
         oneway void shutdown();

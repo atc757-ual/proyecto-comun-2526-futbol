@@ -7,6 +7,44 @@ spring:
     gateway:
       grpc:
         enabled: false
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+            allowedHeaders: "*"
+      routes:
+        # Java Player Microservice
+        - id: player-client-route
+          uri: lb://PLAYER-CLIENT
+          predicates:
+            - Path=/api/players,/api/players/**
+
+        # Java Comment Microservice
+        - id: comment-client-route
+          uri: lb://COMMENT-CLIENT
+          predicates:
+            - Path=/api/comments,/api/comments/**
+
+        # Java External Football Proxy (Feign) - must come before external-client-route
+        - id: external-feign-route
+          uri: lb://EXTERNAL-FEIGN
+          predicates:
+            - Path=/api/external/football/**
+          filters:
+            - RewritePath=/api/external/football/(?<segment>.*), /api/external/players/${segment}
+
+        # Java External Client (AI, TV, Live, etc.)
+        - id: external-client-route
+          uri: lb://EXTERNAL-CLIENT
+          predicates:
+            - Path=/api/external/**
+
+        # Java News Microservice (delegated to external-client)
+        - id: news-client-route
+          uri: lb://EXTERNAL-CLIENT
+          predicates:
+            - Path=/api/news,/api/news/**
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://football-postgres:5432/football_db}
     username: ${SPRING_DATASOURCE_USERNAME:root}
@@ -21,6 +59,7 @@ spring:
         jwt:
           issuer-uri: https://securetoken.google.com/proyecto-final-8f184
           jwk-set-uri: https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com
+
 eureka:
   client:
     service-url:
@@ -28,6 +67,12 @@ eureka:
 
 server:
   port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
 
 # Configuración de Seguridad Personalizada
 jwt:

@@ -9,7 +9,7 @@ db = db.getSiblingDB('football');
 db.players.drop();
 db.users.drop();
 
-console.log("Collections dropped.");
+print("Collections dropped.");
 
 // Inicializar Usuarios (Admin de prueba)
 db.users.insertMany([
@@ -85,4 +85,4 @@ db.players.insertMany([
   }
 ]);
 
-console.log("MongoDB Initialized with Complete Player Profile (DB: football).");
+print("MongoDB Initialized with Complete Player Profile (DB: football).");

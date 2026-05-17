@@ -12,19 +12,13 @@ spring:
         - id: player-client-route
           uri: lb://PLAYER-CLIENT
           predicates:
-            - Path=/api/players/**
+            - Path=/api/players, /api/players/**
 
         # Java Comment Microservice
         - id: comment-client-route
           uri: lb://COMMENT-CLIENT
           predicates:
-            - Path=/api/comments/**
-
-        # Java External AI Orquestrator (Gemini Java)
-        - id: external-client-route
-          uri: lb://EXTERNAL-CLIENT
-          predicates:
-            - Path=/api/external/ai/**
+            - Path=/api/comments, /api/comments/**
 
         # Java External Football Proxy (Feign)
         - id: external-feign-route
@@ -33,6 +27,18 @@ spring:
             - Path=/api/external/football/**
           filters:
             - RewritePath=/api/external/football/(?<segment>.*), /api/external/players/${segment}
+
+        # Java External Client (Orchestrator, AI, TV, Live, Players etc)
+        - id: external-client-route
+          uri: lb://EXTERNAL-CLIENT
+          predicates:
+            - Path=/api/external/**
+
+        # Java News Microservice (delegated to external-client)
+        - id: news-client-route
+          uri: lb://EXTERNAL-CLIENT
+          predicates:
+            - Path=/api/news, /api/news/**
 
 eureka:
   client:

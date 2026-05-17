@@ -8,10 +8,17 @@
                 <xsd:element name="date"     type="fecha_valid"/>
                 <xsd:element name="title"    type="titulo_valid"/>
                 <xsd:element name="author"   type="author_valid"/>
+                <xsd:element name="summary"  type="summary_valid"/>
                 <xsd:element name="content"  type="contenido_valid"/>
                 <xsd:element name="imageUrl" type="url_valid"/>
                 <xsd:element name="category" type="categoria_valid"/>
+                <xsd:element name="isActive" type="xsd:boolean"/>
+                <xsd:element name="isFeatured" type="xsd:boolean"/>
                 <xsd:element name="tags"     type="tipoTags"/>
+                <xsd:element name="createdBy" type="xsd:string"/>
+                <xsd:element name="updatedBy" type="xsd:string"/>
+                <xsd:element name="createdAt" type="xsd:string"/>
+                <xsd:element name="updatedAt" type="xsd:string"/>
             </xsd:sequence>
         </xsd:complexType>
     </xsd:element>
@@ -32,24 +39,31 @@
         </xsd:restriction>
     </xsd:simpleType>
 
-    <!-- Título: entre 5 y 30 palabras/tokens (sin espacios en blanco solos) -->
+    <!-- Título: entre 5 y 250 caracteres de cualquier tipo -->
     <xsd:simpleType name="titulo_valid">
         <xsd:restriction base="xsd:string">
-            <xsd:pattern value="(\S\s*){5,100}"/>
+            <xsd:pattern value="[\s\S]{5,250}"/>
         </xsd:restriction>
     </xsd:simpleType>
 
-    <!-- Author: entre 5 y 30 caracteres sin contar espacios en blanco -->
+    <!-- Author: entre 3 y 100 caracteres de cualquier tipo -->
     <xsd:simpleType name="author_valid">
         <xsd:restriction base="xsd:string">
-            <xsd:pattern value="(\S\s*){5,100}"/>
+            <xsd:pattern value="[\s\S]{3,100}"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    
+    <!-- Summary: entre 10 y 1000 caracteres de cualquier tipo -->
+    <xsd:simpleType name="summary_valid">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[\s\S]{10,1000}"/>
         </xsd:restriction>
     </xsd:simpleType>
 
-    <!-- Contenido: entre 20 y 250 tokens -->
+    <!-- Contenido: entre 20 y 10000 caracteres de cualquier tipo -->
     <xsd:simpleType name="contenido_valid">
         <xsd:restriction base="xsd:string">
-            <xsd:pattern value="(\S\s*){20,5000}"/>
+            <xsd:pattern value="[\s\S]{20,10000}"/>
         </xsd:restriction>
     </xsd:simpleType>
 
@@ -68,6 +82,10 @@
             <xsd:enumeration value="Crónica"/>
             <xsd:enumeration value="Opinión"/>
             <xsd:enumeration value="Internacional"/>
+            <xsd:enumeration value="Mundial 2026"/>
+            <xsd:enumeration value="Táctica"/>
+            <xsd:enumeration value="Actualidad"/>
+            <xsd:enumeration value="Salud"/>
             <xsd:enumeration value="General"/>
         </xsd:restriction>
     </xsd:simpleType>
@@ -75,9 +93,16 @@
     <!-- Tags: entre 1 y 6 etiquetas -->
     <xsd:complexType name="tipoTags">
         <xsd:sequence>
-            <xsd:element name="tag" type="xsd:string"
+            <xsd:element name="tag" type="tag_valid"
                          minOccurs="1" maxOccurs="6"/>
         </xsd:sequence>
     </xsd:complexType>
+
+    <xsd:simpleType name="tag_valid">
+        <xsd:restriction base="xsd:string">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="15"/>
+        </xsd:restriction>
+    </xsd:simpleType>
 
 </xsd:schema>

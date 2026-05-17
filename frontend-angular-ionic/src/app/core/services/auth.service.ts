@@ -94,41 +94,56 @@ export class AuthService {
 
   private platformService = inject(PlatformService);
 
+  private syncPromise: Promise<void> | null = null;
+
   /**
    * Sincroniza el usuario de Firebase con el backend seleccionado (Node/Java) para obtener el JWT
    */
   async syncUserWithBackend() {
+    if (this.syncPromise) {
+      console.log('[AUTH] Sincronización ya en curso. Reutilizando promesa existente...');
+      return this.syncPromise;
+    }
+
     const firebaseUser = this.auth.currentUser;
     if (!firebaseUser) return;
 
-    try {
-      const idToken = await firebaseUser.getIdToken();
-      
-      // Decidimos el backend dinámicamente
-      const baseUrl = this.platformService.getUseJavaBackend() 
-        ? environment.javaApiUrl 
-        : environment.nodeApiUrl;
+    this.syncPromise = (async () => {
+      try {
+        const idToken = await firebaseUser.getIdToken();
         
-      const fullUrl = `${baseUrl}/auth/signin`;
-      
-      console.log(`[AUTH] Sincronizando con backend: ${this.platformService.getUseJavaBackend() ? 'JAVA' : 'NODE'}`);
-      
-      const response: any = await firstValueFrom(
-        this.http.post(fullUrl, { idToken })
-      );
-
-      if (response && response.data && response.data.token) {
-        // SOLO PERSISTIMOS EL JWT
-        localStorage.setItem('jwt_token', response.data.token);
+        // Decidimos el backend dinámicamente
+        const baseUrl = this.platformService.getUseJavaBackend() 
+          ? environment.javaApiUrl 
+          : environment.nodeApiUrl;
+          
+        const fullUrl = `${baseUrl}/auth/signin`;
         
-        // EL OBJETO DE USUARIO SOLO QUEDA EN EL SIGNAL (MEMORIA)
-        this._userData.set(response.data.user);
+        console.log(`[AUTH] Sincronizando con backend: ${this.platformService.getUseJavaBackend() ? 'JAVA' : 'NODE'}`);
+        
+        const response: any = await firstValueFrom(
+          this.http.post(fullUrl, { idToken })
+        );
 
-        console.log('[AUTH] Sincronización exitosa. Token guardado, datos en memoria.');
+        if (response && response.data && response.data.token) {
+          // SOLO PERSISTIMOS EL JWT
+          localStorage.setItem('jwt_token', response.data.token);
+          
+          // EL OBJETO DE USUARIO SOLO QUEDA EN EL SIGNAL (MEMORIA)
+          this._userData.set(response.data.user);
+
+          console.log('[AUTH] Sincronización exitosa. Token guardado, datos en memoria.');
+        }
+      } catch (error) {
+        console.error('Error al sincronizar con el backend:', error);
+        throw error;
       }
-    } catch (error) {
-      console.error('Error al sincronizar con el backend Node.js:', error);
-      throw error;
+    })();
+
+    try {
+      await this.syncPromise;
+    } finally {
+      this.syncPromise = null;
     }
   }
 

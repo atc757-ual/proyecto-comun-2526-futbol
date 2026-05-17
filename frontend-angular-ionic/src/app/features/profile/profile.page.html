@@ -52,15 +52,25 @@
       <ion-card-content>
         <div class="settings-list">
           <!-- SELECCIÓN DE BACKEND -->
-          <ion-item lines="none" class="action-item is-green mt-0">
-            <ion-icon slot="start" name="server-outline"></ion-icon>
-            <div>
-              <ion-label>Conectado a {{ useSpringBoot ? 'Spring Boot' : 'NodeJS' }}</ion-label>
-              <p>Entorno de Servidor</p>
+          <div class="backend-switcher-login mt-0">
+            <div class="d-flex fl-justify-between fl-align-center p-s br-soft border-neutral-2"
+              [class.bg-primary-light]="platformService.getUseJavaBackend()"
+              [class.bg-success-light]="!platformService.getUseJavaBackend()">
+              <div class="d-flex fl-align-center gap-s">
+                <div class="icon-circle-s" [class.bg-primary]="platformService.getUseJavaBackend()"
+                  [class.bg-success]="!platformService.getUseJavaBackend()">
+                  <ion-icon *ngIf="platformService.getUseJavaBackend()" name="cafe-outline" class="text-white fs-24"></ion-icon>
+                  <ion-icon *ngIf="!platformService.getUseJavaBackend()" name="logo-nodejs" class="text-white fs-24"></ion-icon>
+                </div>
+                <div class="fl-direction-column">
+                  <div class="fs-14 f-bold text-neutral-8 mr-xs ">{{ platformService.getUseJavaBackend() ? 'Java Microservicios' : 'Node.js Express' }}</div>
+                  <div class="fs-12 text-neutral-7">Backend seleccionado</div>
+                </div>
+              </div>
+              <ion-toggle mode="ios" [color]="platformService.getUseJavaBackend() ? 'primary' : 'success'"
+                [checked]="platformService.getUseJavaBackend()" (ionChange)="toggleBackend()"></ion-toggle>
             </div>
-            <ion-toggle slot="end" mode="ios" color="primary" [checked]="useSpringBoot"
-              (ionChange)="onBackendToggle($event)"></ion-toggle>
-          </ion-item>
+          </div>
         </div>
       </ion-card-content>
       <ion-button (click)="confirmLogout()" expand="block" mode="ios" fill="outline" color="danger" shape="round"
@@ -74,19 +84,23 @@
   <!-- COLUMNA DERECHA (4): Tarjeta Principal de Usuario -->
   <div class="col-4 col-sm-12 pl-base px-0-sm ">
     <ion-card class="mb-base">
-      <ion-card-content class="text-center">
-        <div class="avatar-wrapper mb-s">
+      <ion-card-content class="profile-user-content">
+        <div class="avatar-wrapper">
           <img [src]="currentUserInfo.avatar" (error)="handleAvatarError($event)" class="profile-avatar shadow-lg" />
           <div class="role-badge" [class.admin]="isAdmin">
             <ion-icon *ngIf="isAdmin" name="shield-checkmark-outline"></ion-icon>
             <ion-icon *ngIf="!isAdmin" name="person-outline"></ion-icon>
           </div>
         </div>
-        <div class="profile-name">{{ currentUserInfo.name }}</div>
-        <div class="profile-email mb-s">{{ currentUserInfo.email }}</div>
-        <ion-badge color="primary" mode="ios" class="px-base py-xs round-badge">
-          {{ currentUserInfo.role }}
-        </ion-badge>
+        <div class="profile-details-wrapper">
+          <div class="profile-name">{{ currentUserInfo.name }}</div>
+          <div class="profile-email mb-s">{{ currentUserInfo.email }}</div>
+          <div>
+            <ion-badge color="primary" mode="ios" class="px-base py-xs round-badge">
+              {{ currentUserInfo.role }}
+            </ion-badge>
+          </div>
+        </div>
       </ion-card-content>
       <!-- ACCIÓN DE CIERRE DE SESIÓN (Desktop) -->
       <ion-button (click)="confirmLogout()" expand="block" mode="ios" fill="outline" color="danger" shape="round"

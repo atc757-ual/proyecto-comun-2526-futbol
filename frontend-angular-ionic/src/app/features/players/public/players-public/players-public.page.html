@@ -24,7 +24,7 @@
                   <ion-card class="player-premium-card hide-on-phone animate-fade-in"
                     [routerLink]="['/player-detail-public', player._id]">
                     <div class="card-image-container">
-                      <img [src]="player.image_url" onerror="this.src='assets/img/player-placeholder.png'" />
+                      <img [src]="player.image_url" onerror="this.onerror=null;this.src='https://placehold.co/800?text=404&font=roboto'" />
                       <div class="card-overlay"></div>
                       <div class="position-badge">{{ player.position || 'N/A' }}</div>
                     </div>
@@ -49,7 +49,7 @@
                   <ion-item class="player-mobile-item hide-on-desktop animate-fade-in" lines="none" [button]="true"
                     [routerLink]="['/player-detail-public', player._id]">
                     <ion-thumbnail slot="start" class="mobile-thumb">
-                      <img [src]="player.image_url" onerror="this.src='assets/img/player-placeholder.png'" />
+                      <img [src]="player.image_url" onerror="this.onerror=null;this.src='https://placehold.co/800?text=404&font=roboto'" />
                       <div class="mobile-pos-badge">{{ player.position || 'N/A' }}</div>
                     </ion-thumbnail>
 
@@ -82,7 +82,7 @@
               <ion-button fill="clear" color="primary" class="fs-14 f-semibold" (click)="clearFilters()">Limpiar
                 filtros</ion-button>
             </div>
-            <div class="separator my-base"></div>
+            <div class="separator my-base" *ngIf="pagedPlayers().length > 0 && totalPages() > 1"></div>
             <!-- Paginación -->
             <div class="news-pagination-container" *ngIf="totalPages() > 1">
               <ion-button class="fs-14" mode="ios" fill="clear" (click)="prevPage()" [disabled]="currentPage() === 1">

@@ -193,7 +193,7 @@
     padding: var(--space-m) var(--container-padding-desktop) var(--space-base) var(--container-padding-desktop);
 
     @media (max-width: 767px) {
-      padding: var(--space-base) var(--container-padding-mobile) var(--space-xs) var(--container-padding-mobile);
+      padding: var(--space-base) var(--container-padding-mobile) var(--space-base) var(--container-padding-mobile);
     }
   }
 
@@ -246,7 +246,7 @@
       &::part(native) {
         cursor: pointer !important;
       }
-      
+
       &:hover {
         color: var(--color-primary);
       }

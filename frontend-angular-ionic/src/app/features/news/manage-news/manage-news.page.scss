@@ -315,6 +315,10 @@
   padding: 60px var(--space-base);
   color: var(--color-neutral-4);
 
+  @media (max-width: 767px) {
+    padding: var(--space-m) var(--space-base);
+  }
+
   ion-icon {
     font-size: var(--fs-32);
     margin-bottom: var(--space-base);

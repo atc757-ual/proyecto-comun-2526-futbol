@@ -39,10 +39,10 @@
                         <!-- Acciones Flotantes (Blur + Iconos Blancos) -->
                         <div class="admin-actions-floating" (click)="$event.stopPropagation()">
                           <button class="action-fab edit" [routerLink]="['/player-edit', player._id]">
-                            <ion-icon name="create-outline"></ion-icon>
+                            <ion-icon class="fs-20" name="create-outline"></ion-icon>
                           </button>
                           <button class="action-fab delete" (click)="deletePlayer(player)">
-                            <ion-icon name="trash-outline"></ion-icon>
+                            <ion-icon class="fs-20" name="trash-outline"></ion-icon>
                           </button>
                         </div>
                       </div>
@@ -85,10 +85,10 @@
                           <span class="fs-12 text-neutral-7 f">{{ player.nationality }}</span>
                           <div class="mobile-item-actions ml-auto" (click)="$event.stopPropagation()">
                             <ion-button fill="clear" [routerLink]="['/player-edit', player._id]" class="edit-btn">
-                              <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+                              <ion-icon class="fs-20" name="create-outline" slot="icon-only"></ion-icon>
                             </ion-button>
                             <ion-button fill="clear" (click)="deletePlayer(player)" class="delete-btn">
-                              <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+                              <ion-icon class="fs-20" name="trash-outline" slot="icon-only"></ion-icon>
                             </ion-button>
                           </div>
                         </div>

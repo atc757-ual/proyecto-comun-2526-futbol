@@ -13,7 +13,7 @@ export class PlatformService {
   private isDesktopSub = new BehaviorSubject<boolean>(window.innerWidth >= 768);
   private isMobileAppSub = new BehaviorSubject<boolean>(false);
   private isWebMobileSub = new BehaviorSubject<boolean>(false);
-  
+
   // Nuevo: Estado reactivo del backend
   private useJavaBackendSub = new BehaviorSubject<boolean>(this.getInitialBackend());
   useJavaBackend$ = this.useJavaBackendSub.asObservable();
@@ -32,10 +32,10 @@ export class PlatformService {
   private updatePlatformInfo() {
     const width = window.innerWidth;
     const desktop = width >= 768;
-    
+
     // DETECCIÓN REAL
     const mobileApp = this.platform.is('capacitor') || this.platform.is('cordova');
-    
+
     // MODO REAL ACTIVADO
     const webMobile = !desktop && !mobileApp;
 
@@ -54,8 +54,8 @@ export class PlatformService {
    */
   private getInitialBackend(): boolean {
     const val = localStorage.getItem('use_java_backend');
-    if (val === null) return environment.useJavaBackend; 
-    return val === 'true';
+    if (val === null) return environment.useJavaBackend;
+    return val === 'false';
   }
 
   toggleBackend() {

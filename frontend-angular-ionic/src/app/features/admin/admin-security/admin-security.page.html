@@ -17,9 +17,11 @@
       <ion-card-header>
         <div class="card-header-flex">
           <ion-card-title>Seguridad Nativa Firebase</ion-card-title>
-          <ion-badge [class.success]="firebaseClaims()?.admin" [class.error]="!firebaseClaims()?.admin">
+          <ion-badge *ngIf="!isLoading()" [class.success]="firebaseClaims()?.admin"
+            [class.error]="!firebaseClaims()?.admin">
             {{ firebaseClaims()?.admin ? 'Activo' : 'No detectado' }}
           </ion-badge>
+          <ion-spinner name="crescent" *ngIf="isLoading()"></ion-spinner>
         </div>
       </ion-card-header>
       <ion-card-content>
@@ -50,9 +52,10 @@
       <ion-card-header>
         <div class="card-header-flex">
           <ion-card-title>Seguridad API Node.js</ion-card-title>
-          <ion-badge [class.success]="backendIsAdmin()" [class.error]="!backendIsAdmin()">
+          <ion-badge *ngIf="!isLoading()" [class.success]="backendIsAdmin()" [class.error]="!backendIsAdmin()">
             {{ backendIsAdmin() ? 'Autorizado' : 'Denegado' }}
           </ion-badge>
+          <ion-spinner name="crescent" *ngIf="isLoading()"></ion-spinner>
         </div>
       </ion-card-header>
       <ion-card-content>

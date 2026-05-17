@@ -41,15 +41,3 @@
         opacity: var(--opacity-high);
     }
 }
-
-// Círculo pequeño para el selector de backend
-.icon-circle-s {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: background-color var(--transition-smooth);
-}

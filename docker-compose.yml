@@ -193,6 +193,7 @@ services:
       - CORBA_BRIDGE_URL=http://corba-bridge:8080/corba-bridge/api/noticias
     volumes:
       - ./firebase-credentials.json:/app/firebase-credentials.json
+      - ./backend-node/private_key.pem:/app/private_key.pem
     depends_on:
       - db-node
     networks:

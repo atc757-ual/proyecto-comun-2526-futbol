@@ -47,6 +47,7 @@ jobs:
           file: ./frontend-angular-ionic/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PREFIX }}-frontend:latest
+          no-cache: true
 
   # --- BACKEND NODE JOB ---
   backend-node:
@@ -90,6 +91,7 @@ jobs:
           context: ./backend-node
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PREFIX }}-node:latest
+          no-cache: true
 
   # --- BACKEND JAVA JOB ---
   backend-java:

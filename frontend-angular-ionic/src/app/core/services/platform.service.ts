@@ -54,8 +54,8 @@ export class PlatformService {
    */
   private getInitialBackend(): boolean {
     const val = localStorage.getItem('use_java_backend');
-    if (val === null) return environment.useJavaBackend;
-    return val === 'false';
+    if (val === null) return false;
+    return val === 'true';
   }
 
   toggleBackend() {

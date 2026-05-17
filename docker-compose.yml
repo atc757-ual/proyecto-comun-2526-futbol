@@ -194,6 +194,7 @@ services:
     volumes:
       - ./firebase-credentials.json:/app/firebase-credentials.json
       - ./backend-node/private_key.pem:/app/private_key.pem
+      - ./backend-node/public_key.pem:/app/public_key.pem
     depends_on:
       - db-node
     networks:

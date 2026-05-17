@@ -64,14 +64,14 @@ export class PlayersAllPage implements OnInit {
   // Signal Computado para la lista filtrada
   public filteredPlayers = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    
+
     // USAMOS SIGNALS para que sea reactivo
     const user = this.authService.currentUser();
     const userData = this.authService.userData();
-    
+
     const fbUid = user?.uid;
     const mongoId = userData?._id || userData?.id;
-    
+
     // Ya no filtramos por "isMine", los queremos todos
     const players = this._allPlayers();
 
@@ -82,7 +82,7 @@ export class PlayersAllPage implements OnInit {
       const teamMatch = p.team?.toLowerCase().includes(term);
       const leagueMatch = p.league?.toLowerCase().includes(term);
       const countryMatch = p.nationality?.toLowerCase().includes(term);
-      
+
       let dateMatch = false;
       if (p.created_at) {
         const date = new Date(p.created_at);
@@ -244,13 +244,13 @@ export class PlayersAllPage implements OnInit {
 
   handleImageError(event: any) {
     event.target.onerror = null;
-    event.target.src = 'https://placehold.co/800?text=404&font=roboto';
+    event.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiB2aWV3Qm94PSIwIDAgODAwIDgwMCI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI4MDAiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgZm9udC1mYW1pbHk9InN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtc2l6ZT0iODAiIGZpbGw9IiM0NzU1NjkiPjQwNDwvdGV4dD48L3N2Zz4=';
   }
 
   isMine(p: Player): boolean {
     const user = this.authService.currentUser();
     const userData = this.authService.userData();
-    
+
     const fbUid = user?.uid;
     const mongoId = userData?._id || userData?.id;
 

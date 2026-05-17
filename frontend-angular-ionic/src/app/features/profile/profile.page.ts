@@ -101,6 +101,16 @@ export class ProfilePage implements OnInit {
   }
 
   async toggleBackend() {
+    const targetVal = !this.platformService.getUseJavaBackend();
+
+    // 1. Sincronizar primero con el nuevo backend para obtener su JWT de forma atómica
+    try {
+      await this.authService.syncUserWithBackend(targetVal);
+    } catch (err) {
+      console.error('[PROFILE] Error de sincronización al cambiar backend:', err);
+    }
+
+    // 2. Hacer el cambio efectivo del BehaviorSubject en el PlatformService
     this.platformService.toggleBackend();
     this.useSpringBoot = this.platformService.getUseJavaBackend();
     const newVal = this.useSpringBoot;
@@ -110,7 +120,6 @@ export class ProfilePage implements OnInit {
       duration: 2000,
       position: 'top',
       cssClass: newVal ? 'toast-primary' : 'toast-success',
-      color: newVal ? 'primary' : 'success',
       icon: 'checkmark-circle-outline',
       mode: 'ios',
       buttons: [{ role: 'cancel', icon: 'close-outline' }]

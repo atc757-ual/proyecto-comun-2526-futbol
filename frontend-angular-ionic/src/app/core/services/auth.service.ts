@@ -99,7 +99,7 @@ export class AuthService {
   /**
    * Sincroniza el usuario de Firebase con el backend seleccionado (Node/Java) para obtener el JWT
    */
-  async syncUserWithBackend() {
+  async syncUserWithBackend(targetBackend?: boolean) {
     if (this.syncPromise) {
       console.log('[AUTH] Sincronización ya en curso. Reutilizando promesa existente...');
       return this.syncPromise;
@@ -112,14 +112,18 @@ export class AuthService {
       try {
         const idToken = await firebaseUser.getIdToken();
         
-        // Decidimos el backend dinámicamente
-        const baseUrl = this.platformService.getUseJavaBackend() 
+        // Decidimos el backend dinámicamente o por targetBackend si se proporciona
+        const useJava = targetBackend !== undefined 
+          ? targetBackend 
+          : this.platformService.getUseJavaBackend();
+
+        const baseUrl = useJava 
           ? environment.javaApiUrl 
           : environment.nodeApiUrl;
           
         const fullUrl = `${baseUrl}/auth/signin`;
         
-        console.log(`[AUTH] Sincronizando con backend: ${this.platformService.getUseJavaBackend() ? 'JAVA' : 'NODE'}`);
+        console.log(`[AUTH] Sincronizando con backend: ${useJava ? 'JAVA' : 'NODE'}`);
         
         const response: any = await firstValueFrom(
           this.http.post(fullUrl, { idToken })

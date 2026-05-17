@@ -5,8 +5,9 @@ const getBaseUrl = () => {
 };
 
 const getHeaders = () => {
+    const key = process.env.TSDB_API_KEY || process.env.FOOTBALL_API_KEY || '1';
     return {
-        'X-API-KEY': (process.env.TSDB_API_KEY || '1').trim(),
+        'X-API-KEY': key.toString().trim(),
         'User-Agent': 'Mozilla/5.0',
         'Accept': 'application/json'
     };

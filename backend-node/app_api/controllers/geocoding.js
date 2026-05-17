@@ -45,7 +45,7 @@ const reverseGeocode = async (req, res) => {
                 addressPart = response.data.display_name.split(',').slice(0, 3).join(', ');
             }
 
-            return sendApiResult(res, 200, "Dirección obtenida", {
+            return sendApiResult(res, 200, "Procesamiento concluído exitosamente", {
                 displayAddress: addressPart,
                 raw: response.data
             });

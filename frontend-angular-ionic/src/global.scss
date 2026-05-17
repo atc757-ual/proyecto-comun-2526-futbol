@@ -1,5 +1,5 @@
 /* ==========================================================================
-   GLOBAL STYLES - FOOTBALL APP
+   GLOBAL STYLES - FÚTBOL CLUB
    ========================================================================== */
 
 /* --- SISTEMA DE DISEÑO (Conexión con el Theme) --- */
@@ -83,7 +83,7 @@ body {
 
 
 
-/** --- INPUTS ESTILO FOOTBALL APP --- **/
+/** --- INPUTS ESTILO FÚTBOL CLUB --- **/
 ion-input,
 ion-select,
 ion-textarea {
@@ -183,7 +183,7 @@ ion-textarea {
 
 }
 
-/* --- SELECT ESTILO FOOTBALL APP --- */
+/* --- SELECT ESTILO FÚTBOL CLUB --- */
 ion-select {
   border-radius: var(--border-radius-soft);
   margin-bottom: var(--space-base);
@@ -699,6 +699,7 @@ ion-modal#modal {
   --width: 420px;
   --height: fit-content;
   --max-height: 90vh;
+  --max-height: 90dvh;
   --backdrop-opacity: 1;
 
   // Usamos Flexbox de Ionic para el posicionamiento
@@ -731,6 +732,21 @@ ion-modal#modal {
       // Eliminamos márgenes para que pegue al borde inferior
       margin-top: 0 !important;
       margin-bottom: 0 !important;
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 28px) !important;
+    }
+  }
+
+  // Ajuste inteligente para cuando el teclado está abierto en móviles
+  .keyboard-is-open & {
+    @media (max-width: 767px) {
+      align-items: center !important; // Centrar el modal en lugar de pegarlo abajo cuando sale el teclado
+      
+      &::part(content) {
+        border-radius: 24px !important;
+        margin: 16px !important;
+        padding-bottom: 24px !important;
+        max-height: 80vh !important;
+      }
     }
   }
 }
@@ -917,7 +933,11 @@ ion-segment {
 /* --- EMPTY STATE (Tarjetas de estado vacío para listas) --- */
 .empty-card {
   text-align: center;
-  padding: 60px 20px;
+  padding: 60px 16px;
+
+  @media (max-width: 767px) {
+    padding: 24px 8px;
+  }
 
   .empty-icon-box {
     width: 56px;

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ToastController, AlertController, Platform } from '@ionic/angular';
@@ -66,6 +66,14 @@ export class HomePage implements OnInit, OnDestroy {
       closeOutline, checkmarkCircleOutline, alertCircleOutline,
       sparklesOutline
     });
+
+    // Sincronizar reactivamente el encabezado con el nombre del usuario cargado asíncronamente
+    effect(() => {
+      const name = this.authService.firstName();
+      this.layoutService.setHeader({
+        title: `Hola, ${name || 'Usuario'}!`
+      });
+    });
   }
 
 
@@ -86,7 +94,6 @@ export class HomePage implements OnInit, OnDestroy {
     });
 
     this.layoutService.setHeader({
-      title: `Hola, ${this.authService.firstName() || 'Usuario'}!`,
       subtitle: 'Toda la emoción del fútbol en tu mano',
       showHero: true,
       isHome: true
@@ -183,8 +190,21 @@ export class HomePage implements OnInit, OnDestroy {
   loadLiveScores(isAuto = false) {
     if (!isAuto) this.isLoadingLive = true;
     this.playerService.getTSDBLiveScores().subscribe({
-      next: (scores) => {
-        const sorted = (scores || []).sort((a, b) => (a.strLeague || '').localeCompare(b.strLeague || ''));
+      next: (scores: any) => {
+        let scoresList: any[] = [];
+        if (Array.isArray(scores)) {
+          scoresList = scores;
+        } else if (scores && Array.isArray(scores.livescore)) {
+          scoresList = scores.livescore;
+        } else if (scores && Array.isArray(scores.results)) {
+          scoresList = scores.results;
+        } else if (scores && scores.data && Array.isArray(scores.data)) {
+          scoresList = scores.data;
+        } else if (scores && scores.data && Array.isArray(scores.data.livescore)) {
+          scoresList = scores.data.livescore;
+        }
+
+        const sorted = scoresList.sort((a, b) => (a.strLeague || '').localeCompare(b.strLeague || ''));
 
         const gradients = [
           'linear-gradient(135deg, #002eff, #6b8cff)', // Azul Champions

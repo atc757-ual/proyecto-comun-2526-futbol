@@ -75,6 +75,9 @@
             </ion-item>
           </ion-list>
         </div>
+        <div class="fs-12 f-medium mt-base text-neutral-6 text-center" *ngIf="lastChecked()">
+          <p>Última sincronización: {{ lastChecked() | date:'HH:mm:ss' }}</p>
+        </div>
       </ion-card-content>
     </ion-card>
 
@@ -97,8 +100,8 @@
             [(ngModel)]="targetEmail" [class.is-focused]="emailFocused" (ionFocus)="emailFocused = true"
             (ionBlur)="emailFocused = false" (ionInput)="onSearchInput($event)">
             <ion-icon slot="start" name="at-outline" [color]="emailFocused ? 'primary' : 'medium'"></ion-icon>
-            <ion-icon *ngIf="emailModel.valid && emailModel.value" slot="end" name="checkmark-circle-outline"
-              color="primary" class="fs-20"></ion-icon>
+            <ion-icon *ngIf="emailModel.valid && emailModel.value" slot="end" name="close-outline" color="primary"
+              class="fs-20"></ion-icon>
           </ion-input>
 
           <!-- LISTA DE SUGERENCIAS -->
@@ -179,9 +182,5 @@
         </div>
       </ion-card-content>
     </ion-card>
-
-    <div class="fs-12 f-medium mt-base text-neutral-6 text-center" *ngIf="lastChecked()">
-      <p>Última sincronización: {{ lastChecked() | date:'HH:mm:ss' }}</p>
-    </div>
   </div>
 </div>

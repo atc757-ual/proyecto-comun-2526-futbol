@@ -1,79 +1,89 @@
-<div class="auth-page-wrapper">
+<ion-content class="ion-no-padding" [scrollY]="true">
+  <div class="auth-page-wrapper">
 
-  <div class="auth-split-container">
+    <div class="auth-split-container">
 
-    <!-- LADO IZQUIERDO: FORMULARIO -->
-    <ion-content class="auth-form-side ion-no-padding" [scrollY]="true">
-      <div class="form-wrapper">
-        <!-- Back Link Placeholder (Mantiene la altura fija haya o no botón) -->
-        <div class="back-btn-placeholder">
-          <ion-back-button *ngIf="!layoutService.isLogin()" defaultHref="/auth/login" text="" icon="arrow-back"
-            class="back-link-minimal">
-          </ion-back-button>
-        </div>
-        <!-- Logo superior (Margen fijo para que no salte) -->
-        <div class="mt-s t-center mb-m">
-          <div class="logo-circle mx-auto">
-            <ion-icon name="football-outline" class="text-primary fs-56"></ion-icon>
+      <!-- LADO IZQUIERDO: FORMULARIO -->
+      <div class="auth-form-side">
+        <div class="form-wrapper" [class.is-mobile-app]="isMobileApp">
+          
+          <!-- Back Link Placeholder (Mantiene la altura fija haya o no botón) -->
+          <div class="back-btn-placeholder">
+            <ion-back-button *ngIf="!layoutService.isLogin()" defaultHref="/auth/login" text="" icon="arrow-back"
+              class="back-link-minimal">
+            </ion-back-button>
           </div>
-          <h1 class="f-bold text-primary mt-s fs-24">Football App</h1>
-        </div>
 
-        <!-- Cabecera de texto dinámica -->
-        <div class="t-left mb-m">
-          <h2 class="f-bold text-neutral-9 fs-22">{{ layoutService.authTitle() }}</h2>
-          <span class="f-medium text-neutral-7 fs-16">{{ layoutService.authSubtitle() }}</span>
-        </div>
+          <!-- Logo superior (Margen fijo para que no salte) -->
+          <div class="mt-s t-center mb-m">
+            <div class="logo-circle mx-auto">
+              <ion-icon name="football-outline" class="text-primary fs-56"></ion-icon>
+            </div>
+            <h1 class="f-bold text-primary mt-s fs-24">Fútbol Club</h1>
+          </div>
 
-        <!-- ÁREA DE CONTENIDO -->
-        <div class="dynamic-content-area animate-fade-in">
-          <router-outlet></router-outlet>
-        </div>
+          <!-- Cabecera de texto dinámica -->
+          <div class="t-left mb-m">
+            <h2 class="f-bold text-neutral-9 fs-22">{{ layoutService.authTitle() }}</h2>
+            <span class="f-medium text-neutral-7 fs-16">{{ layoutService.authSubtitle() }}</span>
+          </div>
 
-        <!-- Footer Móvil -->
-        <div *ngIf="isMobileApp" class="d-flex ai-center gap-s jc-center mt-xl">
-          <span class="fs-12 text-neutral-7">© 2026 Football App. By Alex Taquila.</span>
-          <a class="icons-social" href="https://www.linkedin.com/in/alextaquilacamasca/" target="_blank">
-            <ion-icon name="logo-linkedin"></ion-icon>
-          </a>
-          <a class="icons-social" href="https://github.com/atc757-ual/proyecto-comun-2526-futbol" target="_blank">
-            <ion-icon name="logo-github"></ion-icon>
-          </a>
+          <!-- ÁREA DE CONTENIDO -->
+          <div class="dynamic-content-area animate-fade-in">
+            <router-outlet></router-outlet>
+          </div>
+
+          <!-- 📱 FOOTER NATIVO APP (MÍNIMO - SOLO EN NATIVO APP) -->
+          <footer class="auth-global-footer hide-on-desktop" *ngIf="isMobileApp">
+            <div class="d-flex jc-between ai-center px-s">
+              <span class="text-neutral-7 fs-13">© 2026 Fútbol Club. By Alex Taquila.</span>
+              <div class="d-flex gap-s">
+                <a href="https://www.linkedin.com/in/alextaquilacamasca/" target="_blank" class="icon-footer">
+                  <ion-icon name="logo-linkedin" class="pointer"></ion-icon>
+                </a>
+                <a href="https://github.com/atc757-ual/" target="_blank" class="icon-footer">
+                  <ion-icon name="logo-github" class="pointer"></ion-icon>
+                </a>
+              </div>
+            </div>
+          </footer>
+
         </div>
       </div>
-    </ion-content>
 
-    <!-- LADO DERECHO: IMAGEN -->
-    <div class="auth-image-side hide-on-phone">
-      <div class="image-overlay">
-        <div class="overlay-content">
-          <h2 class="f-bold">Vive la<br>experiencia<br>real del fútbol.</h2>
-          <p>Gestiona tus jugadores y obtén tu once ideal.</p>
+      <!-- LADO DERECHO: IMAGEN -->
+      <div class="auth-image-side hide-on-phone">
+        <div class="image-overlay">
+          <div class="overlay-content">
+            <h2 class="f-bold">Vive la<br>experiencia<br>real del fútbol.</h2>
+            <p>Gestiona tus jugadores y obtén tu once ideal.</p>
+          </div>
         </div>
       </div>
+
     </div>
+
+    <!-- 💻 FOOTER WEB UNIFICADO (GRIS - NO FIJO - DESPLAZABLE AL FINAL) -->
+    <footer class="main-footer-gray" *ngIf="!isMobileApp">
+      <div class="footer">
+        <div class="footer-slim-content">
+          <div class="footer-left">
+            <span class="copyright-text fs-14 text-neutral-7">© 2026 Fútbol Club. By Alex Taquila.</span>
+          </div>
+          <div class="footer-right">
+            <div class="footer-socials">
+              <span class="fs-14 text-neutral-7 hide-on-phone">Sígueme en:</span>
+              <a href="https://www.linkedin.com/in/alextaquilacamasca" target="_blank" class="social-icon">
+                <ion-icon name="logo-linkedin"></ion-icon>
+              </a>
+              <a href="https://github.com/atc757-ual" target="_blank" class="social-icon">
+                <ion-icon name="logo-github"></ion-icon>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
 
   </div>
-
-  <!-- FOOTER GLOBAL DESKTOP -->
-  <footer *ngIf="!isMobileApp" class="auth-global-footer">
-    <div class="footer-container px-xl d-flex jc-between ai-center">
-      <div class="d-flex ai-center">
-        <span class="text-neutral-7 fs-14">© 2026 Football App. By Alex Taquila.</span>
-      </div>
-
-      <div class="d-flex ai-center gap-s ml-base">
-        <span class="text-neutral-7 fs-14 hide-on-phone">Sígueme en:</span>
-        <div class="footer-socials d-flex gap-s">
-          <a href="https://www.linkedin.com/in/alextaquilacamasca/" target="_blank" class="icon-footer">
-            <ion-icon name="logo-linkedin" class="pointer"></ion-icon>
-          </a>
-          <a href="https://github.com/atc757-ual/proyecto-comun-2526-futbol" target="_blank" class="icon-footer">
-            <ion-icon name="logo-github" class="pointer"></ion-icon>
-          </a>
-        </div>
-      </div>
-    </div>
-  </footer>
-
-</div>
+</ion-content>

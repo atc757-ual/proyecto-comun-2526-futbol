@@ -173,7 +173,7 @@ export class AdminSecurityPage implements OnInit {
     const val = event.detail.value;
     console.log('[SECURITY] Buscando:', val);
     this.selectedUser.set(null); // Limpiar selección al escribir de nuevo
-    
+
     if (!val || val.length < 2) {
       this.suggestedUsers.set([]);
       return;

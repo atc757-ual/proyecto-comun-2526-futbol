@@ -105,6 +105,9 @@ export class AuthService {
       return this.syncPromise;
     }
 
+    // Esperar a que el estado de autenticación inicial de Firebase esté completamente cargado/restaurado
+    await this.auth.authStateReady();
+
     const firebaseUser = this.auth.currentUser;
     if (!firebaseUser) return;
 

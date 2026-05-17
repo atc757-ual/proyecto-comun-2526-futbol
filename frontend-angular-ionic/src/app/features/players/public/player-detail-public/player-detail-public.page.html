@@ -215,11 +215,11 @@
                 <div class="bubble-head">
                   <div class="d-flex fl-align-center gap-s">
                     <ion-avatar class="mini-avatar shadow-sm">
-                      <img src="https://ui-avatars.com/api/?name={{comment.autor_name}}&background=random" />
+                      <img [src]="'https://ui-avatars.com/api/?name=' + (comment.user_name || comment.autor_name || comment.author_name || 'Invitado') + '&background=random'" />
                     </ion-avatar>
                     <div class="author-info">
-                      <span class="author">{{ comment.author_name || comment.autor_name }}</span>
-                      <span class="date">{{ comment.created_at | date:'dd MMM yyyy HH:mm' }}</span>
+                      <span class="author">{{ comment.user_name || comment.autor_name || comment.author_name || 'Invitado' }}</span>
+                      <span class="date">{{ (comment.created_at || comment.entryDate) | date:'dd MMM yyyy HH:mm' }}</span>
                     </div>
                   </div>
                   <div class="rating-mini">

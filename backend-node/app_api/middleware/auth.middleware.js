@@ -53,7 +53,7 @@ const authorizeRequest = async (req, res, next) => {
 
         try {
             let user = await User.findOne({
-                firebaseUid: decoded.id, 
+                firebaseUid: decoded.id || decoded.sub, 
                 is_active: true, 
                 blocked: false 
             }).select('-password');

@@ -119,10 +119,9 @@ export class ProfilePage implements OnInit {
       message: `Backend cambiado a ${newVal ? 'Java' : 'Node'} al instante`,
       duration: 2000,
       position: 'top',
-      cssClass: newVal ? 'toast-primary' : 'toast-success',
+      cssClass: 'toast-success',
       icon: 'checkmark-circle-outline',
-      mode: 'ios',
-      buttons: [{ role: 'cancel', icon: 'close-outline' }]
+      mode: 'ios'
     });
     await toast.present();
   }
@@ -139,8 +138,7 @@ export class ProfilePage implements OnInit {
         position: 'top',
         cssClass: 'toast-success',
         icon: 'checkmark-circle-outline',
-        mode: 'ios',
-        buttons: [{ role: 'cancel', icon: 'close-outline' }]
+        mode: 'ios'
       });
       await toast.present();
       this.startCooldown(5 * 60 * 1000);
@@ -151,8 +149,7 @@ export class ProfilePage implements OnInit {
         position: 'top',
         cssClass: 'toast-error',
         icon: 'alert-circle-outline',
-        mode: 'ios',
-        buttons: [{ role: 'cancel', icon: 'close-outline' }]
+        mode: 'ios'
       });
       await toast.present();
     } finally {

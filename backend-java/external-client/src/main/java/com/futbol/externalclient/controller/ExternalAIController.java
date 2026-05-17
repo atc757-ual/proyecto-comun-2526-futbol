@@ -72,6 +72,7 @@ public class ExternalAIController {
             }
             
             com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            mapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             com.futbol.externalclient.dto.PlayerAnalysisResponse analysis = mapper.readValue(cleanJson, com.futbol.externalclient.dto.PlayerAnalysisResponse.class);
 
             return ApiResult.success("Análisis de equipo local (Java) completado", analysis);

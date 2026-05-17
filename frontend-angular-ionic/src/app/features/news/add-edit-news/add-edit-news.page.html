@@ -41,7 +41,7 @@
             <ion-textarea #summaryModel="ngModel" mode="md" fill="outline" label="Resumen (Sumary)"
               labelPlacement="stacked" [(ngModel)]="newsData.summary" name="summary" required minlength="10"
               maxlength="500" counter="true" [counterFormatter]="summaryCounterFormatter"
-              placeholder="Un breve resumen que enganche al lector..." class="futbol-input" rows="2"
+              placeholder="Un breve resumen que enganche al lector..." class="futbol-input" [autoGrow]="true" rows="4"
               helperText="Resumen o frase importante" errorText="Min. 10 carácteres" (ionFocus)="setFocus('summary')"
               (ionBlur)="setFocus(null)" [class.is-focused]="focusedField === 'summary'"
               [class.input-error]="summaryModel.invalid && summaryModel.touched" style="min-height: 80px;">
@@ -56,7 +56,7 @@
               labelPlacement="stacked" [(ngModel)]="newsData.content" name="content" required minlength="20"
               maxlength="5000" counter="true" [counterFormatter]="contentCounterFormatter"
               placeholder="Escribe aquí el cuerpo completo de la noticia..." class="futbol-input" [autoGrow]="true"
-              rows="4" helperText="Cuerpo principal de la noticia" errorText="Min. 20 carácteres"
+              rows="5" helperText="Cuerpo principal de la noticia" errorText="Min. 20 carácteres"
               (ionFocus)="setFocus('content')" (ionBlur)="setFocus(null)"
               [class.is-focused]="focusedField === 'content'"
               [class.input-error]="contentModel.invalid && contentModel.touched" style="min-height: 150px;">
@@ -87,7 +87,7 @@
               <div class="tag-chips-wrapper mt-s animated fadeIn" *ngIf="newsData.tags.length > 0">
                 <ion-chip *ngFor="let tag of newsData.tags" mode="ios" class="futbol-chip-pill">
                   <ion-label>#{{ tag }}</ion-label>
-                <ion-icon name="close-outline" (click)="removeTag(tag)"></ion-icon>
+                  <ion-icon name="close-outline" (click)="removeTag(tag)"></ion-icon>
                 </ion-chip>
                 <!-- Mensaje de Error Personalizado -->
                 <div class="error-message-container" *ngIf="tagErrorText">

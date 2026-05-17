@@ -3,8 +3,8 @@
 
   <!-- INPUT: Nombre Completo -->
   <div class="mb-m">
-    <ion-input #nameModel="ngModel" mode="md" type="text" label="Nombre Completo" label-placement="stacked" fill="outline"
-      required name="fullName" minlength="3" maxlength="250" placeholder="Juán Pérez"
+    <ion-input #nameModel="ngModel" mode="md" type="text" label="Nombre Completo" label-placement="stacked"
+      fill="outline" required name="fullName" minlength="3" maxlength="250" placeholder="Juán Pérez"
       class="futbol-input capitalize-input" [(ngModel)]="userName" (ionBlur)="onBlurName()" (ionFocus)="onFocusName()"
       (keyup.enter)="onRegister()" [errorText]="nameTouched && !isNameValid() ? 'Solo letras (Mín. 3 carácteres)' : ''"
       [class.input-error]="nameTouched && !isNameValid()" [class.ion-invalid]="nameTouched && !isNameValid()"
@@ -28,8 +28,8 @@
       [class.input-error]="emailTouched && !isEmailValid()" [class.ion-invalid]="emailTouched && !isEmailValid()"
       [class.is-focused]="emailFocused">
 
-      <ion-icon [color]="emailFocused ? 'primary' : (emailTouched && !isEmailValid() ? 'danger' : 'medium')" slot="start"
-        name="at-outline" aria-hidden="true">
+      <ion-icon [color]="emailFocused ? 'primary' : (emailTouched && !isEmailValid() ? 'danger' : 'medium')"
+        slot="start" name="at-outline" aria-hidden="true">
       </ion-icon>
 
       <ion-icon *ngIf="isEmailValid()" slot="end" name="checkmark-circle-outline" color="primary" class="fs-20">
@@ -39,8 +39,8 @@
 
   <!-- INPUT: Contraseña -->
   <div class="mb-m">
-    <ion-input #passModel="ngModel" mode="md" type="password" label="Contraseña" label-placement="stacked" fill="outline"
-      required name="password" minlength="8" placeholder="Mínimo 8 caracteres" class="futbol-input"
+    <ion-input #passModel="ngModel" mode="md" type="password" label="Contraseña" label-placement="stacked"
+      fill="outline" required name="password" minlength="8" placeholder="Mínimo 8 caracteres" class="futbol-input"
       [(ngModel)]="userPass" (ionBlur)="onBlurPass()" (ionFocus)="onFocusPass()" (keyup.enter)="onRegister()"
       [errorText]="passTouched && !isPasswordValid() ? 'Debe tener al menos 8 caracteres' : ''"
       [class.input-error]="passTouched && !isPasswordValid()" [class.ion-invalid]="passTouched && !isPasswordValid()"
@@ -98,7 +98,7 @@
       <!-- Cabecera -->
       <ion-header mode="ios" class="ion-no-border">
         <ion-toolbar mode="ios" class="toolbar-container">
-          <ion-title class="fs-20 f-medium">Lee nuestros terminos</ion-title>
+          <ion-title class="fs-20 f-medium">Términos y Condiciones</ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="closeTermsOverlay()">
               <ion-icon class="fs-36" name="close-outline" slot="icon-only"></ion-icon>
@@ -125,22 +125,27 @@
           </ng-container>
 
           <div id="terms-end"></div>
+
+          <!-- Botón de Aceptar dentro del Scroll para evitar solapamientos en Móvil -->
+          <div class="terms-action-wrapper mt-base mb-base text-center" *ngIf="!isTermsLoading">
+            <ion-button mode="ios" expand="block" shape="round" class="futbol-btn-primary f-semibold"
+              [disabled]="!hasReadTerms" (click)="acceptAndCloseOverlay()">
+              He leído y acepto los términos
+            </ion-button>
+            <p class="text-neutral-5 fs-12 mt-s" *ngIf="!hasReadTerms"
+              style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+              <ion-icon name="arrow-down-outline" class="pulse-animation"></ion-icon>
+              Por favor, desplázate hasta el final para poder aceptar.
+            </p>
+          </div>
         </div>
       </ion-content>
-
-      <!-- Footer con botón aceptar -->
-      <ion-footer class="ion-no-border ion-padding">
-        <ion-button class="py-0" mode="ios" expand="block" shape="round" class="futbol-btn-primary f-semibold"
-          [disabled]="!hasReadTerms" (click)="acceptAndCloseOverlay()">
-          He leído y acepto los términos
-        </ion-button>
-      </ion-footer>
     </div>
   </div>
 
 
   <!-- Botón Registro -->
-  <ion-button type="submit" expand="block" shape="round" class="futbol-btn-primary f-bold fs-16 mt-xl" mode="ios"
+  <ion-button type="submit" expand="block" shape="round" class="futbol-btn-primary f-bold fs-16 mt-m" mode="ios"
     [disabled]="!isFormValid() || isLoading">
     <ion-spinner *ngIf="isLoading" name="crescent" slot="start" size="small" class="mr-s"></ion-spinner>
     <span *ngIf="!isLoading">Crear mi cuenta</span>

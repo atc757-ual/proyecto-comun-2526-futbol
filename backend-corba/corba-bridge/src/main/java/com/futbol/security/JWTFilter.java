@@ -68,6 +68,16 @@ public class JWTFilter implements Filter {
         // Añadir headers CORS a todas las respuestas
         setCorsHeaders(httpResponse);
 
+        String path = httpRequest.getRequestURI();
+        String method = httpRequest.getMethod();
+
+        // El feed y lectura individual de noticias es de libre acceso público sin token
+        if ("GET".equalsIgnoreCase(method) && (path.endsWith("/feed") || path.contains("/noticias/feed") || path.endsWith("/noticias") || path.contains("/api/noticias"))) {
+            System.out.println("[DEBUG-JWT] Permitiendo acceso público libre a: " + path);
+            chain.doFilter(request, response);
+            return;
+        }
+
         // Extraer el token del header Authorization
         String authHeader = httpRequest.getHeader("Authorization");
         System.out.println("[DEBUG-JWT] Header Authorization recibido: " + (authHeader != null ? "SI" : "NO"));

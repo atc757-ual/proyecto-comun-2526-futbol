@@ -711,6 +711,11 @@
     font-size: var(--fs-14);
     color: var(--color-neutral-9);
     font-weight: var(--fw-medium);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 65%;
+    text-align: right;
   }
 }
 
@@ -1170,7 +1175,7 @@
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
 
   .team-banner {
-    height: 60px;
+    height: 110px;
     background-size: cover;
     background-position: center;
     position: relative;
@@ -1181,16 +1186,17 @@
     align-items: center;
     padding: var(--space-s);
     gap: var(--space-s);
-    margin-top: -25px;
+    margin-top: -35px;
     position: relative;
     z-index: 5;
 
     .team-logo-container {
-      width: 65px;
-      height: 65px;
+      width: 70px;
+      height: 70px;
       background: var(--color-neutral-0);
-      border-radius: 10px;
-      padding: 6px;
+      border-radius: 50%;
+      padding: 4px;
+      border: 3px solid var(--color-neutral-0);
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
       display: flex;
       align-items: center;
@@ -1204,7 +1210,7 @@
     }
 
     .team-main-data {
-      padding-top: 20px;
+      padding-top: 25px;
       flex-grow: 1;
 
       h3 {
@@ -1233,12 +1239,19 @@
     span:first-child {
       font-size: var(--fs-14);
       color: var(--color-neutral-6);
+      flex-shrink: 0;
+      margin-right: var(--space-s);
     }
 
     span:last-child {
       font-size: var(--fs-14);
       color: var(--color-neutral-8);
       font-weight: var(--fw-medium);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 70%;
+      text-align: right;
     }
 
   }
@@ -1247,19 +1260,20 @@
 @media (max-width: 991px) {
   .team-info-card {
     .team-banner {
-      height: 50px;
+      height: 80px;
     }
 
     .team-horizontal-content {
-      margin-top: -20px;
+      margin-top: -30px;
 
       .team-logo-container {
-        width: 55px;
-        height: 55px;
+        width: 60px;
+        height: 60px;
+        border-width: 2px;
       }
 
       .team-main-data {
-        padding-top: 15px;
+        padding-top: 20px;
 
         h3 {
           font-size: var(--fs-14);

@@ -45,6 +45,18 @@ spring:
           uri: lb://EXTERNAL-CLIENT
           predicates:
             - Path=/api/news,/api/news/**
+
+        # Java AI Orchestrator (delegated to external-client)
+        - id: ai-client-route
+          uri: lb://EXTERNAL-CLIENT
+          predicates:
+            - Path=/api/ai,/api/ai/**
+
+        # Java Geocoding Route (delegated to external-client)
+        - id: geo-client-route
+          uri: lb://EXTERNAL-CLIENT
+          predicates:
+            - Path=/api/geo,/api/geo/**
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://football-postgres:5432/football_db}
     username: ${SPRING_DATASOURCE_USERNAME:root}

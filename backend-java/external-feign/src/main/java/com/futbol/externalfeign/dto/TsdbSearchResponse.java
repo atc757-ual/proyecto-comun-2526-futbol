@@ -40,6 +40,7 @@ public class TsdbSearchResponse {
         private String strThumb;
         private String strCutout;
         private String strBanner;
+        private String strRender;
         private String strDescriptionES;
         private String strDescriptionEN;
         private String strFacebook;

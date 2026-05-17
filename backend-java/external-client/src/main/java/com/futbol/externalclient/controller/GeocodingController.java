@@ -28,10 +28,20 @@ public class GeocodingController {
         
         try {
             String url = String.format("https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=%s&lon=%s", lat, lng);
-            
-            // Usamos un Map genérico para recibir la respuesta de Nominatim
+
+            // Nominatim requiere estrictamente un User-Agent personalizado y único para evitar bloqueos
+            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+            headers.set("User-Agent", "ProyectoComunFutbolApp2526V3/3.0 (futbol.app.comun.2526@gmail.com)");
+            headers.set("Accept", "application/json");
+            org.springframework.http.HttpEntity<Void> entity = new org.springframework.http.HttpEntity<>(headers);
+
             @SuppressWarnings("unchecked")
-            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            Map<String, Object> response = restTemplate.exchange(
+                url,
+                org.springframework.http.HttpMethod.GET,
+                entity,
+                Map.class
+            ).getBody();
 
             if (response != null && response.containsKey("display_name")) {
                 @SuppressWarnings("unchecked")
@@ -63,10 +73,19 @@ public class GeocodingController {
                 ));
             }
 
-            return ApiResult.error("404", "No se encontró una dirección para estas coordenadas");
+            // Fallback si no hay display_name en la respuesta exitosa
+            return ApiResult.success("Dirección en coordenadas (fallback)", Map.of(
+                "displayAddress", String.format("Coordenadas: %.4f, %.4f", lat, lng),
+                "raw", Map.of("lat", lat, "lon", lng)
+            ));
 
         } catch (Exception e) {
-            return ApiResult.error("500", "Error al consultar servicio de geocoding: " + e.getMessage());
+            System.err.println("[GEO-CONTROLLER] Error al consultar Nominatim (aplicando fallback): " + e.getMessage());
+            // Fallback ultra-resiliente para evitar que falle el flujo ante bloqueos de Nominatim
+            return ApiResult.success("Dirección en coordenadas (fallback)", Map.of(
+                "displayAddress", String.format("Coordenadas: %.4f, %.4f", lat, lng),
+                "raw", Map.of("lat", lat, "lon", lng)
+            ));
         }
     }
 }

@@ -23,6 +23,10 @@ football:
   api:
     key: ${FOOTBALL_API_KEY}
 
+tsdb:
+  api:
+    key: ${FOOTBALL_API_KEY}
+
 google:
   api:
     key: ${GOOGLE_API_KEY}
@@ -30,3 +34,7 @@ google:
 logging:
   level:
     com.futbol.externalfeign.client: DEBUG
+
+corba:
+  bridge:
+    url: "http://football-corba-bridge:8080/corba-bridge/api/noticias"

@@ -322,18 +322,18 @@
               <div class="comment-bubble mt-s" *ngFor="let comment of pagedComments"
                 [class.rating-positive]="comment.rating >= 4" [class.rating-neutral]="comment.rating === 3"
                 [class.rating-negative]="comment.rating > 0 && comment.rating <= 2"
-                [class.is-editing]="editingCommentId === comment._id">
+                [class.is-editing]="editingCommentId === (comment.id || comment._id)">
 
-                <ng-container *ngIf="editingCommentId !== comment._id">
+                <ng-container *ngIf="editingCommentId !== (comment.id || comment._id)">
                   <div class="bubble-head">
                     <div class="d-flex fl-align-center gap-s">
-                      <ion-avatar class="mini-avatar shadow-sm">
-                        <img src="https://ui-avatars.com/api/?name={{comment.autor_name}}&background=random" />
-                      </ion-avatar>
-                      <div class="author-info">
-                        <span class="author">{{ comment.autor_name }}</span>
-                        <span class="date">{{ comment.created_at | date:'dd MMM yyyy HH:mm' }}</span>
-                      </div>
+                    <ion-avatar class="mini-avatar shadow-sm">
+                      <img [src]="'https://ui-avatars.com/api/?name=' + (comment.user_name || comment.autor_name || comment.author_name || 'Invitado') + '&background=random'" />
+                    </ion-avatar>
+                    <div class="author-info">
+                      <span class="author">{{ comment.user_name || comment.autor_name || comment.author_name || 'Invitado' }}</span>
+                      <span class="date">{{ (comment.created_at || comment.entryDate) | date:'dd MMM yyyy HH:mm' }}</span>
+                    </div>
                     </div>
                     <div class="rating-mini">
                       <ion-icon [name]="s" class="fs-16" [class.active]="s === 'star'"
@@ -346,14 +346,14 @@
                     <div class="actions">
                       <button (click)="startEditing(comment)" title="Editar"><ion-icon
                           name="create-outline"></ion-icon></button>
-                      <button class="delete" (click)="deleteComment(comment._id!)" title="Eliminar"><ion-icon
+                      <button class="delete" (click)="deleteComment(comment.id || comment._id!)" title="Eliminar"><ion-icon
                           name="trash-outline"></ion-icon></button>
                     </div>
                   </div>
                 </ng-container>
 
                 <!-- MODO EDICIÓN -->
-                <ng-container *ngIf="editingCommentId === comment._id">
+                <ng-container *ngIf="editingCommentId === (comment.id || comment._id)">
                   <div class="rating-stars-input mb-s">
                     <ion-icon *ngFor="let i of [1,2,3,4,5]" [name]="i <= editingRating ? 'star' : 'star-outline'"
                       [class.active]="i <= editingRating" (click)="setRating(i, true)"></ion-icon>

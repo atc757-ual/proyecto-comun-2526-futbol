@@ -17,7 +17,7 @@
       <div class="menu-header d-flex align-center justify-between px-base">
 
         <div class="logo-container">
-          <span class="logo-text">Football App</span>
+          <span class="logo-text">Fútbol Club</span>
           <div class="logo-circle-wrapper">
             <ion-icon name="football" class="logo-icon"></ion-icon>
           </div>
@@ -35,7 +35,7 @@
           <ng-container *ngFor="let p of appPages">
             <ion-menu-toggle auto-hide="false"
               *ngIf="(!p.adminOnly && !p.masterOnly) || (p.adminOnly && authService.isAdmin()) || (p.masterOnly && authService.isMasterAdmin())">
-              <ion-item lines="none" class="nav-item pointer" [routerLink]="p.url" 
+              <ion-item lines="none" class="nav-item pointer" [routerLink]="p.url"
                 [class.active-item]="isTabActive(p.url)">
                 <ion-icon slot="start" [name]="p.icon"></ion-icon>
                 <ion-label>{{ p.title }}</ion-label>
@@ -94,7 +94,7 @@
               <span class="logo-ball-blue">
                 <ion-icon name="football"></ion-icon>
               </span>
-              <span class="main-logo-text">Football App</span>
+              <span class="main-logo-text">Fútbol Club</span>
             </div>
           </div>
         </div>
@@ -105,7 +105,7 @@
           <div routerLink="/home" class="central-ball-wrapper">
             <ion-icon name="football"></ion-icon>
           </div>
-          <ion-label class="central-text-wrapper">Football App</ion-label>
+          <ion-label class="central-text-wrapper">Fútbol Club</ion-label>
         </div>
 
         <div class="header-right">
@@ -128,10 +128,9 @@
       <div class="main-content content">
         <ul class="nav-links-centered">
           <ng-container *ngFor="let p of appPages">
-              <li
-                *ngIf="(!p.adminOnly && !p.masterOnly) || (p.adminOnly && authService.isAdmin()) || (p.masterOnly && authService.isMasterAdmin())"
-                [routerLink]="p.url" [class.active]="isTabActive(p.url)"
-                [class.nav-item-ai]="p.title === 'Football AI'">
+            <li
+              *ngIf="(!p.adminOnly && !p.masterOnly) || (p.adminOnly && authService.isAdmin()) || (p.masterOnly && authService.isMasterAdmin())"
+              [routerLink]="p.url" [class.active]="isTabActive(p.url)" [class.nav-item-ai]="p.title === 'Football AI'">
               <ion-icon *ngIf="p.icon !== 'home' && p.icon !== 'people' && p.icon !== 'cart' && p.icon !== 'newspaper'"
                 [name]="p.icon" class="nav-icon-mini"></ion-icon>
               {{ p.title }}
@@ -178,15 +177,15 @@
       <div class="main-content footer">
         <div class="footer-slim-content">
           <div class="footer-left">
-            <span class="copyright-text fs-14 text-neutral-7">© 2026 Football App. By Alex Taquila.</span>
+            <span class="copyright-text fs-14 text-neutral-7">© 2026 Fútbol Club. By Alex Taquila.</span>
           </div>
           <div class="footer-right">
             <div class="footer-socials">
               <span class="fs-14 text-neutral-7 hide-on-phone">Sígueme en:</span>
-              <a href="https://www.linkedin.com/in/alextaquilacamasca/" target="_blank" class="social-icon">
+              <a href="https://www.linkedin.com/in/alextaquilacamasca" target="_blank" class="social-icon">
                 <ion-icon name="logo-linkedin"></ion-icon>
               </a>
-              <a href="https://github.com/atc757-ual/proyecto-comun-2526-futbol" target="_blank" class="social-icon">
+              <a href="https://github.com/atc757-ual" target="_blank" class="social-icon">
                 <ion-icon name="logo-github"></ion-icon>
               </a>
             </div>

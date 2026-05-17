@@ -75,7 +75,7 @@ export class AiTeamPage implements OnInit {
     this.playerService.getPlayers().subscribe({
       next: (players) => {
         this.localPlayers = players || [];
-        this.hasPlayers = this.localPlayers.length > 0;
+        this.hasPlayers = this.localPlayers.length >= 11;
         this.isLoading = false;
       },
       error: () => {
@@ -160,7 +160,25 @@ export class AiTeamPage implements OnInit {
 
   public getPlayersByZone(zone: string) {
     if (!this.analysisData || !this.analysisData.idealEleven) return [];
-    return this.analysisData.idealEleven.filter(p => p.position === zone);
+    return this.analysisData.idealEleven.filter(p => {
+      const pos = (p.position || '').toUpperCase().trim();
+      const role = (p.role || '').toUpperCase().trim();
+
+      // Normalizar zona solicitada: PO, DF, MC, DL
+      if (zone === 'PO') {
+        return pos === 'PO' || pos === 'POR' || pos === 'GK' || pos === 'GOALKEEPER' || pos.includes('PORT') || pos.includes('ARQ') || role.includes('PORT') || role.includes('GOAL');
+      }
+      if (zone === 'DF') {
+        return pos === 'DF' || pos === 'DEF' || pos === 'DEFENSA' || pos === 'DEFENDER' || pos.includes('BACK') || pos.includes('LAT') || role.includes('DEF') || role.includes('BACK') || role.includes('LAT');
+      }
+      if (zone === 'MC') {
+        return pos === 'MC' || pos === 'MED' || pos === 'MID' || pos === 'MIDFIELDER' || pos === 'CENTROCAMPISTA' || pos.includes('VOL') || pos.includes('MED') || role.includes('MID') || role.includes('MED') || role.includes('VOL') || role.includes('CENTRO');
+      }
+      if (zone === 'DL') {
+        return pos === 'DL' || pos === 'DEL' || pos === 'DELANTERO' || pos === 'FORWARD' || pos === 'ATTACKER' || pos === 'ATT' || pos === 'FWD' || pos.includes('WING') || pos.includes('STRI') || pos.includes('EXT') || role.includes('FORW') || role.includes('ATT') || role.includes('STRI') || role.includes('EXT') || role.includes('DEL');
+      }
+      return pos === zone;
+    });
   }
 
   private async showToast(message: string, type: 'success' | 'danger' | 'warning') {

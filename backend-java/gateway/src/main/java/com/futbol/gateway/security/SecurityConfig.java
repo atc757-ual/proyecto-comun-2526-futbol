@@ -7,6 +7,9 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.CorsConfigurationSource;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebFluxSecurity
@@ -26,6 +29,7 @@ public class SecurityConfig {
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
             .csrf().disable()
+            .cors().and()
             .exceptionHandling()
                 .authenticationEntryPoint(authenticationEntryPoint)
                 .accessDeniedHandler(accessDeniedHandler)
@@ -35,18 +39,31 @@ public class SecurityConfig {
             // Rutas Públicas
             .pathMatchers("/api/auth/**").permitAll()
             .pathMatchers("/actuator/**").permitAll()
-            .pathMatchers(HttpMethod.GET, "/api/players/public").permitAll()
+            .pathMatchers(HttpMethod.GET, "/api/players/public/**").permitAll()
+            .pathMatchers(HttpMethod.GET, "/api/news/**").permitAll()
+            .pathMatchers(HttpMethod.GET, "/api/external/live/**", "/api/external/tv/**").permitAll()
             // Rutas Protegidas (Requieren Login)
+            .pathMatchers(HttpMethod.POST, "/api/players").authenticated()
+            .pathMatchers(HttpMethod.PUT, "/api/players/**").authenticated()
+            .pathMatchers(HttpMethod.DELETE, "/api/players/**").authenticated()
             .pathMatchers(HttpMethod.POST, "/api/players/*/comments").authenticated()
             .pathMatchers(HttpMethod.POST, "/api/ai/analyze").authenticated()
             .pathMatchers(HttpMethod.GET, "/api/external/players").authenticated()
-            // Rutas de Admin
-            .pathMatchers(HttpMethod.POST, "/api/players").hasAuthority("ROLE_admin")
-            .pathMatchers(HttpMethod.PUT, "/api/players/**").hasAuthority("ROLE_admin")
-            .pathMatchers(HttpMethod.DELETE, "/api/players/**").hasAuthority("ROLE_admin")
             // El resto requiere autenticación básica
             .anyExchange().authenticated();
 
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.addAllowedOriginPattern("*");
+        configuration.addAllowedMethod("*");
+        configuration.addAllowedHeader("*");
+        configuration.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }

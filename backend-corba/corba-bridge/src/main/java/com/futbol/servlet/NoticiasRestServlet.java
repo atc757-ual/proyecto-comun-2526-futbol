@@ -58,16 +58,16 @@ public class NoticiasRestServlet extends HttpServlet {
             if (pathInfo == null || pathInfo.equals("/") || pathInfo.isEmpty()) {
                 if (!validarRolAdmin(request, response)) return;
                 System.out.println("[BRIDGE-GET] Llamando a CORBA: getAllNews()...");
-                procesarLista(this.newsService.getAllNews(), response, xsdPath, "Admin: Todas las noticias");
+                procesarLista(this.newsService.getAllNews(), response, xsdPath, "Procesamiento concluído exitosamente");
             } else if (pathInfo.startsWith("/feed")) {
                 System.out.println("[BRIDGE-GET] Llamando a CORBA: getVisibleNews()...");
-                procesarLista(this.newsService.getVisibleNews(), response, xsdPath, "Public: Feed de noticias");
+                procesarLista(this.newsService.getVisibleNews(), response, xsdPath, "Procesamiento concluído exitosamente");
             } else if (pathInfo.startsWith("/featured")) {
                 System.out.println("[BRIDGE-GET] Llamando a CORBA: getFeaturedNews()...");
-                procesarLista(this.newsService.getFeaturedNews(), response, xsdPath, "Public: Destacadas");
+                procesarLista(this.newsService.getFeaturedNews(), response, xsdPath, "Procesamiento concluído exitosamente");
             } else if (pathInfo.startsWith("/recent")) {
                 System.out.println("[BRIDGE-GET] Llamando a CORBA: getRecentNews()...");
-                procesarLista(this.newsService.getRecentNews(), response, xsdPath, "Public: Recientes");
+                procesarLista(this.newsService.getRecentNews(), response, xsdPath, "Procesamiento concluído exitosamente");
             } else {
                 String id = pathInfo.substring(1);
                 System.out.println("[BRIDGE-GET] Llamando a CORBA: getNewsById(" + id + ")...");
@@ -75,15 +75,15 @@ public class NoticiasRestServlet extends HttpServlet {
                     NewsItem noticia = this.newsService.getNewsById(id);
                     if (noticia == null || noticia.id == null || noticia.id.isEmpty()) {
                         System.out.println("[BRIDGE-GET] Noticia " + id + " no encontrada (null).");
-                        enviarRespuesta(response, HttpServletResponse.SC_NOT_FOUND, false, "Noticia no encontrada", null);
+                        enviarRespuesta(response, HttpServletResponse.SC_NOT_FOUND, false, "Noticia no encontrada en CORBA", null);
                     } else {
                         System.out.println("[BRIDGE-GET] Noticia " + id + " encontrada. Validando XML...");
                         try {
-                            enviarRespuesta(response, HttpServletResponse.SC_OK, true, "Noticia recuperada", validarYLimpiar(noticia, xsdPath));
+                            enviarRespuesta(response, HttpServletResponse.SC_OK, true, "Procesamiento concluído exitosamente", validarYLimpiar(noticia, xsdPath));
                         } catch (Exception valEx) {
                             System.err.println("[BRIDGE-VALID] Error validando noticia existente: " + valEx.getMessage());
                             // Si falla la validación pero la noticia existe, la enviamos igual pero con aviso o limpia
-                            enviarRespuesta(response, HttpServletResponse.SC_OK, true, "Noticia recuperada (Error validación XSD)", noticia);
+                            enviarRespuesta(response, HttpServletResponse.SC_OK, true, "Procesamiento concluído exitosamente", noticia);
                         }
                     }
                 } catch (org.omg.CORBA.OBJECT_NOT_EXIST | org.omg.CORBA.BAD_PARAM ex) {
@@ -187,7 +187,7 @@ public class NoticiasRestServlet extends HttpServlet {
             this.newsService.bulkAddNews(validadas.toArray(new NewsItem[0]));
 
             System.out.println("[BRIDGE-BULK] Exito: " + validadas.size() + " noticias cargadas.");
-            enviarRespuesta(response, HttpServletResponse.SC_CREATED, true, "Carga masiva exitosa", validadas);
+            enviarRespuesta(response, HttpServletResponse.SC_CREATED, true, "Carga masiva completada en CORBA", validadas);
         } catch (Exception e) {
             System.err.println("[BRIDGE-BULK] ERROR: " + e.getMessage());
             enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, "Error en carga masiva: " + e.getMessage(), null);
@@ -236,7 +236,7 @@ public class NoticiasRestServlet extends HttpServlet {
             // 4. Guardar en CORBA
             this.newsService.addNews(noticiaLimpia);
             System.out.println("[BRIDGE-POST] Noticia creada con éxito: " + noticiaLimpia.id);
-            enviarRespuesta(response, HttpServletResponse.SC_CREATED, true, "Noticia creada correctamente", noticiaLimpia);
+            enviarRespuesta(response, HttpServletResponse.SC_CREATED, true, "Noticia creada en CORBA", noticiaLimpia);
         } catch (Exception e) {
             System.err.println("[BRIDGE-POST] ERROR: " + e.getMessage());
             enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, "Error de validación: " + e.getMessage(), null);
@@ -275,7 +275,7 @@ public class NoticiasRestServlet extends HttpServlet {
 
             if (success) {
                 System.out.println("[BRIDGE-PUT] Exito actualizando en CORBA.");
-                enviarRespuesta(response, HttpServletResponse.SC_OK, true, "Noticia actualizada", noticiaLimpia);
+                enviarRespuesta(response, HttpServletResponse.SC_OK, true, "Procesamiento concluído exitosamente", noticiaLimpia);
             } else {
                 System.out.println("[BRIDGE-PUT] CORBA devolvio false (no encontrado?).");
                 enviarRespuesta(response, HttpServletResponse.SC_NOT_FOUND, false, "No se pudo actualizar la noticia", null);
@@ -307,7 +307,7 @@ public class NoticiasRestServlet extends HttpServlet {
 
             if (success) {
                 System.out.println("[BRIDGE-DELETE] Exito eliminando en CORBA.");
-                enviarRespuesta(response, HttpServletResponse.SC_OK, true, "Noticia eliminada", null);
+                enviarRespuesta(response, HttpServletResponse.SC_OK, true, "Procesamiento concluído exitosamente", null);
             } else {
                 System.out.println("[BRIDGE-DELETE] Noticia no encontrada en CORBA.");
                 enviarRespuesta(response, HttpServletResponse.SC_NOT_FOUND, false, "Noticia no encontrada", null);
@@ -365,8 +365,23 @@ public class NoticiasRestServlet extends HttpServlet {
         response.setStatus(statusCode);
         java.util.Map<String, java.lang.Object> fullResponse = new java.util.LinkedHashMap<>();
         java.util.Map<String, java.lang.Object> result = new java.util.LinkedHashMap<>();
-        result.put("descriptionDetail", mensaje);
-        result.put("code", success ? "0" : "1");
+        
+        result.put("transactionId", java.util.UUID.randomUUID().toString());
+        result.put("code", String.valueOf(statusCode));
+        
+        String desc = "OK";
+        if (statusCode == 201) desc = "Created";
+        else if (statusCode == 400) desc = "Bad Request";
+        else if (statusCode == 401) desc = "Unauthorized";
+        else if (statusCode == 403) desc = "Forbidden";
+        else if (statusCode == 404) desc = "Not Found";
+        else if (statusCode >= 500) desc = "Internal Server Error";
+        result.put("description", desc);
+        
+        String finalMensaje = (statusCode == 200) ? "Procesamiento concluído exitosamente" : mensaje;
+        result.put("descriptionDetail", finalMensaje);
+        result.put("responseTimestamp", java.time.Instant.now().toString());
+        
         fullResponse.put("result", result);
         fullResponse.put("data", data != null ? data : new java.util.ArrayList<>());
         response.getWriter().println(mapper.writeValueAsString(fullResponse));

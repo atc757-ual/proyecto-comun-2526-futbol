@@ -16,6 +16,7 @@ export interface Player {
   secondary_team?: string;
   league?: string;
   user_id: string; // Obligatorio
+  userId?: string; // Opcional para backend de Java
   external_id?: number;
   location?: {
     type: string;
@@ -53,6 +54,8 @@ export interface Player {
     wikidata_id?: string;
   };
   is_manual?: boolean;
+  is_favorite?: boolean;
   isFavorite?: boolean;
+  is_featured?: boolean;
   isFeatured?: boolean;
 }

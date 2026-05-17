@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, NgZone } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -7,11 +8,10 @@ import { environment } from '@env/environment';
 import {
   IonItem, IonLabel, IonInput, IonSelect,
   IonSelectOption, IonButton, IonIcon, IonCard, IonCardContent,
-  IonCardHeader, IonCardTitle, IonAvatar,
-  IonSpinner, IonText, ToastController, NavController, LoadingController,
-  IonSegment, IonSegmentButton, AlertController, IonToggle, IonSearchbar,
-  IonCheckbox, IonList, IonListHeader, IonBadge, IonImg, IonTextarea,
-  IonThumbnail, IonChip, ModalController
+  IonCardHeader, IonAvatar,
+  IonSpinner, ToastController, NavController, LoadingController,
+  IonSegment, IonSegmentButton, AlertController, IonSearchbar,
+  IonCheckbox, IonList, IonBadge, IonImg, IonTextarea, ModalController, IonModal
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -51,9 +51,9 @@ import { PermissionModalComponent } from 'src/app/shared/components/permission-m
   imports: [
     CommonModule, ReactiveFormsModule, FormsModule, RouterModule,
     IonItem, IonLabel, IonInput, IonSelect, IonSelectOption, IonButton, IonIcon,
-    IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonAvatar, IonSpinner,
-    IonText, IonSegment, IonSegmentButton, IonToggle, IonSearchbar, IonCheckbox,
-    IonList, IonListHeader, IonBadge, IonImg, IonTextarea, IonThumbnail, IonChip
+    IonCard, IonCardContent, IonCardHeader, IonAvatar, IonSpinner,
+    IonSegment, IonSegmentButton, IonSearchbar, IonCheckbox,
+    IonList, IonBadge, IonImg, IonTextarea, IonModal
   ]
 })
 export class AddEditPlayerPage implements OnInit, OnDestroy {
@@ -73,7 +73,16 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
   private modalCtrl = inject(ModalController);
+  private sanitizer = inject(DomSanitizer);
   private activePermissionModal: any = null;
+
+  getSafeUrl(url: string | null | undefined): any {
+    if (!url) return '';
+    if (url.startsWith('data:') || url.startsWith('blob:')) {
+      return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    }
+    return url;
+  }
 
   public isEditMode = false;
   public playerId: string | null = null;
@@ -89,6 +98,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   public localPlayers: Player[] = [];
   public currentAddress: string = 'Localizando...';
   public isRevGeocoding: boolean = false;
+  public isDataLoading = false;
 
   // Paginación
   public currentPage = 1;
@@ -104,11 +114,11 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   }
 
   isImportMode() {
-    return this.entryMode === 'import' && !this.isEditMode;
+    return this.entryMode === 'import';
   }
 
   isManualMode() {
-    return this.entryMode === 'manual' || this.isEditMode;
+    return this.entryMode === 'manual';
   }
 
   ionViewWillLeave() {
@@ -192,7 +202,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     nationality: '',
     height: '',
     weight: '',
-    side: 'Derecho',
+    side: 'Right',
     number: undefined,
     position: 'Midfielder',
     image_url: '',
@@ -221,19 +231,19 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   };
 
   positions = [
-    { value: 'Goalkeeper', label: 'Portero' },
-    { value: 'Centre-Back', label: 'Central' },
-    { value: 'Right-Back', label: 'Lateral Derecho' },
-    { value: 'Left-Back', label: 'Lateral Izquierdo' },
-    { value: 'Defensive Midfield', label: 'Pivote' },
-    { value: 'Midfielder', label: 'Centrocampista' },
-    { value: 'Attacking Midfield', label: 'Mediapunta' },
-    { value: 'Left Winger', label: 'Extremo Izquierdo' },
-    { value: 'Right Winger', label: 'Extremo Derecho' },
-    { value: 'Centre-Forward', label: 'Delantero Centro' }
+    { value: 'Goalkeeper', label: 'Goalkeeper' },
+    { value: 'Centre-Back', label: 'Centre-Back' },
+    { value: 'Right-Back', label: 'Right-Back' },
+    { value: 'Left-Back', label: 'Left-Back' },
+    { value: 'Defensive Midfield', label: 'Defensive Midfield' },
+    { value: 'Midfielder', label: 'Midfielder' },
+    { value: 'Attacking Midfield', label: 'Attacking Midfield' },
+    { value: 'Left Winger', label: 'Left Winger' },
+    { value: 'Right Winger', label: 'Right Winger' },
+    { value: 'Centre-Forward', label: 'Centre-Forward' }
   ];
 
-  feet = ['Derecho', 'Izquierdo', 'Ambidiestro'];
+  feet = ['Right', 'Left', 'Ambidextrous'];
 
   // Estados de los inputs (Patrón Noticias)
   focusedField: string | null = null;
@@ -254,9 +264,9 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
 
   // Gestión Multimedia Avanzada
   public imageTypes = [
-    { key: 'image_url', label: 'Foto Principal (Thumb)', icon: 'person-outline', helper: 'Imagen principal para el avatar y listas.' },
-    { key: 'cutout', label: 'Recorte (Acción)', icon: 'cut-outline', helper: 'Foto sin fondo para el efecto de volteo.' },
-    { key: 'banner', label: 'Banner Dashboard', icon: 'image-outline', helper: 'Fondo decorativo para las estadísticas.' }
+    { key: 'image_url', label: 'Foto Principal', icon: 'person-outline', helper: 'Imagen principal para el avatar y listas.' },
+    { key: 'cutout', label: 'Foto Secundaria', icon: 'cut-outline', helper: 'Foto sin fondo para el efecto de volteo.' },
+    { key: 'banner', label: 'Banner', icon: 'image-outline', helper: 'Fondo decorativo para las estadísticas.' }
   ];
 
   public globalMediaMode: 'upload' | 'url' = 'url';
@@ -264,8 +274,33 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   // Previsualizaciones específicas para cada tipo
   public previews: { [key: string]: string | null } = {};
 
+  // Visor de imágenes en pantalla completa
+  public activeViewerImage: string | null = null;
+  public activeViewerTitle: string | null = null;
+
+  openImageViewer(imageUrl: string, title: string) {
+    if (!imageUrl) return;
+    this.activeViewerImage = imageUrl;
+    this.activeViewerTitle = title;
+  }
+
+  closeImageViewer() {
+    this.activeViewerImage = null;
+    this.activeViewerTitle = null;
+  }
+
   setGlobalMediaMode(mode: 'upload' | 'url') {
     this.globalMediaMode = mode;
+    
+    // Clear all image fields on both player and previews when switching modes!
+    this.player.image_url = '';
+    if (this.player.images) {
+      this.player.images.thumb = '';
+      this.player.images.cutout = '';
+      this.player.images.banner = '';
+    }
+    this.previews = {};
+    
     // Si pasamos a upload y no hay cámara, lanzamos onboarding
     if (mode === 'upload' && !this.hasCameraPermission) {
       this.checkPermissionsOnboarding();
@@ -286,6 +321,10 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       alertCircleOutline, linkOutline,
       'lock-closed-outline': lockClosedOutline,
       'location-outline': locationOutline,
+      'person-outline': personOutline,
+      'image-outline': imageOutline,
+      'cut-outline': cutOutline,
+      'close-circle-outline': closeCircleOutline,
       person, 'information-circle': informationCircle,
       cutOutline, cubeOutline, appsOutline
     });
@@ -428,8 +467,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   }
 
   async loadPlayer(id: string) {
-    const loading = await this.loadingCtrl.create({ message: 'Cargando datos...', mode: 'ios' });
-    await loading.present();
+    this.isDataLoading = true;
 
     this.playerService.getPlayer(id).subscribe({
       next: (data) => {
@@ -452,12 +490,12 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         if (this.hasLocation) {
           setTimeout(() => this.initMap(), 500);
         }
-        loading.dismiss();
+        this.isDataLoading = false;
         this.syncPreviews();
       },
       error: () => {
         this.showToast('Error al cargar el jugador', 'danger');
-        loading.dismiss();
+        this.isDataLoading = false;
         this.navCtrl.back();
       }
     });
@@ -629,9 +667,9 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     this.searchInExternalApi();
   }
 
-  handleImageError(event: any) {
-    // Si la imagen falla, la ocultamos para que se vea el icono de fondo
-    event.target.style.display = 'none';
+  handleImageError(event: any, key: string = 'image_url') {
+    const label = key === 'image_url' ? 'Foto Principal' : (key === 'cutout' ? 'Foto Sec.' : 'Banner');
+    event.target.src = `https://placehold.co/120x120/e2e8f0/3880ff?text=${label}`;
   }
 
   private searchPlayersApi() {
@@ -703,6 +741,8 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     this.previewImage = this.player.image_url;
     this.apiResults = [];
     this.apiSearchQuery = '';
+    this.entryMode = 'manual';
+    this.cdr.detectChanges();
     loading.dismiss();
     this.showToast('Datos profesionales importados', 'success', 'checkmark-circle-outline');
   }
@@ -803,7 +843,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
           'success',
           'checkmark-circle-outline'
         );
-        setTimeout(() => this.navCtrl.back(), 1500);
+        setTimeout(() => this.navCtrl.back(), 750);
       },
       error: (err: any) => {
         this.isImporting = false;
@@ -967,6 +1007,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         const base64 = e.target.result;
         this.updatePlayerImage(key, base64);
         this.previews[key] = base64;
+        this.cdr.detectChanges();
       };
       reader.readAsDataURL(file);
     }
@@ -984,6 +1025,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         const base64 = `data:image/jpeg;base64,${photo.base64String}`;
         this.updatePlayerImage(key, base64);
         this.previews[key] = base64;
+        this.cdr.detectChanges();
       }
     } catch (e) {
       console.error('Error al tomar foto:', e);
@@ -993,6 +1035,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   removeImage(key: string = 'image_url') {
     this.updatePlayerImage(key, '');
     this.previews[key] = null;
+    this.cdr.detectChanges();
   }
   async onSave() {
     if (!this.player.name || !this.player.team) {
@@ -1012,22 +1055,16 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       await this.captureLocation();
     }
 
-    const loading = await this.loadingCtrl.create({
-      message: this.isEditMode ? 'Actualizando...' : 'Guardando...',
-      mode: 'ios'
-    });
-    await loading.present();
     console.log('[FRONTEND] Guardando jugador con location:', this.player.location);
     this.isPublishing = true;
 
     this.playerService.savePlayer(this.playerId, this.player, this.selectedFile, this.initialPreviewImage as string | null).subscribe({
       next: (res: any) => {
-        loading.dismiss();
         this.isPublishing = false;
         this.confettiService.celebrate();
-        if (res && res._id) {
+        if (res && (res._id || res.id)) {
           this.showToast(`Jugador ${this.isEditMode ? 'actualizado' : 'creado'} con éxito`, 'success', 'checkmark-circle-outline');
-          setTimeout(() => this.router.navigate(['/players']), 1500);
+          setTimeout(() => this.router.navigate(['/players']), 750);
         }
       },
       error: (err: any) => {

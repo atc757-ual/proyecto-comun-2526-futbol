@@ -23,24 +23,29 @@ public class NewsController {
     @GetMapping
     @Operation(summary = "Obtener todas las noticias")
     public ApiResult<List<NewsDTO>> getNews(
-            @RequestHeader("Authorization") String auth,
+            @RequestHeader(value = "Authorization", required = false) String auth,
             @RequestHeader(value = "X-User-Role", defaultValue = "USER") String role,
             @RequestParam(required = false, defaultValue = "false") Boolean all) {
-        // En Java el Gateway ya inyecta los roles. 
-        // Si all=true y el rol es ADMIN, pedimos todas al Bridge
-        return newsClient.findAll(auth, role);
+        // Si all=true y el rol es ADMIN, pedimos todas al Bridge; de lo contrario, retornamos el feed público
+        if (Boolean.TRUE.equals(all) && "ADMIN".equalsIgnoreCase(role)) {
+            return newsClient.findAll(auth, role);
+        } else {
+            return newsClient.getFeed(auth);
+        }
     }
 
     @GetMapping("/feed")
     @Operation(summary = "Obtener feed de noticias activas")
-    public ApiResult<List<NewsDTO>> getFeed() {
-        return newsClient.getFeed();
+    public ApiResult<List<NewsDTO>> getFeed(@RequestHeader(value = "Authorization", required = false) String auth) {
+        return newsClient.getFeed(auth);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Obtener noticia por ID")
-    public ApiResult<NewsDTO> getNewsById(@PathVariable String id) {
-        return newsClient.findById(id);
+    public ApiResult<NewsDTO> getNewsById(
+            @RequestHeader(value = "Authorization", required = false) String auth,
+            @PathVariable String id) {
+        return newsClient.findById(auth, id);
     }
 
     @PostMapping

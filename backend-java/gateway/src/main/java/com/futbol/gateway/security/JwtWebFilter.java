@@ -45,7 +45,8 @@ public class JwtWebFilter implements WebFilter {
                             .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth));
                 }
             } catch (Exception e) {
-                // Si el token falla, seguimos la cadena y SecurityWebFilterChain denegará (401)
+                System.err.println("[GATEWAY-JWT-ERROR] Falló la validación del token JWT en el Gateway: " + e.getMessage());
+                e.printStackTrace();
             }
         }
         return chain.filter(exchange);

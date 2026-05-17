@@ -25,7 +25,8 @@ public class ExternalFeignController {
     @GetMapping("/players")
     public ApiResult<FootballApiResponse> searchPlayers(@RequestParam String name) {
         try {
-            FootballApiResponse response = footballClient.searchPlayers(apiKey, name);
+            String cleanName = name != null ? name.replace("+", " ").trim().replaceAll("\\s+", " ") : "";
+            FootballApiResponse response = footballClient.searchPlayers(apiKey, cleanName);
             return new ApiResult<>("200", "Petición Feign exitosa", response);
         } catch (Exception e) {
             return new ApiResult<>("500", "Error en Feign externo: " + e.getMessage(), null);

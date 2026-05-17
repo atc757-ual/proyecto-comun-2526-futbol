@@ -13,6 +13,8 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -23,6 +25,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/players")
 public class PlayerController {
+
+    private static final Logger log = LoggerFactory.getLogger(PlayerController.class);
 
     @Autowired
     private PlayerRepository playerRepository;
@@ -39,12 +43,22 @@ public class PlayerController {
         List<PlayerPublicDTO> publicPlayers = allPlayers.stream()
                 .limit(10)
                 .map(p -> PlayerPublicDTO.builder()
+                        .id(p.getId())
                         .name(p.getName())
                         .photo(p.getImageUrl())
                         .build())
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(ApiResult.success("Vista pública aleatoria recuperada", publicPlayers));
+    }
+
+    @Operation(summary = "Obtener detalle de jugador (Vista Pública)", description = "Obtiene el detalle de un jugador por su ID sin necesidad de token")
+    @GetMapping("/public/{id}")
+    public ResponseEntity<ApiResult<Player>> getPlayerByIdPublic(@PathVariable Long id) {
+        Player player = playerRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Jugador no encontrado con ID: " + id));
+        
+        return ResponseEntity.ok(ApiResult.success("Vista pública de jugador recuperada", player));
     }
 
     @Operation(summary = "Listar jugadores", description = "Obtiene todos los jugadores o filtra por userId, nombre o equipo")
@@ -76,37 +90,85 @@ public class PlayerController {
 
     @PostMapping
     public ResponseEntity<ApiResult<Player>> createPlayer(@Valid @RequestBody Player player) {
-        Player savedPlayer = playerRepository.save(player);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResult.success("Procesamiento concluído exitosamente", savedPlayer));
+        log.info("[PLAYER-CLIENT] Recibida petición POST para crear jugador: {}", player);
+        try {
+            Player savedPlayer = playerRepository.save(player);
+            log.info("[PLAYER-CLIENT] Jugador creado con éxito en Postgres: {}", savedPlayer);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResult.success("Procesamiento concluído exitosamente", savedPlayer));
+        } catch (Exception e) {
+            log.error("[PLAYER-CLIENT] Error crítico al guardar el jugador en base de datos: ", e);
+            throw e;
+        }
     }
 
     @PutMapping
     public ResponseEntity<ApiResult<Player>> updatePlayer(@Valid @RequestBody Player player) {
-        if (!playerRepository.existsById(player.getId())) {
-            throw new NotFoundException("No se puede actualizar. Jugador no encontrado con ID: " + player.getId());
+        log.info("[PLAYER-CLIENT] Recibida petición PUT para actualizar jugador con ID {}: {}", player.getId(), player);
+        try {
+            if (!playerRepository.existsById(player.getId())) {
+                log.warn("[PLAYER-CLIENT] Intento de actualización fallido: Jugador no encontrado con ID {}", player.getId());
+                throw new NotFoundException("No se puede actualizar. Jugador no encontrado con ID: " + player.getId());
+            }
+            Player updated = playerRepository.save(player);
+            log.info("[PLAYER-CLIENT] Jugador actualizado con éxito en Postgres: {}", updated);
+            return ResponseEntity.ok(ApiResult.success("Jugador actualizado exitosamente", updated));
+        } catch (Exception e) {
+            log.error("[PLAYER-CLIENT] Error crítico al actualizar el jugador en base de datos: ", e);
+            throw e;
         }
-        Player updated = playerRepository.save(player);
-        return ResponseEntity.ok(ApiResult.success("Jugador actualizado exitosamente", updated));
+    }
+
+    @PutMapping("/{id}/favorite")
+    public ResponseEntity<ApiResult<Player>> toggleFavorite(
+            @PathVariable Long id,
+            @RequestParam Boolean isFavorite) {
+        log.info("[PLAYER-CLIENT] Recibida petición PUT para favorite con ID {}: {}", id, isFavorite);
+        Player player = playerRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Jugador no encontrado con ID: " + id));
+        player.setIsFavorite(isFavorite);
+        Player saved = playerRepository.save(player);
+        return ResponseEntity.ok(ApiResult.success("Estado de favorito actualizado exitosamente", saved));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResult<Void>> deletePlayer(@PathVariable Long id) {
+        log.info("[PLAYER-CLIENT] Recibida petición DELETE para jugador con ID: {}", id);
         if (!playerRepository.existsById(id)) {
+            log.warn("[PLAYER-CLIENT] Intento de eliminación fallido: Jugador no encontrado con ID {}", id);
             throw new NotFoundException("Jugador no encontrado con ID: " + id);
         }
         
         // Eliminación en Cascada (Homologación con Node/Mongo)
-        // Eliminamos los comentarios asociados al jugador en el otro microservicio
         try {
             commentClient.deleteByPlayerId(id);
+            log.info("[PLAYER-CLIENT] Borrados comentarios en cascada con éxito para el jugador con ID: {}", id);
         } catch (Exception e) {
-            // Logeamos pero continuamos borrando el jugador si el servicio de comentarios falla
-            // (Opcional: podrías abortar si la consistencia es crítica)
-            System.err.println("Error al borrar comentarios en cascada para player " + id + ": " + e.getMessage());
+            log.error("[PLAYER-CLIENT] Error al borrar comentarios en cascada para player " + id + ": " + e.getMessage());
         }
 
         playerRepository.deleteById(id);
+        log.info("[PLAYER-CLIENT] Jugador con ID {} eliminado con éxito de Postgres", id);
         return ResponseEntity.ok(ApiResult.success("Jugador eliminado exitosamente (incluyendo comentarios)", null));
+    }
+
+    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResult<Object>> handleValidationExceptions(
+            org.springframework.web.bind.MethodArgumentNotValidException ex) {
+        java.util.Map<String, String> errors = new java.util.HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((org.springframework.validation.FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+        log.error("[PLAYER-CLIENT] Error de validación al procesar jugador: {}", errors);
+        return ResponseEntity.badRequest().body(ApiResult.error("400", "Error de validación: " + errors));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResult<Object>> handleGenericExceptions(Exception ex) {
+        log.error("[PLAYER-CLIENT] Excepción inesperada en el controlador de jugadores: ", ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResult.error("500", "Error interno en servicio Java: " + ex.getMessage()));
     }
 }

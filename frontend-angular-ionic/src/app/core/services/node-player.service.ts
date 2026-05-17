@@ -89,7 +89,7 @@ export class NodePlayerService implements IPlayerService {
           if (file) {
             console.log('[PlayerService] Subiendo nueva imagen a Storage...');
             imageUrl = await this.storageService.uploadImage(file, 'players');
-            
+
             if (isEdit && oldImageUrl && oldImageUrl.includes('firebasestorage') && oldImageUrl !== imageUrl) {
               await this.storageService.deleteImageByUrl(oldImageUrl, 'players');
             }
@@ -111,7 +111,7 @@ export class NodePlayerService implements IPlayerService {
 
           // 3. Persistir en BD
           const request$ = isEdit ? this.updatePlayer(id, finalPlayer) : this.addPlayer(finalPlayer);
-          
+
           request$.subscribe({
             next: (res) => {
               observer.next(res);
@@ -188,8 +188,8 @@ export class NodePlayerService implements IPlayerService {
 
   // --- THE SPORTS DB API (A TRAVÉS DEL BACKEND) ---
   searchTSDBPlayers(name: string): Observable<any[]> {
-    return this.http.get<any>(`${environment.nodeApiUrl}/external/tsdb/search`, { 
-      params: { name } 
+    return this.http.get<any>(`${environment.nodeApiUrl}/external/tsdb/search`, {
+      params: { name }
     }).pipe(
       map(res => res.data || [])
     );
@@ -299,7 +299,7 @@ export class NodePlayerService implements IPlayerService {
   reverseGeocode(lat: number, lng: number): Observable<string> {
     const url = `${environment.nodeApiUrl}/geo`;
     console.log(`[PLAYER-SERVICE] Consultando geocoding para: ${lat}, ${lng}`);
-    
+
     return this.http.get<any>(url, {
       params: { lat, lng }
     }).pipe(
@@ -383,13 +383,13 @@ export class NodePlayerService implements IPlayerService {
           try {
             // 1. Obtener detalles completos si no existen
             const details = apiPlayer.details || await firstValueFrom(this.lookupTSDBPlayer(apiPlayer.externalId)) as any;
-            
+
             // 2. Mapear a modelo interno
             const mappedPlayer = this.mapTSDBToPlayer(details, apiPlayer);
-            
+
             // 3. Guardar en BD (savePlayer ya maneja auditoría y user_id)
             await firstValueFrom(this.savePlayer(null, mappedPlayer, null, null));
-            
+
             successCount++;
           } catch (err) {
             console.error('[PlayerService] Error importando crack:', apiPlayer.name, err);

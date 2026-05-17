@@ -15,7 +15,7 @@
             <div class="logo-ball-blue">
               <ion-icon name="football"></ion-icon>
             </div>
-            <span class="main-logo-text">Football App</span>
+            <span class="main-logo-text">Fútbol Club</span>
           </div>
         </div>
 
@@ -73,10 +73,8 @@
           class="layout-hero-breadcrumbs">
           <div class="main-content">
             <ion-breadcrumbs>
-              <ion-breadcrumb *ngFor="let item of layoutService.breadcrumbs(); let last = last" 
-                [routerLink]="item.url || null"
-                [class.active-breadcrumb]="last"
-                [class.has-url]="!!item.url">
+              <ion-breadcrumb *ngFor="let item of layoutService.breadcrumbs(); let last = last"
+                [routerLink]="item.url || null" [class.active-breadcrumb]="last" [class.has-url]="!!item.url">
                 <ion-icon *ngIf="item.icon" slot="start" [name]="item.icon"></ion-icon>
                 {{ item.label }}
                 <span slot="separator" class="fs-14 text-neutral-4">/</span>
@@ -96,14 +94,14 @@
       <div class="main-content footer">
         <div class="footer-slim-content">
           <div class="footer-left">
-            <span class="copyright-text fs-14 text-neutral-7">© 2026 Football App. Público.</span>
+            <span class="copyright-text fs-14 text-neutral-7">© 2026 Fútbol Club. By Alex Taquila.</span>
           </div>
           <div class="footer-right">
             <div class="footer-socials">
-              <a href="https://www.linkedin.com/in/alextaquilacamasca/" target="_blank" class="social-icon">
+              <a href="https://www.linkedin.com/in/alextaquilacamasca" target="_blank" class="social-icon">
                 <ion-icon name="logo-linkedin"></ion-icon>
               </a>
-              <a href="https://github.com/atc757-ual/proyecto-comun-2526-futbol" target="_blank" class="social-icon">
+              <a href="https://github.com/atc757-ual" target="_blank" class="social-icon">
                 <ion-icon name="logo-github"></ion-icon>
               </a>
             </div>

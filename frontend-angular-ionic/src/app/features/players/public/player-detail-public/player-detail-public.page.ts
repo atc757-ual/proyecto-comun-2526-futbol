@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import {
   IonIcon, IonCard, IonCardContent,
-  IonButton, IonAvatar, IonBadge, IonSegment, IonSegmentButton, IonLabel,
+  IonButton, IonAvatar,
   IonSpinner, LoadingController, NavController, AlertController, ToastController, ModalController,
   IonInput, IonTextarea
 } from '@ionic/angular/standalone';
@@ -42,8 +42,8 @@ import { register } from 'swiper/element/bundle';
   standalone: true,
   imports: [
     CommonModule, FormsModule, RouterModule,
-    IonIcon, IonCard, IonCardContent, IonButton, IonAvatar, IonBadge,
-    IonSegment, IonSegmentButton, IonLabel, IonSpinner, IonInput, IonTextarea
+    IonIcon, IonCard, IonCardContent, IonButton, IonAvatar,
+    IonSpinner, IonInput, IonTextarea
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
@@ -52,11 +52,13 @@ export class PlayerDetailPublicPage implements OnInit {
   @Input() set id(playerId: string) {
     if (playerId) {
       this._playerId = playerId;
-      // Si ya hay sesión, redirigimos inmediatamente
+      // Si ya hay sesión, permitimos ver de igual modo la ficha pública sin forzar redirect 401
+      /*
       if (this.authService.currentUser()) {
         this.navCtrl.navigateRoot(`/player-detail/${playerId}`);
         return;
       }
+      */
       this.player = null; // Limpiamos rastro anterior
       this.loadPlayer(playerId);
       this.captureUserLocation();
@@ -120,26 +122,26 @@ export class PlayerDetailPublicPage implements OnInit {
   /**
    * Formatea el nombre del usuario (o Invitado) como: Nombre I.
    */
-  getFormattedUserName(): string {
-    const user = this.authService.currentUser();
-    const name = user?.displayName || this.anonymousName || 'Invitado';
-    const parts = name.split(' ');
-    if (parts.length > 1) {
-      return `${parts[0]} ${parts[parts.length - 1].charAt(0)}.`;
-    }
-    return name;
-  }
+      getFormattedUserName(): string {
+        const user = this.authService.currentUser();
+        const name = user?.displayName || this.anonymousName || 'Invitado';
+        const parts = name.split(' ');
+        if (parts.length > 1) {
+          return `${parts[0]} ${parts[parts.length - 1].charAt(0)}.`;
+        }
+        return name;
+      }
 
-  // Estados de foco para inputs (Estilo Login)
-  nameFocused: boolean = false;
-  commentFocused: boolean = false;
+      // Estados de foco para inputs (Estilo Login)
+      nameFocused: boolean = false;
+      commentFocused: boolean = false;
 
-  // Paginación de comentarios (Estilo Players)
-  currentPage: number = 1;
-  pageSize: number = 5;
+      // Paginación de comentarios (Estilo Players)
+      currentPage: number = 1;
+      pageSize: number = 5;
 
-  // Control de Swiper de Stats
-  currentStatPage: number = 0;
+      // Control de Swiper de Stats
+      currentStatPage: number = 0;
   private statsInterval: any;
   private permissionTimeout: any = null;
 
@@ -159,13 +161,15 @@ export class PlayerDetailPublicPage implements OnInit {
       chevronBackOutline, chevronForwardOutline, addCircleOutline, lockClosedOutline
     });
 
-    // Redirección reactiva
+    // Redirección reactiva (Comentada para evitar bucle 401 y permitir vista pública abierta)
+    /*
     effect(() => {
       if (this.authService.currentUser()) {
         console.warn('[PlayerDetailPublic] Sesión detectada. Redirigiendo...');
         this.navCtrl.navigateRoot(`/player-detail/${this._playerId}`);
       }
     });
+    */
   }
 
   ionViewWillLeave() {
@@ -180,12 +184,14 @@ export class PlayerDetailPublicPage implements OnInit {
 
 
   async ngOnInit() {
-    // Si hay sesión iniciada, expulsamos al usuario al detalle privado
+    // Si hay sesión iniciada, permitimos que permanezca en la vista pública
+    /*
     if (this.authService.currentUser()) {
       console.warn('[PlayerDetailPublic] Sesión activa detectada. Redirigiendo a Detalle Privado.');
       this.navCtrl.navigateRoot(`/player-detail/${this._playerId}`);
       return;
     }
+    */
 
     this.layoutService.setHeader({
       title: 'Detalle de Jugador',
@@ -366,13 +372,15 @@ export class PlayerDetailPublicPage implements OnInit {
         },
         error: (err) => {
           console.error('[PlayerDetailPublic] Error crítico al cargar jugador:', err);
-          this.showToast('Error al cargar el perfil del jugador', 'danger');
+          this.showToast('Jugador no encontrado o perfil no disponible', 'danger');
           this.isLoading = false;
+          this.navCtrl.navigateRoot('/players-public');
         }
       });
     } catch (error) {
       console.error('[PlayerDetailPublic] Excepción en loadPlayer:', error);
       this.isLoading = false;
+      this.navCtrl.navigateRoot('/players-public');
     }
   }
 
@@ -438,7 +446,7 @@ export class PlayerDetailPublicPage implements OnInit {
   // --- CENTRO DE COMENTARIOS V2 ---
 
   startEditing(comment: any) {
-    this.editingCommentId = comment._id;
+    this.editingCommentId = comment.id || comment._id;
     this.editingContent = comment.content;
     this.editingRating = comment.rating;
   }

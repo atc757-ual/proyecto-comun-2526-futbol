@@ -4,53 +4,64 @@
     <!-- Info Card de IA -->
     <ion-card>
       <ion-card-content *ngIf="!analysisData">
-        <div class="f-bold fs-24 text-neutral-9 mb-base text-center">¡Hola, soy Football AI!</div>
-        <div class="ai-icon-container text-center my-m">
-          <!-- Botón con efecto de pulso -->
-          <div class="pulse-wrapper">
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring delay-1"></div>
-            <div class="pulse-ring delay-2"></div>
-            <ion-button fill="clear" class="pulse-main-btn">
-              <ion-icon name="sparkles-outline" class="fs-48 text-primary"></ion-icon>
-            </ion-button>
-          </div>
-        </div>
-        <div class="text-center my-base">
-          <!-- Texto explicativo -->
-          <p class="text-neutral-7 fs-16 ">
-            Analizaré los jugadores de tu plantilla para crear el <strong>Equipo Ideal</strong> y darte consejos
-            tácticos.
-          </p>
-
-
-          <!-- Estado: Sin jugadores -->
-          <div *ngIf="!isLoading && !hasPlayers" class="warning-box animate-fade-in">
-            <div class="d-flex  p-s bg-warning-light mr-12">
-              <ion-icon name="alert-circle-outline" class="fs-24 text-warning"></ion-icon>
-              <p class="text-warning-dark f-medium fs-12">
-                Para que la IA funcione correctamente, debes tener jugadores cargados en tu sistema. :)
-              </p>
-            </div>
-          </div>
-        </div>
-        <!-- Botón de acción -->
-        <div class="col-6 col-sm-12 mx-auto">
-          <ion-button *ngIf="hasPlayers" (click)="generateTeam()" [disabled]="isGenerating" expand="block" shape="round"
-            mode="ios" color="primary" class="f-semibold futbol-btn-primary py-s h-auto">
-            <ion-icon name="sparkles-outline" slot="start"></ion-icon>
-            <ion-label class="fs-16 pl-s">Obtener mi equipo ideal</ion-label>
-          </ion-button>
-        </div>
-
         <!-- Pantalla de carga Premium -->
-        <div *ngIf="isLoading" class="ai-loading-container animate-fade-in">
+        <div *ngIf="isLoading" class="ai-loading-container animate-fade-in py-xl">
           <div class="ai-loading-box">
             <div class="spinner-wrapper">
               <ion-spinner name="crescent" color="primary"></ion-spinner>
             </div>
-            <h3 class="text-primary f-bold mt-base mb-xs animate-pulse">Analizando tu plantilla...</h3>
-            <p class="text-neutral-5 fs-12 m-0">Nuestra IA de élite está diseñando tu táctica ideal</p>
+            <h3 class="text-primary f-bold mt-base mb-xs">Cargando panel...</h3>
+            <p class="text-neutral-5 fs-12 m-0">Preparando la pizarra de Football AI</p>
+          </div>
+        </div>
+
+        <div *ngIf="!isLoading" class="animate-fade-in">
+          <div class="f-bold fs-24 text-neutral-9 mb-base text-center">¡Hola, soy Football AI!</div>
+          <div class="ai-icon-container text-center my-m">
+            <!-- Botón con efecto de pulso -->
+            <div class="pulse-wrapper">
+              <div class="pulse-ring"></div>
+              <div class="pulse-ring delay-1"></div>
+              <div class="pulse-ring delay-2"></div>
+              <ion-button fill="clear" class="pulse-main-btn">
+                <ion-icon name="sparkles-outline" class="fs-48 text-primary"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+          <div class="text-center my-base">
+            <!-- Texto explicativo -->
+            <p class="text-neutral-7 fs-16 ">
+              Analizaré los jugadores de tu plantilla para crear el <strong>Equipo Ideal</strong> y darte consejos
+              tácticos.
+            </p>
+
+            <!-- Estado: Sin jugadores -->
+            <div *ngIf="localPlayers.length === 0" class="warning-box animate-fade-in">
+              <div class="bg-warning-light" style="margin-top: var(--space-s); padding: var(--space-s) var(--space-base);">
+                <ion-icon name="alert-circle-outline" class="fs-24 text-warning" style="margin-right: var(--space-xs);"></ion-icon>
+                <p class="text-warning-dark f-medium m-0">
+                  Para que la IA funcione correctamente, debes tener jugadores cargados en tu sistema. :)
+                </p>
+              </div>
+            </div>
+
+            <!-- Estado: Jugadores insuficientes (menos de 11) -->
+            <div *ngIf="localPlayers.length > 0 && localPlayers.length < 11" class="warning-box animate-fade-in">
+              <div class="bg-warning-light" style="margin-top: var(--space-s); padding: var(--space-s) var(--space-base); border-left: 4px solid var(--color-warning);">
+                <ion-icon name="alert-circle-outline" class="fs-24 text-warning" style="margin-right: var(--space-xs);"></ion-icon>
+                <p class="text-warning-dark f-medium m-0">
+                  Necesitas al menos <strong>11 jugadores</strong> registrados para activar el análisis de la IA (actualmente tienes <strong>{{ localPlayers.length }}</strong>). ¡Añade o importa más jugadores para completar tu alineación de gala! ⚽
+                </p>
+              </div>
+            </div>
+          </div>
+          <!-- Botón de acción -->
+          <div class="col-6 col-sm-12 mx-auto">
+            <ion-button *ngIf="hasPlayers" (click)="generateTeam()" [disabled]="isGenerating" expand="block" shape="round"
+              mode="ios" color="primary" class="f-semibold futbol-btn-primary py-s h-auto">
+              <ion-icon name="sparkles-outline" slot="start"></ion-icon>
+              <ion-label class="fs-16 pl-s">Mi equipo ideal</ion-label>
+            </ion-button>
           </div>
         </div>
 
@@ -64,8 +75,8 @@
           </div>
           <div
             class="star-content p-base bg-primary text-white border-radius-medium shadow-m d-flex fl-align-center gap-base">
-            <ion-avatar *ngIf="analysisData.starPlayerImage" class="star-avatar">
-              <img [src]="analysisData.starPlayerImage" [alt]="analysisData.starPlayer" />
+            <ion-avatar class="star-avatar">
+              <img [src]="analysisData.starPlayerImage || 'https://ui-avatars.com/api/?name=' + analysisData.starPlayer + '&background=ffffff&color=3880ff'" [alt]="analysisData.starPlayer" />
             </ion-avatar>
             <div class="star-info">
               <h2 class="f-bold fs-24 m-0">{{ analysisData.starPlayer }}</h2>
@@ -126,11 +137,9 @@
               <h3 class="f-bold fs-18 mb-base text-neutral-9 ">Once Ideal Sugerido</h3>
               <ng-container *ngFor="let p of analysisData.idealEleven">
                 <ion-item class="ai-player-item py-xs">
-                  <ion-avatar slot="start" class="mr-s" *ngIf="p.image_url">
-                    <img [src]="p.image_url" [alt]="p.name" />
+                  <ion-avatar slot="start" class="mr-s">
+                    <img [src]="p.image_url || 'https://ui-avatars.com/api/?name=' + p.name + '&background=random'" [alt]="p.name" />
                   </ion-avatar>
-                  <ion-icon *ngIf="!p.image_url" slot="start" name="person-circle-outline" color="primary"
-                    class="fs-32"></ion-icon>
                   <ion-label>
                     <h3 class="f-bold fs-16">{{ p.name }}</h3>
                     <p class="fs-12 text-neutral-6">{{ p.role }}</p>

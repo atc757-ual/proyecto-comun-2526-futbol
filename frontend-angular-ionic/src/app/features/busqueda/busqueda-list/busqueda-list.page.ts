@@ -6,7 +6,7 @@ import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import {
   IonButton, IonIcon, IonSearchbar, IonList, IonItem, IonLabel, IonCheckbox, IonSpinner,
-  IonBadge, IonCard, IonCardContent, IonAvatar, IonThumbnail, IonSegment, IonSegmentButton, IonChip,
+  IonBadge, IonCard, IonCardContent, IonAvatar, IonSegment, IonSegmentButton, IonChip,
   ToastController, ModalController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -36,7 +36,7 @@ import confetti from 'canvas-confetti';
   imports: [
     CommonModule, FormsModule, RouterModule,
     IonButton, IonIcon, IonSearchbar, IonList, IonItem, IonLabel, IonCheckbox, IonSpinner,
-    IonBadge, IonCard, IonCardContent, IonAvatar, IonThumbnail, IonSegment, IonSegmentButton, IonChip
+    IonBadge, IonCard, IonCardContent, IonAvatar, IonSegment, IonSegmentButton, IonChip
   ]
 })
 export class BusquedaListPage implements OnInit {
@@ -317,23 +317,47 @@ export class BusquedaListPage implements OnInit {
     }
   }
 
-  initMap() {
+  initMap(retryCount = 0) {
     if (!this.currentLocation?.coordinates || this.currentLocation.coordinates.length < 2) return;
     const [lng, lat] = this.currentLocation.coordinates;
-    const mapObj = this.mapPlugin.initMap('busqueda-map', lat, lng, 14);
-    const marker = this.mapPlugin.addMarker(lat, lng, 'Ubicación de Scouting', true);
-    setTimeout(() => mapObj.invalidateSize(), 400);
-    marker.on('dragend', (event: any) => {
-      const pos = event.target.getLatLng();
-      this.currentLocation = {
-        type: 'Point',
-        coordinates: [pos.lng, pos.lat]
-      };
-      this.updateAddress();
-    });
+    
+    const mapContainer = document.getElementById('busqueda-map');
+    if (!mapContainer) {
+      if (retryCount < 15) {
+        console.warn(`[BUSQUEDA-LIST] Buscando contenedor #busqueda-map... Intento #${retryCount + 1}`);
+        setTimeout(() => this.initMap(retryCount + 1), 200);
+      }
+      return;
+    }
 
-    // Carga inicial
-    this.updateAddress();
+    try {
+      const mapObj = this.mapPlugin.initMap('busqueda-map', lat, lng, 14);
+      if (!mapObj) return;
+
+      const marker = this.mapPlugin.addMarker(lat, lng, 'Ubicación de Scouting', true);
+      
+      setTimeout(() => {
+        try {
+          if (mapObj && (mapObj as any)._container) {
+            mapObj.invalidateSize();
+          }
+        } catch (e) {}
+      }, 400);
+
+      marker.on('dragend', (event: any) => {
+        const pos = event.target.getLatLng();
+        this.currentLocation = {
+          type: 'Point',
+          coordinates: [pos.lng, pos.lat]
+        };
+        this.updateAddress();
+      });
+
+      // Carga inicial
+      this.updateAddress();
+    } catch (err) {
+      console.error('[BUSQUEDA-LIST] Error al inicializar mapa:', err);
+    }
   }
 
   updateAddress() {
@@ -417,7 +441,13 @@ export class BusquedaListPage implements OnInit {
     this.isSearchingAutocomplete = true;
     this.playerService.searchTSDBTeams(this.apiSearchQuery).subscribe({
       next: (res) => {
-        this.teamResults = res;
+        this.teamResults = (res || []).map((t: any) => {
+          const badge = t.strTeamBadge || t.strBadge;
+          if (badge) {
+            t.strTeamBadge = badge.startsWith('http') ? badge : `https://www.thesportsdb.com/images/media/team/badge/${badge}`;
+          }
+          return t;
+        });
         this.isSearchingAutocomplete = false;
       },
       error: () => this.isSearchingAutocomplete = false
@@ -429,7 +459,22 @@ export class BusquedaListPage implements OnInit {
     this.playerPage = 1;
     this.playerService.searchTSDBPlayers(this.apiSearchQuery).subscribe({
       next: (res) => {
-        this.players = res.sort((a: any, b: any) => {
+        const uniqueMap = new Map<string, any>();
+        (res || []).forEach((p: any) => {
+          if (!p) return;
+          const key = p.idPlayer ? String(p.idPlayer) : `name_${p.strPlayer?.trim().toLowerCase()}`;
+          if (!uniqueMap.has(key)) {
+            const nameKey = p.strPlayer?.trim().toLowerCase();
+            const existsByName = Array.from(uniqueMap.values()).some(existing => 
+              existing.strPlayer?.trim().toLowerCase() === nameKey
+            );
+            if (!existsByName) {
+              uniqueMap.set(key, p);
+            }
+          }
+        });
+        
+        this.players = Array.from(uniqueMap.values()).sort((a: any, b: any) => {
           const aInStaff = this.isAlreadyAdded(a.strPlayer);
           const bInStaff = this.isAlreadyAdded(b.strPlayer);
           if (!aInStaff && bInStaff) return -1;
@@ -456,7 +501,13 @@ export class BusquedaListPage implements OnInit {
     this.isLoading = true;
     this.playerService.getTeamsByLeague(league.idLeague).subscribe({
       next: (res) => {
-        this.teamResults = res;
+        this.teamResults = (res || []).map((t: any) => {
+          const badge = t.strTeamBadge || t.strBadge;
+          if (badge) {
+            t.strTeamBadge = badge.startsWith('http') ? badge : `https://www.thesportsdb.com/images/media/team/badge/${badge}`;
+          }
+          return t;
+        });
         this.isLoading = false;
       },
       error: () => this.isLoading = false
@@ -470,16 +521,30 @@ export class BusquedaListPage implements OnInit {
     this.playerPage = 1;
     this.isLoading = true;
 
-    // Combinamos la plantilla oficial con una búsqueda por nombre de equipo para ser más exhaustivos
-    forkJoin({
-      official: this.playerService.getTSDBPlayersByTeam(team.idTeam).pipe(catchError(() => of([]))),
-      search: this.playerService.searchTSDBPlayersByTeam(team.strTeam).pipe(catchError(() => of([])))
-    }).subscribe({
-      next: (results: any) => {
-        console.log(`[DEBUG] Official: ${results.official.length}, Search: ${results.search.length}`);
-        // Combinamos y eliminamos duplicados por idPlayer
-        const combined = [...results.official, ...results.search];
-        const unique = Array.from(new Map(combined.map(p => [p.idPlayer, p])).values());
+    // Fetch players by team ID
+    this.playerService.getTSDBPlayersByTeam(team.idTeam).pipe(
+      catchError(() => of([]))
+    ).subscribe({
+      next: (results: any[]) => {
+        const officialArr = Array.isArray(results) ? results : [];
+        console.log(`[DEBUG] Roster players found: ${officialArr.length}`);
+        
+        // Deduplicar por idPlayer y por strPlayer (nombre completo)
+        const uniqueMap = new Map<string, any>();
+        officialArr.forEach(p => {
+          if (!p) return;
+          const key = p.idPlayer ? String(p.idPlayer) : `name_${p.strPlayer?.trim().toLowerCase()}`;
+          if (!uniqueMap.has(key)) {
+            const nameKey = p.strPlayer?.trim().toLowerCase();
+            const existsByName = Array.from(uniqueMap.values()).some(existing => 
+              existing.strPlayer?.trim().toLowerCase() === nameKey
+            );
+            if (!existsByName) {
+              uniqueMap.set(key, p);
+            }
+          }
+        });
+        const unique = Array.from(uniqueMap.values());
         console.log(`[DEBUG] Unique players found: ${unique.length}`);
 
         this.players = unique.sort((a: any, b: any) => {
@@ -613,34 +678,81 @@ export class BusquedaListPage implements OnInit {
 
     let importedCount = 0;
     playersToImport.forEach(p => {
-      const newPlayer: any = {
-        name: p.strPlayer,
-        team: this.selectedTeam?.strTeam || p.strTeam || 'Desconocido',
-        secondary_team: p.strTeam2 || '',
-        league: this.selectedLeague?.strLeague || 'Liga externa',
-        position: p.strPosition || 'Desconocida',
-        image_url: p.strCutout || p.strThumb,
-        user_id: this.authService.currentUser()?.uid || 'manual',
-        is_manual: false,
-        nationality: p.strNationality,
-        summary: p.strDescriptionES || p.strDescriptionEN || '',
-        created_by: this.authService.currentUser()?.email || 'admin',
-        updated_by: this.authService.currentUser()?.email || 'admin',
-        created_at: new Date(),
-        updated_at: new Date(),
-        location: locationPayload,
-        tsdb_ids: {
-          player_id: p.idPlayer,
-          team_id: p.idTeam,
-          team_id2: p.idTeam2,
-          league_id: this.selectedLeague?.idLeague || p.idLeague
-        }
-      };
+      this.playerService.lookupTSDBPlayer(p.idPlayer).subscribe({
+        next: (details) => {
+          const mapped = this.playerService.mapTSDBToPlayer(details, p);
+          
+          const newPlayer: any = {
+            ...mapped,
+            user_id: this.authService.currentUser()?.uid || 'manual',
+            userId: this.authService.currentUser()?.uid || 'manual',
+            created_by: this.authService.currentUser()?.email || 'admin',
+            updated_by: this.authService.currentUser()?.email || 'admin',
+            created_at: new Date(),
+            updated_at: new Date(),
+            location: locationPayload
+          };
+          
+          newPlayer.team = newPlayer.team || this.selectedTeam?.strTeam || p.strTeam || 'Desconocido';
+          newPlayer.league = newPlayer.league && newPlayer.league !== 'Liga externa' ? newPlayer.league : (this.selectedLeague?.strLeague || 'Liga externa');
 
-      this.playerService.addPlayer(newPlayer).subscribe(() => {
-        importedCount++;
-        if (importedCount === playersToImport.length) {
-          this.finishImport();
+          this.playerService.addPlayer(newPlayer).subscribe({
+            next: () => {
+              importedCount++;
+              if (importedCount === playersToImport.length) {
+                this.finishImport();
+              }
+            },
+            error: (err) => {
+              console.error('[BUSQUEDA] Error al añadir jugador importado:', err);
+              importedCount++;
+              if (importedCount === playersToImport.length) {
+                this.finishImport();
+              }
+            }
+          });
+        },
+        error: (err) => {
+          console.error('[BUSQUEDA] Error al buscar detalles completos para ' + p.strPlayer, err);
+          const fallbackPlayer: any = {
+            name: p.strPlayer,
+            team: this.selectedTeam?.strTeam || p.strTeam || 'Desconocido',
+            secondary_team: p.strTeam2 || '',
+            league: this.selectedLeague?.strLeague || 'Liga externa',
+            position: p.strPosition || 'Desconocida',
+            image_url: p.strCutout || p.strThumb,
+            user_id: this.authService.currentUser()?.uid || 'manual',
+            userId: this.authService.currentUser()?.uid || 'manual',
+            is_manual: false,
+            nationality: p.strNationality,
+            summary: p.strDescriptionES || p.strDescriptionEN || '',
+            created_by: this.authService.currentUser()?.email || 'admin',
+            updated_by: this.authService.currentUser()?.email || 'admin',
+            created_at: new Date(),
+            updated_at: new Date(),
+            location: locationPayload,
+            tsdb_ids: {
+              player_id: p.idPlayer,
+              team_id: p.idTeam,
+              team_id2: p.idTeam2,
+              league_id: this.selectedLeague?.idLeague || p.idLeague
+            }
+          };
+
+          this.playerService.addPlayer(fallbackPlayer).subscribe({
+            next: () => {
+              importedCount++;
+              if (importedCount === playersToImport.length) {
+                this.finishImport();
+              }
+            },
+            error: () => {
+              importedCount++;
+              if (importedCount === playersToImport.length) {
+                this.finishImport();
+              }
+            }
+          });
         }
       });
     });

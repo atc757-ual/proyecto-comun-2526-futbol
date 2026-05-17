@@ -40,6 +40,12 @@ spring:
           predicates:
             - Path=/api/news, /api/news/**
 
+        # Java Geocoding Service (delegated to external-client)
+        - id: geocoding-route
+          uri: lb://EXTERNAL-CLIENT
+          predicates:
+            - Path=/api/geo, /api/geo/**
+
 eureka:
   client:
     service-url:

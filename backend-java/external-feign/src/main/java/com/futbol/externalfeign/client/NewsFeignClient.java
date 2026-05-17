@@ -11,13 +11,13 @@ import java.util.List;
 public interface NewsFeignClient {
 
     @GetMapping
-    ApiResult<List<NewsDTO>> findAll(@RequestHeader("Authorization") String auth, @RequestHeader("X-User-Role") String role);
+    ApiResult<List<NewsDTO>> findAll(@RequestHeader(value = "Authorization", required = false) String auth, @RequestHeader("X-User-Role") String role);
 
     @GetMapping("/feed")
-    ApiResult<List<NewsDTO>> getFeed();
+    ApiResult<List<NewsDTO>> getFeed(@RequestHeader(value = "Authorization", required = false) String auth);
 
     @GetMapping("/{id}")
-    ApiResult<NewsDTO> findById(@PathVariable("id") String id);
+    ApiResult<NewsDTO> findById(@RequestHeader(value = "Authorization", required = false) String auth, @PathVariable("id") String id);
 
     @PostMapping
     ApiResult<NewsDTO> create(@RequestHeader("Authorization") String auth, @RequestHeader("X-User-Role") String role, @RequestBody NewsDTO news);

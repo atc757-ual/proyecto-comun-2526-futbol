@@ -210,12 +210,12 @@
   }
 
   .hero-subtitle {
-    font-size: var(--fs-16);
+    font-size: var(--fs-18);
     color: var(--color-neutral-6);
     margin: var(--space-xs) 0 0 0;
 
     @media (max-width: 767px) {
-      font-size: var(--fs-14);
+      font-size: var(--fs-16);
       margin-top: 6px;
     }
   }
@@ -336,7 +336,7 @@
     transition: color 0.2s;
 
     &:hover {
-      color: var(--color-neutral-7);
+      color: var(--color-neutral-8);
     }
   }
 }

@@ -118,8 +118,8 @@
                 class="minimal-result-item animate-fade-in">
                 <div class="item-content-wrapper">
                   <div class="mini-avatar">
-                    <img *ngIf="team.strTeamBadge" [src]="team.strTeamBadge" (error)="handleImageError($event)">
-                    <ion-icon *ngIf="!team.strTeamBadge" name="shield-outline"></ion-icon>
+                    <img *ngIf="team.strTeamBadge || team.strBadge" [src]="team.strTeamBadge || team.strBadge" (error)="handleImageError($event)">
+                    <ion-icon *ngIf="!team.strTeamBadge && !team.strBadge" name="shield-outline"></ion-icon>
                   </div>
                   <div class="player-info-main">
                     <h4 class="f-bold fs-14 text-neutral-9 m-0">{{ team.strTeam }}</h4>

@@ -13,6 +13,7 @@
     left: 0;
     width: 100vw;
     height: 100vh;
+    height: 100dvh;
     z-index: 99999;
     background-color: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(8px);
@@ -37,6 +38,10 @@
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
+    }
+
+    ion-footer {
+        padding-bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
     }
 
     .inner-scroll {
@@ -99,5 +104,28 @@
         margin-bottom: 16px;
         text-align: justify;
         color: var(--color-neutral-7);
+    }
+}
+
+.terms-action-wrapper {
+    padding: var(--space-base) 0 var(--space-l);
+    
+    ion-button {
+        --height: 48px;
+        font-size: 16px;
+        margin: 0;
+    }
+}
+
+.pulse-animation {
+    animation: bounce 1.5s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(3px);
     }
 }

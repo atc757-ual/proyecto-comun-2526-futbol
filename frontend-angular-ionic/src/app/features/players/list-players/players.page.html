@@ -119,8 +119,8 @@
                   <h3 class="f-semibold text-neutral-9 fs-18">Tu plantilla está vacía</h3>
                   <p class="text-neutral-6">Todavía no has registrado ningún jugador en tu base de datos personal.</p>
                   <ion-button mode="ios" fill="solid" size="small" shape="round" color="primary"
-                    routerLink="/player-add" class="mt-base fs-14 f-medium">
-                    Registrar mi primer jugador
+                    routerLink="/player-add" class="mt-s fs-14 f-medium">
+                    Registrar jugador
                   </ion-button>
                 </ng-container>
               </div>
@@ -161,19 +161,19 @@
           <ion-card-title class="fs-18 text-neutral-9 f-semibold">Gestión de jugadores</ion-card-title>
         </ion-card-header>
         <ion-card-content>
-          <ion-item [button]="true" lines="none" detail="true" class="action-item is-yellow" routerLink="/players-all">
-            <ion-icon slot="start" name="people-outline"></ion-icon>
-            <div>
-              <ion-label>Base de Datos Global</ion-label>
-              <p>Ver todos los jugadores</p>
-            </div>
-          </ion-item>
-          <div class="separator my-s"></div>
           <ion-item [button]="true" lines="none" detail="true" class="action-item is-blue" routerLink="/player-add">
             <ion-icon slot="start" name="person-add-outline"></ion-icon>
             <div>
               <ion-label>Crear nuevo jugador</ion-label>
               <p>Registra a tus jugadores</p>
+            </div>
+          </ion-item>
+          <div class="separator my-s"></div>
+          <ion-item [button]="true" lines="none" detail="true" class="action-item is-yellow" routerLink="/players-all">
+            <ion-icon slot="start" name="people-outline"></ion-icon>
+            <div>
+              <ion-label>Base de Datos Global</ion-label>
+              <p>Ver todos los jugadores</p>
             </div>
           </ion-item>
           <div class="separator my-s"></div>

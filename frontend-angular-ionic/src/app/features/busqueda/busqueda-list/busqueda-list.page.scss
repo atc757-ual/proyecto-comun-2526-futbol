@@ -14,8 +14,8 @@
 
 .action-btn-mini {
   --border-radius: var(--space-s);
-  --border-color: var(--color-neutral-3);
-  --color: var(--color-neutral-6);
+  --border-color: var(--color-primary);
+  --color: var(--color-primary);
   --padding-start: 10px;
   --padding-end: var(--space-s);
   height: 28px;
@@ -27,15 +27,15 @@
 
   ion-icon {
     margin-left: var(--space-xs);
-    color: var(--color-neutral-4);
+    color: var(--color-primary);
   }
 
   &:hover {
-    --border-color: var(--color-primary);
-    --color: var(--color-primary);
+    --border-color: var(--color-primary-shade, var(--color-primary));
+    --color: var(--color-primary-shade, var(--color-primary));
 
     ion-icon {
-      color: var(--color-primary);
+      color: var(--color-primary-shade, var(--color-primary));
     }
   }
 }

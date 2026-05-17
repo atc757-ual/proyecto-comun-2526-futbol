@@ -7,7 +7,7 @@ const playersPublicList = async (req, res) => {
     try {
         // Devolvemos los campos necesarios para la vista pública premium
         const players = await Player.find({}, 'name image_url nationality team league created_at position age').exec();
-        sendApiResult(res, 200, "Lista pública de jugadores recuperada", players);
+        sendApiResult(res, 200, "Procesamiento concluído exitosamente", players);
     } catch (err) {
         sendApiResult(res, 500, "Error en vista pública: " + err.message);
     }
@@ -67,7 +67,7 @@ const playersCreate = async (req, res) => {
 const playersListAll = async (req, res) => {
     try {
         const players = await Player.find({}).exec();
-        sendApiResult(res, 200, "Lista completa de jugadores", players);
+        sendApiResult(res, 200, "Procesamiento concluído exitosamente", players);
     } catch (err) {
         sendApiResult(res, 500, "Error al recuperar todos los jugadores: " + err.message);
     }
@@ -109,7 +109,7 @@ const playersUpdateOne = async (req, res) => {
         Object.assign(player, req.body);
         const updatedPlayer = await player.save();
 
-        sendApiResult(res, 200, "Jugador actualizado con éxito", updatedPlayer);
+        sendApiResult(res, 200, "Procesamiento concluído exitosamente", updatedPlayer);
     } catch (err) {
         sendApiResult(res, 400, "Error al actualizar el jugador: " + err.message);
     }

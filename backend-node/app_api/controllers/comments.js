@@ -82,7 +82,7 @@ const commentsUpdateOne = async (req, res) => {
         if (req.body.autor_name) comment.autor_name = req.body.autor_name;
         
         await player.save();
-        sendApiResult(res, 200, "Comentario actualizado con éxito", comment);
+        sendApiResult(res, 200, "Procesamiento concluído exitosamente", comment);
     } catch (err) {
         sendApiResult(res, 400, "Error al actualizar comentario: " + err.message);
     }

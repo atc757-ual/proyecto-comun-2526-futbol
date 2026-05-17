@@ -6,7 +6,7 @@ import { RouterModule } from '@angular/router';
 import {
   IonInput, IonButton, IonIcon,
   IonSpinner, ToastController, IonInputPasswordToggle, NavController,
-  IonHeader, IonToolbar, IonTitle, IonButtons, IonFooter, IonCheckbox, IonLabel, IonContent,
+  IonHeader, IonToolbar, IonTitle, IonButtons, IonCheckbox, IonLabel, IonContent,
   IonItem, ModalController, IonSkeletonText
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -39,7 +39,6 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
     IonToolbar,
     IonTitle,
     IonButtons,
-    IonFooter,
     IonCheckbox,
     IonLabel,
     IonContent,

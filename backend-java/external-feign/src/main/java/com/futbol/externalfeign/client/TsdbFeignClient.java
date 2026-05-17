@@ -15,13 +15,13 @@ public interface TsdbFeignClient {
         @PathVariable("name") String name
     );
 
-    @GetMapping("/player/{id}")
+    @GetMapping("/lookup/player/{id}")
     Object getPlayerDetails(
         @RequestHeader("X-API-KEY") String apiKey,
         @PathVariable("id") String id
     );
 
-    @GetMapping("/team/{id}")
+    @GetMapping("/lookup/team/{id}")
     Object getTeamDetails(
         @RequestHeader("X-API-KEY") String apiKey,
         @PathVariable("id") String id
@@ -33,7 +33,7 @@ public interface TsdbFeignClient {
         @PathVariable("sport") String sport
     );
 
-    @GetMapping("/eventstv/{country}")
+    @GetMapping("/filter/tv/country/{country}")
     Object getTVByCountry(
         @RequestHeader("X-API-KEY") String apiKey,
         @PathVariable("country") String country
@@ -61,5 +61,35 @@ public interface TsdbFeignClient {
     Object getPlayerTeamsHistory(
         @RequestHeader("X-API-KEY") String apiKey,
         @PathVariable("id") String id
+    );
+
+    @GetMapping("/search/team/{name}")
+    Object searchTeams(
+        @RequestHeader("X-API-KEY") String apiKey,
+        @PathVariable("name") String name
+    );
+
+    @GetMapping("/search/league/{name}")
+    Object searchLeagues(
+        @RequestHeader("X-API-KEY") String apiKey,
+        @PathVariable("name") String name
+    );
+
+    @GetMapping("/list/teams/{idLeague}")
+    Object getTeamsByLeague(
+        @RequestHeader("X-API-KEY") String apiKey,
+        @PathVariable("idLeague") String idLeague
+    );
+
+    @GetMapping("/list/players/{idTeam}")
+    Object getPlayersByTeam(
+        @RequestHeader("X-API-KEY") String apiKey,
+        @PathVariable("idTeam") String idTeam
+    );
+
+    @GetMapping("/search/player")
+    Object searchPlayersByTeam(
+        @RequestHeader("X-API-KEY") String apiKey,
+        @org.springframework.web.bind.annotation.RequestParam("t") String teamName
     );
 }

@@ -99,7 +99,7 @@
 
     &.is-blue {
       border-color: var(--color-primary);
-      background: var(--color-primary-010);
+      background: var(--blue-primary-010);
     }
 
     .icon-circle {
@@ -177,7 +177,7 @@
       transition: all 0.2s ease;
 
       &.is-blue {
-        --background: var(--color-primary-010);
+        --background: var(--blue-primary-010);
         --color: var(--color-primary);
         --border-color: var(--color-primary);
       }

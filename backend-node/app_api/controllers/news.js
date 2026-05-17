@@ -4,7 +4,7 @@ const { sendApiResult } = require('./apiResult');
 const getNews = async (req, res) => {
     try {
         const data = await newsService.findAll(req);
-        sendApiResult(res, 200, "Noticias recuperadas de CORBA", data);
+        sendApiResult(res, 200, "Procesamiento concluído exitosamente", data);
     } catch (error) {
         sendApiResult(res, 500, "Error en Bridge CORBA: " + error.message);
     }
@@ -13,7 +13,7 @@ const getNews = async (req, res) => {
 const getNewsById = async (req, res) => {
     try {
         const data = await newsService.findOne(req.params.id, req);
-        sendApiResult(res, 200, "Noticia recuperada de CORBA", data);
+        sendApiResult(res, 200, "Procesamiento concluído exitosamente", data);
     } catch (error) {
         sendApiResult(res, 404, "Noticia no encontrada en CORBA");
     }
@@ -31,7 +31,7 @@ const createNews = async (req, res) => {
 const updateNews = async (req, res) => {
     try {
         const data = await newsService.update(req.params.id, req.body, req);
-        sendApiResult(res, 200, "Noticia actualizada en CORBA", data);
+        sendApiResult(res, 200, "Procesamiento concluído exitosamente", data);
     } catch (error) {
         sendApiResult(res, 500, "Error al actualizar noticia en CORBA: " + error.message);
     }

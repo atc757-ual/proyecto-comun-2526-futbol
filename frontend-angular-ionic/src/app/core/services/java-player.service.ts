@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, firstValueFrom, throwError } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, switchMap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { StorageService } from './storage.service';
 import { AuthService } from './auth.service';
@@ -19,11 +19,11 @@ export class JavaPlayerService implements IPlayerService {
   private storageService = inject(StorageService);
   private authService = inject(AuthService);
   private http = inject(HttpClient);
-  
+
   private apiUrl = `${environment.javaApiUrl}/players`;
   private externalUrl = `${environment.javaApiUrl}/external`;
   private geoUrl = `${environment.javaApiUrl}/geo`;
-  
+
   private cache: { [key: string]: { data: any, timestamp: number } } = {};
 
   /**
@@ -40,7 +40,11 @@ export class JavaPlayerService implements IPlayerService {
    */
   getAllPlayers(): Observable<Player[]> {
     return this.http.get<{ data: Player[] }>(`${this.apiUrl}`).pipe(
-      map(res => this.sortPlayers(res.data || []))
+      map(res => this.sortPlayers(res.data || [])),
+      catchError(err => {
+        console.error('[TRAZA-ERROR-FRONTEND] Falló getAllPlayers():', err);
+        return throwError(() => err);
+      })
     );
   }
 
@@ -49,11 +53,61 @@ export class JavaPlayerService implements IPlayerService {
    */
   getPublicPlayers(filters: any = {}): Observable<Player[]> {
     return this.http.get<{ data: Player[] }>(`${this.apiUrl}/public`, { params: filters }).pipe(
-      map(res => this.sortPlayers(res.data || []))
+      map(res => this.sortPlayers(res.data || [])),
+      catchError(err => {
+        console.error('[TRAZA-ERROR-FRONTEND] Falló getPublicPlayers():', err);
+        return throwError(() => err);
+      })
     );
   }
 
+  private mapPlayer(p: any): Player {
+    if (p) {
+      if (p.id !== undefined && p.id !== null && !p._id) {
+        p._id = String(p.id);
+      }
+      // Adaptar campos camelCase de Java a snake_case de Angular para compatibilidad total en UI
+      p.image_url = p.image_url || p.imageUrl;
+      p.birth_date = p.birth_date || p.birthDate;
+      p.birth_place = p.birth_place || p.birthPlace;
+      p.birth_country = p.birth_country || p.birthCountry;
+      p.secondary_team = p.secondary_team || p.secondaryTeam;
+      p.external_id = p.external_id !== undefined && p.external_id !== null ? p.external_id : p.externalId;
+      p.is_manual = p.is_manual !== undefined ? p.is_manual : p.isManual;
+      p.is_favorite = p.is_favorite !== undefined ? p.is_favorite : p.isFavorite;
+      p.is_featured = p.is_featured !== undefined ? p.is_featured : p.isFeatured;
+      p.created_at = p.created_at || p.createdAt;
+      p.updated_at = p.updated_at || p.updatedAt;
+
+      // Reconstruir la ubicación en formato GeoJSON para compatibilidad total con el frontend
+      if (p.latitude !== undefined && p.latitude !== null && p.longitude !== undefined && p.longitude !== null) {
+        p.location = {
+          type: 'Point',
+          coordinates: [Number(p.longitude), Number(p.latitude)]
+        };
+      }
+
+      // Adaptar subobjetos embebidos
+      if (p.socialMedia && !p.social_media) {
+        p.social_media = p.socialMedia;
+      }
+      if (p.tsdbIds && !p.tsdb_ids) {
+        p.tsdb_ids = {
+          player_id: p.tsdbIds.playerId,
+          team_id: p.tsdbIds.teamId,
+          team_id2: p.tsdbIds.teamId2,
+          league_id: p.tsdbIds.leagueId,
+          transfermarkt_id: p.tsdbIds.transfermarktId,
+          espn_id: p.tsdbIds.espnId,
+          wikidata_id: p.tsdbIds.wikidataId
+        };
+      }
+    }
+    return p;
+  }
+
   private sortPlayers(players: Player[]): Player[] {
+    players.forEach(p => this.mapPlayer(p));
     return players.sort((a, b) => {
       if (a.isFeatured && !b.isFeatured) return -1;
       if (!a.isFeatured && b.isFeatured) return 1;
@@ -68,7 +122,24 @@ export class JavaPlayerService implements IPlayerService {
    */
   getPlayer(id: string | number): Observable<Player> {
     return this.http.get<{ data: Player }>(`${this.apiUrl}/${id}`).pipe(
-      map(res => res.data)
+      map(res => this.mapPlayer(res.data)),
+      switchMap(player => {
+        return this.http.get<{ data: any[] }>(`${environment.javaApiUrl}/comments/player/${id}`).pipe(
+          map(commRes => {
+            player.comments = commRes.data || [];
+            return player;
+          }),
+          catchError(err => {
+            console.warn(`[TRAZA-WARN-FRONTEND] Falló cargar comentarios para jugador ${id}:`, err);
+            player.comments = [];
+            return of(player);
+          })
+        );
+      }),
+      catchError(err => {
+        console.error(`[TRAZA-ERROR-FRONTEND] Falló getPlayer(${id}):`, err);
+        return throwError(() => err);
+      })
     );
   }
 
@@ -76,8 +147,25 @@ export class JavaPlayerService implements IPlayerService {
    * Obtiene un jugador público por ID
    */
   getPublicPlayer(id: string | number): Observable<Player> {
-    return this.http.get<{ data: Player }>(`${this.apiUrl}/${id}`).pipe(
-      map(res => res.data)
+    return this.http.get<{ data: Player }>(`${this.apiUrl}/public/${id}`).pipe(
+      map(res => this.mapPlayer(res.data)),
+      switchMap(player => {
+        return this.http.get<{ data: any[] }>(`${environment.javaApiUrl}/comments/player/${id}`).pipe(
+          map(commRes => {
+            player.comments = commRes.data || [];
+            return player;
+          }),
+          catchError(err => {
+            console.warn(`[TRAZA-WARN-FRONTEND] Falló cargar comentarios para jugador público ${id}:`, err);
+            player.comments = [];
+            return of(player);
+          })
+        );
+      }),
+      catchError(err => {
+        console.error(`[TRAZA-ERROR-FRONTEND] Falló getPublicPlayer(${id}):`, err);
+        return throwError(() => err);
+      })
     );
   }
 
@@ -108,10 +196,14 @@ export class JavaPlayerService implements IPlayerService {
             updated_at: new Date()
           };
 
+          // Asegurar compatibilidad de userId tanto para creación como para edición en Java
+          finalPlayer.userId = player.userId || player.user_id || currentUser?.uid || 'unknown';
+
           if (!isEdit) {
             finalPlayer.created_by = adminEmail;
             finalPlayer.created_at = new Date();
             finalPlayer.user_id = currentUser?.uid || 'unknown';
+            finalPlayer.userId = currentUser?.uid || 'unknown';
           }
 
           const request$ = isEdit ? this.updatePlayer(id, finalPlayer) : this.addPlayer(finalPlayer);
@@ -127,21 +219,159 @@ export class JavaPlayerService implements IPlayerService {
   }
 
   addPlayer(player: Player): Observable<Player> {
-    return this.http.post<{ data: Player }>(this.apiUrl, player).pipe(map(res => res.data));
+    const currentUser = this.authService.currentUser();
+    const p: any = player;
+    const uid = currentUser?.uid || p.user_id || 'manual';
+
+    const finalPlayer: any = {
+      name: p.name,
+      fullname: p.fullname || p.name,
+      team: p.team,
+      secondary_team: p.secondary_team || null,
+      league: p.league || null,
+      age: p.age || null,
+      birth_date: p.birth_date || null,
+      birth_place: p.birth_place || null,
+      birth_country: p.birth_country || null,
+      nationality: p.nationality || null,
+      height: p.height || null,
+      weight: p.weight || null,
+      number: p.number !== undefined ? p.number : null,
+      position: p.position || null,
+      side: p.side || null,
+      image_url: p.image_url || null,
+      user_id: uid,
+      external_id: p.external_id !== undefined && p.external_id !== null ? p.external_id : null,
+      latitude: p.latitude !== undefined && p.latitude !== null ? p.latitude : (p.location?.coordinates?.[1] !== undefined ? p.location.coordinates[1] : null),
+      longitude: p.longitude !== undefined && p.longitude !== null ? p.longitude : (p.location?.coordinates?.[0] !== undefined ? p.location.coordinates[0] : null),
+      is_manual: p.is_manual !== undefined ? p.is_manual : false,
+      is_favorite: p.is_favorite !== undefined ? p.is_favorite : false,
+      is_featured: p.is_featured !== undefined ? p.is_featured : false,
+      summary: p.summary || null
+    };
+
+    if (p.social_media) {
+      finalPlayer.social_media = {
+        facebook: p.social_media.facebook || null,
+        instagram: p.social_media.instagram || null,
+        twitter: p.social_media.twitter || null,
+        website: p.social_media.website || null
+      };
+    }
+
+    if (p.tsdb_ids) {
+      finalPlayer.tsdb_ids = {
+        player_id: p.tsdb_ids.player_id || null,
+        team_id: p.tsdb_ids.team_id || null,
+        team_id2: p.tsdb_ids.team_id2 || null,
+        league_id: p.tsdb_ids.league_id || null,
+        transfermarkt_id: p.tsdb_ids.transfermarkt_id || null,
+        espn_id: p.tsdb_ids.espn_id || null,
+        wikidata_id: p.tsdb_ids.wikidata_id || null
+      };
+    }
+
+    if (p.images) {
+      finalPlayer.images = {
+        thumb: p.images.thumb || null,
+        cutout: p.images.cutout || null,
+        banner: p.images.banner || null
+      };
+    }
+
+    return this.http.post<{ data: Player }>(this.apiUrl, finalPlayer).pipe(
+      map(res => this.mapPlayer(res.data)),
+      catchError(err => {
+        console.error('[TRAZA-ERROR-FRONTEND] Falló addPlayer():', err);
+        return throwError(() => err);
+      })
+    );
   }
 
   updatePlayer(id: string | number, player: Player): Observable<Player> {
-    return this.http.put<{ data: Player }>(this.apiUrl, player).pipe(map(res => res.data));
+    const currentUser = this.authService.currentUser();
+    const p: any = player;
+    const uid = currentUser?.uid || p.user_id || 'manual';
+
+    const finalPlayer: any = {
+      id: id,
+      name: p.name,
+      fullname: p.fullname || p.name,
+      team: p.team,
+      secondary_team: p.secondary_team || null,
+      league: p.league || null,
+      age: p.age || null,
+      birth_date: p.birth_date || null,
+      birth_place: p.birth_place || null,
+      birth_country: p.birth_country || null,
+      nationality: p.nationality || null,
+      height: p.height || null,
+      weight: p.weight || null,
+      number: p.number !== undefined ? p.number : null,
+      position: p.position || null,
+      side: p.side || null,
+      image_url: p.image_url || null,
+      user_id: uid,
+      external_id: p.external_id !== undefined && p.external_id !== null ? p.external_id : null,
+      latitude: p.latitude !== undefined && p.latitude !== null ? p.latitude : (p.location?.coordinates?.[1] !== undefined ? p.location.coordinates[1] : null),
+      longitude: p.longitude !== undefined && p.longitude !== null ? p.longitude : (p.location?.coordinates?.[0] !== undefined ? p.location.coordinates[0] : null),
+      is_manual: p.is_manual !== undefined ? p.is_manual : false,
+      is_favorite: p.is_favorite !== undefined ? p.is_favorite : false,
+      is_featured: p.is_featured !== undefined ? p.is_featured : false,
+      summary: p.summary || null
+    };
+
+    if (p.social_media) {
+      finalPlayer.social_media = {
+        facebook: p.social_media.facebook || null,
+        instagram: p.social_media.instagram || null,
+        twitter: p.social_media.twitter || null,
+        website: p.social_media.website || null
+      };
+    }
+
+    if (p.tsdb_ids) {
+      finalPlayer.tsdb_ids = {
+        player_id: p.tsdb_ids.player_id || null,
+        team_id: p.tsdb_ids.team_id || null,
+        team_id2: p.tsdb_ids.team_id2 || null,
+        league_id: p.tsdb_ids.league_id || null,
+        transfermarkt_id: p.tsdb_ids.transfermarkt_id || null,
+        espn_id: p.tsdb_ids.espn_id || null,
+        wikidata_id: p.tsdb_ids.wikidata_id || null
+      };
+    }
+
+    if (p.images) {
+      finalPlayer.images = {
+        thumb: p.images.thumb || null,
+        cutout: p.images.cutout || null,
+        banner: p.images.banner || null
+      };
+    }
+
+    return this.http.put<{ data: Player }>(this.apiUrl, finalPlayer).pipe(
+      map(res => this.mapPlayer(res.data)),
+      catchError(err => {
+        console.error(`[TRAZA-ERROR-FRONTEND] Falló updatePlayer(${id}):`, err);
+        return throwError(() => err);
+      })
+    );
   }
 
   toggleFavorite(id: string | number, isFavorite: boolean): Observable<Player> {
-    // En Java, el PUT suele recibir el objeto completo o tenemos un endpoint específico
-    // Para simplificar, asumimos que el backend acepta actualizaciones parciales o el objeto
-    return this.http.put<{ data: Player }>(this.apiUrl, { id, isFavorite }).pipe(map(res => res.data));
+    return this.http.put<{ data: Player }>(`${this.apiUrl}/${id}/favorite?isFavorite=${isFavorite}`, {}).pipe(
+      map(res => this.mapPlayer(res.data))
+    );
   }
 
   deletePlayer(id: string | number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+      catchError(err => {
+        console.error(`[TRAZA-ERROR-FRONTEND] Falló deletePlayer(${id}):`, err);
+        return throwError(() => err);
+      })
+    );
   }
 
   // --- EXTERNAL APIs ---
@@ -163,7 +393,15 @@ export class JavaPlayerService implements IPlayerService {
   }
 
   getTSDBLiveScores(): Observable<any[]> {
-    return this.http.get<any>(`${this.externalUrl}/live/soccer`).pipe(map(res => res.data || []));
+    return this.http.get<any>(`${this.externalUrl}/live/soccer`).pipe(
+      map(res => {
+        const data = res.data;
+        if (Array.isArray(data)) return data;
+        if (data && Array.isArray(data.livescore)) return data.livescore;
+        if (data && Array.isArray(data.results)) return data.results;
+        return [];
+      })
+    );
   }
 
   lookupTSDBLeague(id: string): Observable<any> {
@@ -261,23 +499,29 @@ export class JavaPlayerService implements IPlayerService {
   // --- MAPPERS ---
 
   mapTSDBToPlayer(details: any, apiPlayer?: any): any {
-    // La lógica de mapeo es idéntica
+    // Si la respuesta de TheSportsDB viene envuelta en un objeto { players: [...] }, extraemos el primer jugador
+    if (details && details.players && Array.isArray(details.players) && details.players.length > 0) {
+      details = details.players[0];
+    } else if (details && details.data && details.data.players && Array.isArray(details.data.players) && details.data.players.length > 0) {
+      details = details.data.players[0];
+    }
+
     const player: any = {
-      name: details.strPlayer || apiPlayer?.name,
-      fullname: details.strPlayerAlternate || details.strPlayer || apiPlayer?.name,
-      team: details.strTeam || apiPlayer?.team,
-      nationality: details.strNationality || apiPlayer?.nationality,
-      position: details.strPosition || apiPlayer?.position,
-      side: details.strSide || apiPlayer?.strSide,
-      image_url: details.strThumb || apiPlayer?.image_url,
-      external_id: details.idPlayer || apiPlayer?.externalId,
+      name: details?.strPlayer || apiPlayer?.name,
+      fullname: details?.strPlayerAlternate || details?.strPlayer || apiPlayer?.name,
+      team: details?.strTeam || apiPlayer?.team,
+      nationality: details?.strNationality || apiPlayer?.nationality,
+      position: details?.strPosition || apiPlayer?.position,
+      side: details?.strSide || apiPlayer?.strSide,
+      image_url: details?.strThumb || apiPlayer?.image_url,
+      external_id: details?.idPlayer || apiPlayer?.externalId,
       is_manual: false,
-      summary: details.strDescriptionES || details.strDescriptionEN || '',
-      birth_date: details.dateBorn,
-      birth_place: details.strBirthLocation,
-      height: details.strHeight,
-      weight: details.strWeight,
-      number: details.strNumber ? parseInt(details.strNumber) : undefined,
+      summary: details?.strDescriptionES || details?.strDescriptionEN || '',
+      birth_date: details?.dateBorn,
+      birth_place: details?.strBirthLocation,
+      height: details?.strHeight,
+      weight: details?.strWeight,
+      number: details?.strNumber ? parseInt(details?.strNumber) : undefined,
       tsdb_ids: {
         player_id: details.idPlayer,
         team_id: details.idTeam,

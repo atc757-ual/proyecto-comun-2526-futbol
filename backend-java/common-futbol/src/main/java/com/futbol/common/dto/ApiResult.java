@@ -16,7 +16,7 @@ public class ApiResult<T> implements Serializable {
     }
 
     public static <T> ApiResult<T> success(String detail, T data) {
-        return new ApiResult<>(new Result("200", "OK", detail), data);
+        return new ApiResult<>(new Result("200", "OK", "Procesamiento concluído exitosamente"), data);
     }
 
     public static <T> ApiResult<T> error(String code, String detail) {

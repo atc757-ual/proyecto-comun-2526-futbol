@@ -53,7 +53,7 @@ export class PlayerList {
           {displayPlayers.map((player) => (
             <div class="player-row clickable" onClick={() => this.playerClicked.emit(player)}>
               <div class="player-avatar">
-                <img src={player.image_url || 'assets/img/player-placeholder.png'} alt={player.name} />
+                <img src={player.image_url || 'https://placehold.co/800?text=404&font=roboto'} alt={player.name} onError={(e: any) => { e.target.onerror = null; e.target.src = 'https://placehold.co/800?text=404&font=roboto'; }} />
               </div>
               <div class="player-info">
                 <span class="player-name">{player.name}</span>

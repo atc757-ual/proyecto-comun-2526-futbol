@@ -543,7 +543,7 @@ export class BusquedaListPage implements OnInit {
 
   getPlayerThumb(id: string) {
     const p = this.selectedPlayers.get(id);
-    if (!p) return 'assets/img/player-placeholder.png';
+    if (!p) return 'https://placehold.co/800?text=404&font=roboto';
 
     const cutout = p.strCutout;
     const thumb = p.strThumb;

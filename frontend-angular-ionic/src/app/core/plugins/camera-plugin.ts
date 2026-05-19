@@ -18,8 +18,13 @@ export class CameraPlugin {
         source: CameraSource.Prompt // Permite elegir entre Cámara o Galería
       });
       return image.webPath ? image : null;
-    } catch (error) {
-      console.error('Error al tomar la foto:', error);
+    } catch (error: any) {
+      // Ignorar advertencias si el usuario simplemente canceló la selección
+      if (error?.message?.includes('cancel') || error?.message?.includes('Cancel')) {
+        console.log('[CAMERA] Selección de foto cancelada por el usuario.');
+      } else {
+        console.error('Error al tomar la foto:', error);
+      }
       return null;
     }
   }
@@ -46,9 +51,13 @@ export class CameraPlugin {
   async takePhotoWithFallback(): Promise<string | null> {
     try {
       const photo = await this.takePhoto();
-      return photo ? photo.webPath! : null;
-    } catch (error) {
+      if (photo && photo.webPath) {
+        return photo.webPath;
+      }
+
+      // Si no se obtuvo foto (por falta de hardware o de plugin) y estamos en navegador web:
       if (Capacitor.getPlatform() === 'web') {
+        console.log('[CAMERA] Fallback web activo: abriendo selector de archivos.');
         return new Promise((resolve) => {
           const input = document.createElement('input');
           input.type = 'file';
@@ -66,6 +75,9 @@ export class CameraPlugin {
           input.click();
         });
       }
+      return null;
+    } catch (fallbackError) {
+      console.error('Error en fallback de cámara:', fallbackError);
       return null;
     }
   }

@@ -5,13 +5,13 @@ import { IonicModule, IonContent, AlertController, ToastController, NavControlle
 import { Router, RouterModule } from '@angular/router';
 import { ConfirmModalComponent } from 'src/app/shared/components/confirm-modal/confirm-modal.component';
 import { NewsItem } from 'src/app/core/models/news.model';
-import { AuthService } from 'src/app/core/services/auth.service';
-import { PlatformService } from 'src/app/core/services/platform.service';
+import { AuthService } from 'src/app/core/services/auth/auth.service';
+import { PlatformService } from 'src/app/core/services/system/platform.service';
 import { addIcons } from 'ionicons';
 import { alertCircleOutline, arrowBackOutline, newspaperOutline, eyeOutline, eyeOffOutline, homeOutline, addCircleOutline, createOutline, trashOutline, checkmarkCircleOutline, cloudDoneOutline, cloudOfflineOutline } from 'ionicons/icons';
-import { LayoutService } from 'src/app/core/services/layout.service';
-import { StorageService } from 'src/app/core/services/storage.service';
-import { NEWS_SERVICE_TOKEN } from '../../../core/services/news.service.token';
+import { LayoutService } from 'src/app/core/services/ui/layout.service';
+import { StorageService } from 'src/app/core/services/system/storage.service';
+import { NEWS_SERVICE_TOKEN } from '../../../core/services/news/news.service.token';
 
 @Component({
   selector: 'app-news-detail',

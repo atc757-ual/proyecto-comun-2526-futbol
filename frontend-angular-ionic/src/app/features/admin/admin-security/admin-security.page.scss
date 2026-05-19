@@ -161,7 +161,7 @@ ion-badge {
 }
 
 .btn-group {
-    margin-top: var(--space-lg);
+    margin-top: var(--space-base);
     display: flex;
     flex-direction: column;
     gap: var(--space-s);
@@ -180,20 +180,6 @@ ion-badge {
     .premium-card {
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.03);
     }
-}
-
-.btn-group {
-    margin-top: var(--space-base);
-
-    .promote-btn {
-        --box-shadow: 0 4px 8px rgba(var(--ion-color-primary-rgb), 0.1);
-        font-weight: var(--fw-semibold);
-
-        ion-icon {
-            padding-right: var(--space-s);
-        }
-    }
-
 }
 
 .pos-relative {

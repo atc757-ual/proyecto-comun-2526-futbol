@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, switchMap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 import {
   IonButton, IonIcon, IonSearchbar, IonList, IonItem, IonLabel, IonCheckbox, IonSpinner,
   IonBadge, IonCard, IonCardContent, IonAvatar, IonSegment, IonSegmentButton, IonChip,
-  ToastController, ModalController
+  ModalController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -20,13 +21,16 @@ import {
   shieldCheckmarkOutline, lockClosedOutline, locationOutline,
   person, informationCircle
 } from 'ionicons/icons';
-import { LayoutService } from '../../../core/services/layout.service';
-import { AuthService } from '../../../core/services/auth.service';
+import { LayoutService } from '../../../core/services/ui/layout.service';
+import { AuthService } from '../../../core/services/auth/auth.service';
+import { ToastService } from '../../../core/services/ui/toast.service';
 import { LocationPlugin } from '../../../core/plugins/location-plugin';
 import { MapPlugin } from '../../../core/plugins/maps-plugin';
 import { PermissionModalComponent } from '../../../shared/components/permission-modal/permission-modal.component';
-import { PLAYER_SERVICE_TOKEN } from '../../../core/services/player.service.token';
-import confetti from 'canvas-confetti';
+import { PLAYER_SERVICE_TOKEN } from '../../../core/services/players/player.service.token';
+import { ConfettiService } from '../../../core/services/ui/confetti.service';
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { GpsPermissionCardComponent } from '../../../shared/components/gps-permission-card/gps-permission-card.component';
 
 @Component({
   selector: 'app-busqueda-list',
@@ -36,51 +40,64 @@ import confetti from 'canvas-confetti';
   imports: [
     CommonModule, FormsModule, RouterModule,
     IonButton, IonIcon, IonSearchbar, IonList, IonItem, IonLabel, IonCheckbox, IonSpinner,
-    IonBadge, IonCard, IonCardContent, IonAvatar, IonSegment, IonSegmentButton, IonChip
+    IonBadge, IonCard, IonCardContent, IonAvatar, IonSegment, IonSegmentButton, IonChip,
+    PaginationComponent, GpsPermissionCardComponent
   ]
 })
 export class BusquedaListPage implements OnInit {
+
+  // 1. INYECCIONES DE DEPENDENCIAS
+
   private playerService = inject(PLAYER_SERVICE_TOKEN);
   private layoutService = inject(LayoutService);
   private authService = inject(AuthService);
   private ngZone = inject(NgZone);
   private router = inject(Router);
-  private toastCtrl = inject(ToastController);
+  private toastService = inject(ToastService);
+  private confettiService = inject(ConfettiService);
   private locationPlugin = inject(LocationPlugin);
   private modalCtrl = inject(ModalController);
   private mapPlugin = inject(MapPlugin);
   private cdr = inject(ChangeDetectorRef);
 
-  // Estado de permisos GPS
+
+  // 2. PROPIEDADES DE ESTADO
+
   public hasGeoPermission = false;
   public hasLocation = false;
   public isCapturingLocation = false;
+  public isCheckingGeo = true;
   public currentLocation: { type: string; coordinates: number[] } | null = null;
-  private activePermissionModal: any = null;
-
   public currentAddress: string = 'Localizando...';
   public isRevGeocoding: boolean = false;
 
+  // -- Búsqueda --
   public searchType: 'player' | 'team' | 'league' = 'player';
   public apiSearchQuery = '';
   public leagueResults: any[] = [];
   public teamResults: any[] = [];
   public players: any[] = [];
-
   public selectedLeague: any = null;
   public selectedTeam: any = null;
+  public isLoading = false;
+  public isSearchingAutocomplete = false;
 
-  // Usamos un Map para persistir los objetos de los jugadores seleccionados
+  // -- Datos del Usuario --
+  public myPlayers: any[] = [];
+
+  // -- Basket de Selección --
   public selectedPlayers: Map<string, any> = new Map<string, any>();
   public isImporting = false;
 
-  // Paginación Multivel
+  // -- Paginación --
   public leaguePage = 1;
   public teamPage = 1;
   public playerPage = 1;
   public pageSize = 8;
 
-  // Identifica qué lista estamos paginando actualmente
+
+  // 3. GETTERS Y SETTERS (Paginación)
+
   get currentActiveList(): any[] {
     if (this.players.length > 0) return this.players;
     if (this.teamResults.length > 0 && (this.selectedLeague || this.searchType === 'team')) return this.teamResults;
@@ -110,41 +127,8 @@ export class BusquedaListPage implements OnInit {
     return Math.ceil(this.currentActiveList.length / this.pageSize);
   }
 
-  // Helpers Paginación
-  nextPage() {
-    if (this.activePage < this.totalPages) this.activePage++;
-  }
 
-  prevPage() {
-    if (this.activePage > 1) this.activePage--;
-  }
-
-  goToPage(page: number) {
-    this.activePage = page;
-  }
-
-  getPages(): number[] {
-    const total = this.totalPages;
-    if (total <= 1) return [];
-
-    // Solo mostrar hasta 5 páginas
-    if (total <= 5) {
-      return Array.from({ length: total }, (_, i) => i + 1);
-    }
-
-    let start = Math.max(1, this.activePage - 2);
-    let end = Math.min(total, start + 4);
-
-    if (end === total) {
-      start = Math.max(1, total - 4);
-    }
-
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-  }
-
-  public isLoading = false;
-  public isSearchingAutocomplete = false;
-  public myPlayers: any[] = [];
+  // 4. CONSTRUCTOR Y CICLO DE VIDA
 
   constructor() {
     addIcons({
@@ -154,8 +138,7 @@ export class BusquedaListPage implements OnInit {
       closeCircleOutline, chevronForwardOutline, chevronDownOutline, chevronUpOutline,
       checkmarkDoneOutline, cloudDownloadOutline, cloudUploadOutline, alertCircleOutline,
       peopleOutline, navigateOutline, navigateCircleOutline, shieldCheckmarkOutline, lockClosedOutline,
-      'location-outline': locationOutline,
-      person, 'information-circle': informationCircle
+      locationOutline, person, informationCircle
     });
   }
 
@@ -169,9 +152,10 @@ export class BusquedaListPage implements OnInit {
       { label: '', url: '/home', icon: 'home-outline' },
       { label: 'Búsqueda', url: '' },
     ]);
+
     this.loadMyPlayers();
 
-    // Verificar permisos y lanzar modal de onboarding si hace falta
+    // Permisos y Localización inicial
     this.checkGeoPermission().then(() => {
       this.checkPermissionsOnboarding();
       if (this.hasGeoPermission) {
@@ -180,12 +164,25 @@ export class BusquedaListPage implements OnInit {
     });
   }
 
+
+  // 5. INICIALIZACIÓN DE DATOS LOCALES
+
+  loadMyPlayers() {
+    this.playerService.getPlayers().subscribe(data => this.myPlayers = data);
+  }
+
+
+  // 6. GESTIÓN GPS Y MAPAS
+
   async checkGeoPermission() {
+    this.isCheckingGeo = true;
     try {
       this.hasGeoPermission = await this.locationPlugin.isGeolocationPermissionGranted();
     } catch (e) {
       this.hasGeoPermission = false;
     }
+    this.isCheckingGeo = false;
+    this.cdr.detectChanges();
   }
 
   async checkPermissionsOnboarding() {
@@ -202,7 +199,6 @@ export class BusquedaListPage implements OnInit {
         backdropDismiss: false,
         componentProps: { mode: 'commenting' }
       });
-      this.activePermissionModal = modal;
       await modal.present();
 
       await modal.onWillDismiss();
@@ -222,20 +218,14 @@ export class BusquedaListPage implements OnInit {
     this.cdr.detectChanges();
 
     try {
-      // 1. Disparamos el prompt del navegador
       navigator.geolocation.getCurrentPosition(
-        () => { /* Se maneja en la lógica de estado abajo */ },
-        () => { /* Se maneja en la lógica de estado abajo */ },
-        { timeout: 15000 }
+        () => { }, () => { }, { timeout: 15000 }
       );
 
-      // 2. Intentamos usar la Permissions API para esperar el cambio
       if (navigator.permissions) {
         try {
           const status = await navigator.permissions.query({ name: 'geolocation' as any });
-
           if (status.state === 'prompt') {
-            // Esperamos a que cambie (el usuario haga clic)
             await new Promise<void>((resolve) => {
               const onChange = () => {
                 status.removeEventListener('change', onChange);
@@ -252,25 +242,22 @@ export class BusquedaListPage implements OnInit {
             this.hasGeoPermission = finalStatus.state === 'granted';
             this.isCapturingLocation = false;
             if (this.hasGeoPermission) {
-              this.showToast('¡Permisos de ubicación activos!', 'success', 'shield-checkmark-outline');
+              this.toastService.showSuccess('¡Permisos de ubicación activos!');
               await this.captureLocation();
             }
             this.cdr.detectChanges();
           });
           return;
-        } catch (e) {
-          // Fallback
-        }
+        } catch (e) { }
       }
 
-      // Fallback para navegadores sin Permissions API
       await new Promise(resolve => setTimeout(resolve, 2000));
       navigator.geolocation.getCurrentPosition(
         async () => {
           this.ngZone.run(async () => {
             this.hasGeoPermission = true;
             this.isCapturingLocation = false;
-            this.showToast('¡Permisos de ubicación activos!', 'success', 'shield-checkmark-outline');
+            this.toastService.showSuccess('¡Permisos de ubicación activos!');
             await this.captureLocation();
             this.cdr.detectChanges();
           });
@@ -284,7 +271,6 @@ export class BusquedaListPage implements OnInit {
         },
         { timeout: 5000 }
       );
-
     } catch (error) {
       this.ngZone.run(() => {
         this.isCapturingLocation = false;
@@ -305,9 +291,7 @@ export class BusquedaListPage implements OnInit {
       };
       this.hasLocation = true;
       this.isCapturingLocation = false;
-      this.cdr.detectChanges(); // Forzar renderizado del ngIf
-
-      // Inicializar el mapa tras obtener la ubicación
+      this.cdr.detectChanges();
       setTimeout(() => this.initMap(), 500);
     } catch (error: any) {
       this.isCapturingLocation = false;
@@ -320,11 +304,10 @@ export class BusquedaListPage implements OnInit {
   initMap(retryCount = 0) {
     if (!this.currentLocation?.coordinates || this.currentLocation.coordinates.length < 2) return;
     const [lng, lat] = this.currentLocation.coordinates;
-    
+
     const mapContainer = document.getElementById('busqueda-map');
     if (!mapContainer) {
       if (retryCount < 15) {
-        console.warn(`[BUSQUEDA-LIST] Buscando contenedor #busqueda-map... Intento #${retryCount + 1}`);
         setTimeout(() => this.initMap(retryCount + 1), 200);
       }
       return;
@@ -335,13 +318,13 @@ export class BusquedaListPage implements OnInit {
       if (!mapObj) return;
 
       const marker = this.mapPlugin.addMarker(lat, lng, 'Ubicación de Scouting', true);
-      
+
       setTimeout(() => {
         try {
           if (mapObj && (mapObj as any)._container) {
             mapObj.invalidateSize();
           }
-        } catch (e) {}
+        } catch (e) { }
       }, 400);
 
       marker.on('dragend', (event: any) => {
@@ -353,7 +336,6 @@ export class BusquedaListPage implements OnInit {
         this.updateAddress();
       });
 
-      // Carga inicial
       this.updateAddress();
     } catch (err) {
       console.error('[BUSQUEDA-LIST] Error al inicializar mapa:', err);
@@ -379,25 +361,18 @@ export class BusquedaListPage implements OnInit {
     }
   }
 
-  loadMyPlayers() {
-    this.playerService.getPlayers().subscribe(data => this.myPlayers = data);
-  }
+
+  // 7. LÓGICA DE BÚSQUEDA Y UI TRIGGERS
 
   onSearchInput() {
-    // Si la query está vacía, no reseteamos todo, ya que podría ser un reset programático
-    // tras seleccionar un equipo/liga. El botón de "X" (clear) ya llama a clearAll().
     if (!this.apiSearchQuery || this.apiSearchQuery.trim().length === 0) {
       return;
     }
 
-    // Solo reseteamos selecciones si estamos escribiendo activamente
-    // pero mantenemos el searchType
     this.players = [];
     this.leaguePage = 1;
     this.teamPage = 1;
     this.playerPage = 1;
-
-    // Si el usuario empieza a escribir, invalidamos la selección actual
     this.selectedLeague = null;
     this.selectedTeam = null;
     this.teamResults = [];
@@ -408,13 +383,9 @@ export class BusquedaListPage implements OnInit {
       return;
     }
 
-    if (this.searchType === 'league') {
-      this.searchLeagues();
-    } else if (this.searchType === 'team') {
-      this.searchTeams();
-    } else if (this.searchType === 'player') {
-      this.searchPlayers();
-    }
+    if (this.searchType === 'league') this.searchLeagues();
+    else if (this.searchType === 'team') this.searchTeams();
+    else if (this.searchType === 'player') this.searchPlayers();
   }
 
   getSearchPlaceholder(): string {
@@ -425,6 +396,35 @@ export class BusquedaListPage implements OnInit {
       default: return 'Escribe para buscar...';
     }
   }
+
+  backToLeagues() {
+    this.selectedLeague = null;
+    this.selectedTeam = null;
+    this.teamResults = [];
+    this.players = [];
+    this.apiSearchQuery = '';
+  }
+
+  backToTeams() {
+    this.selectedTeam = null;
+    this.players = [];
+    this.apiSearchQuery = '';
+  }
+
+  clearAll() {
+    this.apiSearchQuery = '';
+    this.selectedLeague = null;
+    this.selectedTeam = null;
+    this.players = [];
+    this.leagueResults = [];
+    this.teamResults = [];
+    this.leaguePage = 1;
+    this.teamPage = 1;
+    this.playerPage = 1;
+  }
+
+
+  // 8. SERVICIOS THE SPORTS DB
 
   searchLeagues() {
     this.isSearchingAutocomplete = true;
@@ -441,13 +441,7 @@ export class BusquedaListPage implements OnInit {
     this.isSearchingAutocomplete = true;
     this.playerService.searchTSDBTeams(this.apiSearchQuery).subscribe({
       next: (res) => {
-        this.teamResults = (res || []).map((t: any) => {
-          const badge = t.strTeamBadge || t.strBadge;
-          if (badge) {
-            t.strTeamBadge = badge.startsWith('http') ? badge : `https://www.thesportsdb.com/images/media/team/badge/${badge}`;
-          }
-          return t;
-        });
+        this.teamResults = (res || []).map((t: any) => this.normalizeBadge(t));
         this.isSearchingAutocomplete = false;
       },
       error: () => this.isSearchingAutocomplete = false
@@ -462,18 +456,16 @@ export class BusquedaListPage implements OnInit {
         const uniqueMap = new Map<string, any>();
         (res || []).forEach((p: any) => {
           if (!p) return;
-          const key = p.idPlayer ? String(p.idPlayer) : `name_${p.strPlayer?.trim().toLowerCase()}`;
-          if (!uniqueMap.has(key)) {
-            const nameKey = p.strPlayer?.trim().toLowerCase();
-            const existsByName = Array.from(uniqueMap.values()).some(existing => 
-              existing.strPlayer?.trim().toLowerCase() === nameKey
-            );
-            if (!existsByName) {
-              uniqueMap.set(key, p);
-            }
+          if (p.idPlayer) {
+            // Jugador con ID: confiar en el ID, nunca descartar por nombre
+            uniqueMap.set(String(p.idPlayer), p);
+          } else {
+            // Sin ID: deduplicar por nombre como fallback
+            const nameKey = `name_${p.strPlayer?.trim().toLowerCase()}`;
+            if (!uniqueMap.has(nameKey)) uniqueMap.set(nameKey, p);
           }
         });
-        
+
         this.players = Array.from(uniqueMap.values()).sort((a: any, b: any) => {
           const aInStaff = this.isAlreadyAdded(a.strPlayer);
           const bInStaff = this.isAlreadyAdded(b.strPlayer);
@@ -487,11 +479,6 @@ export class BusquedaListPage implements OnInit {
     });
   }
 
-  isAlreadyAdded(playerName: string): boolean {
-    if (!playerName) return false;
-    return this.myPlayers.some(p => p.name.toLowerCase() === playerName.toLowerCase());
-  }
-
   selectLeague(league: any) {
     this.selectedLeague = league;
     this.apiSearchQuery = '';
@@ -501,13 +488,7 @@ export class BusquedaListPage implements OnInit {
     this.isLoading = true;
     this.playerService.getTeamsByLeague(league.idLeague).subscribe({
       next: (res) => {
-        this.teamResults = (res || []).map((t: any) => {
-          const badge = t.strTeamBadge || t.strBadge;
-          if (badge) {
-            t.strTeamBadge = badge.startsWith('http') ? badge : `https://www.thesportsdb.com/images/media/team/badge/${badge}`;
-          }
-          return t;
-        });
+        this.teamResults = (res || []).map((t: any) => this.normalizeBadge(t));
         this.isLoading = false;
       },
       error: () => this.isLoading = false
@@ -521,33 +502,25 @@ export class BusquedaListPage implements OnInit {
     this.playerPage = 1;
     this.isLoading = true;
 
-    // Fetch players by team ID
     this.playerService.getTSDBPlayersByTeam(team.idTeam).pipe(
       catchError(() => of([]))
     ).subscribe({
       next: (results: any[]) => {
         const officialArr = Array.isArray(results) ? results : [];
-        console.log(`[DEBUG] Roster players found: ${officialArr.length}`);
-        
-        // Deduplicar por idPlayer y por strPlayer (nombre completo)
         const uniqueMap = new Map<string, any>();
         officialArr.forEach(p => {
           if (!p) return;
-          const key = p.idPlayer ? String(p.idPlayer) : `name_${p.strPlayer?.trim().toLowerCase()}`;
-          if (!uniqueMap.has(key)) {
-            const nameKey = p.strPlayer?.trim().toLowerCase();
-            const existsByName = Array.from(uniqueMap.values()).some(existing => 
-              existing.strPlayer?.trim().toLowerCase() === nameKey
-            );
-            if (!existsByName) {
-              uniqueMap.set(key, p);
-            }
+          if (p.idPlayer) {
+            // Jugador con ID: confiar en el ID, nunca descartar por nombre
+            uniqueMap.set(String(p.idPlayer), p);
+          } else {
+            // Sin ID: deduplicar por nombre como fallback
+            const nameKey = `name_${p.strPlayer?.trim().toLowerCase()}`;
+            if (!uniqueMap.has(nameKey)) uniqueMap.set(nameKey, p);
           }
         });
-        const unique = Array.from(uniqueMap.values());
-        console.log(`[DEBUG] Unique players found: ${unique.length}`);
 
-        this.players = unique.sort((a: any, b: any) => {
+        this.players = Array.from(uniqueMap.values()).sort((a: any, b: any) => {
           const aInStaff = this.isAlreadyAdded(a.strPlayer);
           const bInStaff = this.isAlreadyAdded(b.strPlayer);
           if (aInStaff && !bInStaff) return 1;
@@ -560,40 +533,13 @@ export class BusquedaListPage implements OnInit {
     });
   }
 
-  // Helpers de Navegación "Atrás" (Pills)
-  backToLeagues() {
-    this.selectedLeague = null;
-    this.selectedTeam = null;
-    this.teamResults = [];
-    this.players = [];
-    this.apiSearchQuery = '';
-    // No reseteamos leagueResults si ya los teníamos de una búsqueda
-  }
 
-  backToTeams() {
-    this.selectedTeam = null;
-    this.players = [];
-    this.apiSearchQuery = '';
-    // Al volver a equipos, ya tenemos teamResults de la llamada selectLeague
-  }
-
-  clearAll() {
-    this.apiSearchQuery = '';
-    this.selectedLeague = null;
-    this.selectedTeam = null;
-    this.players = [];
-    this.leagueResults = [];
-    this.teamResults = [];
-    this.leaguePage = 1;
-    this.teamPage = 1;
-    this.playerPage = 1;
-  }
+  // 9. GESTIÓN DEL BASKET Y SELECCIÓN
 
   clearSelection() {
     this.selectedPlayers.clear();
   }
 
-  // Getters para el Basket
   getSelectedPlayersList() {
     return Array.from(this.selectedPlayers.keys());
   }
@@ -609,14 +555,9 @@ export class BusquedaListPage implements OnInit {
   getPlayerThumb(id: string) {
     const p = this.selectedPlayers.get(id);
     if (!p) return 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiB2aWV3Qm94PSIwIDAgODAwIDgwMCI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI4MDAiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgZm9udC1mYW1pbHk9InN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtc2l6ZT0iODAiIGZpbGw9IiM0NzU1NjkiPjQwNDwvdGV4dD48L3N2Zz4=';
-
-    const cutout = p.strCutout;
-    const thumb = p.strThumb;
-
-    if (cutout && cutout !== '' && cutout !== 'null') return cutout;
-    if (thumb && thumb !== '' && thumb !== 'null') return thumb;
-
-    return null; // Devolvemos null para que el HTML decida mostrar el icono
+    if (p.strCutout && p.strCutout !== '' && p.strCutout !== 'null') return p.strCutout;
+    if (p.strThumb && p.strThumb !== '' && p.strThumb !== 'null') return p.strThumb;
+    return null;
   }
 
   togglePlayer(player: any) {
@@ -624,17 +565,12 @@ export class BusquedaListPage implements OnInit {
     if (this.selectedPlayers.has(playerId)) {
       this.selectedPlayers.delete(playerId);
     } else {
-      if (this.selectedPlayers.size >= 11) {
-        // Podríamos usar un Toast aquí si estuviera inyectado, 
-        // pero por ahora bloqueamos la acción.
-        return;
-      }
+      if (this.selectedPlayers.size >= 11) return;
       this.selectedPlayers.set(playerId, player);
     }
   }
 
   selectAll() {
-    // Si ya tenemos 11, deseleccionamos los de la lista actual para poder "limpiar"
     const allOfCurrentSelected = this.players
       .filter(p => !this.isAlreadyAdded(p.strPlayer))
       .every(p => this.selectedPlayers.has(p.idPlayer));
@@ -643,167 +579,115 @@ export class BusquedaListPage implements OnInit {
       this.players.forEach(p => this.selectedPlayers.delete(p.idPlayer));
     } else {
       for (const p of this.players) {
-        // Solo intentamos seleccionar si NO está en el staff
         if (!this.isAlreadyAdded(p.strPlayer) && !this.selectedPlayers.has(p.idPlayer)) {
           if (this.selectedPlayers.size < 11) {
             this.selectedPlayers.set(p.idPlayer, p);
-          } else {
-            // Ya llegamos al límite de 11, paramos
-            break;
-          }
+          } else break;
         }
       }
     }
   }
 
+
+  // 10. IMPORTACIÓN DE JUGADORES A BASE DE DATOS
+
   importPlayers() {
     if (this.selectedPlayers.size === 0) return;
     if (!this.hasLocation || !this.currentLocation) {
-      this.showToast('Activa el GPS antes de importar jugadores.', 'warning', 'navigate-outline');
+      this.toastService.showError('Activa el GPS antes de importar jugadores.');
       return;
     }
 
-    // Validar formato GeoJSON antes de enviar
     const locationPayload = {
       type: 'Point' as const,
       coordinates: [
-        this.currentLocation.coordinates[0], // lng
-        this.currentLocation.coordinates[1]  // lat
+        this.currentLocation.coordinates[0],
+        this.currentLocation.coordinates[1]
       ]
     };
-    console.log('[BUSQUEDA] Ubicación GeoJSON a adjuntar:', JSON.stringify(locationPayload));
 
     const playersToImport = Array.from(this.selectedPlayers.values());
     this.isImporting = true;
+    const imports$ = playersToImport.map(p => this.importSinglePlayer$(p, locationPayload));
 
-    let importedCount = 0;
-    playersToImport.forEach(p => {
-      this.playerService.lookupTSDBPlayer(p.idPlayer).subscribe({
-        next: (details) => {
-          const mapped = this.playerService.mapTSDBToPlayer(details, p);
-          
-          const newPlayer: any = {
-            ...mapped,
-            user_id: this.authService.currentUser()?.uid || 'manual',
-            userId: this.authService.currentUser()?.uid || 'manual',
-            created_by: this.authService.currentUser()?.email || 'admin',
-            updated_by: this.authService.currentUser()?.email || 'admin',
-            created_at: new Date(),
-            updated_at: new Date(),
-            location: locationPayload
-          };
-          
-          newPlayer.team = newPlayer.team || this.selectedTeam?.strTeam || p.strTeam || 'Desconocido';
-          newPlayer.league = newPlayer.league && newPlayer.league !== 'Liga externa' ? newPlayer.league : (this.selectedLeague?.strLeague || 'Liga externa');
-
-          this.playerService.addPlayer(newPlayer).subscribe({
-            next: () => {
-              importedCount++;
-              if (importedCount === playersToImport.length) {
-                this.finishImport();
-              }
-            },
-            error: (err) => {
-              console.error('[BUSQUEDA] Error al añadir jugador importado:', err);
-              importedCount++;
-              if (importedCount === playersToImport.length) {
-                this.finishImport();
-              }
-            }
-          });
-        },
-        error: (err) => {
-          console.error('[BUSQUEDA] Error al buscar detalles completos para ' + p.strPlayer, err);
-          const fallbackPlayer: any = {
-            name: p.strPlayer,
-            team: this.selectedTeam?.strTeam || p.strTeam || 'Desconocido',
-            secondary_team: p.strTeam2 || '',
-            league: this.selectedLeague?.strLeague || 'Liga externa',
-            position: p.strPosition || 'Desconocida',
-            image_url: p.strCutout || p.strThumb,
-            user_id: this.authService.currentUser()?.uid || 'manual',
-            userId: this.authService.currentUser()?.uid || 'manual',
-            is_manual: false,
-            nationality: p.strNationality,
-            summary: p.strDescriptionES || p.strDescriptionEN || '',
-            created_by: this.authService.currentUser()?.email || 'admin',
-            updated_by: this.authService.currentUser()?.email || 'admin',
-            created_at: new Date(),
-            updated_at: new Date(),
-            location: locationPayload,
-            tsdb_ids: {
-              player_id: p.idPlayer,
-              team_id: p.idTeam,
-              team_id2: p.idTeam2,
-              league_id: this.selectedLeague?.idLeague || p.idLeague
-            }
-          };
-
-          this.playerService.addPlayer(fallbackPlayer).subscribe({
-            next: () => {
-              importedCount++;
-              if (importedCount === playersToImport.length) {
-                this.finishImport();
-              }
-            },
-            error: () => {
-              importedCount++;
-              if (importedCount === playersToImport.length) {
-                this.finishImport();
-              }
-            }
-          });
-        }
-      });
+    forkJoin(imports$).subscribe({
+      next: () => this.finishImport(),
+      error: (err) => {
+        console.error('[BUSQUEDA] Error en la importación masiva:', err);
+        this.finishImport();
+      }
     });
+  }
+
+  private importSinglePlayer$(p: any, locationPayload: any): Observable<any> {
+    const metadata = {
+      user_id: this.authService.currentUser()?.uid || 'manual',
+      userId: this.authService.currentUser()?.uid || 'manual',
+      created_by: this.authService.currentUser()?.email || 'admin',
+      updated_by: this.authService.currentUser()?.email || 'admin',
+      created_at: new Date(),
+      updated_at: new Date(),
+      location: locationPayload,
+      team: this.selectedTeam?.strTeam || p.strTeam || 'Desconocido',
+      league: this.selectedLeague?.strLeague || 'Liga externa'
+    };
+
+    return this.playerService.lookupTSDBPlayer(p.idPlayer).pipe(
+      catchError(err => {
+        console.warn(`[BUSQUEDA] Falló lookup profundo para ${p.strPlayer}, usando datos básicos.`);
+        return of(null);
+      }),
+      switchMap(details => {
+        const mapped = this.playerService.mapTSDBToPlayer(details, p);
+        const newPlayer: any = { ...mapped, ...metadata };
+        newPlayer.league = newPlayer.league && newPlayer.league !== 'Liga externa' ? newPlayer.league : metadata.league;
+        return this.playerService.addPlayer(newPlayer);
+      }),
+      catchError(err => {
+        console.error(`[BUSQUEDA] Error final al guardar el jugador ${p.strPlayer}:`, err);
+        return of(null);
+      })
+    );
   }
 
   finishImport() {
     this.isImporting = false;
-    this.fireConfetti();
+    this.confettiService.goldCelebrate();
     const count = this.selectedPlayers.size;
-    const msg = count === 1 
-      ? '¡Fichaje completado! Se ha importado 1 jugador.' 
+    const msg = count === 1
+      ? '¡Fichaje completado! Se ha importado 1 jugador.'
       : `¡Fichajes completados! Se han importado ${count} jugadores.`;
-    this.showToast(msg, 'success');
+    this.toastService.showSuccess(msg);
 
     setTimeout(() => {
       this.router.navigate(['/players']);
     }, 2000);
   }
 
-  fireConfetti() {
-    const duration = 3 * 1000;
-    const end = Date.now() + duration;
-    const frame = () => {
-      confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#002eff', '#ffffff', '#ffd700'] });
-      confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#002eff', '#ffffff', '#ffd700'] });
-      if (Date.now() < end) requestAnimationFrame(frame);
-    };
-    frame();
+
+  // 11. HELPERS Y UTILIDADES
+
+  isAlreadyAdded(playerName: string): boolean {
+    if (!playerName) return false;
+    return this.myPlayers.some(p => p.name.toLowerCase() === playerName.toLowerCase());
   }
 
   handleImageError(event: any) {
-    // Si la imagen falla, la ocultamos para que se vea el icono de fondo o el fallback del HTML
     event.target.style.display = 'none';
   }
 
-  private async showToast(message: string, type: 'success' | 'danger' | 'warning', icon?: string) {
-    const iconMap = {
-      'success': 'checkmark-circle-outline',
-      'danger': 'alert-circle-outline',
-      'warning': 'alert-circle-outline'
-    };
+  /** Normaliza la URL del escudo de un equipo desde la API de TheSportsDB */
+  private normalizeBadge(team: any): any {
+    const badge = team.strTeamBadge || team.strBadge;
+    if (badge) {
+      team.strTeamBadge = badge.startsWith('http')
+        ? badge
+        : `https://www.thesportsdb.com/images/media/team/badge/${badge}`;
+    }
+    return team;
+  }
 
-    const toast = await this.toastCtrl.create({
-      message,
-      duration: 3000,
-      position: 'top',
-      cssClass: type === 'success' ? 'toast-success' : 'toast-error',
-      icon: icon || iconMap[type],
-      mode: 'ios',
-      buttons: [{ role: 'cancel' }]
-    });
-    await toast.present();
+  goToPage(page: number) {
+    this.activePage = page;
   }
 }

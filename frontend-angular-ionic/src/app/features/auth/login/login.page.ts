@@ -1,24 +1,26 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
-import { ToastController, NavController } from '@ionic/angular/standalone';
-import { AuthService } from 'src/app/core/services/auth.service';
-import { PlatformService } from 'src/app/core/services/platform.service';
+import { NavController } from '@ionic/angular/standalone';
+import { AuthService } from 'src/app/core/services/auth/auth.service';
+import { PlatformService } from 'src/app/core/services/system/platform.service';
 import { addIcons } from 'ionicons';
-import { atOutline, lockClosedOutline, checkmarkCircleOutline, alertCircleOutline, peopleOutline, cafeOutline, logoNodejs } from 'ionicons/icons';
-import { LayoutService } from 'src/app/core/services/layout.service';
+import { atOutline, lockClosedOutline, peopleOutline, cafeOutline, logoNodejs } from 'ionicons/icons';
+import { LayoutService } from 'src/app/core/services/ui/layout.service';
+import { ToastService } from 'src/app/core/services/ui/toast.service';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, RouterModule] // Importamos FormsModule para ngModel
+  imports: [CommonModule, IonicModule, FormsModule, RouterModule]
 })
 export class LoginPage implements OnInit {
-  // Variables que espera tu HTML
+
+  // Inicializo las variables de campos y estados del formulario
   userEmail: string = '';
   userPass: string = '';
 
@@ -27,29 +29,26 @@ export class LoginPage implements OnInit {
   emailFocused = false;
   passFocused = false;
 
-  showPassword = false;
   isLoading = false;
 
+  // Inyecto los servicios para la autenticación, navegación, avisos y layouts
   private authService = inject(AuthService);
-  private router = inject(Router);
   private navCtrl = inject(NavController);
-  private toastController = inject(ToastController);
+  private toastService = inject(ToastService);
   private layoutService = inject(LayoutService);
   public platformService = inject(PlatformService);
 
+  // === CONSTRUCTOR Y CICLO DE VIDA ===
+
   constructor() {
+    // Registro los iconos requeridos específicamente en esta pantalla
     addIcons({
-      atOutline, lockClosedOutline, checkmarkCircleOutline,
-      alertCircleOutline, peopleOutline, cafeOutline, logoNodejs
+      atOutline, lockClosedOutline, peopleOutline, cafeOutline, logoNodejs
     });
   }
 
-  toggleBackend() {
-    this.platformService.toggleBackend();
-  }
-
   ngOnInit() {
-    // Configurar AuthLayout dinámicamente
+    // Configuro el layout de autenticación de forma dinámica al cargar la pantalla
     this.layoutService.setAuth({
       title: '¡Bienvenido!',
       subtitle: 'Inicia sesión para gestionar tus jugadores.',
@@ -57,80 +56,110 @@ export class LoginPage implements OnInit {
     });
   }
 
-  // --- Funciones de Validación que espera tu HTML ---
+  // === FUNCIONES PRINCIPALES ===
 
-  isEmailValid(): boolean {
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    return emailRegex.test(this.userEmail);
-  }
-
-  isPasswordValid(): boolean {
-    return this.userPass.length >= 6;
-  }
-
-  isFormValid(): boolean {
-    return this.isEmailValid() && this.isPasswordValid();
-  }
-
-  markEmailTouched() { this.emailTouched = true; this.emailFocused = false; }
-  onFocusEmail() { this.emailFocused = true; }
-
-  markPassTouched() { this.passTouched = true; this.passFocused = false; }
-  onFocusPass() { this.passFocused = true; }
-
+  /**
+   * Ejecuto el inicio de sesión del usuario con validaciones previas
+   */
   async onLogin() {
     if (!this.isFormValid()) return;
 
     this.isLoading = true;
     try {
+      // Intento la autenticación con el correo y clave
       await this.authService.login(this.userEmail, this.userPass);
-      
       console.log('[LOGIN] Login completado con éxito. Navegando a Home...');
-      
-      const successToast = await this.toastController.create({
-        message: '¡Sesión iniciada con éxito!',
-        duration: 2000,
-        position: 'top',
-        cssClass: 'toast-success',
-        icon: 'checkmark-circle-outline',
-        buttons: [{ role: 'cancel' }]
-      });
-      await successToast.present();
+      // Muestro el aviso de éxito utilizando el servicio global
+      await this.toastService.showSuccess('¡Sesión iniciada con éxito!');
+      // Redirecciono a la pantalla de inicio directamente
+      await this.navCtrl.navigateRoot('/home', { animated: false });
 
-      // Navegamos
-      await this.navCtrl.navigateRoot('/home');
-      
     } catch (error: any) {
       console.error('[LOGIN] Error en el proceso de login:', error);
-      
-      let errorMessage = 'Ocurrió un error al iniciar sesión. Inténtalo de nuevo.';
-      if (error.code === 'auth/invalid-credential' || (error.message && error.message.includes('invalid-credential'))) {
-        errorMessage = 'El correo o la contraseña son incorrectos.';
-      } else if (error.code === 'auth/user-not-found') {
-        errorMessage = 'El correo ingresado no está registrado.';
-      } else if (error.code === 'auth/too-many-requests') {
-        errorMessage = 'Acceso bloqueado temporalmente por demasiados intentos fallidos. Inténtalo más tarde.';
-      } else if (error.code === 'auth/invalid-email') {
-        errorMessage = 'El formato del correo no es válido.';
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-
-      const toast = await this.toastController.create({
-        message: errorMessage,
-        duration: 4000,
-        position: 'top',
-        cssClass: 'toast-error',
-        icon: 'alert-circle-outline',
-        buttons: [{ role: 'cancel' }]
-      });
-      await toast.present();
+      // Muestro el aviso de error adaptado utilizando el servicio global
+      await this.toastService.showError(this.getErrorMessage(error));
     } finally {
       this.isLoading = false;
     }
   }
 
-  togglePassword() {
-    this.showPassword = !this.showPassword;
+  /**
+   * Alterno el backend activo desde el switch de plataforma
+   */
+  toggleBackend() {
+    this.platformService.toggleBackend();
+  }
+
+  // === FUNCIONES DE APOYO ===
+
+  /**
+   * Traduzco los códigos de error técnicos a mensajes amigables para el usuario
+   */
+  private getErrorMessage(error: any): string {
+    const code = error?.code;
+    const message = error?.message;
+
+    switch (code) {
+      case 'auth/email-not-verified':
+        return 'Debes verificar tu correo electrónico antes de iniciar sesión. Por favor, revisa tu bandeja de entrada.';
+      case 'auth/user-disabled':
+        return 'Tu cuenta ha sido inhabilitada. Por favor, ponte en contacto con el administrador.';
+      case 'auth/invalid-credential':
+        return 'El correo o la contraseña son incorrectos.';
+      case 'auth/user-not-found':
+        return 'El correo ingresado no está registrado.';
+      case 'auth/too-many-requests':
+        return 'Acceso bloqueado temporalmente por demasiados intentos fallidos. Inténtalo más tarde.';
+      case 'auth/invalid-email':
+        return 'El formato del correo no es válido.';
+      default:
+        // Manejo casos donde el código no sea exacto pero el mensaje contenga el error de credenciales
+        if (message && message.includes('invalid-credential')) {
+          return 'El correo o la contraseña son incorrectos.';
+        }
+        return message || 'Ocurrió un error al iniciar sesión. Inténtalo de nuevo.';
+    }
+  }
+
+  /**
+   * Valido si el email ingresado tiene un formato correcto
+   */
+  isEmailValid(): boolean {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(this.userEmail);
+  }
+
+  /**
+   * Valido si la contraseña tiene la longitud mínima requerida
+   */
+  isPasswordValid(): boolean {
+    return this.userPass.length >= 8;
+  }
+
+  /**
+   * Valido que el formulario esté en un estado correcto para permitir el envío
+   */
+  isFormValid(): boolean {
+    return this.isEmailValid() && this.isPasswordValid();
+  }
+
+  // Controladores de foco y edición para el campo de email
+  markEmailTouched() {
+    this.emailTouched = true;
+    this.emailFocused = false;
+  }
+
+  onFocusEmail() {
+    this.emailFocused = true;
+  }
+
+  // Controladores de foco y edición para el campo de contraseña
+  markPassTouched() {
+    this.passTouched = true;
+    this.passFocused = false;
+  }
+
+  onFocusPass() {
+    this.passFocused = true;
   }
 }

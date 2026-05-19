@@ -2,12 +2,13 @@ const { z } = require('zod');
 const { PromptTemplate } = require('@langchain/core/prompts');
 const { StructuredOutputParser } = require('@langchain/core/output_parsers');
 const { RunnableSequence } = require('@langchain/core/runnables');
+const Opossum = require('opossum');
 
 class AIService {
     constructor() {
         this.isTest = process.env.NODE_ENV === 'test';
 
-        // Solo instanciamos el modelo real si NO estamos en tests
+        // Solo instanciamos el modelo real si NO estamos en entorno de pruebas
         if (!this.isTest) {
             const { ChatGoogleGenerativeAI } = require("@langchain/google-genai");
             const modelName = "gemini-flash-latest"; // Nombre oficial verificado
@@ -23,11 +24,10 @@ class AIService {
                 maxOutputTokens: 4096,
             });
 
-            // Log de confirmación de instanciación
             console.log(`[AI-DEBUG] Modelo instanciado correctamente.`);
         }
 
-        // Definimos el esquema de respuesta estructurada con Zod
+        // Definimos el esquema de respuesta estructurada con Zod para el análisis táctico
         this.parser = StructuredOutputParser.fromZodSchema(
             z.object({
                 analysis: z.string().describe("Un análisis táctico general del plantel. Si faltan jugadores para llegar a 11, menciónalo cordialmente."),
@@ -43,7 +43,7 @@ class AIService {
             })
         );
 
-        // Si no es test, creamos la cadena real
+        // Si no es un entorno de pruebas, configuramos la cadena y el disyuntor
         if (!this.isTest) {
             this.chain = RunnableSequence.from([
                 PromptTemplate.fromTemplate(
@@ -67,11 +67,45 @@ class AIService {
                 ),
                 this.model
             ]);
+
+            // Defino la llamada encapsulada hacia la API de IA
+            const invokeChain = async (input) => {
+                return await this.chain.invoke(input);
+            };
+
+            // Configuro las opciones de mi disyuntor de IA
+            const aiBreakerOptions = {
+                timeout: 10000,               // Otorgo 10 segundos antes de considerar time-out (los modelos LLM son pesados)
+                errorThresholdPercentage: 50,  // Si el 50% de las peticiones fallan, abro el circuito
+                resetTimeout: 15000           // Tras 15 segundos en abierto, paso a semiabierto para probar disponibilidad
+            };
+
+            // Inicializo el Circuit Breaker para las peticiones de IA
+            this.aiBreaker = new Opossum(invokeChain, aiBreakerOptions);
+
+            // Establezco el fallback si el servicio de IA falla o está en circuito abierto
+            this.aiBreaker.fallback((input, error) => {
+                console.warn(`[CIRCUIT-BREAKER-AI] Fallback activo. Detalle: ${error.message}`);
+                throw new Error("El servicio de análisis táctico por IA está temporalmente fuera de línea. Inténtalo más tarde.");
+            });
+
+            // Registro los estados de control del disyuntor de IA para visualizarlos en mi terminal
+            this.aiBreaker.on('open', () => {
+                console.warn('\n[CIRCUIT-BREAKER-AI] !!! ADVERTENCIA: El circuito de IA se ha ABIERTO. Evitando peticiones a Gemini para ahorrar cuotas.');
+            });
+
+            this.aiBreaker.on('halfOpen', () => {
+                console.info('\n[CIRCUIT-BREAKER-AI] El circuito de IA está SEMIABIERTO. Probando conexión con la API externa...');
+            });
+
+            this.aiBreaker.on('close', () => {
+                console.info('\n[CIRCUIT-BREAKER-AI] ¡ÉXITO! El circuito de IA se ha CERRADO. API de Gemini restablecida correctamente.');
+            });
         }
     }
 
     async analyzePlayers(players) {
-        // MOCK para entorno de TEST
+        // Retorno un MOCK estático de inmediato si estoy en entorno de pruebas
         if (this.isTest) {
             return {
                 analysis: "Análisis de prueba",
@@ -89,25 +123,23 @@ class AIService {
 
             console.log("[AI-DEBUG] Solicitando análisis para:", players.length, "jugadores");
 
-            const response = await this.chain.invoke({
+            // Ejecuto la llamada de IA a través del Circuit Breaker protegido
+            const response = await this.aiBreaker.fire({
                 players_data: playersData
             });
 
-            // 1. Obtener el texto de la respuesta
+            // Obtengo el texto de la respuesta
             let text = typeof response === 'string' ? response : response.content;
             console.log("[AI-DEBUG] Respuesta raw de la IA:", text);
 
-            // 2. Limpieza agresiva
-            // Quitamos backticks y posibles prefijos/sufijos
+            // Limpieza del formato devuelto
             let cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
 
-            // Extraemos solo lo que esté entre llaves {}
             const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
                 cleanText = jsonMatch[0];
             }
 
-            // 3. Parseo manual
             try {
                 return JSON.parse(cleanText);
             } catch (parseError) {

@@ -13,9 +13,9 @@ import {
   IonLabel, IonSpinner, IonBadge, IonButton, IonToggle,
   ToastController, AlertController, ActionSheetController, ModalController
 } from '@ionic/angular/standalone';
-import { LayoutService } from 'src/app/core/services/layout.service';
-import { AuthService } from 'src/app/core/services/auth.service';
-import { PlatformService } from 'src/app/core/services/platform.service';
+import { LayoutService } from 'src/app/core/services/ui/layout.service';
+import { AuthService } from 'src/app/core/services/auth/auth.service';
+import { PlatformService } from 'src/app/core/services/system/platform.service';
 import { Auth } from '@angular/fire/auth';
 import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
 

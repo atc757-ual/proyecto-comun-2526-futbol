@@ -13,8 +13,8 @@ import {
   atOutline, personRemoveOutline, personCircleOutline, closeOutline, banOutline,
   checkmarkCircleOutline
 } from 'ionicons/icons';
-import { AuthService } from 'src/app/core/services/auth.service';
-import { LayoutService } from 'src/app/core/services/layout.service';
+import { AuthService } from 'src/app/core/services/auth/auth.service';
+import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { Auth } from '@angular/fire/auth';
 
 @Component({
@@ -47,7 +47,7 @@ export class AdminSecurityPage implements OnInit {
   public selectedUser = signal<any | null>(null);
 
   constructor() {
-    // Reactividad: Si el usuario cambia, refrescamos seguridad
+    // Añado reactividad: si el usuario cambia, refresco el estado de seguridad
     effect(() => {
       const user = this.authService.currentUser();
       this.isAdmin.set(this.authService.isAdmin());
@@ -75,26 +75,25 @@ export class AdminSecurityPage implements OnInit {
       { label: '', url: '/home', icon: 'home-outline' },
       { label: 'Seguridad' }
     ]);
-
   }
 
   async checkSecurityStatus() {
     this.isLoading.set(true);
 
     try {
-      // 1. Verificar Claims de Firebase (Seguridad nativa)
+      // 1. Verifico claims de Firebase (seguridad nativa)
       const user = this.authService.currentUser();
       if (user) {
-        // Obtenemos el objeto de usuario real de Firebase para pedir el token
+        // Obtengo el objeto de usuario real de Firebase para pedir su ID token
         const fbUser = this.auth.currentUser;
         if (fbUser) {
-          const tokenResult = await fbUser.getIdTokenResult(true); // Forzar refresco para ver cambios
+          const tokenResult = await fbUser.getIdTokenResult(true); // Fuerzo el refresco del token para reflejar cambios inmediatos
           this.firebaseClaims.set(tokenResult.claims);
           console.log('[SECURITY] Claims detectados:', tokenResult.claims);
         }
       }
 
-      // 2. Verificar Rol del Backend (Seguridad de nuestra API)
+      // 2. Verifico el rol devuelto por el backend de nuestra API
       this.backendIsAdmin.set(this.authService.isAdmin());
 
       this.lastChecked.set(new Date());
@@ -118,7 +117,7 @@ export class AdminSecurityPage implements OnInit {
       this.selectedUser.set(null);
       this.checkSecurityStatus();
     } catch (error: any) {
-      this.presentToast('Error: ' + (error.error?.result?.descriptionDetail || error.message), 'danger');
+      this.presentToast(this.getFriendlyErrorMessage(error), 'danger');
     } finally {
       this.isPromoting.set(false);
     }
@@ -136,7 +135,7 @@ export class AdminSecurityPage implements OnInit {
       this.selectedUser.set(null);
       this.checkSecurityStatus();
     } catch (error: any) {
-      this.presentToast('Error: ' + (error.error?.result?.descriptionDetail || error.message), 'danger');
+      this.presentToast(this.getFriendlyErrorMessage(error), 'danger');
     } finally {
       this.isPromoting.set(false);
     }
@@ -155,7 +154,7 @@ export class AdminSecurityPage implements OnInit {
       this.selectedUser.set(null);
       this.checkSecurityStatus();
     } catch (error: any) {
-      this.presentToast('Error: ' + (error.error?.result?.descriptionDetail || error.message), 'danger');
+      this.presentToast(this.getFriendlyErrorMessage(error), 'danger');
     } finally {
       this.isTogglingStatus.set(false);
     }
@@ -172,7 +171,7 @@ export class AdminSecurityPage implements OnInit {
   async onSearchInput(event: any) {
     const val = event.detail.value;
     console.log('[SECURITY] Buscando:', val);
-    this.selectedUser.set(null); // Limpiar selección al escribir de nuevo
+    this.selectedUser.set(null); // Limpio la selección al escribir de nuevo
 
     if (!val || val.length < 2) {
       this.suggestedUsers.set([]);
@@ -211,5 +210,22 @@ export class AdminSecurityPage implements OnInit {
       buttons: [{ role: 'cancel', icon: 'close-outline' }]
     });
     await toast.present();
+  }
+
+  private getFriendlyErrorMessage(error: any): string {
+    const detail = error.error?.result?.descriptionDetail || error.message || '';
+    
+    // Mapeo de errores conocidos y técnicos
+    if (detail.includes('no user record corresponding')) {
+      return 'El usuario no tiene una cuenta de autenticación activa.';
+    }
+    
+    // Remuevo prefijos repetitivos del backend
+    let cleanDetail = detail;
+    if (cleanDetail.startsWith('Error al procesar la solicitud:')) {
+      cleanDetail = cleanDetail.replace('Error al procesar la solicitud:', '').trim();
+    }
+    
+    return cleanDetail || 'Ocurrió un error inesperado al procesar la solicitud.';
   }
 }

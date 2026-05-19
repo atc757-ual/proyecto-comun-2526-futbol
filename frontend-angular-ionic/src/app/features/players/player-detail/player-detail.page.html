@@ -3,7 +3,7 @@
   <div class="premium-scouting-banner mb-base" [class.is-owner]="isOwner" [class.is-global]="!isOwner">
     <div class="banner-content">
       <!-- BADGE Y TÍTULO EN LA MISMA FILA -->
-      <div class="d-flex fl-align-center gap-base">
+      <div class="d-flex ai-center gap-base">
         <div *ngIf="isOwner" class="banner-badge owner">
           <ion-icon name="star"></ion-icon>
           <span>MI JUGADOR</span>
@@ -92,14 +92,14 @@
         </div>
       </div>
       <!-- Dots del Swiper de Stats -->
-      <div class="stat-dots-container d-flex fl-justify-center gap-xs mt-s mb-base">
+      <div class="stat-dots-container d-flex jc-center gap-xs mt-s mb-base">
         <div class="stat-dot" *ngFor="let i of [0, 1, 2]" [class.active]="currentStatPage === i"></div>
       </div>
 
       <!-- BIOGRAFÍA -->
       <ion-card class="player-card mb-base">
         <ion-card-content class="p-base">
-          <div class="d-flex fl-align-center mb-base">
+          <div class="d-flex ai-center mb-base">
             <span class="fs-16 f-bold text-neutral-8 pr-s ls-1">Biografía</span>
           </div>
           <div class="bio-wrapper" [class.expanded]="isSummaryExpanded">
@@ -235,13 +235,13 @@
 
               <div class="compact-comment-form animate-fade-in">
                 <!-- CABECERA: RATING + TAG -->
-                <div class="d-flex fl-align-center mb-base">
+                <div class="d-flex ai-center mb-base">
                   <span class="f-medium fs-12 text-neutral-8 pr-s">Rating:</span>
                   <div class="rating-stars-input">
                     <ion-icon *ngFor="let i of [1,2,3,4,5]" [name]="i <= newRating ? 'star' : 'star-outline'"
                       [class.active]="i <= newRating" (click)="setRating(i)"></ion-icon>
                   </div>
-                  <div class="verified-geo-badge m-0 ml-auto d-flex fl-align-center gap-xs" *ngIf="hasGeoPermission()">
+                  <div class="verified-geo-badge m-0 ml-auto d-flex ai-center gap-xs" *ngIf="hasGeoPermission()">
                     <span>Ubicación verificada</span>
                     <ion-icon name="checkmark-circle" class="text-success"></ion-icon>
                   </div>
@@ -259,11 +259,11 @@
                 </div>
 
                 <!-- ACCIÓN: BOTÓN Y FIRMA -->
-                <div class="d-flex fl-align-center fl-justify-between gap-s">
+                <div class="d-flex ai-center jc-between gap-s">
                   <ion-button
                     [disabled]="!newComment.trim() || !hasGeoPermission() || isSubmittingComment || newRating === 0"
-                    (click)="submitComment()" mode="ios" shape="round" class="futbol-btn-primary f-bold flex-grow-1 m-0"
-                    style="min-height: 42px;">
+                    (click)="submitComment()" mode="ios" shape="round"
+                    class="futbol-btn-primary f-bold flex-grow-1 m-0">
                     <ion-spinner name="crescent" *ngIf="isSubmittingComment" slot="start" size="small"></ion-spinner>
                     <span *ngIf="!isSubmittingComment">Publicar Opinión</span>
                     <span *ngIf="isSubmittingComment">Publicando...</span>
@@ -272,9 +272,9 @@
                   </ion-button>
 
                   <div class="author-signature text-right pl-s">
-                    <span class="fs-10 text-neutral-5 d-block text-uppercase ls-1" style="white-space: nowrap;">Firma
+                    <span class="fs-10 text-neutral-5 d-block text-uppercase ls-1 nowrap">Firma
                       como</span>
-                    <span class="fs-12 f-bold text-primary" style="white-space: nowrap;">{{ getFormattedUserName()
+                    <span class="fs-12 f-bold text-primary nowrap">{{ getFormattedUserName()
                       }}</span>
                   </div>
                 </div>
@@ -309,7 +309,7 @@
             <div class="separatos my-s"></div>
             <!-- FEED DE COMENTARIOS (ANCHO COMPLETO) -->
             <div class="community-feed-full">
-              <div *ngIf="player.comments && player.comments.length > 0" class="d-flex fl-align-center mb-base">
+              <div *ngIf="player.comments && player.comments.length > 0" class="d-flex ai-center mb-base">
                 <span class="fs-16 f-bold text-neutral-8 pr-s ls-1">Comentario ({{ player.comments.length }})</span>
               </div>
 
@@ -326,14 +326,17 @@
 
                 <ng-container *ngIf="editingCommentId !== (comment.id || comment._id)">
                   <div class="bubble-head">
-                    <div class="d-flex fl-align-center gap-s">
-                    <ion-avatar class="mini-avatar shadow-sm">
-                      <img [src]="'https://ui-avatars.com/api/?name=' + (comment.user_name || comment.autor_name || comment.author_name || 'Invitado') + '&background=random'" />
-                    </ion-avatar>
-                    <div class="author-info">
-                      <span class="author">{{ comment.user_name || comment.autor_name || comment.author_name || 'Invitado' }}</span>
-                      <span class="date">{{ (comment.created_at || comment.entryDate) | date:'dd MMM yyyy HH:mm' }}</span>
-                    </div>
+                    <div class="d-flex ai-center gap-s">
+                      <ion-avatar class="mini-avatar shadow-sm">
+                        <img
+                          [src]="'https://ui-avatars.com/api/?name=' + (comment.user_name || comment.autor_name || comment.author_name || 'Invitado') + '&background=random'" />
+                      </ion-avatar>
+                      <div class="author-info">
+                        <span class="author">{{ comment.user_name || comment.autor_name || comment.author_name ||
+                          'Invitado' }}</span>
+                        <span class="date">{{ (comment.created_at || comment.entryDate) | date:'dd MMM yyyy HH:mm'
+                          }}</span>
+                      </div>
                     </div>
                     <div class="rating-mini">
                       <ion-icon [name]="s" class="fs-16" [class.active]="s === 'star'"
@@ -346,8 +349,8 @@
                     <div class="actions">
                       <button (click)="startEditing(comment)" title="Editar"><ion-icon
                           name="create-outline"></ion-icon></button>
-                      <button class="delete" (click)="deleteComment(comment.id || comment._id!)" title="Eliminar"><ion-icon
-                          name="trash-outline"></ion-icon></button>
+                      <button class="delete" (click)="deleteComment(comment.id || comment._id!)"
+                        title="Eliminar"><ion-icon name="trash-outline"></ion-icon></button>
                     </div>
                   </div>
                 </ng-container>
@@ -393,95 +396,102 @@
 
     <!-- COLUMNA DERECHA (4): Perfil y Club -->
     <div class="col-4 col-md-12 pl-base px-0-sm">
-      <ion-card class="player-card mb-base overflow-hidden">
-        <div class="player-hero-container shadow-lg">
-          <!-- BOTÓN DE ACCIÓN (CROSS-FADE TRIGGER) -->
-          <div class="card-action-trigger" *ngIf="player.images?.cutout"
-            (click)="toggleCardView(); $event.stopPropagation()">
-            <ion-icon [name]="showCutout ? 'person-outline' : 'sync-outline'"></ion-icon>
-            <span>{{ showCutout ? 'VER PERFIL' : 'VER ACCIÓN' }}</span>
-          </div>
+      <div #playerCard class="player-card-export-wrapper mb-base bg-white shadow-lg">
+        <ion-card class="player-card overflow-hidden">
+          <div class="player-hero-container">
+            <!-- BOTÓN DE ACCIÓN (CROSS-FADE TRIGGER) -->
+            <div class="card-action-trigger" data-html2canvas-ignore="true" *ngIf="player.images?.cutout"
+              (click)="toggleCardView(); $event.stopPropagation()">
+              <ion-icon [name]="showCutout ? 'person-outline' : 'sync-outline'"></ion-icon>
+              <span>{{ showCutout ? 'VER PERFIL' : 'VER ACCIÓN' }}</span>
+            </div>
 
-          <!-- IMAGEN PRINCIPAL (CLUB - TEAM 1) -->
-          <div class="hero-image-wrapper" [class.is-hidden]="showCutout">
-            <div class="hero-bg" [style.background-image]="'url(' + (player.images?.cutout || player.image_url) + ')'">
+            <!-- IMAGEN PRINCIPAL (CLUB - TEAM 1) -->
+            <div class="hero-image-wrapper" [class.is-hidden]="showCutout">
+              <img class="hero-bg-img" [src]="getSafeImageUrl(player.images?.cutout || player.image_url)"
+                crossorigin="anonymous" (error)="handleImageError($event)">
+            </div>
+
+            <!-- IMAGEN DE ACCIÓN (PAÍS - TEAM 2) -->
+            <div class="hero-image-wrapper cutout-wrapper" [class.is-visible]="showCutout">
+              <img class="hero-bg-img action-bg" [src]="getSafeImageUrl(player.image_url)" crossorigin="anonymous"
+                (error)="handleImageError($event)">
+            </div>
+
+            <div class="hero-overlay"></div>
+
+            <div class="hero-content">
+              <div class="number-top-right">#{{ player.number || '00' }}</div>
+              <div class="info-bottom-left">
+                <h1 class="player-name-side">{{ player.name }}</h1>
+                <div class="position-badge my-s">{{ showCutout ? (teamInfo2?.strTeam || 'NATIONAL TEAM') :
+                  (teamInfo1?.strTeam || 'CLUB') }}</div>
+                <p class="player-team-side m-0">
+                  <ion-icon name="shield-outline" class="mr-xs"></ion-icon>
+                  {{ showCutout ? (teamInfo2?.strTeam || 'Argentina') : (teamInfo1?.strTeam || player.team) }}
+                </p>
+              </div>
+            </div>
+
+            <!-- ACCIONES RÁPIDAS (MODO SIDEBAR) -->
+            <div class="actions-bottom-right" data-html2canvas-ignore="true">
+              <button class="side-action-btn share" (click)="sharePlayerCard(playerCard); $event.stopPropagation()"
+                title="Compartir Ficha">
+                <ion-icon name="share-social-outline"></ion-icon>
+              </button>
+              <button class="side-action-btn favorite" [class.active]="player.isFavorite"
+                (click)="toggleFavorite($event); $event.stopPropagation()" *ngIf="isOwner">
+                <ion-icon [name]="player.isFavorite ? 'heart' : 'heart-outline'"></ion-icon>
+              </button>
+              <button class="side-action-btn edit" [routerLink]="['/player-edit', player._id]"
+                *ngIf="isAdmin || isOwner" (click)="$event.stopPropagation()">
+                <ion-icon name="create-outline"></ion-icon>
+              </button>
+              <button class="side-action-btn delete" (click)="deletePlayer(); $event.stopPropagation()"
+                *ngIf="isAdmin || isOwner">
+                <ion-icon name="trash-outline"></ion-icon>
+              </button>
             </div>
           </div>
 
-          <!-- IMAGEN DE ACCIÓN (PAÍS - TEAM 2) -->
-          <div class="hero-image-wrapper cutout-wrapper" [class.is-visible]="showCutout">
-            <div class="hero-bg action-bg" [style.background-image]="'url(' + player.image_url + ')'"></div>
-          </div>
-
-          <div class="hero-overlay"></div>
-
-          <div class="hero-content">
-            <div class="number-top-right">#{{ player.number || '00' }}</div>
-            <div class="info-bottom-left">
-              <h1 class="player-name-side">{{ player.name }}</h1>
-              <div class="position-badge my-s">{{ showCutout ? (teamInfo2?.strTeam || 'NATIONAL TEAM') :
-                (teamInfo1?.strTeam || 'CLUB') }}</div>
-              <p class="player-team-side m-0">
-                <ion-icon name="shield-outline" class="mr-xs"></ion-icon>
-                {{ showCutout ? (teamInfo2?.strTeam || 'Argentina') : (teamInfo1?.strTeam || player.team) }}
-              </p>
+          <ion-card-content>
+            <div class="detail-row">
+              <div class="d-flex ai-center gap-s">
+                <ion-icon class="fs-16" name="flag-outline" color="primary"></ion-icon>
+                <span class="label">Nacionalidad</span>
+              </div>
+              <span class="value">{{ player.nationality }}</span>
             </div>
-          </div>
+            <div class="detail-row" *ngIf="player.birth_place">
+              <div class="d-flex ai-center gap-s">
+                <ion-icon class="fs-16" name="location-outline" color="primary"></ion-icon>
+                <span class="label">Origen</span>
+              </div>
+              <span class="value">{{ player.birth_place }}</span>
+            </div>
+            <div class="detail-row">
+              <div class="d-flex ai-center gap-s">
+                <ion-icon class="fs-16" name="calendar-outline" color="primary"></ion-icon>
+                <span class="label">Edad Actual</span>
+              </div>
+              <span class="value">{{ player.age }} años</span>
+            </div>
 
-          <!-- ACCIONES RÁPIDAS (MODO SIDEBAR) -->
-          <div class="actions-bottom-right">
-            <button class="side-action-btn favorite" [class.active]="player.isFavorite"
-              (click)="toggleFavorite($event); $event.stopPropagation()" *ngIf="isOwner">
-              <ion-icon [name]="player.isFavorite ? 'heart' : 'heart-outline'"></ion-icon>
-            </button>
-            <button class="side-action-btn edit" [routerLink]="['/player-edit', player._id]" *ngIf="isAdmin || isOwner"
-              (click)="$event.stopPropagation()">
-              <ion-icon name="create-outline"></ion-icon>
-            </button>
-            <button class="side-action-btn delete" (click)="deletePlayer(); $event.stopPropagation()"
-              *ngIf="isAdmin || isOwner">
-              <ion-icon name="trash-outline"></ion-icon>
-            </button>
-          </div>
-        </div>
-
-        <ion-card-content>
-          <div class="detail-row">
-            <div class="d-flex fl-align-center gap-s">
-              <ion-icon class="fs-16" name="flag-outline" color="primary"></ion-icon>
-              <span class="label">Nacionalidad</span>
+            <div class="social-card-section pt-xs" *ngIf="player.social_media">
+              <div class="d-flex gap-s">
+                <a [href]="'https://' + player.social_media.instagram" target="_blank" class="social-pill instagram"
+                  *ngIf="player.social_media.instagram"><ion-icon name="logo-instagram"></ion-icon></a>
+                <a [href]="'https://' + player.social_media.facebook" target="_blank" class="social-pill facebook"
+                  *ngIf="player.social_media.facebook"><ion-icon name="logo-facebook"></ion-icon></a>
+                <a [href]="'https://' + player.social_media.twitter" target="_blank" class="social-pill twitter"
+                  *ngIf="player.social_media.twitter"><ion-icon name="logo-twitter"></ion-icon></a>
+                <a [href]="'https://' + player.social_media.website" target="_blank" class="social-pill website"
+                  *ngIf="player.social_media.website"><ion-icon name="globe-outline"></ion-icon></a>
+              </div>
             </div>
-            <span class="value">{{ player.nationality }}</span>
-          </div>
-          <div class="detail-row" *ngIf="player.birth_place">
-            <div class="d-flex fl-align-center gap-s">
-              <ion-icon class="fs-16" name="location-outline" color="primary"></ion-icon>
-              <span class="label">Origen</span>
-            </div>
-            <span class="value">{{ player.birth_place }}</span>
-          </div>
-          <div class="detail-row">
-            <div class="d-flex fl-align-center gap-s">
-              <ion-icon class="fs-16" name="calendar-outline" color="primary"></ion-icon>
-              <span class="label">Edad Actual</span>
-            </div>
-            <span class="value">{{ player.age }} años</span>
-          </div>
-
-          <div class="social-card-section pt-xs" *ngIf="player.social_media">
-            <div class="d-flex gap-s">
-              <a [href]="'https://' + player.social_media.instagram" target="_blank" class="social-pill instagram"
-                *ngIf="player.social_media.instagram"><ion-icon name="logo-instagram"></ion-icon></a>
-              <a [href]="'https://' + player.social_media.facebook" target="_blank" class="social-pill facebook"
-                *ngIf="player.social_media.facebook"><ion-icon name="logo-facebook"></ion-icon></a>
-              <a [href]="'https://' + player.social_media.twitter" target="_blank" class="social-pill twitter"
-                *ngIf="player.social_media.twitter"><ion-icon name="logo-twitter"></ion-icon></a>
-              <a [href]="'https://' + player.social_media.website" target="_blank" class="social-pill website"
-                *ngIf="player.social_media.website"><ion-icon name="globe-outline"></ion-icon></a>
-            </div>
-          </div>
-        </ion-card-content>
-      </ion-card>
+          </ion-card-content>
+        </ion-card>
+      </div>
 
       <!-- INFO DEL CLUB (SWIPER) -->
       <div class="mb-base" *ngIf="teamDetails.length > 0">
@@ -513,7 +523,7 @@
         </swiper-container>
       </div>
 
-      <!-- UBICACIÓN DE REGISTRO (SCOUTING) -->
+      <!-- UBICACIÓN DE REGISTRO (MAPA) -->
       <ion-card class="player-card mb-base animate-fade-in overflow-hidden" *ngIf="player.location?.coordinates">
 
         <ng-container *ngIf="isOwner; else notOwnerTemplate">
@@ -544,7 +554,7 @@
           <ion-card-content class="p-base text-center">
             <ion-icon name="lock-closed-outline" class="fs-32 text-neutral-3 mb-s"></ion-icon>
             <p class="m-0 fs-12 text-neutral-5">Ubicación protegida. Solo el ojeador propietario puede ver el mapa de
-              scouting.</p>
+              registro.</p>
           </ion-card-content>
         </ng-template>
       </ion-card>

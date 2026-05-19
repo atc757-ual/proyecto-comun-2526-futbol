@@ -1,11 +1,10 @@
 import { Component, Input, inject, OnInit, ChangeDetectorRef, effect, signal, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
 import {
   IonIcon, IonCard, IonCardContent,
   IonButton, IonAvatar,
-  IonSpinner, LoadingController, NavController, AlertController, ToastController, ModalController,
+  IonSpinner, NavController, ModalController,
   IonInput, IonTextarea
 } from '@ionic/angular/standalone';
 import { RouterModule } from '@angular/router';
@@ -21,15 +20,16 @@ import {
   trophyOutline, chevronUpOutline, chevronDownOutline, personCircleOutline,
   timeOutline, clipboardOutline, businessOutline,
   walkOutline, barbellOutline, resizeOutline, chevronDown, chevronUp,
-  peopleOutline, chatbubbleEllipsesOutline, paperPlaneOutline,
+  peopleOutline, chatbubbleEllipsesOutline, paperPlaneOutline, logInOutline,
   chevronBackOutline, chevronForwardOutline, addCircleOutline, lockClosedOutline,
   syncOutline
 } from 'ionicons/icons';
-import { PLAYER_SERVICE_TOKEN } from '../../../../core/services/player.service.token';
+import { PLAYER_SERVICE_TOKEN } from '../../../../core/services/players/player.service.token';
 import { Player } from '../../../../core/models/player.model';
-import { AuthService } from '../../../../core/services/auth.service';
-import { LayoutService } from '../../../../core/services/layout.service';
-import { ConfettiService } from '../../../../core/services/confetti.service';
+import { AuthService } from '../../../../core/services/auth/auth.service';
+import { LayoutService } from '../../../../core/services/ui/layout.service';
+import { ConfettiService } from '../../../../core/services/ui/confetti.service';
+import { ToastService } from '../../../../core/services/ui/toast.service';
 import { PermissionModalComponent } from 'src/app/shared/components/permission-modal/permission-modal.component';
 import { LocationPlugin } from 'src/app/core/plugins/location-plugin';
 import { Geolocation } from '@capacitor/geolocation';
@@ -52,13 +52,6 @@ export class PlayerDetailPublicPage implements OnInit {
   @Input() set id(playerId: string) {
     if (playerId) {
       this._playerId = playerId;
-      // Si ya hay sesión, permitimos ver de igual modo la ficha pública sin forzar redirect 401
-      /*
-      if (this.authService.currentUser()) {
-        this.navCtrl.navigateRoot(`/player-detail/${playerId}`);
-        return;
-      }
-      */
       this.player = null; // Limpiamos rastro anterior
       this.loadPlayer(playerId);
       this.captureUserLocation();
@@ -67,13 +60,11 @@ export class PlayerDetailPublicPage implements OnInit {
 
   private playerService = inject(PLAYER_SERVICE_TOKEN);
   private authService = inject(AuthService);
-  private loadingCtrl = inject(LoadingController);
   private navCtrl = inject(NavController);
   private layoutService = inject(LayoutService);
-  private alertCtrl = inject(AlertController);
-  private toastCtrl = inject(ToastController);
   private modalCtrl = inject(ModalController);
   private confettiService = inject(ConfettiService);
+  private toastService = inject(ToastService);
   private locationService = inject(LocationPlugin);
   private cdr = inject(ChangeDetectorRef);
 
@@ -94,8 +85,8 @@ export class PlayerDetailPublicPage implements OnInit {
 
   get isOwner(): boolean {
     if (!this.player || !this.player.user_id) return false;
-    const currentUser = this.authService.currentUser();
-    return currentUser?.uid === this.player.user_id;
+    const currentUid = this.authService.getUID();
+    return String(currentUid).trim() === String(this.player.user_id).trim();
   }
 
   get isLoggedIn(): boolean {
@@ -122,33 +113,32 @@ export class PlayerDetailPublicPage implements OnInit {
   /**
    * Formatea el nombre del usuario (o Invitado) como: Nombre I.
    */
-      getFormattedUserName(): string {
-        const user = this.authService.currentUser();
-        const name = user?.displayName || this.anonymousName || 'Invitado';
-        const parts = name.split(' ');
-        if (parts.length > 1) {
-          return `${parts[0]} ${parts[parts.length - 1].charAt(0)}.`;
-        }
-        return name;
-      }
+  getFormattedUserName(): string {
+    const user = this.authService.currentUser();
+    const name = user?.displayName || this.anonymousName || 'Invitado';
+    const parts = name.split(' ');
+    if (parts.length > 1) {
+      return `${parts[0]} ${parts[parts.length - 1].charAt(0)}.`;
+    }
+    return name;
+  }
 
-      // Estados de foco para inputs (Estilo Login)
-      nameFocused: boolean = false;
-      commentFocused: boolean = false;
+  // Estados de foco para inputs (Estilo Login)
+  nameFocused: boolean = false;
+  commentFocused: boolean = false;
 
-      // Paginación de comentarios (Estilo Players)
-      currentPage: number = 1;
-      pageSize: number = 5;
+  // Paginación de comentarios (Estilo Players)
+  currentPage: number = 1;
+  pageSize: number = 5;
 
-      // Control de Swiper de Stats
-      currentStatPage: number = 0;
+  // Control de Swiper de Stats
+  currentStatPage: number = 0;
   private statsInterval: any;
-  private permissionTimeout: any = null;
 
   constructor() {
     register();
     addIcons({
-      star, starOutline, football, footballOutline, shieldOutline,
+      star, starOutline, football, footballOutline, shieldOutline, logInOutline,
       locationOutline, calendarOutline, personOutline, syncOutline,
       statsChartOutline, chatbubbleOutline, chatbubblesOutline, createOutline, trashOutline,
       closeCircleOutline, flagOutline, earthOutline, logoInstagram,
@@ -160,22 +150,9 @@ export class PlayerDetailPublicPage implements OnInit {
       peopleOutline, chatbubbleEllipsesOutline, paperPlaneOutline,
       chevronBackOutline, chevronForwardOutline, addCircleOutline, lockClosedOutline
     });
-
-    // Redirección reactiva (Comentada para evitar bucle 401 y permitir vista pública abierta)
-    /*
-    effect(() => {
-      if (this.authService.currentUser()) {
-        console.warn('[PlayerDetailPublic] Sesión detectada. Redirigiendo...');
-        this.navCtrl.navigateRoot(`/player-detail/${this._playerId}`);
-      }
-    });
-    */
   }
 
   ionViewWillLeave() {
-    if (this.permissionTimeout) {
-      clearTimeout(this.permissionTimeout);
-    }
     if (this.activePermissionModal) {
       this.activePermissionModal.dismiss();
       this.activePermissionModal = null;
@@ -184,14 +161,6 @@ export class PlayerDetailPublicPage implements OnInit {
 
 
   async ngOnInit() {
-    // Si hay sesión iniciada, permitimos que permanezca en la vista pública
-    /*
-    if (this.authService.currentUser()) {
-      console.warn('[PlayerDetailPublic] Sesión activa detectada. Redirigiendo a Detalle Privado.');
-      this.navCtrl.navigateRoot(`/player-detail/${this._playerId}`);
-      return;
-    }
-    */
 
     this.layoutService.setHeader({
       title: 'Detalle de Jugador',
@@ -200,9 +169,9 @@ export class PlayerDetailPublicPage implements OnInit {
     });
 
     this.layoutService.setBreadcrumbs([
-      { label: 'Login', url: '/login', icon: '' },
+      { label: '', url: '/login', icon: 'log-in-outline' },
       { label: 'Jugadores', url: '/players-public', icon: '' },
-      { label: 'Detalle de jugador', url: '' }
+      { label: 'Detalle', url: '' }
     ]);
 
     // Iniciar Autoplay de Stats
@@ -340,7 +309,6 @@ export class PlayerDetailPublicPage implements OnInit {
 
   ngOnDestroy() {
     if (this.statsInterval) clearInterval(this.statsInterval);
-    if (this.permissionTimeout) clearTimeout(this.permissionTimeout);
     if (this.activePermissionModal) {
       this.activePermissionModal.dismiss();
       this.activePermissionModal = null;
@@ -372,7 +340,7 @@ export class PlayerDetailPublicPage implements OnInit {
         },
         error: (err) => {
           console.error('[PlayerDetailPublic] Error crítico al cargar jugador:', err);
-          this.showToast('Jugador no encontrado o perfil no disponible', 'danger');
+          this.toastService.showError('Jugador no encontrado o perfil no disponible');
           this.isLoading = false;
           this.navCtrl.navigateRoot('/players-public');
         }
@@ -402,13 +370,13 @@ export class PlayerDetailPublicPage implements OnInit {
     }
 
     this.playerService.toggleFavorite(this.player._id, newStatus).subscribe({
-      next: (updatedPlayer) => {
+      next: () => {
         const msg = newStatus ? 'Añadido a tus favoritos' : 'Eliminado de favoritos';
-        this.showToast(msg, 'success', newStatus ? 'heart' : 'heart-outline');
+        this.toastService.showSuccess(msg);
       },
       error: () => {
         if (this.player) this.player.isFavorite = !newStatus;
-        this.showToast('Error al actualizar favorito', 'danger');
+        this.toastService.showError('Error al actualizar favorito');
       }
     });
   }
@@ -435,10 +403,10 @@ export class PlayerDetailPublicPage implements OnInit {
     if (data === true) {
       this.playerService.deletePlayer(this.player._id!).subscribe({
         next: () => {
-          this.showToast('Ficha eliminada con éxito', 'success');
-          this.navCtrl.navigateRoot('/players');
+          this.toastService.showSuccess('Ficha eliminada con éxito');
+          this.navCtrl.navigateRoot('/players-public');
         },
-        error: () => this.showToast('Error al procesar la baja', 'danger')
+        error: () => this.toastService.showError('Error al procesar la baja')
       });
     }
   }
@@ -465,11 +433,11 @@ export class PlayerDetailPublicPage implements OnInit {
       rating: this.editingRating
     }).subscribe({
       next: () => {
-        this.showToast('Comentario actualizado', 'success', 'checkmark-circle-outline');
+        this.toastService.showSuccess('Comentario actualizado');
         this.editingCommentId = null;
         this.loadPlayer(this.player!._id!);
       },
-      error: () => this.showToast('Error al actualizar', 'danger')
+      error: () => this.toastService.showError('Error al actualizar')
     });
   }
 
@@ -494,10 +462,10 @@ export class PlayerDetailPublicPage implements OnInit {
     if (data === true) {
       this.playerService.deleteComment(this.player._id!, commentId).subscribe({
         next: () => {
-          this.showToast('Eliminado', 'success', 'trash-outline');
+          this.toastService.showSuccess('Comentario eliminado');
           this.loadPlayer(this.player!._id!);
         },
-        error: () => this.showToast('Error al borrar', 'danger')
+        error: () => this.toastService.showError('Error al borrar')
       });
     }
   }
@@ -526,26 +494,43 @@ export class PlayerDetailPublicPage implements OnInit {
       commentData.user_id = user.uid;
     }
 
-    // Usar ubicación capturada si existe
-    if (this.userCoords()) {
-      const coords = this.userCoords();
-      commentData.location = {
-        type: 'Point',
-        coordinates: [coords!.lng, coords!.lat]
-      };
-      console.log('[PLAYER-DETAIL-PUBLIC] Enviando con ubicación capturada:', coords);
+    // Intentar capturar ubicación si tenemos permiso
+    if (this.hasGeoPermission()) {
+      const cachedCoords = this.userCoords();
+      if (cachedCoords) {
+        commentData.location = {
+          type: 'Point',
+          coordinates: [cachedCoords.lng, cachedCoords.lat]
+        };
+        console.log('[PLAYER-DETAIL-PUBLIC] Enviando con ubicación capturada:', cachedCoords);
+      } else {
+        try {
+          const coordinates = await Geolocation.getCurrentPosition({ timeout: 5000 });
+          console.log('[GEOLOCATION-PUBLIC] Coordenadas obtenidas en submit:', coordinates);
+          this.userCoords.set({
+            lat: coordinates.coords.latitude,
+            lng: coordinates.coords.longitude
+          });
+          commentData.location = {
+            type: 'Point',
+            coordinates: [coordinates.coords.longitude, coordinates.coords.latitude]
+          };
+        } catch (err) {
+          console.warn('[PLAYER-DETAIL-PUBLIC] No se pudo obtener ubicación vía plugin:', err);
+        }
+      }
     }
 
     this.playerService.addPublicComment(this.player._id, commentData).subscribe({
       next: () => {
-        this.showToast('¡Gracias por tu comentario!', 'success', 'chatbubble-outline');
+        this.toastService.showSuccess('¡Gracias por tu comentario!');
         this.newComment = '';
         this.newRating = 5;
         this.isSubmittingComment = false;
         this.loadPlayer(this.player!._id!);
       },
       error: () => {
-        this.showToast('No se pudo publicar', 'danger');
+        this.toastService.showError('No se pudo publicar');
         this.isSubmittingComment = false;
       }
     });
@@ -586,40 +571,7 @@ export class PlayerDetailPublicPage implements OnInit {
     if (this.currentPage < this.totalPages()) this.goToPage(this.currentPage + 1);
   }
 
-  loadTeamsInfo(teamId: string, teamId2?: string) {
-    this.teamDetails = [];
-    this.teamInfo1 = null;
-    this.teamInfo2 = null;
 
-    this.playerService.lookupTSDBTeam(teamId).subscribe({
-      next: (res: any) => {
-        if (res) {
-          this.teamInfo1 = res;
-          this.teamDetails.push(res);
-        }
-      },
-      error: (err) => console.error('Error loading team 1 details:', err)
-    });
-
-    if (teamId2) {
-      this.playerService.lookupTSDBTeam(teamId2).subscribe({
-        next: (res: any) => {
-          if (res) {
-            this.teamInfo2 = res;
-            this.teamDetails.push(res);
-          }
-        },
-        error: (err) => console.error('Error loading team 2 details:', err)
-      });
-    }
-  }
-
-  loadLeagueInfo(leagueId: string) {
-    this.playerService.lookupTSDBLeague(leagueId).subscribe({
-      next: (res: any) => { this.leagueDetails = res; },
-      error: (err) => console.warn('Error loading league info:', err)
-    });
-  }
 
   onStatScroll(event: any) {
     const scrollLeft = event.target.scrollLeft;
@@ -679,20 +631,13 @@ export class PlayerDetailPublicPage implements OnInit {
     return stars;
   }
 
-  private async showToast(message: string, color: string, icon: string = 'alert-circle-outline') {
-    // Mapeo de clases de éxito/error personalizadas
-    const customClass = color === 'success' ? 'toast-success' : (color === 'danger' ? 'toast-error' : 'player-toast');
 
-    const toast = await this.toastCtrl.create({
-      message,
-      duration: 3500,
-      position: 'top',
-      color: color === 'success' || color === 'danger' ? undefined : color,
-      cssClass: customClass,
-      mode: 'ios',
-      icon: icon
-    });
-    toast.present();
+  getSafeImageUrl(url: string | undefined): string {
+    if (!url) return '';
+    if (url.includes('thesportsdb.com') || url.startsWith('http')) {
+      return `https://images.weserv.nl/?url=${encodeURIComponent(url)}`;
+    }
+    return url;
   }
 
   handleImageError(event: any) {

@@ -15,10 +15,10 @@ import {
   personAddOutline, optionsOutline, flagOutline, chevronForwardOutline, calendarOutline, settingsOutline,
   closeCircleOutline, chevronBackOutline, eyeOutline, alertCircleOutline, checkmarkCircleOutline, peopleOutline
 } from 'ionicons/icons';
-import { PLAYER_SERVICE_TOKEN } from '../../../core/services/player.service.token';
+import { PLAYER_SERVICE_TOKEN } from '../../../core/services/players/player.service.token';
 import { Player } from '../../../core/models/player.model';
-import { AuthService } from '../../../core/services/auth.service';
-import { LayoutService } from '../../../core/services/layout.service';
+import { AuthService } from '../../../core/services/auth/auth.service';
+import { LayoutService } from '../../../core/services/ui/layout.service';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 
 @Component({
@@ -150,7 +150,7 @@ export class PlayersPage implements OnInit {
     });
     this.layoutService.setBreadcrumbs([
       { label: '', url: '/home', icon: 'home-outline' },
-      { label: 'Jugadores' },
+      { label: 'Mi plantilla' },
     ]);
 
     this.isAdmin = this.authService.isAdmin();

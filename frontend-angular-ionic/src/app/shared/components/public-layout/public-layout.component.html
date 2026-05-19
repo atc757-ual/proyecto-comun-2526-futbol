@@ -11,7 +11,7 @@
           </ion-back-button>
 
           <!-- Logo a la Izquierda -->
-          <div class="logo-box clickable" routerLink="/login">
+          <div class="logo-box clickable" (click)="onLogoClick($event)">
             <div class="logo-ball-blue">
               <ion-icon name="football"></ion-icon>
             </div>
@@ -19,20 +19,15 @@
           </div>
         </div>
 
-        <!-- Balón Azul Centrado (Móvil Web) -->
-        <div *ngIf="platformService.isWebMobile" class="header-center-icon">
-
-        </div>
-
         <div class="header-right">
           <div class="auth-actions">
             <!-- Caso: Usuario NO está logueado -->
             <ng-container *ngIf="!authService.userData()">
-              <a routerLink="/login" class="auth-btn">
+              <a routerLink="/login" routerDirection="root" class="auth-btn">
                 <ion-icon name="log-in-outline" color="primary"></ion-icon>
                 <span class="hide-on-phone">Iniciar Sesión</span>
               </a>
-              <a routerLink="/register" class="auth-btn" style="margin-left: 15px;">
+              <a routerLink="/register" routerDirection="root" class="auth-btn" style="margin-left: 15px;">
                 <ion-icon name="person-add-outline" color="primary"></ion-icon>
                 <span class="hide-on-phone">¡Regístrate!</span>
               </a>
@@ -61,7 +56,7 @@
     <!-- SECCIÓN HERO (Igual que Main) -->
     <section>
       <div>
-        <div *ngIf="layoutService.showHero()" class="layout-hero-banner animate-fade-in">
+        <div *ngIf="layoutService.showHero()" class="layout-hero-banner">
           <div class="main-content">
             <h1 class="hero-title">{{ layoutService.title() }}</h1>
             <p class="hero-subtitle" *ngIf="layoutService.subtitle()">{{ layoutService.subtitle() }}</p>
@@ -74,7 +69,10 @@
           <div class="main-content">
             <ion-breadcrumbs>
               <ion-breadcrumb *ngFor="let item of layoutService.breadcrumbs(); let last = last"
-                [routerLink]="item.url || null" [class.active-breadcrumb]="last" [class.has-url]="!!item.url">
+                [routerLink]="(item.url === '/login' || (item.url === '/home' && !authService.currentUser())) ? null : (item.url || null)" 
+                [routerDirection]="item.url === '/login' ? 'root' : 'back'" 
+                (click)="onBreadcrumbClick($event, item)"
+                [class.active-breadcrumb]="last" [class.has-url]="!!item.url">
                 <ion-icon *ngIf="item.icon" slot="start" [name]="item.icon"></ion-icon>
                 {{ item.label }}
                 <span slot="separator" class="fs-14 text-neutral-4">/</span>

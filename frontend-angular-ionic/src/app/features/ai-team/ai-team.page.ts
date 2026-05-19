@@ -4,20 +4,21 @@ import { FormsModule } from '@angular/forms';
 import {
   IonButton,
   IonIcon, IonCard, IonCardContent, IonCardHeader, IonCardTitle,
-  IonSpinner, LoadingController, IonBadge, IonList, IonItem, IonLabel,
-  IonAvatar, ToastController
+  IonSpinner, IonBadge, IonList, IonItem, IonLabel,
+  IonAvatar
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
   sparklesOutline, footballOutline, alertCircleOutline, chatbubbleEllipsesOutline,
   personAddOutline, peopleOutline, chevronForwardOutline, personCircleOutline, star
 } from 'ionicons/icons';
-import { PLAYER_SERVICE_TOKEN } from '../../core/services/player.service.token';
-import { LayoutService } from '../../core/services/layout.service';
+import { PLAYER_SERVICE_TOKEN } from '../../core/services/players/player.service.token';
+import { LayoutService } from '../../core/services/ui/layout.service';
 import { RouterModule } from '@angular/router';
 import { Player } from '../../core/models/player.model';
-import { AI_SERVICE_TOKEN } from '../../core/services/ai.service.token';
-import { AIAnalysisResponse } from '../../core/services/ai.service.interface';
+import { AI_SERVICE_TOKEN } from '../../core/services/ai/ai.service.token';
+import { ToastService } from '../../core/services/ui/toast.service';
+import { AIAnalysisResponse } from '../../core/services/ai/ai.service.interface';
 
 @Component({
   selector: 'app-ai-team',
@@ -33,14 +34,13 @@ import { AIAnalysisResponse } from '../../core/services/ai.service.interface';
 export class AiTeamPage implements OnInit {
   private playerService = inject(PLAYER_SERVICE_TOKEN);
   private layoutService = inject(LayoutService);
-  private loadingCtrl = inject(LoadingController);
   private aiService = inject(AI_SERVICE_TOKEN);
-  private toastCtrl = inject(ToastController);
+  private toastService = inject(ToastService);
 
   public isGenerating = false;
   public analysisData: AIAnalysisResponse | null = null;
   public hasPlayers = false;
-  public localPlayers: any[] = []; // Guardamos los jugadores reales para el matching
+  public localPlayers: Player[] = []; // Guardamos los jugadores reales para el matching
   public isLoading = true;
 
   constructor() {
@@ -59,13 +59,13 @@ export class AiTeamPage implements OnInit {
 
   ngOnInit() {
     this.layoutService.setHeader({
-      title: 'Football AI',
+      title: 'Fútbol AI',
       subtitle: 'Deja que la inteligencia artificial analice tu plantilla',
       showHero: true
     });
     this.layoutService.setBreadcrumbs([
       { label: '', url: '/home', icon: 'home-outline' },
-      { label: 'Football AI', url: '' }
+      { label: 'Fútbol AI', url: '' }
     ]);
     this.checkPlayers();
   }
@@ -73,7 +73,7 @@ export class AiTeamPage implements OnInit {
   async checkPlayers() {
     this.isLoading = true;
     this.playerService.getPlayers().subscribe({
-      next: (players) => {
+      next: (players: Player[]) => {
         this.localPlayers = players || [];
         this.hasPlayers = this.localPlayers.length >= 11;
         this.isLoading = false;
@@ -115,30 +115,30 @@ export class AiTeamPage implements OnInit {
       next: (data) => {
         clearInterval(this.textInterval);
         this.layoutService.setAILoading(false);
-        
+
         // --- LÓGICA DE MATCHING DE IMÁGENES ---
         if (data) {
           // 1. Matching para el Once Ideal
           if (data.idealEleven) {
             data.idealEleven = data.idealEleven.map(aiPlayer => {
-              const matchedLocal = this.localPlayers.find(lp => 
+              const matchedLocal = this.localPlayers.find(lp =>
                 lp.name.toLowerCase().includes(aiPlayer.name.toLowerCase()) ||
                 aiPlayer.name.toLowerCase().includes(lp.name.toLowerCase())
               );
               return {
                 ...aiPlayer,
-                image_url: matchedLocal ? matchedLocal.image_url : null
+                image_url: matchedLocal ? matchedLocal.image_url : undefined
               };
             });
           }
 
           // 2. Matching para el Jugador Estrella
           if (data.starPlayer) {
-            const matchedStar = this.localPlayers.find(lp => 
+            const matchedStar = this.localPlayers.find(lp =>
               lp.name.toLowerCase().includes(data.starPlayer.toLowerCase()) ||
               data.starPlayer.toLowerCase().includes(lp.name.toLowerCase())
             );
-            (data as any).starPlayerImage = matchedStar ? matchedStar.image_url : null;
+            (data as any).starPlayerImage = matchedStar ? matchedStar.image_url : undefined;
           }
         }
 
@@ -150,10 +150,10 @@ export class AiTeamPage implements OnInit {
         this.layoutService.setAILoading(false);
         console.error('Error IA:', err);
         this.isGenerating = false;
-        
+
         // Extraer mensaje del backend si existe
         const message = err.error?.result?.description || 'Error al conectar con la IA';
-        this.showToast(message, 'danger');
+        this.toastService.showError(message);
       }
     });
   }
@@ -165,32 +165,18 @@ export class AiTeamPage implements OnInit {
       const role = (p.role || '').toUpperCase().trim();
 
       // Normalizar zona solicitada: PO, DF, MC, DL
-      if (zone === 'PO') {
-        return pos === 'PO' || pos === 'POR' || pos === 'GK' || pos === 'GOALKEEPER' || pos.includes('PORT') || pos.includes('ARQ') || role.includes('PORT') || role.includes('GOAL');
+      switch (zone) {
+        case 'PO':
+          return pos === 'PO' || pos === 'POR' || pos === 'GK' || pos === 'GOALKEEPER' || pos.includes('PORT') || pos.includes('ARQ') || role.includes('PORT') || role.includes('GOAL');
+        case 'DF':
+          return pos === 'DF' || pos === 'DEF' || pos === 'DEFENSA' || pos === 'DEFENDER' || pos.includes('BACK') || pos.includes('LAT') || role.includes('DEF') || role.includes('BACK') || role.includes('LAT');
+        case 'MC':
+          return pos === 'MC' || pos === 'MED' || pos === 'MID' || pos === 'MIDFIELDER' || pos === 'CENTROCAMPISTA' || pos.includes('VOL') || pos.includes('MED') || role.includes('MID') || role.includes('MED') || role.includes('VOL') || role.includes('CENTRO');
+        case 'DL':
+          return pos === 'DL' || pos === 'DEL' || pos === 'DELANTERO' || pos === 'FORWARD' || pos === 'ATTACKER' || pos === 'ATT' || pos === 'FWD' || pos.includes('WING') || pos.includes('STRI') || pos.includes('EXT') || role.includes('FORW') || role.includes('ATT') || role.includes('STRI') || role.includes('EXT') || role.includes('DEL');
+        default:
+          return pos === zone;
       }
-      if (zone === 'DF') {
-        return pos === 'DF' || pos === 'DEF' || pos === 'DEFENSA' || pos === 'DEFENDER' || pos.includes('BACK') || pos.includes('LAT') || role.includes('DEF') || role.includes('BACK') || role.includes('LAT');
-      }
-      if (zone === 'MC') {
-        return pos === 'MC' || pos === 'MED' || pos === 'MID' || pos === 'MIDFIELDER' || pos === 'CENTROCAMPISTA' || pos.includes('VOL') || pos.includes('MED') || role.includes('MID') || role.includes('MED') || role.includes('VOL') || role.includes('CENTRO');
-      }
-      if (zone === 'DL') {
-        return pos === 'DL' || pos === 'DEL' || pos === 'DELANTERO' || pos === 'FORWARD' || pos === 'ATTACKER' || pos === 'ATT' || pos === 'FWD' || pos.includes('WING') || pos.includes('STRI') || pos.includes('EXT') || role.includes('FORW') || role.includes('ATT') || role.includes('STRI') || role.includes('EXT') || role.includes('DEL');
-      }
-      return pos === zone;
     });
-  }
-
-  private async showToast(message: string, type: 'success' | 'danger' | 'warning') {
-    const toast = await this.toastCtrl.create({
-      message,
-      duration: 5000,
-      position: 'top',
-      cssClass: type === 'success' ? 'toast-success' : 'toast-error',
-      icon: 'alert-circle-outline',
-      mode: 'ios',
-      buttons: [{ role: 'cancel', text: 'Cerrar' }]
-    });
-    await toast.present();
   }
 }

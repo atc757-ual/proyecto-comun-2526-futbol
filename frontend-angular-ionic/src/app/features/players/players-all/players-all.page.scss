@@ -60,14 +60,11 @@
 
   &.is-mine {
     background: var(--color-neutral-0) !important;
-    border-color: var(--color-neutral-3) !important;
-
-    .card-image-container img {
-      filter: grayscale(0.2) brightness(0.8) contrast(0.5) hue-rotate(276deg);
-    }
+    border-color: var(--color-primary) !important;
+    box-shadow: 0 4px 15px rgba(0, 46, 255, 0.08);
 
     .card-content-md {
-      filter: opacity(0.75);
+      filter: opacity(0.85);
     }
   }
 
@@ -211,12 +208,8 @@
 
   &.is-mine {
     --background: var(--color-neutral-0) !important;
-    border-color: var(--color-neutral-3);
-    opacity: 0.9;
-
-    img {
-      filter: grayscale(0.5);
-    }
+    border-color: var(--color-primary) !important;
+    opacity: 0.95;
   }
 
   .mobile-thumb {
@@ -318,6 +311,7 @@
 
   .progress-fill {
     height: 100%;
+    width: 100%;
     background: var(--color-primary);
   }
 }

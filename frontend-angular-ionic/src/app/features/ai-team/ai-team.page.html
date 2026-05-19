@@ -11,12 +11,12 @@
               <ion-spinner name="crescent" color="primary"></ion-spinner>
             </div>
             <h3 class="text-primary f-bold mt-base mb-xs">Cargando panel...</h3>
-            <p class="text-neutral-5 fs-12 m-0">Preparando la pizarra de Football AI</p>
+            <p class="text-neutral-5 fs-12 m-0">Preparando la pizarra de Futbol AI</p>
           </div>
         </div>
 
         <div *ngIf="!isLoading" class="animate-fade-in">
-          <div class="f-bold fs-24 text-neutral-9 mb-base text-center">¡Hola, soy Football AI!</div>
+          <div class="f-bold fs-24 text-neutral-9 mb-base text-center">¡Hola, soy Futbol AI!</div>
           <div class="ai-icon-container text-center my-m">
             <!-- Botón con efecto de pulso -->
             <div class="pulse-wrapper">
@@ -37,8 +37,8 @@
 
             <!-- Estado: Sin jugadores -->
             <div *ngIf="localPlayers.length === 0" class="warning-box animate-fade-in">
-              <div class="bg-warning-light" style="margin-top: var(--space-s); padding: var(--space-s) var(--space-base);">
-                <ion-icon name="alert-circle-outline" class="fs-24 text-warning" style="margin-right: var(--space-xs);"></ion-icon>
+              <div class="bg-warning-light">
+                <ion-icon name="alert-circle-outline" class="fs-24 text-warning"></ion-icon>
                 <p class="text-warning-dark f-medium m-0">
                   Para que la IA funcione correctamente, debes tener jugadores cargados en tu sistema. :)
                 </p>
@@ -47,8 +47,8 @@
 
             <!-- Estado: Jugadores insuficientes (menos de 11) -->
             <div *ngIf="localPlayers.length > 0 && localPlayers.length < 11" class="warning-box animate-fade-in">
-              <div class="bg-warning-light" style="margin-top: var(--space-s); padding: var(--space-s) var(--space-base); border-left: 4px solid var(--color-warning);">
-                <ion-icon name="alert-circle-outline" class="fs-24 text-warning" style="margin-right: var(--space-xs);"></ion-icon>
+              <div class="bg-warning-light has-border-left">
+                <ion-icon name="alert-circle-outline" class="fs-24 text-warning"></ion-icon>
                 <p class="text-warning-dark f-medium m-0">
                   Necesitas al menos <strong>11 jugadores</strong> registrados para activar el análisis de la IA (actualmente tienes <strong>{{ localPlayers.length }}</strong>). ¡Añade o importa más jugadores para completar tu alineación de gala! ⚽
                 </p>
@@ -74,7 +74,7 @@
             <span>ESTRELLA DE LA PLANTILLA</span>
           </div>
           <div
-            class="star-content p-base bg-primary text-white border-radius-medium shadow-m d-flex fl-align-center gap-base">
+            class="star-content p-base bg-primary text-white border-radius-medium shadow-m d-flex ai-center gap-base">
             <ion-avatar class="star-avatar">
               <img [src]="analysisData.starPlayerImage || 'https://ui-avatars.com/api/?name=' + analysisData.starPlayer + '&background=ffffff&color=3880ff'" [alt]="analysisData.starPlayer" />
             </ion-avatar>
@@ -194,7 +194,7 @@
           <ion-item class="action-item is-green" [button]="true" lines="none" detail="true" routerLink="/players">
             <ion-icon name="people-outline" slot="start"></ion-icon>
             <ion-label>
-              <h3>Mis Jugadores</h3>
+              <h3>Mi Plantilla</h3>
               <p>Ver toda mi plantilla</p>
             </ion-label>
           </ion-item>

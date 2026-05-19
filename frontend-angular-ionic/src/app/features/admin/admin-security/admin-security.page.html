@@ -1,5 +1,5 @@
 <!-- TARJETA: FIREBASE CLAIMS   -->
-<div class="row fl-col-rev-sm mt-base" *ngIf="isAdmin()">
+<div class="row fl-col-rev-sm" *ngIf="isAdmin()">
   <div class="col-8 col-sm-12 pr-base px-0-sm mb-base">
 
     <ion-card class="premium-card">
@@ -85,7 +85,7 @@
 
   <!-- TARJETA: GESTIÓN DE ROLES (Solo Master) -->
   <div class="col-4 col-sm-12 pl-base px-0-sm mb-base">
-    <ion-card class="premium-card manage-card" *ngIf="authService.isMasterAdmin()">
+    <ion-card class="premium-card" *ngIf="authService.isMasterAdmin()">
       <ion-card-header>
         <div class="card-header-flex">
           <ion-card-title>Gestión de Privilegios</ion-card-title>
@@ -100,8 +100,6 @@
             [(ngModel)]="targetEmail" [class.is-focused]="emailFocused" (ionFocus)="emailFocused = true"
             (ionBlur)="emailFocused = false" (ionInput)="onSearchInput($event)">
             <ion-icon slot="start" name="at-outline" [color]="emailFocused ? 'primary' : 'medium'"></ion-icon>
-            <ion-icon *ngIf="emailModel.valid && emailModel.value" slot="end" name="close-outline" color="primary"
-              class="fs-20"></ion-icon>
           </ion-input>
 
           <!-- LISTA DE SUGERENCIAS -->
@@ -145,7 +143,7 @@
         <div class="btn-group" *ngIf="selectedUser()">
           <!-- BOTÓN HACER ADMIN (Solo si es 'user') -->
           <ion-button mode="ios" shape="round" expand="block" (click)="promoteUser()"
-            *ngIf="selectedUser()?.role !== 'admin' && selectedUser().is_active === true"
+            *ngIf="selectedUser()?.role !== 'admin' && selectedUser().is_active === true && selectedUser().email !== authService.currentUser()?.email"
             [disabled]="isPromoting() || isTogglingStatus() || !targetEmail" class="promote-btn">
             <ion-spinner class="mr-s" slot="start" *ngIf="isPromoting()"></ion-spinner>
             <ion-icon slot="start" name="person-add-outline" *ngIf="!isPromoting()"></ion-icon>
@@ -154,7 +152,7 @@
 
           <!-- BOTÓN QUITAR ADMIN (Solo si es 'admin') -->
           <ion-button mode="ios" shape="round" expand="block" fill="outline" color="danger" (click)="revokeUser()"
-            *ngIf="selectedUser()?.role === 'admin'" [disabled]="isPromoting() || isTogglingStatus() || !targetEmail"
+            *ngIf="selectedUser()?.role === 'admin' && selectedUser().email !== authService.currentUser()?.email" [disabled]="isPromoting() || isTogglingStatus() || !targetEmail"
             class="promote-btn">
             <ion-spinner class="mr-s" slot="start" *ngIf="isPromoting()"></ion-spinner>
             <ion-icon slot="start" name="person-remove-outline" *ngIf="!isPromoting()"></ion-icon>
@@ -162,7 +160,8 @@
           </ion-button>
 
           <!-- BOTÓN INHABILITAR / HABILITAR (Solo Master) -->
-          <ion-button mode="ios" shape="round" expand="block" fill="clear" class=" btn-toggle"
+          <ion-button mode="ios" shape="round" expand="block" fill="clear" class="btn-toggle"
+            *ngIf="selectedUser().email !== authService.currentUser()?.email"
             [class.error]="selectedUser().is_active === true" [class.success]="selectedUser().is_active === false"
             (click)="toggleUserStatus(selectedUser().is_active === true)"
             [disabled]="isPromoting() || isTogglingStatus() || !targetEmail">
@@ -175,7 +174,7 @@
           </ion-button>
 
           <ion-button class="mt-base promote-btn" shape="round" mode="ios" fill="clear" expand="block"
-            (click)="promoteSelf()" [disabled]="isPromoting()" *ngIf="!firebaseClaims()?.admin">
+            (click)="promoteSelf()" [disabled]="isPromoting()" *ngIf="!firebaseClaims()?.admin && selectedUser().email === authService.currentUser()?.email">
             <ion-icon slot="start" name="person-add-outline" *ngIf="!isPromoting()"></ion-icon>
             Autorizar mi propia cuenta
           </ion-button>

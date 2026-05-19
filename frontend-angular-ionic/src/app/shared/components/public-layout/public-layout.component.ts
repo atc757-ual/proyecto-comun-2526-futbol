@@ -4,19 +4,16 @@ import { RouterModule } from '@angular/router';
 import {
   IonIcon, IonContent,
   IonBackButton, IonBreadcrumbs, IonBreadcrumb,
-  MenuController
+  MenuController, NavController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
-  menuOutline, football, personOutline, sparklesOutline, footballOutline, 
-  logoLinkedin, personCircleOutline, logoGithub, closeOutline, 
-  arrowBack, chevronBack, chevronForwardOutline, personAddOutline,
-  logInOutline, logOutOutline
+  football, logoLinkedin, personCircleOutline, logoGithub, 
+  arrowBack, personAddOutline, logInOutline, logOutOutline
 } from 'ionicons/icons';
-import { Router } from '@angular/router';
-import { AuthService } from 'src/app/core/services/auth.service';
-import { PlatformService } from 'src/app/core/services/platform.service';
-import { LayoutService } from 'src/app/core/services/layout.service';
+import { AuthService } from 'src/app/core/services/auth/auth.service';
+import { PlatformService } from 'src/app/core/services/system/platform.service';
+import { LayoutService } from 'src/app/core/services/ui/layout.service';
 
 @Component({
   selector: 'app-public-layout',
@@ -36,19 +33,35 @@ export class PublicLayoutComponent implements OnInit, OnDestroy {
   public layoutService = inject(LayoutService);
   public authService = inject(AuthService);
   private menuCtrl = inject(MenuController);
-  private router = inject(Router);
+  private navCtrl = inject(NavController);
 
   constructor() {
     addIcons({
-      menuOutline, footballOutline, personCircleOutline, personAddOutline,
-      personOutline, sparklesOutline, logoLinkedin, logoGithub, closeOutline, 
-      arrowBack, chevronBack, chevronForwardOutline, football, logInOutline,
-      logOutOutline
+      personCircleOutline, personAddOutline, logoLinkedin, logoGithub, 
+      arrowBack, football, logInOutline, logOutOutline
     });
   }
 
   logout() {
-    this.authService.logout().then(() => this.router.navigate(['/login']));
+    this.authService.logout().then(() => this.navCtrl.navigateRoot('/login'));
+  }
+
+  onBreadcrumbClick(event: Event, item: any) {
+    if (item.url === '/login' || (item.url === '/home' && !this.authService.currentUser())) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.navCtrl.navigateRoot('/login');
+    }
+  }
+
+  onLogoClick(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (this.authService.currentUser()) {
+      this.navCtrl.navigateRoot('/home');
+    } else {
+      this.navCtrl.navigateRoot('/login');
+    }
   }
 
   ngOnInit() {

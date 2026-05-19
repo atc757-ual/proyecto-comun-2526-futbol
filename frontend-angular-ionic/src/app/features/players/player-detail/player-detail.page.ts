@@ -7,7 +7,7 @@ import {
   IonSpinner, LoadingController, NavController, AlertController, ToastController, ModalController,
   IonTextarea
 } from '@ionic/angular/standalone';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { ConfirmModalComponent } from 'src/app/shared/components/confirm-modal/confirm-modal.component';
 import { addIcons } from 'ionicons';
 import {
@@ -23,17 +23,19 @@ import {
   peopleOutline, chatbubbleEllipsesOutline, paperPlaneOutline,
   analyticsOutline, closeOutline, checkmarkOutline,
   chevronBackOutline, chevronForwardOutline, addCircleOutline, lockClosedOutline,
-  shield, syncOutline, copyOutline, navigateCircleOutline
+  shield, syncOutline, copyOutline, navigateCircleOutline, shareSocialOutline
 } from 'ionicons/icons';
-import { PLAYER_SERVICE_TOKEN } from '../../../core/services/player.service.token';
+import { PLAYER_SERVICE_TOKEN } from '../../../core/services/players/player.service.token';
 import { Player } from '../../../core/models/player.model';
-import { AuthService } from '../../../core/services/auth.service';
+import { AuthService } from '../../../core/services/auth/auth.service';
 import { Geolocation } from '@capacitor/geolocation';
-import { LayoutService } from '../../../core/services/layout.service';
-import { ConfettiService } from 'src/app/core/services/confetti.service';
+import { LayoutService } from '../../../core/services/ui/layout.service';
+import { ConfettiService } from 'src/app/core/services/ui/confetti.service';
 import { PermissionModalComponent } from 'src/app/shared/components/permission-modal/permission-modal.component';
 import { LocationPlugin } from '../../../core/plugins/location-plugin';
 import { MapPlugin } from '../../../core/plugins/maps-plugin';
+import { ShareCardPlugin } from '../../../core/plugins/share-card-plugin';
+import { HapticsPlugin } from '../../../core/plugins/haptics-plugin';
 
 import { register } from 'swiper/element/bundle';
 
@@ -50,11 +52,28 @@ import { register } from 'swiper/element/bundle';
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class PlayerDetailPage implements OnInit {
+  private route = inject(ActivatedRoute);
+
   @Input() set id(playerId: string) {
     console.log('[PLAYER-DETAIL] Setter ID ejecutado con:', playerId);
     if (playerId) {
       this.player = null; // Limpiamos rastro anterior
       this.loadPlayer(playerId);
+
+      const from = this.route.snapshot.queryParams['from'];
+      if (from === 'universe') {
+        this.layoutService.setBreadcrumbs([
+          { label: '', url: '/home', icon: 'home-outline' },
+          { label: 'Universo de jugadores', url: '/players-all' },
+          { label: 'Detalle', url: '' }
+        ]);
+      } else {
+        this.layoutService.setBreadcrumbs([
+          { label: '', url: '/home', icon: 'home-outline' },
+          { label: 'Mi plantilla', url: '/players' },
+          { label: 'Detalle', url: '' }
+        ]);
+      }
       this.captureUserLocation();
     }
   }
@@ -71,6 +90,8 @@ export class PlayerDetailPage implements OnInit {
   private confettiService = inject(ConfettiService);
   private locationService = inject(LocationPlugin);
   private mapPlugin = inject(MapPlugin);
+  private shareCardPlugin = inject(ShareCardPlugin);
+  private hapticsService = inject(HapticsPlugin);
   private cdr = inject(ChangeDetectorRef);
 
   public player: Player | null = null;
@@ -99,7 +120,7 @@ export class PlayerDetailPage implements OnInit {
   get isOwner(): boolean {
     if (!this.player || !this.player.user_id) return false;
     const currentUid = this.authService.getUID();
-    return currentUid === this.player.user_id;
+    return String(currentUid).trim() === String(this.player.user_id).trim();
   }
 
   // Lógica de Centro de Comentarios
@@ -116,6 +137,7 @@ export class PlayerDetailPage implements OnInit {
 
   toggleCardView() {
     this.showCutout = !this.showCutout;
+    this.hapticsService.impact('light');
   }
 
   // Paginación de Comentarios
@@ -152,7 +174,7 @@ export class PlayerDetailPage implements OnInit {
       peopleOutline, chatbubbleEllipsesOutline, paperPlaneOutline,
       analyticsOutline, closeOutline, checkmarkOutline,
       chevronBackOutline, chevronForwardOutline, addCircleOutline, lockClosedOutline,
-      shield, syncOutline, copyOutline, navigateCircleOutline
+      shield, syncOutline, copyOutline, navigateCircleOutline, shareSocialOutline
     });
   }
 
@@ -479,8 +501,8 @@ export class PlayerDetailPage implements OnInit {
       componentProps: {
         title: '¿Eliminar de la plantilla?',
         message: `Esta acción borrará definitivamente a ${this.player.name}.`,
-        confirmText: 'Confirmar Baja',
-        cancelText: 'Cancelar',
+        confirmText: 'Sí, eliminar',
+        cancelText: 'No, cancelar',
         type: 'delete'
       },
       cssClass: 'premium-modal'
@@ -583,21 +605,27 @@ export class PlayerDetailPage implements OnInit {
 
     // Intentar capturar ubicación si tenemos permiso
     if (this.hasGeoPermission()) {
-      try {
-        const coordinates = await Geolocation.getCurrentPosition();
-        console.log('[GEOLOCATION] Coordenadas obtenidas:', coordinates);
-        this.userCoords.set({
-          lat: coordinates.coords.latitude,
-          lng: coordinates.coords.longitude
-        });
-        this.showToast('Ubicación autorizada correctamente', 'success');
-
+      const cachedCoords = this.userCoords();
+      if (cachedCoords) {
         commentData.location = {
           type: 'Point',
-          coordinates: [coordinates.coords.longitude, coordinates.coords.latitude]
+          coordinates: [cachedCoords.lng, cachedCoords.lat]
         };
-      } catch (err) {
-        console.warn('[PLAYER-DETAIL] No se pudo obtener ubicación vía plugin:', err);
+      } else {
+        try {
+          const coordinates = await Geolocation.getCurrentPosition({ timeout: 5000 });
+          console.log('[GEOLOCATION] Coordenadas obtenidas en submit:', coordinates);
+          this.userCoords.set({
+            lat: coordinates.coords.latitude,
+            lng: coordinates.coords.longitude
+          });
+          commentData.location = {
+            type: 'Point',
+            coordinates: [coordinates.coords.longitude, coordinates.coords.latitude]
+          };
+        } catch (err) {
+          console.warn('[PLAYER-DETAIL] No se pudo obtener ubicación vía plugin:', err);
+        }
       }
     }
 
@@ -829,8 +857,51 @@ export class PlayerDetailPage implements OnInit {
     }
   }
 
+  getSafeImageUrl(url: string | undefined): string {
+    if (!url) return '';
+    if (url.includes('thesportsdb.com') || url.startsWith('http')) {
+      return `https://images.weserv.nl/?url=${encodeURIComponent(url)}`;
+    }
+    return url;
+  }
+
   handleImageError(event: any) {
     // Si la imagen falla, la ocultamos para que se vea el icono de fondo
     event.target.style.display = 'none';
+  }
+
+  async sharePlayerCard(cardElement: HTMLElement) {
+    if (!this.player) return;
+    this.hapticsService.impact('medium');
+    const loading = await this.loadingCtrl.create({
+      message: 'Generando imagen de la ficha...',
+      duration: 10000
+    });
+    await loading.present();
+
+    try {
+      const success = await this.shareCardPlugin.shareElementAsImage(cardElement, this.player.name);
+      if (success) {
+        this.hapticsService.notification('success');
+        const toast = await this.toastCtrl.create({
+          message: 'Ficha compartida con éxito',
+          duration: 2000,
+          color: 'success'
+        });
+        await toast.present();
+      } else {
+        throw new Error('Plugin returned false');
+      }
+    } catch (error) {
+      this.hapticsService.notification('error');
+      const toast = await this.toastCtrl.create({
+        message: 'No se pudo compartir la ficha',
+        duration: 2000,
+        color: 'danger'
+      });
+      await toast.present();
+    } finally {
+      await loading.dismiss();
+    }
   }
 }

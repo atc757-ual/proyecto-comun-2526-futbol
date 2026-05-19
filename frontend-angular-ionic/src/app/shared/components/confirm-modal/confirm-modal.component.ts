@@ -1,11 +1,10 @@
 import { Component, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
-import { ModalController } from '@ionic/angular/standalone';
+import { ModalController, IonIcon, IonButton } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
   closeOutline, alertCircleOutline, logOutOutline, trashOutline, checkmarkCircleOutline,
-  warningOutline, informationCircleOutline
+  warningOutline, informationCircleOutline, closeCircleOutline
 } from 'ionicons/icons';
 
 @Component({
@@ -13,7 +12,7 @@ import {
   templateUrl: './confirm-modal.component.html',
   styleUrls: ['./confirm-modal.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule]
+  imports: [CommonModule, IonIcon, IonButton]
 })
 export class ConfirmModalComponent {
   private modalCtrl = inject(ModalController);
@@ -33,7 +32,8 @@ export class ConfirmModalComponent {
       trashOutline,
       closeOutline,
       warningOutline,
-      informationCircleOutline
+      informationCircleOutline,
+      closeCircleOutline
     });
   }
 

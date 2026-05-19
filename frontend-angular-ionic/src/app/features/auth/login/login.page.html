@@ -25,7 +25,7 @@
       fill="outline" required maxlength="64" minlength="8" placeholder="Mínimo 8 caracteres" class="futbol-input"
       [(ngModel)]="userPass" name="password" (ionBlur)="markPassTouched()" (ionFocus)="onFocusPass()"
       [errorText]="passTouched && !isPasswordValid() ? 'Debe tener más de 8 dígitos' : ''"
-      [class.input-error]="passTouched && !isPasswordValid()" [class.is-focused]="passFocused" clear-on-edit="true">
+      [class.input-error]="passTouched && !isPasswordValid()" [class.is-focused]="passFocused">
 
       <ion-icon slot="start"
         [color]="passFocused ? 'primary' : (passTouched && !isPasswordValid() ? 'danger' : 'medium')"
@@ -44,10 +44,10 @@
 
   <!-- SELECTOR DE BACKEND PRE-LOGIN -->
   <div class="backend-switcher-login mb-m">
-    <div class="d-flex fl-justify-between fl-align-center p-s br-soft border-neutral-2"
+    <div class="d-flex jc-between ai-center p-s br-soft border-neutral-2"
       [class.bg-primary-light]="platformService.getUseJavaBackend()"
       [class.bg-success-light]="!platformService.getUseJavaBackend()">
-      <div class="d-flex fl-align-center gap-s">
+      <div class="d-flex ai-center gap-s">
         <div class="icon-circle-s" [class.bg-primary]="platformService.getUseJavaBackend()"
           [class.bg-success]="!platformService.getUseJavaBackend()">
           <ion-icon *ngIf="platformService.getUseJavaBackend()" name="cafe-outline" class="text-white fs-24"></ion-icon>
@@ -75,20 +75,20 @@
   </ion-button>
 
   <!-- OPCIONES EXTRA -->
-  <div class="t-center mt-m ">
+  <div class="text-center mt-m ">
     <a class="text-primary f-semibold fs-16 pointer no-underline" routerLink="/auth/forgot-password">¿Olvidaste
       tu contraseña?</a>
   </div>
 
   <!-- REGISTRO -->
-  <div class="mt-m t-center">
+  <div class="mt-m text-center">
     <p class="fs-16 text-neutral-7">¿Aún no tienes cuenta?
       <a class="text-primary f-semibold pointer no-underline" routerLink="/auth/register">Regístrate aquí</a>
     </p>
   </div>
 
   <!-- BOTÓN DE ACCESO PÚBLICO -->
-  <div class="mb-base t-center">
+  <div class="mb-base text-center">
     <ion-button fill="outline" shape="round" class="btn-offers" mode="ios" routerLink="/players-public">
       <ion-icon slot="start" name="people-outline"></ion-icon>
       Ver jugadores

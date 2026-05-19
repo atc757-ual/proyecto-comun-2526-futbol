@@ -1,4 +1,7 @@
 const axios = require('axios');
+const Opossum = require('opossum');
+
+// === CONFIGURACIÓN DE URL Y ENLACE DE RED ===
 
 const getBaseUrl = () => {
     return (process.env.TSDB_BASE_URL || 'https://www.thesportsdb.com/api/v2/json').trim();
@@ -13,14 +16,53 @@ const getHeaders = () => {
     };
 };
 
+// === IMPLEMENTACIÓN DE CIRCUIT BREAKER CON OPOSSUM ===
+
+// Defino la función asíncrona interna encargada de realizar la petición HTTP cruda
+const makeHttpRequest = async (url) => {
+    return await axios.get(url, {
+        headers: getHeaders()
+    });
+};
+
+// Configuro las opciones de mi disyuntor
+const breakerOptions = {
+    timeout: 5000,                 // Espero un máximo de 5 segundos antes de considerar la petición fallida
+    errorThresholdPercentage: 50,  // Si el 50% de las peticiones fallan en la ventana de tiempo, abro el circuito
+    resetTimeout: 10000            // Transcurridos 10 segundos en abierto, paso a estado semiabierto para probar recuperación
+};
+
+// Inicializo el Circuit Breaker de Opossum envolviendo mi función de peticiones HTTP
+const httpBreaker = new Opossum(makeHttpRequest, breakerOptions);
+
+// Establezco el comportamiento de fallback si el circuito está abierto o hay fallos persistentes
+httpBreaker.fallback((url, error) => {
+    console.warn(`[CIRCUIT-BREAKER] Fallback activo para URL: ${url}. Detalle: ${error.message}`);
+    throw new Error('Servicio externo de deportes temporalmente fuera de línea.');
+});
+
+// Registro eventos para tener visibilidad y trazabilidad en la terminal de mi servidor
+httpBreaker.on('open', () => {
+    console.warn('\n[CIRCUIT-BREAKER] !!! ADVERTENCIA: El circuito se ha ABIERTO. Las llamadas a TheSportsDB fallarán localmente sin sobrecargar el servidor externo.');
+});
+
+httpBreaker.on('halfOpen', () => {
+    console.info('\n[CIRCUIT-BREAKER] El circuito está SEMIABIERTO. Enviando petición de prueba al servicio externo...');
+});
+
+httpBreaker.on('close', () => {
+    console.info('\n[CIRCUIT-BREAKER] ¡ÉXITO! El circuito se ha CERRADO. El servicio externo de TheSportsDB se ha restablecido correctamente.');
+});
+
+// === FUNCIONES Y MÉTODOS DE INTEGRACIÓN ===
+
 const searchPlayers = async (name) => {
     try {
         const url = `${getBaseUrl()}/search/player/${encodeURIComponent(name)}`;
         console.log('--- TSDB V2 SEARCH PLAYER ---', url);
 
-        const response = await axios.get(url, {
-            headers: getHeaders()
-        });
+        // Ejecuto la petición a través del disyuntor
+        const response = await httpBreaker.fire(url);
 
         let players = response.data.search;
         if (!players) return [];
@@ -54,9 +96,7 @@ const searchPlayers = async (name) => {
 const getPlayerDetails = async (id) => {
     try {
         const url = `${getBaseUrl()}/lookup/player/${id}`;
-        const response = await axios.get(url, {
-            headers: getHeaders()
-        });
+        const response = await httpBreaker.fire(url);
 
         const players = response.data.lookup;
         if (!players) return null;
@@ -83,10 +123,8 @@ const getPlayerDetails = async (id) => {
             strBirthLocation: p.strBirthLocation,
             strThumb: p.strThumb,
             strDescriptionES: p.strDescriptionES || p.strDescriptionEN,
-            // Imágenes adicionales
             strCutout: p.strCutout,
             strBanner: p.strBanner,
-            // Redes Sociales
             strFacebook: p.strFacebook,
             strInstagram: p.strInstagram,
             strTwitter: p.strTwitter,
@@ -101,9 +139,7 @@ const getPlayerDetails = async (id) => {
 const getTeamDetails = async (id) => {
     try {
         const url = `${getBaseUrl()}/lookup/team/${id}`;
-        const response = await axios.get(url, {
-            headers: getHeaders()
-        });
+        const response = await httpBreaker.fire(url);
 
         const teams = response.data.lookup;
         if (!teams) return null;
@@ -112,14 +148,14 @@ const getTeamDetails = async (id) => {
         return {
             idTeam: t.idTeam,
             strTeam: t.strTeam,
-            strTeamBadge: t.strBadge || t.strTeamBadge, // V2 usa strBadge
+            strTeamBadge: t.strBadge || t.strTeamBadge,
             strLeague: t.strLeague,
             strCountry: t.strCountry,
             intFormedYear: t.intFormedYear,
             strStadium: t.strStadium,
             strStadiumLocation: t.strStadiumLocation,
             strStadiumThumb: t.strStadiumThumb,
-            strFanart1: t.strFanart1, // Banner del equipo
+            strFanart1: t.strFanart1,
             strWebsite: t.strWebsite,
             idLeague: t.idLeague
         };
@@ -132,9 +168,7 @@ const getTeamDetails = async (id) => {
 const getLeagueDetails = async (id) => {
     try {
         const url = `${getBaseUrl()}/lookup/league/${id}`;
-        const response = await axios.get(url, {
-            headers: getHeaders()
-        });
+        const response = await httpBreaker.fire(url);
 
         const leagues = response.data.lookup;
         if (!leagues) return null;
@@ -153,9 +187,7 @@ const getLeagueDetails = async (id) => {
 const searchTeams = async (name) => {
     try {
         const url = `${getBaseUrl()}/search/team/${encodeURIComponent(name)}`;
-        const response = await axios.get(url, {
-            headers: getHeaders()
-        });
+        const response = await httpBreaker.fire(url);
 
         let teams = response.data.search;
         if (!teams) return [];
@@ -183,9 +215,7 @@ const searchPlayersByTeam = async (teamName) => {
         const url = `${getBaseUrl()}/search/player?t=${encodeURIComponent(teamName)}`;
         console.log(`[TSDB-DEBUG] Buscando jugadores por NOMBRE de equipo: "${teamName}"`);
 
-        const response = await axios.get(url, {
-            headers: getHeaders()
-        });
+        const response = await httpBreaker.fire(url);
 
         let players = response.data.search || response.data.player || response.data.results;
         if (!players) {
@@ -216,9 +246,7 @@ const searchPlayersByTeam = async (teamName) => {
 const getTeamsByLeague = async (idLeague) => {
     try {
         const url = `${getBaseUrl()}/list/teams/${idLeague}`;
-        const response = await axios.get(url, {
-            headers: getHeaders()
-        });
+        const response = await httpBreaker.fire(url);
         const teams = response.data.list || response.data.teams || response.data.results || [];
 
         return teams.map(t => ({
@@ -241,9 +269,7 @@ const getTeamsByLeague = async (idLeague) => {
 const getPlayersByTeam = async (idTeam) => {
     try {
         const url = `${getBaseUrl()}/list/players/${idTeam}`;
-        const response = await axios.get(url, {
-            headers: getHeaders()
-        });
+        const response = await httpBreaker.fire(url);
 
         console.log(`[TSDB-DEBUG] Consultando Plantilla Oficial para Team ID: ${idTeam}`);
         let players = response.data.list || response.data.player || response.data.results;
@@ -275,9 +301,7 @@ const getPlayersByTeam = async (idTeam) => {
 const searchLeagues = async (name) => {
     try {
         const url = `${getBaseUrl()}/search/league/${encodeURIComponent(name)}`;
-        const response = await axios.get(url, {
-            headers: getHeaders()
-        });
+        const response = await httpBreaker.fire(url);
 
         let leagues = response.data.search;
         if (!leagues) return [];
@@ -302,9 +326,7 @@ const searchLeagues = async (name) => {
 const getPlayerHonours = async (idPlayer) => {
     try {
         const url = `${getBaseUrl()}/lookup/player_honours/${idPlayer}`;
-        const response = await axios.get(url, {
-            headers: getHeaders()
-        });
+        const response = await httpBreaker.fire(url);
         const data = response.data.lookup || [];
         const mapped = data.map(h => ({
             strTeam: h.strHonour,
@@ -326,9 +348,7 @@ const getPlayerHonours = async (idPlayer) => {
 const getPlayerMilestones = async (idPlayer) => {
     try {
         const url = `${getBaseUrl()}/lookup/player_milestones/${idPlayer}`;
-        const response = await axios.get(url, {
-            headers: getHeaders()
-        });
+        const response = await httpBreaker.fire(url);
         const data = response.data.lookup || [];
         const mapped = data.map(m => ({
             strTeam: m.strMilestone,
@@ -346,9 +366,7 @@ const getPlayerMilestones = async (idPlayer) => {
 const getPlayerTeamsHistory = async (idPlayer) => {
     try {
         const url = `${getBaseUrl()}/lookup/player_teams/${idPlayer}`;
-        const response = await axios.get(url, {
-            headers: getHeaders()
-        });
+        const response = await httpBreaker.fire(url);
         const data = response.data.lookup || [];
         const mapped = data.map(t => ({
             strTeam: t.strFormerTeam,
@@ -364,14 +382,11 @@ const getPlayerTeamsHistory = async (idPlayer) => {
     }
 };
 
-
 const getTVByCountry = async (country) => {
     try {
         const url = `${getBaseUrl()}/filter/tv/country/${encodeURIComponent(country)}`;
         console.log(`[TSDB-BACKEND] Consultando TV País: ${url}`);
-        const response = await axios.get(url, {
-            headers: getHeaders()
-        });
+        const response = await httpBreaker.fire(url);
         console.log(`[TSDB-DEBUG] Raw Response Keys:`, Object.keys(response.data));
         const data = response.data.results || response.data.tv || response.data.filter || [];
         // Filtramos estrictamente por fútbol para evitar otros deportes en la agenda
@@ -388,10 +403,7 @@ const getLiveScores = async (sport = 'soccer') => {
     try {
         const url = `${getBaseUrl()}/livescore/${encodeURIComponent(sport)}`;
         console.log(`[TSDB-BACKEND] Consultando Livescore (V2): ${url}`);
-        const response = await axios.get(url, {
-            headers: getHeaders()
-        });
-        // En V2 el key suele ser 'livescore' o 'results'
+        const response = await httpBreaker.fire(url);
         const data = response.data.livescore || response.data.results || [];
         console.log(`[TSDB-BACKEND] Livescore recuperado: ${data.length} partidos`);
         return data;

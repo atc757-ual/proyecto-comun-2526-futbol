@@ -5,7 +5,7 @@
       <ion-card-content>
         <ion-label class="pb-base text-neutral-9 f-semibold">Explora el mercado</ion-label>
         <div class="mt-s mb-base">
-          <ion-searchbar mode="ios" placeholder="Busca por nombre, equipo, país..." [(ngModel)]="searchTerm"
+          <ion-searchbar mode="ios" placeholder="Busca por nombre, equipo, país..." [value]="searchTerm()"
             (ionInput)="onSearchChange($event)">
           </ion-searchbar>
         </div>
@@ -33,14 +33,14 @@
                     <ion-card-content class="ps">
                       <div class="player-main-info">
                         <h2 class="f-bold text-neutral-9 fs-16 mb-xs text-ellipsis">{{ player.name }}</h2>
-                        <div class="d-flex fl-align-center gap-xs mb-s">
+                        <div class="d-flex ai-center gap-xs mb-s">
                           <span class="f-semibold text-neutral-7 fs-12 uppercase letter-spacing-1">
                             {{ player.nationality }} • {{ player.age || '?' }} años
                           </span>
                         </div>
                         <div class="team-league-badge">
                           <ion-icon name="shield-outline"></ion-icon>
-                          <span class="text-ellipsis">{{ player.team }}</span>
+                          <span class=" fs-12 text-ellipsis">{{ player.team }}</span>
                         </div>
                       </div>
                     </ion-card-content>
@@ -56,16 +56,16 @@
                     </ion-thumbnail>
 
                     <ion-label class="mobile-label">
-                      <div class="d-flex fl-align-center gap-xs">
+                      <div class="d-flex ai-center gap-xs">
                         <h2 class="f-semibold text-neutral-9 fs-14 m-0 text-ellipsis">{{ player.name }}</h2>
                         <span class="text-neutral-3">|</span>
-                        <div class="d-flex fl-align-center gap-xs">
+                        <div class="d-flex ai-center gap-xs">
                           <ion-icon name="shield-outline" color="primary" class="fs-12"></ion-icon>
                           <span class="fs-12 text-neutral-7 f-medium">{{ player.team }}</span>
                         </div>
                       </div>
 
-                      <div class="d-flex fl-align-center gap-s">
+                      <div class="d-flex ai-center gap-s">
                         <span class="fs-12 text-neutral-7 f-medium">{{ player.nationality }} • {{ player.age || '?' }}
                           años</span>
                       </div>
@@ -82,24 +82,11 @@
               <h3 class="f-semibold text-neutral-9">Sin resultados</h3>
               <p class="text-neutral-6">No encontramos ningún jugador con esos filtros.</p>
             </div>
-            <div class="separator my-base" *ngIf="pagedPlayers().length > 0 && totalPages() > 1"></div>
             <!-- Paginación -->
-            <div class="news-pagination-container" *ngIf="totalPages() > 1">
-              <ion-button class="fs-14" mode="ios" fill="clear" (click)="prevPage()" [disabled]="currentPage() === 1">
-                <ion-icon name="chevron-back-outline" slot="start"></ion-icon> Anterior
-              </ion-button>
-              <div class="page-indicators">
-                <ion-button mode="ios" *ngFor="let page of getPages()"
-                  [fill]="currentPage() === page ? 'solid' : 'clear'" [class.active]="currentPage() === page"
-                  (click)="goToPage(page)">
-                  {{ page }}
-                </ion-button>
-              </div>
-              <ion-button class="fs-14" mode="ios" fill="clear" (click)="nextPage()"
-                [disabled]="currentPage() === totalPages()">
-                Siguiente <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
-              </ion-button>
-            </div>
+            <div class="separator my-base" *ngIf="pagedPlayers().length > 0 && totalPages() > 1"></div>
+            <app-pagination *ngIf="totalPages() > 1" [currentPage]="currentPage()" [totalPages]="totalPages()"
+              (pageChange)="goToPage($event)">
+            </app-pagination>
           </div>
         </div>
       </ion-card-content>

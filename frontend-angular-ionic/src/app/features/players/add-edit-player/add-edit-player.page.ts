@@ -28,20 +28,21 @@ import {
   globeOutline, logoInstagram, logoFacebook, logoTwitter, documentTextOutline,
   shieldCheckmark, navigateOutline, navigateCircleOutline, personCircleOutline,
   shirtOutline, calendarOutline, resizeOutline, flagOutline, informationCircleOutline,
-  alertCircleOutline, lockClosedOutline, cutOutline, cubeOutline, appsOutline,
+  alertCircleOutline, lockClosedOutline, cutOutline, cubeOutline, appsOutline, sparklesOutline,
   person, informationCircle
 } from 'ionicons/icons';
-import { PLAYER_SERVICE_TOKEN } from '@core/services/player.service.token';
+import { PLAYER_SERVICE_TOKEN } from '@core/services/players/player.service.token';
 import { Player } from '@core/models/player.model';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { LayoutService } from '@core/services/layout.service';
-import { StorageService } from '@core/services/storage.service';
+import { LayoutService } from '@core/services/ui/layout.service';
+import { StorageService } from '@core/services/system/storage.service';
 import { CameraPlugin } from '@core/plugins/camera-plugin';
 import { LocationPlugin } from '@core/plugins/location-plugin';
 import { MapPlugin } from '@core/plugins/maps-plugin';
-import { ConfettiService } from '@core/services/confetti.service';
-import { AuthService } from '@core/services/auth.service';
+import { ConfettiService } from '@core/services/ui/confetti.service';
+import { AuthService } from '@core/services/auth/auth.service';
 import { PermissionModalComponent } from 'src/app/shared/components/permission-modal/permission-modal.component';
+import { GpsPermissionCardComponent } from 'src/app/shared/components/gps-permission-card/gps-permission-card.component';
 
 @Component({
   selector: 'app-add-edit-player',
@@ -53,7 +54,8 @@ import { PermissionModalComponent } from 'src/app/shared/components/permission-m
     IonItem, IonLabel, IonInput, IonSelect, IonSelectOption, IonButton, IonIcon,
     IonCard, IonCardContent, IonCardHeader, IonAvatar, IonSpinner,
     IonSegment, IonSegmentButton, IonSearchbar, IonCheckbox,
-    IonList, IonBadge, IonImg, IonTextarea, IonModal
+    IonList, IonBadge, IonImg, IonTextarea, IonModal,
+    GpsPermissionCardComponent
   ]
 })
 export class AddEditPlayerPage implements OnInit, OnDestroy {
@@ -261,11 +263,12 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   // Mapa y Ubicación
   public hasLocation = false;
   public isCapturingLocation = false;
+  public isCheckingGeo = true;
 
   // Gestión Multimedia Avanzada
   public imageTypes = [
     { key: 'image_url', label: 'Foto Principal', icon: 'person-outline', helper: 'Imagen principal para el avatar y listas.' },
-    { key: 'cutout', label: 'Foto Secundaria', icon: 'cut-outline', helper: 'Foto sin fondo para el efecto de volteo.' },
+    { key: 'cutout', label: 'Foto Secundaria', icon: 'sparkles-outline', helper: 'Foto sin fondo para el efecto de volteo.' },
     { key: 'banner', label: 'Banner', icon: 'image-outline', helper: 'Fondo decorativo para las estadísticas.' }
   ];
 
@@ -318,12 +321,13 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       closeCircle, globeOutline, logoInstagram, logoFacebook, logoTwitter,
       documentTextOutline, navigateOutline, navigateCircleOutline, earthOutline,
       shirtOutline, calendarOutline, resizeOutline, flagOutline, informationCircleOutline,
-      alertCircleOutline, linkOutline,
+      alertCircleOutline, linkOutline, sparklesOutline,
       'lock-closed-outline': lockClosedOutline,
       'location-outline': locationOutline,
       'person-outline': personOutline,
       'image-outline': imageOutline,
       'cut-outline': cutOutline,
+      'sparkles-outline': sparklesOutline,
       'close-circle-outline': closeCircleOutline,
       person, 'information-circle': informationCircle,
       cutOutline, cubeOutline, appsOutline
@@ -370,26 +374,24 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     // Inicializar previsualizaciones si ya hay datos
     this.syncPreviews();
 
-    // Si ya tenemos permisos, capturamos ubicación automáticamente
+    // Si ya tenemos permisos, capturamos ubicación automáticamente. Si no, abrimos el onboarding explicativo.
     Promise.all([
       this.checkGeoPermission(),
       this.checkCameraPermission()
     ]).then(() => {
-      // Mostrar el modal de permisos si faltan
-      this.checkPermissionsOnboarding();
-
-      if (this.hasGeoPermission && !this.isEditMode) {
-        console.log('[GPS] Permiso detectado, capturando ubicación silenciosamente...');
-        this.captureLocation(true); // Modo silencioso al cargar
+      if (this.hasGeoPermission) {
+        if (!this.isEditMode) {
+          console.log('[GPS] Permiso detectado, capturando ubicación automáticamente...');
+          this.captureLocation();
+        }
+      } else {
+        this.checkPermissionsOnboarding();
       }
     });
 
     this.loadLocalPlayers();
   }
 
-  /**
-   * Lógica de onboarding de permisos con recordatorio de 24h
-   */
   public async checkPermissionsOnboarding() {
     console.log('[ADD-PLAYER] Verificando onboarding de permisos...');
     const lastPrompt = localStorage.getItem('last_permission_prompt_add_player');
@@ -399,6 +401,9 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     // 1. Si ya preguntamos en las últimas 24h, respetamos al usuario y salimos
     if (lastPrompt && (now - parseInt(lastPrompt)) < oneDay) {
       console.log('[ADD-PLAYER] Cooldown de 24h activo. No se muestra el modal.');
+      if (!this.isEditMode && !this.hasLocation) {
+        this.captureLocation();
+      }
       return;
     }
 
@@ -418,6 +423,9 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       // Si AMBOS están concedidos ya, no hay nada que preguntar
       if (geoResult.state === 'granted' && cameraState === 'granted') {
         console.log('[ADD-PLAYER] Permisos ya concedidos. Saliendo...');
+        if (!this.isEditMode && !this.hasLocation) {
+          this.captureLocation();
+        }
         return;
       }
     } catch (e) {
@@ -449,13 +457,16 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         this.checkCameraPermission()
       ]);
 
-      // Si concedió GPS desde el modal y no hay ubicación previa, la capturamos
-      if (this.hasGeoPermission && !this.isEditMode && !this.hasLocation) {
-        this.captureLocation(true);
+      // Capturar la ubicación (con o sin permiso concedido, para que cargue el mapa/fallback)
+      if (!this.isEditMode && !this.hasLocation) {
+        this.captureLocation();
       }
 
     } catch (error) {
       console.error('[ADD-PLAYER] ERROR FATAL al abrir modal:', error);
+      if (!this.isEditMode && !this.hasLocation) {
+        this.captureLocation();
+      }
     }
   }
 
@@ -502,7 +513,10 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   }
 
   async checkGeoPermission() {
+    this.isCheckingGeo = true;
     this.hasGeoPermission = await this.locationPlugin.isGeolocationPermissionGranted();
+    this.isCheckingGeo = false;
+    this.cdr.detectChanges();
   }
 
   async requestGeoPermission() {
@@ -865,7 +879,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     this.isCapturingLocation = true;
 
     try {
-      const pos = await this.locationPlugin.getCurrentPosition();
+      const pos = await this.locationPlugin.getCurrentPosition({ useCache: false, enableHighAccuracy: false });
       console.log('[GPS] Ubicación capturada:', pos);
 
       if (!pos) {
@@ -886,11 +900,21 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         this.initMap();
       }, 500);
     } catch (error: any) {
+      console.warn('[GPS] Error capturando ubicación, aplicando fallback de Madrid:', error);
       this.isCapturingLocation = false;
 
-      // Si el navegador deniega la ubicación, reseteamos el estado visual
-      this.hasGeoPermission = false;
-      this.hasLocation = false;
+      // Fallback de Madrid
+      this.player.location = {
+        type: 'Point',
+        coordinates: [-3.7038, 40.4168]
+      };
+
+      this.hasLocation = true;
+      this.cdr.detectChanges();
+
+      setTimeout(() => {
+        this.initMap();
+      }, 500);
     }
   }
 

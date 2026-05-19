@@ -1,7 +1,17 @@
-/* 
-   SISTEMA DE ESPACIADO DINÁMICO
-   Basado en los tokens de variables.scss
-*/
+/* ==========================================================================
+   📏 SISTEMA DE ESPACIADO DINÁMICO (SPACING.SCSS)
+   Basado en los tokens (T-Shirt sizes) de variables.scss
+   ========================================================================== 
+   
+   ÍNDICE DE CONTENIDOS:
+   1. Clases de Padding Global (.p-*)
+   2. Clases de Padding Individual (Top, Bottom, Left, Right)
+   3. Clases de Padding por Eje (.px-*, .py-*)
+   4. Clases de Margin Global (.m-*)
+   5. Clases de Margin Individual (Top, Bottom, Left, Right)
+   6. Clases de Margin por Eje (.mx-*, .my-*)
+   7. Modificadores Responsive para Móviles (*-sm)
+   ========================================================================== */
 
 /* --- PADDING (TODOS LOS LADOS) --- */
 .p-0 {
@@ -315,10 +325,12 @@
 }
 
 /* --- MARGIN EJES (X e Y) --- */
-.mx-auto {
-   margin-left: auto !important;
-   margin-right: auto !important;
-}
+.mt-auto { margin-top: auto !important; }
+.mb-auto { margin-bottom: auto !important; }
+.ml-auto { margin-left: auto !important; }
+.mr-auto { margin-right: auto !important; }
+.mx-auto { margin-left: auto !important; margin-right: auto !important; }
+.my-auto { margin-top: auto !important; margin-bottom: auto !important; }
 
 .mx-0 {
    margin-left: 0 !important;
@@ -509,3 +521,13 @@
       padding-bottom: var(--space-base) !important;
    }
 }
+
+/* --- GAPS --- */
+.gap-0 { gap: 0; }
+.gap-xxs { gap: var(--space-xxs); }
+.gap-xs { gap: var(--space-xs); }
+.gap-s { gap: var(--space-s); }
+.gap-base { gap: var(--space-base); }
+.gap-m { gap: var(--space-m); }
+.gap-l { gap: var(--space-l); }
+.gap-xl { gap: var(--space-xl); }

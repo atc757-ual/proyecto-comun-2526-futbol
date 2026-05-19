@@ -29,7 +29,7 @@
                   <!-- VERSIÓN DESKTOP: CARDS -->
                   <ng-container *ngFor="let player of pagedPlayers(); let last = last">
                     <ion-card class="player-premium-card hide-on-phone animate-fade-in pointer"
-                      [class.is-mine]="isMine(player)" [routerLink]="['/player-detail', player._id]">
+                      [class.is-mine]="isMine(player)" [routerLink]="['/player-detail', player._id]" [queryParams]="{ from: 'universe' }">
                       <div class="card-image-container">
                         <img [src]="player.image_url" (error)="handleImageError($event)" />
                         <div class="card-overlay"></div>
@@ -55,7 +55,7 @@
                       <ion-card-content class="ps">
                         <div class="player-main-info">
                           <h2 class="f-bold text-neutral-9 fs-16 mb-xs text-ellipsis">{{ player.name }}</h2>
-                          <div class="d-flex fl-align-center gap-xs mb-s">
+                          <div class="d-flex ai-center gap-xs mb-s">
                             <span class="f-semibold text-neutral-7 fs-12 uppercase letter-spacing-1">{{
                               player.nationality }}</span>
                           </div>
@@ -70,7 +70,7 @@
                     <!-- VERSIÓN MÓVIL -->
                     <ion-item class="player-mobile-item hide-on-desktop animate-fade-in"
                       [class.is-mine]="isMine(player)" lines="none" [button]="true" [detail]="false"
-                      [routerLink]="['/player-detail', player._id]">
+                      [routerLink]="['/player-detail', player._id]" [queryParams]="{ from: 'universe' }">
                       <ion-thumbnail slot="start" class="mobile-thumb">
                         <img [src]="player.image_url" (error)="handleImageError($event)" />
                         <div class="mobile-pos-badge">{{ player.position || 'N/A' }}</div>
@@ -80,7 +80,7 @@
                         <div class="mobile-main-row">
                           <div class="mobile-text-info">
                             <h2 class="f-semibold text-neutral-9 fs-16 m-0 text-ellipsis">{{ player.name }}</h2>
-                            <div class="d-flex fl-align-center gap-xs mt-xs">
+                            <div class="d-flex ai-center gap-xs mt-xs">
                               <ion-icon name="shield-outline" color="primary" class="fs-12"></ion-icon>
                               <span class="fs-12 text-neutral-6 f-medium text-ellipsis">{{ player.team }}</span>
                             </div>
@@ -178,12 +178,12 @@
             Estás visualizando todos los futbolistas registrados en la plataforma.
           </p>
           <div class="stats-box border-radius-m bg-neutral-0">
-            <div class="d-flex fl-justify-between fl-align-center mb-xs">
+            <div class="d-flex jc-between ai-center mb-xs">
               <span class="text-neutral-6 fs-12 uppercase f-bold">Total Sistema</span>
               <ion-badge class="px-s py-xs" color="primary">{{ totalPlayersCount() }}</ion-badge>
             </div>
             <div class="progress-bar-small mt-s">
-              <div class="progress-fill" style="width: 100%"></div>
+              <div class="progress-fill"></div>
             </div>
           </div>
         </ion-card-content>

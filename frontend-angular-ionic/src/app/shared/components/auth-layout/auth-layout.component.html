@@ -5,7 +5,7 @@
 
       <!-- LADO IZQUIERDO: FORMULARIO -->
       <div class="auth-form-side">
-        <div class="form-wrapper" [class.is-mobile-app]="isMobileApp">
+        <div class="form-wrapper" [class.is-mobile-app]="platformService.isMobileApp">
           
           <!-- Back Link Placeholder (Mantiene la altura fija haya o no botón) -->
           <div class="back-btn-placeholder">
@@ -15,7 +15,7 @@
           </div>
 
           <!-- Logo superior (Margen fijo para que no salte) -->
-          <div class="mt-s t-center mb-m">
+          <div class="mt-s text-center mb-m">
             <div class="logo-circle mx-auto">
               <ion-icon name="football-outline" class="text-primary fs-56"></ion-icon>
             </div>
@@ -23,7 +23,7 @@
           </div>
 
           <!-- Cabecera de texto dinámica -->
-          <div class="t-left mb-m">
+          <div class="text-left mb-m">
             <h2 class="f-bold text-neutral-9 fs-22">{{ layoutService.authTitle() }}</h2>
             <span class="f-medium text-neutral-7 fs-16">{{ layoutService.authSubtitle() }}</span>
           </div>
@@ -33,8 +33,8 @@
             <router-outlet></router-outlet>
           </div>
 
-          <!-- 📱 FOOTER NATIVO APP (MÍNIMO - SOLO EN NATIVO APP) -->
-          <footer class="auth-global-footer hide-on-desktop" *ngIf="isMobileApp">
+          <!-- ðŸ“± FOOTER NATIVO APP (MÍNIMO - SOLO EN NATIVO APP) -->
+          <footer class="auth-global-footer hide-on-desktop" *ngIf="platformService.isMobileApp">
             <div class="d-flex jc-between ai-center px-s">
               <span class="text-neutral-7 fs-13">© 2026 Fútbol Club. By Alex Taquila.</span>
               <div class="d-flex gap-s">
@@ -63,8 +63,8 @@
 
     </div>
 
-    <!-- 💻 FOOTER WEB UNIFICADO (GRIS - NO FIJO - DESPLAZABLE AL FINAL) -->
-    <footer class="main-footer-gray" *ngIf="!isMobileApp">
+    <!-- ðŸ’» FOOTER WEB UNIFICADO (GRIS - NO FIJO - DESPLAZABLE AL FINAL) -->
+    <footer class="main-footer-gray" *ngIf="!platformService.isMobileApp">
       <div class="footer">
         <div class="footer-slim-content">
           <div class="footer-left">

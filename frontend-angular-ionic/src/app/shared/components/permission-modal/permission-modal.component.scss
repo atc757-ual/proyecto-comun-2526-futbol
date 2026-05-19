@@ -1,7 +1,7 @@
 :host {
   display: block;
-  background: #ffffff;
-  border-radius: 20px;
+  background: var(--color-white);
+  border-radius: var(--border-radius-large);
   overflow: hidden;
 }
 
@@ -9,7 +9,7 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  background: #ffffff;
+  background: var(--color-white);
   position: relative;
   z-index: 10;
   overflow-y: auto;
@@ -65,14 +65,14 @@
       background: var(--color-info);
 
       ion-icon {
-        color: #ffffff;
+        color: var(--color-white);
       }
     }
 
     ion-icon {
       display: block;
       font-size: 28px;
-      color: #ffffff; // Blanco para que resalte sobre el fondo azul
+      color: var(--color-white); // Blanco para que resalte sobre el fondo azul
     }
   }
 }
@@ -248,11 +248,11 @@
 }
 
 // Animación de entrada
-.animate-fade-in {
-  animation: fadeIn 0.4s ease-out;
+.animate-modal-slide-in {
+  animation: modalSlideIn 0.4s ease-out;
 }
 
-@keyframes fadeIn {
+@keyframes modalSlideIn {
   from {
     opacity: 0;
     transform: translateY(20px);

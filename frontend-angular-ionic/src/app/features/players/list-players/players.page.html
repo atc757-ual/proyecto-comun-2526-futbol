@@ -23,8 +23,8 @@
             </div>
 
             <div *ngIf="!isLoading()">
-              <ion-label class="pb-base text-neutral-9 f-semibold">Mis jugadores</ion-label>
               <div *ngIf="pagedPlayers().length > 0">
+                <ion-label class="pb-base text-neutral-9 f-semibold">Mi plantilla</ion-label>
                 <div class="players-grid">
 
                   <!-- VERSIÓN DESKTOP: CARDS -->
@@ -50,7 +50,7 @@
                       <ion-card-content class="ps">
                         <div class="player-main-info">
                           <h2 class="f-bold text-neutral-9 fs-16 mb-xs text-ellipsis">{{ player.name }}</h2>
-                          <div class="d-flex fl-align-center gap-xs mb-s">
+                          <div class="d-flex ai-center gap-xs mb-s">
                             <!-- PAÍS EN GRIS NEUTRAL-7 -->
                             <span class="f-semibold text-neutral-7 fs-12 uppercase letter-spacing-1">{{
                               player.nationality }}</span>
@@ -72,16 +72,16 @@
                       </ion-thumbnail>
 
                       <ion-label class="mobile-label">
-                        <div class="d-flex fl-align-center gap-xs">
+                        <div class="d-flex ai-center gap-xs">
                           <h2 class="f-semibold text-neutral-9 fs-14 m-0 text-ellipsis">{{ player.name }}</h2>
                           <span class="text-neutral-3">|</span>
-                          <div class="d-flex fl-align-center gap-xs">
+                          <div class="d-flex ai-center gap-xs">
                             <ion-icon name="shield-outline" color="primary" class="fs-12"></ion-icon>
                             <span class="fs-12 text-neutral-7 f-medium">{{ player.team }}</span>
                           </div>
                         </div>
 
-                        <div class="d-flex fl-align-center gap-s">
+                        <div class="d-flex ai-center gap-s">
                           <span class="fs-12 text-neutral-7 f">{{ player.nationality }}</span>
                           <div class="mobile-item-actions ml-auto" (click)="$event.stopPropagation()">
                             <ion-button fill="clear" [routerLink]="['/player-edit', player._id]" class="edit-btn">

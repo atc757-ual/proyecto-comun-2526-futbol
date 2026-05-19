@@ -1,7 +1,14 @@
 /* ==========================================================================
-   LAYOUT & GRID SYSTEM
+   📐 SISTEMA DE LAYOUT Y GRID (LAYOUT.SCSS)
+   ========================================================================== 
+   
+   ÍNDICE DE CONTENIDOS:
+   1. Contenedor Principal (.container)
+   2. Fila / Wrapper de Columnas (.row)
+   3. Grid Dinámico de 12 Columnas Desktop (.col-1 a .col-12)
+   4. Grid Dinámico de 12 Columnas Móvil (.col-sm-1 a .col-sm-12)
+   5. Clases de Ocultación Responsiva (.hide-on-*)
    ========================================================================== */
-
 /* Contenedor Principal */
 .container {
   padding-left: var(--container-padding-mobile);
@@ -50,14 +57,14 @@
 @media (max-width: 767px) {
   @for $i from 1 through 12 {
     .col-sm-#{$i} {
-      width: calc((100% * #{$i} / 12) - (16px * (1 - #{$i} / 12)));
+      width: calc((100% * #{$i} / 12) - (var(--space-base) * (1 - #{$i} / 12)));
     }
   }
 }
 
-/* --- RESPONSIVE --- */
-.hide-on-desktop {
-  @media (min-width: 768px) {
+/* --- 5. CLASES DE OCULTACIÓN RESPONSIVA --- */
+@media (min-width: 768px) {
+  .hide-on-desktop {
     display: none !important;
   }
 }

@@ -1,23 +1,21 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NavigationEnd, Router, RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import {
-  IonIcon, AlertController, ActionSheetController, ModalController,
+  IonIcon, ActionSheetController, ModalController,
   IonMenu, IonContent, IonMenuToggle, IonButton, IonItem, IonLabel,
   IonBackButton, IonBreadcrumbs, IonBreadcrumb, IonFooter, IonTabBar,
-  IonTabButton, MenuController
+  IonTabButton, MenuController, NavController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
-  homeOutline, peopleOutline, cartOutline, newspaperOutline, menuOutline, football,
+  homeOutline, newspaperOutline, menuOutline, football,
   personOutline, logOutOutline, sparklesOutline, footballOutline, logoLinkedin, personCircleOutline,
-  logoGithub, closeOutline, arrowBack, chevronBack, chevronForwardOutline, shieldCheckmarkOutline,
-  trophyOutline, searchOutline
+  logoGithub, closeOutline, arrowBack, chevronBack, chevronForwardOutline, searchOutline
 } from 'ionicons/icons';
-import { filter } from 'rxjs/operators';
-import { AuthService } from 'src/app/core/services/auth.service';
-import { PlatformService } from 'src/app/core/services/platform.service';
-import { LayoutService } from 'src/app/core/services/layout.service';
+import { AuthService } from 'src/app/core/services/auth/auth.service';
+import { PlatformService } from 'src/app/core/services/system/platform.service';
+import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 
 @Component({
@@ -33,34 +31,27 @@ import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component'
     IonBreadcrumb, IonFooter, IonTabBar, IonTabButton
   ]
 })
-export class MainLayoutComponent implements OnInit, OnDestroy {
+export class MainLayoutComponent implements OnDestroy {
   private router = inject(Router);
   public authService = inject(AuthService);
   public platformService = inject(PlatformService);
   public layoutService = inject(LayoutService);
   private menuCtrl = inject(MenuController);
+  private navCtrl = inject(NavController);
 
   public appPages = [
-    { title: 'Inicio', url: '/home', icon: 'home-outline', adminOnly: false, masterOnly: false },
-    { title: 'Mis jugadores', url: '/players', icon: 'football-outline', adminOnly: false, masterOnly: false },
-    { title: 'Football AI', url: '/ai-team', icon: 'sparkles-outline', adminOnly: false, masterOnly: false },
-    { title: 'Búsqueda', url: '/busqueda', icon: 'search-outline', adminOnly: false, masterOnly: false },
-    { title: 'Noticias', url: '/news', icon: 'newspaper-outline', adminOnly: false, masterOnly: false }
+    { title: 'Inicio', url: '/home', icon: 'home-outline' },
+    { title: 'Mi plantilla', url: '/players', icon: 'football-outline' },
+    { title: 'Fútbol AI', url: '/ai-team', icon: 'sparkles-outline' },
+    { title: 'Búsqueda', url: '/busqueda', icon: 'search-outline' },
+    { title: 'Noticias', url: '/news', icon: 'newspaper-outline' }
   ];
 
   constructor() {
     addIcons({
-      homeOutline, peopleOutline, cartOutline, newspaperOutline, menuOutline, footballOutline, personCircleOutline,
+      homeOutline, newspaperOutline, menuOutline, footballOutline, personCircleOutline,
       personOutline, logOutOutline, sparklesOutline, logoLinkedin, logoGithub, closeOutline, arrowBack,
-      chevronBack, chevronForwardOutline, shieldCheckmarkOutline, football, trophyOutline, searchOutline
-    });
-  }
-
-  ngOnInit() {
-    // Escuchamos cambios de ruta solo para resetear o manejar estados globales si fuera necesario
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe(() => {
+      chevronBack, chevronForwardOutline, football, searchOutline
     });
   }
 
@@ -109,8 +100,15 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
 
 
   private actionSheetCtrl = inject(ActionSheetController);
-  private alertCtrl = inject(AlertController);
   private modalCtrl = inject(ModalController);
+
+  onBreadcrumbClick(event: Event, item: any) {
+    if (item.url === '/login' || (item.url === '/home' && !this.authService.currentUser())) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.navCtrl.navigateRoot('/login', { animated: true, animationDirection: 'back' });
+    }
+  }
 
   async logout() {
     if (this.platformService.isDesktop) {
@@ -131,7 +129,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
 
       const { data } = await modal.onWillDismiss();
       if (data === true) {
-        this.authService.logout().then(() => this.router.navigate(['/login']));
+        this.authService.logout().then(() => this.navCtrl.navigateRoot('/login'));
       }
     } else {
       // ACTION SHEET ERGONÓMICO PARA MÓVIL
@@ -142,14 +140,13 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
         cssClass: 'custom-logout-action-sheet',
         buttons: [
           {
-            text: 'Cerrar Sesión',
+            text: 'Sí, cerrar sesión',
             role: 'destructive',
-            icon: 'log-out-outline',
             handler: () => {
-              this.authService.logout().then(() => this.router.navigate(['/login']));
+              this.authService.logout().then(() => this.navCtrl.navigateRoot('/login'));
             }
           },
-          { text: 'Cancelar', icon: 'close-outline', role: 'cancel' }
+          { text: 'No, cancelar', role: 'cancel' }
         ]
       });
 

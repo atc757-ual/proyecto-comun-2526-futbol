@@ -3,7 +3,7 @@
   <div class="premium-scouting-banner mb-base is-global">
     <div class="banner-content">
       <!-- BADGE Y TÍTULO EN LA MISMA FILA -->
-      <div class="d-flex fl-align-center gap-base">
+      <div class="d-flex ai-center gap-base">
         <div class="banner-badge global">
           <ion-icon name="globe-outline"></ion-icon>
           <span>GLOBAL</span>
@@ -24,7 +24,7 @@
 
       <!-- BANNER DE DASHBOARD (NUEVO) -->
       <div class="dashboard-hero-banner mb-base animate-fade-in" *ngIf="player.images?.banner">
-        <img [src]="player.images?.banner" alt="Banner Dashboard">
+        <img [src]="getSafeImageUrl(player.images?.banner)" alt="Banner Dashboard">
         <div class="banner-overlay"></div>
         <div class="banner-content">
         </div>
@@ -78,14 +78,14 @@
         </div>
       </div>
       <!-- Dots del Swiper de Stats -->
-      <div class="stat-dots-container d-flex fl-justify-center gap-xs mt-s mb-base">
+      <div class="stat-dots-container d-flex jc-center gap-xs mt-s mb-base">
         <div class="stat-dot" *ngFor="let i of [0, 1, 2]" [class.active]="currentStatPage === i"></div>
       </div>
 
       <!-- BIOGRAFÍA -->
       <ion-card class="player-card mb-base">
         <ion-card-content class="p-base">
-          <div class="d-flex fl-align-center mb-base">
+          <div class="d-flex ai-center mb-base">
             <span class="fs-16 f-bold text-neutral-8 pr-s ls-1">Biografía</span>
           </div>
           <div class="bio-wrapper" [class.expanded]="isSummaryExpanded">
@@ -122,13 +122,13 @@
 
               <div class="compact-comment-form animate-fade-in">
                 <!-- CABECERA: RATING + TAG -->
-                <div class="d-flex fl-align-center mb-base">
+                <div class="d-flex ai-center mb-base">
                   <span class="f-medium fs-12 text-neutral-8 pr-s">Rating:</span>
                   <div class="rating-stars-input">
                     <ion-icon *ngFor="let i of [1,2,3,4,5]" [name]="i <= newRating ? 'star' : 'star-outline'"
                       [class.active]="i <= newRating" (click)="setRating(i)"></ion-icon>
                   </div>
-                  <div class="verified-geo-badge m-0 ml-auto d-flex fl-align-center gap-xs" *ngIf="hasGeoPermission()">
+                  <div class="verified-geo-badge m-0 ml-auto d-flex ai-center gap-xs" *ngIf="hasGeoPermission()">
                     <span>Ubicación verificada</span>
                     <ion-icon name="checkmark-circle" class="text-success"></ion-icon>
                   </div>
@@ -154,7 +154,7 @@
                 </div>
 
                 <!-- ACCIÓN: BOTÓN Y FIRMA -->
-                <div class="d-flex fl-align-center fl-justify-between gap-s">
+                <div class="d-flex ai-center jc-between gap-s">
                   <ion-button
                     [disabled]="!newComment.trim() || !anonymousName.trim() || !hasGeoPermission() || isSubmittingComment || newRating === 0"
                     (click)="submitComment()" mode="ios" shape="round" class="futbol-btn-primary f-bold flex-grow-1 m-0"
@@ -196,10 +196,10 @@
                 </div>
               </div>
             </div>
-            <div class="separatos my-s"></div>
+            <div class="separator my-s"></div>
             <!-- FEED DE COMENTARIOS (ANCHO COMPLETO) -->
             <div class="community-feed-full">
-              <div *ngIf="player.comments && player.comments.length > 0" class="d-flex fl-align-center mb-base">
+              <div *ngIf="player.comments && player.comments.length > 0" class="d-flex ai-center mb-base">
                 <span class="fs-16 f-bold text-neutral-8 pr-s ls-1">Comentario ({{ player.comments.length }})</span>
               </div>
 
@@ -213,7 +213,7 @@
                 [class.rating-positive]="comment.rating >= 4" [class.rating-neutral]="comment.rating === 3"
                 [class.rating-negative]="comment.rating > 0 && comment.rating <= 2">
                 <div class="bubble-head">
-                  <div class="d-flex fl-align-center gap-s">
+                  <div class="d-flex ai-center gap-s">
                     <ion-avatar class="mini-avatar shadow-sm">
                       <img [src]="'https://ui-avatars.com/api/?name=' + (comment.user_name || comment.autor_name || comment.author_name || 'Invitado') + '&background=random'" />
                     </ion-avatar>
@@ -266,13 +266,13 @@
 
           <!-- IMAGEN PRINCIPAL (CLUB - TEAM 1) -->
           <div class="hero-image-wrapper" [class.is-hidden]="showCutout">
-            <div class="hero-bg" [style.background-image]="'url(' + (player.images?.cutout || player.image_url) + ')'">
+            <div class="hero-bg" [style.background-image]="'url(' + getSafeImageUrl(player.images?.cutout || player.image_url) + ')'">
             </div>
           </div>
 
           <!-- IMAGEN DE ACCIÓN (PAÍS - TEAM 2) -->
           <div class="hero-image-wrapper cutout-wrapper" [class.is-visible]="showCutout">
-            <div class="hero-bg action-bg" [style.background-image]="'url(' + player.image_url + ')'"></div>
+            <div class="hero-bg action-bg" [style.background-image]="'url(' + getSafeImageUrl(player.image_url) + ')'"></div>
           </div>
 
           <div class="hero-overlay"></div>
@@ -292,21 +292,21 @@
 
         <ion-card-content>
           <div class="detail-row">
-            <div class="d-flex fl-align-center gap-s">
+            <div class="d-flex ai-center gap-s">
               <ion-icon class="fs-16" name="flag-outline" color="primary"></ion-icon>
               <span class="label">Nacionalidad</span>
             </div>
             <span class="value">{{ player.nationality }}</span>
           </div>
           <div class="detail-row" *ngIf="player.birth_place">
-            <div class="d-flex fl-align-center gap-s">
+            <div class="d-flex ai-center gap-s">
               <ion-icon class="fs-16" name="location-outline" color="primary"></ion-icon>
               <span class="label">Origen</span>
             </div>
             <span class="value">{{ player.birth_place }}</span>
           </div>
           <div class="detail-row">
-            <div class="d-flex fl-align-center gap-s">
+            <div class="d-flex ai-center gap-s">
               <ion-icon class="fs-16" name="calendar-outline" color="primary"></ion-icon>
               <span class="label">Edad Actual</span>
             </div>

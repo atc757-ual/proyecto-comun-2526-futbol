@@ -1,5 +1,17 @@
-/* --- UTILIDADES DE DISEÑO Y ESTRUCTURA --- */
-
+/* ==========================================================================
+   🛠️ UTILIDADES DE DISEÑO Y ESTRUCTURA (UTILITIES.SCSS)
+   ========================================================================== 
+   
+   ÍNDICE DE CONTENIDOS:
+   1. Utilidades de Border Radius (.br-*)
+   2. Utilidades de Flexbox Display (.d-flex, .d-none)
+   3. Utilidades de Flexbox Layout (.fl-row, .jc-center, .ai-start)
+   4. Utilidades de Gaps (.gap-*)
+   5. Sombras y Elevaciones (.shadow-*)
+   6. Alineación de Texto (.text-center)
+   7. Dimensiones y Tamaños (.w-full, .h-screen)
+   8. Utilidades Especiales (Bordes, Overflow, Punteros)
+   ========================================================================== */
 
 /* Border Radius */
 .br-none {
@@ -51,30 +63,7 @@
     display: none !important;
 }
 
-.fl-justify-end {
-    justify-content: flex-end !important;
-}
 
-/* Alias de compatibilidad */
-.display-flex {
-    display: flex !important;
-}
-
-.fl-align-center {
-    align-items: center !important;
-}
-
-.fl-justify-center {
-    justify-content: center !important;
-}
-
-.fl-justify-between {
-    justify-content: space-between !important;
-}
-
-.fl-align-end {
-    align-items: flex-end !important;
-}
 
 /* Flexbox (Direction) */
 .fl-row {
@@ -158,38 +147,7 @@
     align-items: stretch !important;
 }
 
-/* Gaps */
-.gap-0 {
-    gap: 0;
-}
 
-.gap-xxs {
-    gap: var(--space-xxs);
-}
-
-.gap-xs {
-    gap: var(--space-xs);
-}
-
-.gap-s {
-    gap: var(--space-s);
-}
-
-.gap-base {
-    gap: var(--space-base);
-}
-
-.gap-m {
-    gap: var(--space-m);
-}
-
-.gap-l {
-    gap: var(--space-l);
-}
-
-.gap-xl {
-    gap: var(--space-xl);
-}
 
 /* Sombras (Box Shadows) */
 .shadow-none {
@@ -208,21 +166,7 @@
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
 }
 
-/* Alineación de Texto */
-.t-left,
-.text-left {
-    text-align: left !important;
-}
 
-.t-center,
-.text-center {
-    text-align: center !important;
-}
-
-.t-right,
-.text-right {
-    text-align: right !important;
-}
 
 /* Dimensiones (Width & Height) */
 @for $i from 1 through 24 {
@@ -280,62 +224,102 @@
     cursor: pointer !important;
 }
 
+.no-pointer {
+    cursor: none !important;
+}
+
 .no-underline {
     text-decoration: none !important;
 }
 
-.full-width {
-    width: 100% !important;
+.nowrap {
+    white-space: nowrap;
 }
 
-.full-height {
-    height: 100% !important;
+/* --- Bordes Especiales --- */
+.border-left-primary {
+    border-left: 2px solid var(--color-primary) !important;
 }
 
-/* Margins Auto */
-.ml-auto {
-    margin-left: auto !important;
+/* --- Transiciones Interactivas --- */
+.rec-item {
+    transition: transform 0.2s ease;
+
+    &:hover {
+        transform: translateX(5px);
+    }
 }
 
-.mr-auto {
-    margin-right: auto !important;
+/* --- Animaciones de Pulso Globales --- */
+.animate-pulse-slow {
+    animation: pulseSlow 4s ease-in-out infinite;
 }
 
-.mt-auto {
-    margin-top: auto !important;
+@keyframes pulseSlow {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.02);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
-.mb-auto {
-    margin-bottom: auto !important;
-}
-
-.mx-auto {
-    margin-left: auto !important;
-    margin-right: auto !important;
-}
-
-.my-auto {
-    margin-top: auto !important;
-    margin-bottom: auto !important;
-}
-
-.border-primary-010 {
-    border: 2px solid var(--blue-primary-010);
-    border-radius: var(--border-radius-soft);
-}
-
-.border-color-neutral-2 {
-    border: 2px solid var(--color-neutral-2);
-}
-
-// Círculo pequeño para el selector de backend
-.icon-circle-s {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
+/* --- Efectos de Pulso (Anillos) --- */
+.pulse-wrapper {
+    position: relative;
+    width: 64px;
+    height: 64px;
     display: flex;
-    align-items: center;
     justify-content: center;
-    flex-shrink: 0;
-    transition: background-color var(--transition-smooth);
+    align-items: center;
+}
+
+.pulse-main-btn {
+    width: 64px;
+    height: 64px;
+    background-color: var(--color-white);
+    border-radius: 50%;
+    z-index: 2;
+    box-shadow: 0 4px 15px rgba(0, 46, 255, 0.15);
+}
+
+.pulse-ring {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: var(--color-primary);
+    border-radius: 50%;
+    opacity: 0;
+    z-index: 1;
+    animation: pulseAnimation 3s ease-out infinite;
+
+    &.delay-1 {
+        animation-delay: 1s;
+    }
+
+    &.delay-2 {
+        animation-delay: 2s;
+    }
+}
+
+@keyframes pulseAnimation {
+    0% {
+        transform: scale(0.95);
+        opacity: 0.5;
+    }
+
+    70% {
+        transform: scale(2.2);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(2.2);
+        opacity: 0;
+    }
 }

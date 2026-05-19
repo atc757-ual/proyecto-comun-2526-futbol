@@ -1,4 +1,4 @@
-<form (ngSubmit)="onPublish()" #newsForm="ngForm">
+﻿<form (ngSubmit)="onPublish()" #newsForm="ngForm">
   <div class="row">
     <div class="col-8 col-sm-12 pr-base px-0-sm mb-base">
       <ion-card>
@@ -135,9 +135,9 @@
 
 
           <!-- Active Status Toggle -->
-          <div class="status-container mb-base display-flex fl-align-center fl-justify-between"
+          <div class="status-container mb-base d-flex ai-center jc-between"
             style="padding: 4px 8px;">
-            <div class="display-flex fl-align-center">
+            <div class="d-flex ai-center">
               <ion-icon name="eye-outline" [color]="newsData.isActive ? 'primary' : 'medium'"
                 class="fs-24 mr-s"></ion-icon>
               <div>
@@ -151,8 +151,8 @@
           </div>
 
           <!-- Featured Status Toggle -->
-          <div class="status-container mb-base display-flex fl-align-center fl-justify-between">
-            <div class="display-flex fl-align-center">
+          <div class="status-container mb-base d-flex ai-center jc-between">
+            <div class="d-flex ai-center">
               <ion-icon name="star-outline" [color]="newsData.isFeatured ? 'primary' : 'medium'"
                 class="fs-24 mr-s"></ion-icon>
               <div>

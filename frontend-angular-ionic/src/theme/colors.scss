@@ -1,6 +1,15 @@
-/* --- UTILIDADES DE COLOR (TEXTO Y FONDO) --- */
-
-/* Colores de Texto */
+/* ==========================================================================
+   🎨 SISTEMA DE COLORES Y FONDOS (COLORS.SCSS)
+   ========================================================================== 
+   
+   ÍNDICE DE CONTENIDOS:
+   1. Colores de Texto Semánticos (.text-primary, .text-error)
+   2. Colores de Texto Neutrales / Grises (.text-neutral-*)
+   3. Colores de Fondo Semánticos (.bg-primary, .bg-success)
+   4. Colores de Fondo Neutrales / Grises (.bg-neutral-*)
+   5. Fondos Suaves y Hover (.bg-primary-light)
+   ========================================================================== */
+/* --- 1. Colores de Texto Semánticos --- */
 .text-primary {
     color: var(--color-primary) !important;
 }
@@ -41,7 +50,7 @@
     color: var(--color-success) !important;
 }
 
-/* Paleta Neutral (Texto) */
+/* --- 2. Colores de Texto Neutrales / Grises --- */
 .text-neutral-0 {
     color: var(--color-neutral-0) !important;
 }
@@ -86,7 +95,7 @@
     color: var(--color-neutral-10) !important;
 }
 
-/* Colores de Fondo */
+/* --- 3. Colores de Fondo Semánticos --- */
 .bg-primary {
     background-color: var(--color-primary) !important;
 }
@@ -127,7 +136,7 @@
     background-color: var(--color-success) !important;
 }
 
-/* Paleta Neutral (Fondo) */
+/* --- 4. Colores de Fondo Neutrales / Grises --- */
 .bg-neutral-0 {
     background-color: var(--color-neutral-0) !important;
 }
@@ -172,6 +181,7 @@
     background-color: var(--color-neutral-10) !important;
 }
 
+/* --- 5. Fondos Suaves y Hover --- */
 .bg-primary-light {
     background: var(--blue-primary-010);
 }

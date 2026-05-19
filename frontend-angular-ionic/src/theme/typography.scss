@@ -1,5 +1,14 @@
-/* --- UTILIDADES DE TIPOGRAFÍA RESPONSIVA --- */
-
+/* ==========================================================================
+   🖋️ SISTEMA DE TIPOGRAFÍA RESPONSIVA (TYPOGRAPHY.SCSS)
+   ========================================================================== 
+   
+   ÍNDICE DE CONTENIDOS:
+   1. Clases de Tamaño General Desktop (.fs-*)
+   2. Modificadores de Tamaño para Móviles (.fs-sm-*)
+   3. Pesos de Fuente Genéricos (.f-bold, .f-light)
+   4. Utilidades Específicas: Fuente Principal (Barlow)
+   5. Utilidades Específicas: Fuente Secundaria (Inter)
+   ========================================================================== */
 /* Tamaños Generales (Desktop por defecto o base) */
 .fs-8 {
     font-size: var(--fs-8) !important;
@@ -248,3 +257,8 @@
     font-family: var(--font-secondary) !important;
     font-weight: var(--fw-bold) !important;
 }
+
+/* --- ALINEACIÓN DE TEXTO --- */
+.text-left { text-align: left !important; }
+.text-center { text-align: center !important; }
+.text-right { text-align: right !important; }

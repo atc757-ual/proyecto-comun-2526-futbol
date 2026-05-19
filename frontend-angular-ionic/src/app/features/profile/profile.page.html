@@ -1,4 +1,4 @@
-<div class="row fl-col-rev-sm">
+﻿<div class="row fl-col-rev-sm">
   <!-- COLUMNA IZQUIERDA (8): Configuración y Seguridad -->
   <div class="col-8 col-sm-12 mr-base mx-0-sm">
     <ion-card class="premium-card mb-base">
@@ -53,10 +53,10 @@
         <div class="settings-list">
           <!-- SELECCIÓN DE BACKEND -->
           <div class="backend-switcher-login mt-0">
-            <div class="d-flex fl-justify-between fl-align-center p-s br-soft border-neutral-2"
+            <div class="d-flex jc-between ai-center p-s br-soft border-neutral-2"
               [class.bg-primary-light]="platformService.getUseJavaBackend()"
               [class.bg-success-light]="!platformService.getUseJavaBackend()">
-              <div class="d-flex fl-align-center gap-s">
+              <div class="d-flex ai-center gap-s">
                 <div class="icon-circle-s" [class.bg-primary]="platformService.getUseJavaBackend()"
                   [class.bg-success]="!platformService.getUseJavaBackend()">
                   <ion-icon *ngIf="platformService.getUseJavaBackend()" name="cafe-outline" class="text-white fs-24"></ion-icon>

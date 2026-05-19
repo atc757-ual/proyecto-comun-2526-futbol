@@ -134,12 +134,12 @@
   }
 
   50% {
-    transform: translateY(-10px);
+    transform: translateY(-4px);
   }
 }
 
 .animate-bounce {
-  animation: bounce 2s infinite ease-in-out;
+  animation: bounce 2.5s infinite ease-in-out;
 }
 
 // RESPONSIVE PARA DESKTOP

@@ -14,7 +14,7 @@
   mode="ios">
   <ion-content class="ion-no-padding" scroll-y="false">
     <div class="menu-wrapper">
-      <div class="menu-header d-flex align-center justify-between px-base">
+      <div class="menu-header d-flex ai-center jc-between px-base">
 
         <div class="logo-container">
           <span class="logo-text">Fútbol Club</span>
@@ -33,14 +33,12 @@
         <!-- SECCIÓN SUPERIOR: NAVEGACIÓN -->
         <div class="menu-items-top">
           <ng-container *ngFor="let p of appPages">
-            <ion-menu-toggle auto-hide="false"
-              *ngIf="(!p.adminOnly && !p.masterOnly) || (p.adminOnly && authService.isAdmin()) || (p.masterOnly && authService.isMasterAdmin())">
+            <ion-menu-toggle auto-hide="false">
               <ion-item lines="none" class="nav-item pointer" [routerLink]="p.url"
                 [class.active-item]="isTabActive(p.url)">
                 <ion-icon slot="start" [name]="p.icon"></ion-icon>
                 <ion-label>{{ p.title }}</ion-label>
               </ion-item>
-              <div class="separator my-s bg-neutral-2"></div>
             </ion-menu-toggle>
           </ng-container>
         </div>
@@ -57,7 +55,6 @@
             <ion-label class="text-primary">Mi Perfil</ion-label>
           </ion-item>
         </ion-menu-toggle>
-        <div class="separator my-xs"></div>
         <ion-menu-toggle auto-hide="false">
           <ion-item lines="none" class="nav-item logout-item pointer" (click)="logout()">
             <ion-icon slot="start" name="log-out-outline"></ion-icon>
@@ -90,7 +87,7 @@
 
           <div *ngIf="platformService.isDesktop  || (platformService.isMobileApp && layoutService.isHome())"
             class="logo-box clickable" routerLink="/home">
-            <div class="d-flex gap-s fl-align-center">
+            <div class="d-flex gap-s ai-center">
               <span class="logo-ball-blue">
                 <ion-icon name="football"></ion-icon>
               </span>
@@ -129,8 +126,7 @@
         <ul class="nav-links-centered">
           <ng-container *ngFor="let p of appPages">
             <li
-              *ngIf="(!p.adminOnly && !p.masterOnly) || (p.adminOnly && authService.isAdmin()) || (p.masterOnly && authService.isMasterAdmin())"
-              [routerLink]="p.url" [class.active]="isTabActive(p.url)" [class.nav-item-ai]="p.title === 'Football AI'">
+              [routerLink]="p.url" [class.active]="isTabActive(p.url)" [class.nav-item-ai]="p.title === 'Fútbol AI'">
               <ion-icon *ngIf="p.icon !== 'home' && p.icon !== 'people' && p.icon !== 'cart' && p.icon !== 'newspaper'"
                 [name]="p.icon" class="nav-icon-mini"></ion-icon>
               {{ p.title }}
@@ -147,7 +143,7 @@
     <!-- SECCIÓN HERO FULL WIDTH (Dinámica con Signals) -->
     <section>
       <div>
-        <div *ngIf="layoutService.showHero()" class="layout-hero-banner animate-fade-in">
+        <div *ngIf="layoutService.showHero()" class="layout-hero-banner">
           <div class="main-content">
             <h1 class="hero-title">{{ layoutService.title() }}</h1>
             <p class="hero-subtitle" *ngIf="layoutService.subtitle()">{{ layoutService.subtitle() }}</p>
@@ -158,7 +154,10 @@
           <div class="main-content">
             <ion-breadcrumbs>
               <ion-breadcrumb *ngFor="let item of layoutService.breadcrumbs(); let last = last"
-                [routerLink]="item.url || null" [class.active-breadcrumb]="last" [class.has-url]="!!item.url">
+                [routerLink]="(item.url === '/login' || (item.url === '/home' && !authService.currentUser())) ? null : (item.url || null)" 
+                [routerDirection]="item.url === '/login' ? 'root' : 'back'" 
+                (click)="onBreadcrumbClick($event, item)"
+                [class.active-breadcrumb]="last" [class.has-url]="!!item.url">
                 <ion-icon *ngIf="item.icon" slot="start" [name]="item.icon"></ion-icon>
                 {{ item.label }}
                 <span slot="separator" class="fs-14 text-neutral-4">/</span>
@@ -201,7 +200,6 @@
 
       <ng-container *ngFor="let p of appPages; let i = index">
         <ion-tab-button
-          *ngIf="(!p.adminOnly && !p.masterOnly) || (p.adminOnly && authService.isAdmin()) || (p.masterOnly && authService.isMasterAdmin())"
           [tab]="p.title" [routerLink]="p.url" [class.tab-selected]="isTabActive(p.url)"
           [class.ai-tab-special]="i === 2">
 

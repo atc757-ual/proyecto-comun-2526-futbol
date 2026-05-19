@@ -58,42 +58,19 @@
         display: flex;
         align-items: center;
 
-
-
         ion-icon {
             font-size: 36px;
         }
     }
 }
 
-
 .animate-fade-in {
     animation: fadeIn var(--transition-fast);
 }
 
-.display-flex {
-    display: flex;
-}
-
-.fl-align-center {
-    align-items: center;
-}
-
-.fl-column {
-    flex-direction: column;
-}
-
-.gap-s {
-    gap: var(--space-s);
-}
-
-// Estilos para el Input de Nombre
+// Estilos para el Input de Nombre Completo
 .capitalize-input {
     text-transform: capitalize;
-}
-
-.pointer {
-    cursor: pointer;
 }
 
 .terms-content {
@@ -101,18 +78,22 @@
     padding: var(--space-base);
 
     p {
-        margin-bottom: 16px;
+        margin-bottom: var(--space-base);
         text-align: justify;
         color: var(--color-neutral-7);
     }
 }
 
 .terms-action-wrapper {
-    padding: var(--space-base) 0 var(--space-l);
+    padding: 0;
+    
+    @media (max-width: 767px) {
+        padding: var(--space-base) 0 var(--space-l);
+    }
     
     ion-button {
         --height: 48px;
-        font-size: 16px;
+        font-size: var(--fs-16);
         margin: 0;
     }
 }

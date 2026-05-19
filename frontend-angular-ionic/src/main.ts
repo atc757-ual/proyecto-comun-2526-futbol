@@ -1,4 +1,4 @@
-import { enableProdMode, importProvidersFrom } from '@angular/core';
+import { enableProdMode } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { RouteReuseStrategy, provideRouter, withComponentInputBinding } from '@angular/router';
 import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular/standalone';
@@ -15,19 +15,13 @@ import { provideStorage, getStorage } from '@angular/fire/storage';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { authInterceptor } from './app/core/interceptors/auth.interceptor';
 
-import { PLAYER_SERVICE_TOKEN } from './app/core/services/player.service.token';
-import { NodePlayerService } from './app/core/services/node-player.service';
-import { JavaPlayerService } from './app/core/services/java-player.service';
-import { NEWS_SERVICE_TOKEN } from './app/core/services/news.service.token';
-import { NodeNewsService } from './app/core/services/node-news.service';
-import { JavaNewsService } from './app/core/services/java-news.service';
-import { AI_SERVICE_TOKEN } from './app/core/services/ai.service.token';
-import { NodeAIService } from './app/core/services/node-ai.service';
-import { JavaAIService } from './app/core/services/java-ai.service';
+import { PLAYER_SERVICE_TOKEN } from './app/core/services/players/player.service.token';
+import { NEWS_SERVICE_TOKEN } from './app/core/services/news/news.service.token';
+import { AI_SERVICE_TOKEN } from './app/core/services/ai/ai.service.token';
 
-import { PlayerProxyService } from './app/core/services/player-proxy.service';
-import { NewsProxyService } from './app/core/services/news-proxy.service';
-import { AIProxyService } from './app/core/services/ai-proxy.service';
+import { PlayerProxyService } from './app/core/services/players/player-proxy.service';
+import { NewsProxyService } from './app/core/services/news/news-proxy.service';
+import { AIProxyService } from './app/core/services/ai/ai-proxy.service';
 
 if (environment.production) {
   enableProdMode();

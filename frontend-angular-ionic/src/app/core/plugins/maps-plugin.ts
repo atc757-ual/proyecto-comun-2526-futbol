@@ -9,9 +9,9 @@ export class MapPlugin {
 
   constructor() {
     // Configuración de iconos por defecto para Leaflet en entornos Angular/Ionic
-    const iconRetinaUrl = 'assets/img/leaflet/marker-icon-2x.png';
-    const iconUrl = 'assets/img/leaflet/marker-icon.png';
-    const shadowUrl = 'assets/img/leaflet/marker-shadow.png';
+    const iconRetinaUrl = 'assets/img/marker-icon-2x.png';
+    const iconUrl = 'assets/img/marker-icon.png';
+    const shadowUrl = 'assets/img/marker-shadow.png';
     
     const iconDefault = L.icon({
       iconRetinaUrl,
@@ -66,6 +66,17 @@ export class MapPlugin {
     if (this.map) {
       this.map.remove();
       this.map = null;
+    }
+  }
+
+  /**
+   * Fuerza al mapa a recalcular su tamaño (corrige bugs de zonas grises de Leaflet)
+   */
+  invalidateSize() {
+    if (this.map) {
+      setTimeout(() => {
+        this.map?.invalidateSize();
+      }, 200);
     }
   }
 }

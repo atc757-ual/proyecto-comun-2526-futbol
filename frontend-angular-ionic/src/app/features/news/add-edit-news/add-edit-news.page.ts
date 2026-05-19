@@ -12,10 +12,10 @@ import {
   chevronDownOutline
 } from 'ionicons/icons';
 import { NewsItem } from '../../../core/models/news.model';
-import { AuthService } from '../../../core/services/auth.service';
-import { LayoutService } from 'src/app/core/services/layout.service';
-import { PlatformService } from 'src/app/core/services/platform.service';
-import { NEWS_SERVICE_TOKEN } from '../../../core/services/news.service.token';
+import { AuthService } from '../../../core/services/auth/auth.service';
+import { LayoutService } from 'src/app/core/services/ui/layout.service';
+import { PlatformService } from 'src/app/core/services/system/platform.service';
+import { NEWS_SERVICE_TOKEN } from '../../../core/services/news/news.service.token';
 
 @Component({
   selector: 'app-add-edit-news',

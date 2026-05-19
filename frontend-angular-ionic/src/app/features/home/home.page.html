@@ -1,9 +1,10 @@
-<!-- CARRUSEL DE NOTICIAS (SWIPER) -->
-<div *ngIf="!isLoadingFeatured && featuredNews.length > 0" class="news-swiper-wrapper">
-  <swiper-container #swiperRef navigation-prev-el=".custom-prev" navigation-next-el=".custom-next" pagination="true"
-    pagination-clickable="true" observer="true" observe-parents="true" autoplay="true" autoplay-delay="4000"
-    autoplay-disable-on-interaction="false" slides-per-view="1" space-between="0" watch-slides-progress="true"
-    class="featured-swiper">
+<!-- CARRUSEL DE NOTICIAS (SWIPER) o SKELETON -->
+<div class="news-swiper-wrapper" *ngIf="isLoadingFeatured || featuredNews.length > 0">
+
+  <swiper-container #swiperRef *ngIf="!isLoadingFeatured && featuredNews.length > 0" navigation-prev-el=".custom-prev"
+    navigation-next-el=".custom-next" pagination="true" pagination-clickable="true" observer="true"
+    observe-parents="true" autoplay="true" autoplay-delay="4000" autoplay-disable-on-interaction="false"
+    slides-per-view="1" space-between="0" watch-slides-progress="true" class="featured-swiper">
     <swiper-slide *ngFor="let news of featuredNews">
       <div class="slide-content" [style.background-image]="'url(' + news.image + ')'">
         <div class="overlay-gradient"></div>
@@ -24,26 +25,32 @@
     </swiper-slide>
   </swiper-container>
 
-  <!-- SKELETON LOADING -->
-  <ng-container *ngIf="isLoadingFeatured && featuredNews.length === 0">
-    <swiper-slide *ngFor="let item of [1,2,3]" class="skeleton-slide">
-      <div class="skeleton-content">
-        <ion-skeleton-text [animated]="true" style="width: 30%; height: 20px;"></ion-skeleton-text>
-        <ion-skeleton-text [animated]="true" style="width: 60%;"></ion-skeleton-text>
-        <ion-skeleton-text [animated]="true" style="width: 80%;"></ion-skeleton-text>
-        <ion-skeleton-text [animated]="true" style="width: 100%; height: 100px;"></ion-skeleton-text>
-        <ion-skeleton-text [animated]="true" style="width: 100px; height: 40px;"></ion-skeleton-text>
-      </div>
-    </swiper-slide>
-  </ng-container>
+  <!-- SKELETON LOADING BANNER -->
+  <div *ngIf="isLoadingFeatured" class="skeleton-banner animate-fade-in"
+    style="height: 320px; background: #1e293b; position: relative; padding: 40px; display: flex; align-items: flex-end; justify-content: flex-start; border-radius: 16px;">
+    <div style="width: 100%; max-width: 600px; z-index: 2; display: flex; flex-direction: column;">
+      <ion-skeleton-text [animated]="true"
+        style="width: 80px; height: 18px; border-radius: 4px; margin-bottom: 12px; --background: rgba(255,255,255,0.1); --background-activated: rgba(255,255,255,0.2);"></ion-skeleton-text>
+      <ion-skeleton-text [animated]="true"
+        style="width: 40%; height: 14px; margin-bottom: 8px; --background: rgba(255,255,255,0.1); --background-activated: rgba(255,255,255,0.2);"></ion-skeleton-text>
+      <ion-skeleton-text [animated]="true"
+        style="width: 80%; height: 32px; margin-bottom: 12px; --background: rgba(255,255,255,0.1); --background-activated: rgba(255,255,255,0.2);"></ion-skeleton-text>
+      <ion-skeleton-text [animated]="true"
+        style="width: 95%; height: 16px; margin-bottom: 24px; --background: rgba(255,255,255,0.1); --background-activated: rgba(255,255,255,0.2);"></ion-skeleton-text>
+      <ion-skeleton-text [animated]="true"
+        style="width: 120px; height: 36px; border-radius: 20px; --background: rgba(255,255,255,0.1); --background-activated: rgba(255,255,255,0.2);"></ion-skeleton-text>
+    </div>
+  </div>
 
   <!-- Navegación Externa Garantizada -->
-  <div class="custom-swiper-button custom-prev">
-    <ion-icon name="chevron-back"></ion-icon>
-  </div>
-  <div class="custom-swiper-button custom-next">
-    <ion-icon name="chevron-forward"></ion-icon>
-  </div>
+  <ng-container *ngIf="!isLoadingFeatured">
+    <div class="custom-swiper-button custom-prev">
+      <ion-icon name="chevron-back"></ion-icon>
+    </div>
+    <div class="custom-swiper-button custom-next">
+      <ion-icon name="chevron-forward"></ion-icon>
+    </div>
+  </ng-container>
 </div>
 
 
@@ -53,10 +60,10 @@
     <!-- WIDGET FOOTBALL AI STATUS -->
     <ion-card class="premium-card ai-scout-card mb-base animate-fade-in" routerLink="/ai-team">
       <div class="ai-glow"></div>
-      <ion-card-content class="d-flex fl-align-center fl-justify-between py-base">
+      <ion-card-content class="d-flex ai-center jc-between py-base">
         <div>
           <div class="ai-status-badge mb-s d-inline-block">
-            <ion-icon name="sparkles-outline" class="mr-xs"></ion-icon> FOOTBALL AI STATUS
+            <ion-icon name="sparkles-outline" class="mr-xs"></ion-icon> FÚTBOL AI STATUS
           </div>
           <ion-card-title class="f-bold mb-xs text-neutral-0">
             {{ playerCount >= 11 ? '¡Tu equipo está listo!' : 'Necesitas más jugadores' }}
@@ -97,13 +104,29 @@
     <div class="row gap-base mb-base">
       <div class="col-6 col-sm-12">
         <div class="animate-fade-in h-100">
-          <player-list *ngIf="myPlayersJson !== '[]'" [attr.players]="myPlayersJson" widget-title="Mis Fichajes"
-            (viewMoreClicked)="onViewMorePlayers()" (playerClicked)="onPlayerClicked($event)">
+          <!-- SKELETON JUGADORES -->
+          <ion-card class="m-0 mb-base shadow-sm" *ngIf="isLoadingPlayers" style="height: 100%; min-height: 250px;">
+            <ion-card-content class="p-base">
+              <ion-skeleton-text animated style="width: 50%; height: 20px; margin-bottom: 20px;"></ion-skeleton-text>
+              <div class="d-flex ai-center gap-s mb-s" *ngFor="let item of [1,2,3]">
+                <ion-skeleton-text animated style="width: 44px; height: 44px; border-radius: 50%;"></ion-skeleton-text>
+                <div style="flex: 1;">
+                  <ion-skeleton-text animated style="width: 60%; height: 14px; margin-bottom: 6px;"></ion-skeleton-text>
+                  <ion-skeleton-text animated style="width: 40%; height: 10px;"></ion-skeleton-text>
+                </div>
+              </div>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- LISTADO DE JUGADORES (Si no esta cargando y hay jugadores) -->
+          <player-list *ngIf="!isLoadingPlayers && myPlayersJson !== '[]'" [attr.players]="myPlayersJson"
+            widget-title="Mis Fichajes" (viewMoreClicked)="onViewMorePlayers()"
+            (playerClicked)="onPlayerClicked($event)">
           </player-list>
 
-          <!-- ESTADO VACÍO -->
-          <ion-card class="premium-card empty-state-card h-100 m-0 d-flex fl-column jc-center ai-center t-center"
-            *ngIf="myPlayersJson === '[]'">
+          <!-- ESTADO VACIO (Si no esta cargando y no hay jugadores) -->
+          <ion-card class="premium-card empty-state-card h-100 m-0 d-flex fl-column jc-center ai-center text-center"
+            *ngIf="!isLoadingPlayers && myPlayersJson === '[]'">
             <ion-card-content class="d-flex fl-column ai-center jc-center py-base">
               <div class="empty-icon-wrapper mb-xs">
                 <ion-icon name="football-outline" color="primary" class="fs-36"></ion-icon>
@@ -121,8 +144,24 @@
         </div>
       </div>
       <div class="col-6 col-sm-12">
-        <div class="animate-fade-in" *ngIf="!isLoadingSchedule">
-          <tv-schedule-widget [attr.schedule]="tvScheduleJson" widget-title="Próximos partidos de Fútbol">
+        <div class="animate-fade-in" style="height: 100%;">
+          <!-- SKELETON CALENDARIO TV -->
+          <ion-card class="m-0 mb-base shadow-sm" *ngIf="isLoadingSchedule" style="height: 100%; min-height: 250px;">
+            <ion-card-content class="p-base">
+              <ion-skeleton-text animated style="width: 60%; height: 20px; margin-bottom: 20px;"></ion-skeleton-text>
+              <div class="d-flex jc-between ai-center mb-s" *ngFor="let item of [1,2,3]">
+                <div style="flex: 1;">
+                  <ion-skeleton-text animated style="width: 70%; height: 14px; margin-bottom: 6px;"></ion-skeleton-text>
+                  <ion-skeleton-text animated style="width: 50%; height: 10px;"></ion-skeleton-text>
+                </div>
+                <ion-skeleton-text animated style="width: 50px; height: 18px; border-radius: 4px;"></ion-skeleton-text>
+              </div>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- WIDGET DE PARTIDOS (Si no esta cargando) -->
+          <tv-schedule-widget *ngIf="!isLoadingSchedule" [attr.schedule]="tvScheduleJson"
+            widget-title="Próximos partidos de Fútbol">
           </tv-schedule-widget>
         </div>
       </div>
@@ -133,11 +172,10 @@
   <div class="col-4 col-sm-12 pl-base px-0-sm">
     <ion-card class="mb-base">
       <ion-card-content>
-        <div class="d-flex fl-align-center gap-s">
-          <ion-badge color="danger" mode="ios" class="animate-pulse px-s py-xs display-flex fl-align-center"
+        <div class="d-flex ai-center gap-s">
+          <ion-badge color="danger" mode="ios" class="live-status-badge animate-pulse d-flex ai-center jc-center"
             *ngIf="liveScores.length > 0">
-            <ion-icon name="radio-outline" class="mr-xs fs-14"></ion-icon>
-            <ion-label class="fs-12">LIVE</ion-label>
+            <ion-icon name="radio-outline" class="fs-14"></ion-icon>
           </ion-badge>
           <h3 class="m-0 f-semibold text-neutral-8 fs-18 ls-1">
             Partidos en Directo <span *ngIf="liveScores.length > 0">({{ liveScores.length }})</span>
@@ -208,7 +246,7 @@
           <ion-card class="m-0 mb-s shadow-sm" *ngFor="let i of [1,2,3]">
             <ion-card-content class="p-s">
               <ion-skeleton-text animated style="width: 60%; height: 12px;"></ion-skeleton-text>
-              <div class="d-flex fl-justify-between mt-s">
+              <div class="d-flex jc-between mt-s">
                 <ion-skeleton-text animated style="width: 30px; height: 30px; border-radius: 50%;"></ion-skeleton-text>
                 <ion-skeleton-text animated style="width: 40px; height: 20px;"></ion-skeleton-text>
                 <ion-skeleton-text animated style="width: 30px; height: 30px; border-radius: 50%;"></ion-skeleton-text>

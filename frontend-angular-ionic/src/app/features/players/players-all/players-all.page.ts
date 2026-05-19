@@ -16,10 +16,10 @@ import {
   closeCircleOutline, closeCircle, chevronBackOutline, eyeOutline, alertCircleOutline, checkmarkCircleOutline, checkmarkCircle,
   peopleOutline, homeOutline, closeOutline
 } from 'ionicons/icons';
-import { PLAYER_SERVICE_TOKEN } from '../../../core/services/player.service.token';
+import { PLAYER_SERVICE_TOKEN } from '../../../core/services/players/player.service.token';
 import { Player } from '../../../core/models/player.model';
-import { AuthService } from '../../../core/services/auth.service';
-import { LayoutService } from '../../../core/services/layout.service';
+import { AuthService } from '../../../core/services/auth/auth.service';
+import { LayoutService } from '../../../core/services/ui/layout.service';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 
 @Component({
@@ -117,13 +117,13 @@ export class PlayersAllPage implements OnInit {
 
   ngOnInit() {
     this.layoutService.setHeader({
-      title: 'Todos los Jugadores',
+      title: 'Universo de Jugadores',
       subtitle: 'Explora la base de datos completa de futbolistas',
       showHero: true
     });
     this.layoutService.setBreadcrumbs([
       { label: '', url: '/home', icon: 'home-outline' },
-      { label: 'Todos los Jugadores' },
+      { label: 'Universo de jugadores', url: '' },
     ]);
 
     this.isAdmin = this.authService.isAdmin();
@@ -254,6 +254,10 @@ export class PlayersAllPage implements OnInit {
     const fbUid = user?.uid;
     const mongoId = userData?._id || userData?.id;
 
-    return p.user_id === fbUid || p.user_id === mongoId;
+    if (!p.user_id) return false;
+    const pUserIdStr = String(p.user_id).trim();
+
+    return (fbUid !== undefined && fbUid !== null && pUserIdStr === String(fbUid).trim()) || 
+           (mongoId !== undefined && mongoId !== null && pUserIdStr === String(mongoId).trim());
   }
 }

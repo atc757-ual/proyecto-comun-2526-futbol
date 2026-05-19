@@ -17,12 +17,12 @@ import {
   documentTextOutline, downloadOutline
 } from 'ionicons/icons';
 import { NewsItem } from '../../../core/models/news.model';
-import { StorageService } from '../../../core/services/storage.service';
-import { AuthService } from '../../../core/services/auth.service';
-import { LayoutService } from 'src/app/core/services/layout.service';
+import { StorageService } from '../../../core/services/system/storage.service';
+import { AuthService } from '../../../core/services/auth/auth.service';
+import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 import { RouterModule } from '@angular/router';
-import { NEWS_SERVICE_TOKEN } from '../../../core/services/news.service.token';
+import { NEWS_SERVICE_TOKEN } from '../../../core/services/news/news.service.token';
 
 @Component({
   selector: 'app-manage-news',

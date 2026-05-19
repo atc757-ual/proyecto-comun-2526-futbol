@@ -33,12 +33,62 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 // Usar el enrutador de la API con el prefijo /api
 app.use('/api', apiRouter);
 
-app.get('/', (req, res) => {
-  res.json({ 
-    message: 'Football Backend (Node.js) is running!',
-    status: 'Database connected and API ready'
-  });
+const path = require('path');
+const mongoose = require('mongoose');
+
+// Configuración de Pug como motor de plantillas
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'app_api', 'views'));
+
+app.get('/', async (req, res) => {
+  try {
+    const Player = mongoose.models.Player || mongoose.model('Player');
+    const User = mongoose.models.User || mongoose.model('User');
+    
+    // Obtener métricas de la base de datos de forma segura
+    let totalPlayers = 0;
+    let totalComments = 0;
+    let totalUsers = 0;
+    
+    if (mongoose.connection.readyState === 1) {
+      totalPlayers = await Player.countDocuments({});
+      totalUsers = await User.countDocuments({});
+      
+      // Sumar todos los comentarios anidados en los documentos de jugadores
+      const players = await Player.find({}, 'comments');
+      totalComments = players.reduce((sum, player) => sum + (player.comments ? player.comments.length : 0), 0);
+    }
+    
+    // Calcular uptime del servidor
+    const uptimeSeconds = process.uptime();
+    const hours = Math.floor(uptimeSeconds / 3600);
+    const minutes = Math.floor((uptimeSeconds % 3600) / 60);
+    const seconds = Math.floor(uptimeSeconds % 60);
+    const uptimeStr = `${hours}h ${minutes}m ${seconds}s`;
+    
+    // Estados de conexión de Mongoose
+    const states = ['Desconectado', 'Conectado', 'Conectando', 'Desconectando'];
+    const dbState = states[mongoose.connection.readyState] || 'Desconocido';
+    const dbHost = mongoose.connection.host || 'Desconocido';
+    const dbName = mongoose.connection.name || 'football';
+    
+    res.render('status', {
+      port,
+      env: process.env.NODE_ENV || 'development',
+      uptime: uptimeStr,
+      dbState,
+      dbHost,
+      dbName,
+      totalPlayers,
+      totalComments,
+      totalUsers
+    });
+  } catch (error) {
+    console.error('Error al renderizar el dashboard de estado:', error);
+    res.status(500).send('Error interno del servidor al cargar el panel de estado');
+  }
 });
+
 
 // Captura de errores 404
 const { sendApiResult } = require('./app_api/controllers/apiResult');

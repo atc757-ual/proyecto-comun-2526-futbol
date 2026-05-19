@@ -1,6 +1,5 @@
-<div class="loader-container d-flex fl-direction-column fl-align-center fl-justify-center animate-fade-in"
-  *ngIf="isDataLoading" style="min-height: 400px; width: 100%;">
-  <ion-spinner name="crescent" color="primary" style="transform: scale(1.5);"></ion-spinner>
+<div class="page-loader-container d-flex fl-direction-column ai-center jc-center animate-fade-in" *ngIf="isDataLoading">
+  <ion-spinner name="crescent" color="primary" class="loader-spinner"></ion-spinner>
   <p class="text-neutral-6 f-semibold fs-16 mt-base">Obteniendo perfil del crack...</p>
 </div>
 
@@ -14,7 +13,7 @@
         <ion-segment [(ngModel)]="entryMode" mode="ios" (ionChange)="segmentChanged($event)">
           <ion-segment-button value="import" layout="icon-start">
             <ion-icon name="cloud-download-outline"></ion-icon>
-            <div class="d-flex fl-direction-column fl-align-center">
+            <div class="d-flex fl-direction-column ai-center">
               <ion-label class="f-semibold">Buscar Jugador</ion-label>
             </div>
           </ion-segment-button>
@@ -43,7 +42,7 @@
 
           <!-- Lista de Resultados Minimalista -->
           <div class="api-results-list animate-fade-in" *ngIf="!isSearchingApi && apiResults.length > 0">
-            <div class="d-flex fl-justify-between fl-align-center mb-s px-xs">
+            <div class="d-flex jc-between ai-center mb-s px-xs">
               <h3 class="f-bold fs-14 text-neutral-8 m-0">{{ apiResults.length }} encontrados</h3>
               <ion-button fill="clear" size="small" (click)="selectAll11()" class="f-semibold fs-12 p-0 m-0"
                 *ngIf="apiResults.length > 0">
@@ -78,7 +77,7 @@
                     </div>
                     <ion-checkbox *ngIf="!isInStaff(res.externalId)" [checked]="isSelected(res)" mode="md"
                       [disabled]="!isSelected(res) && selectedApiPlayers.length >= 11"
-                      style="pointer-events: none;"></ion-checkbox>
+                      class="no-pointer"></ion-checkbox>
                   </div>
                 </div>
               </div>
@@ -217,8 +216,8 @@
               </ion-input>
             </div>
             <div class="form-item col-4 col-sm-12">
-              <ion-input mode="md" fill="outline" label="Peso (kg/lbs)" labelPlacement="stacked" [(ngModel)]="player.weight"
-                name="weight" class="futbol-input" placeholder="Ej: 78 kg / 172 lbs">
+              <ion-input mode="md" fill="outline" label="Peso (kg/lbs)" labelPlacement="stacked"
+                [(ngModel)]="player.weight" name="weight" class="futbol-input" placeholder="Ej: 78 kg / 172 lbs">
                 <ion-icon slot="start" name="stats-chart-outline" class="fs-20 mr-s"></ion-icon>
               </ion-input>
             </div>
@@ -294,26 +293,11 @@
     <!-- MODO IMPORTACIÓN: Resumen de Selección -->
     <ion-card class="animate-fade-in margin-none mb-base">
       <ion-card-content class="pt-base">
-        <!-- TARJETA GPS: Siempre verde -->
-        <div class="permission-item-row mb-base animate-fade-in" [class.bg-permission-active]="hasGeoPermission"
-          [class.bg-permission-denied]="!hasGeoPermission">
-          <ion-icon name="navigate-circle-outline" slot="start" class="fs-30 text-success pulse-animation"
-            *ngIf="hasGeoPermission"></ion-icon>
-          <ion-icon name="navigate-outline" slot="start" class="fs-30 text-error" *ngIf="!hasGeoPermission"></ion-icon>
-          <ion-label class="text-neutral-8">
-            <h3 class="f-bold fs-16">{{ hasGeoPermission ? 'Ubicación compartida' : 'Ubicación no compartida' }}
-            </h3>
-            <p class="fs-14">{{ hasGeoPermission ? 'Se adjuntará a los fichajes.' : 'Permisos necesarios.' }}</p>
-          </ion-label>
-          <div slot="end" class="d-flex fl-align-center ml-auto">
-            <ion-button *ngIf="!hasGeoPermission" mode="ios" size="small" fill="solid" shape="round"
-              class="btn-white-error" [disabled]="isCapturingLocation" (click)="handlePermissionToggle()">
-              <ion-spinner *ngIf="isCapturingLocation" name="crescent" slot="start"></ion-spinner>
-              <span *ngIf="!isCapturingLocation">Permitir</span>
-            </ion-button>
-            <ion-icon *ngIf="hasGeoPermission" name="checkmark-circle-outline" class="fs-28 text-success"></ion-icon>
-          </div>
-        </div>
+        <!-- TARJETA GPS: Componente reutilizable -->
+        <app-gps-permission-card [isChecking]="isCheckingGeo" [hasPermission]="hasGeoPermission"
+          [isCapturing]="isCapturingLocation" titleClass="fs-16" subtitleClass="fs-14"
+          (requestPermission)="handlePermissionToggle()">
+        </app-gps-permission-card>
         <!-- Alerta de Límite Máximo (Banner Style) -->
         <div *ngIf="selectedApiPlayers.length >= 11 && isImportMode()" class="limit-tag animate-fade-in">
           <ion-icon name="information-circle-outline" class="mr-xs"></ion-icon>
@@ -367,14 +351,28 @@
             <!-- Mapa de Ubicación -->
             <div class="map-container-wrapper animate-fade-in mb-base" *ngIf="hasLocation">
               <div id="player-map" class="mini-scouting-map"></div>
-              <div class="map-info-footer d-flex fl-justify-between px-s py-xs">
-                <div class="d-flex fl-align-center gap-xs overflow-hidden" style="flex: 1; min-width: 0;">
-                  <ion-icon name="location-outline" class="text-primary fs-14" style="flex-shrink: 0;"></ion-icon>
+              <div class="map-info-footer d-flex ai-center jc-between px-s py-xs">
+                <div class="d-flex ai-center gap-xs overflow-hidden map-address-container">
+                  <ion-icon name="location-outline" class="text-primary fs-14 map-location-icon"></ion-icon>
                   <span class="fs-10 text-neutral-7 f-regular text-ellipsis" *ngIf="!isRevGeocoding">{{ currentAddress
                     }}</span>
-                  <ion-spinner name="dots" *ngIf="isRevGeocoding" style="width: 15px; height: 10px;"></ion-spinner>
+                  <ion-spinner name="dots" *ngIf="isRevGeocoding" class="rev-geocoding-spinner"></ion-spinner>
+                </div>
+                <!-- Coordenadas GPS -->
+                <div class="d-flex ai-center gap-xs ml-auto pl-s" *ngIf="player.location?.coordinates">
+                  <span class="fs-10 f-bold text-neutral-8 bg-neutral-2 px-xs py-xxs border-radius-soft coord-span">
+                    {{ $any(player.location?.coordinates)[1] | number:'1.4-4' }}, {{
+                    $any(player.location?.coordinates)[0] | number:'1.4-4' }}
+                  </span>
                 </div>
               </div>
+            </div>
+
+            <!-- Loading del Mapa -->
+            <div class="map-loading-placeholder text-center p-base mb-base animate-fade-in"
+              *ngIf="isCapturingLocation && !hasLocation">
+              <ion-spinner name="crescent" color="primary" class="mb-s"></ion-spinner>
+              <span class="fs-12 text-neutral-6 f-medium">Capturando posición...</span>
             </div>
 
             <!-- Botón de Importación (Solo en modo import) -->
@@ -394,10 +392,10 @@
 
         <div class="animate-fade-in" *ngIf="isManualMode()">
           <div class="margin-none mb-base">
-            <div class="d-flex fl-justify-between fl-align-center mb-s mt-base">
+            <div class="d-flex jc-between ai-center mb-s mt-base">
               <h2 class="f-semibold text-neutral-9 fs-18 fs-sm-16 margin-none">Multimedia del Jugador</h2>
 
-              <div class="d-flex fl-align-center gap-s">
+              <div class="d-flex ai-center gap-s">
                 <!-- Botón Limpiar condicional -->
                 <ion-button *ngIf="hasAnyImage()" fill="clear" size="small" mode="ios"
                   class="fs-12 f-semibold text-primary margin-none" (click)="clearAllImages()">
@@ -428,7 +426,7 @@
                 <p class="fs-12 text-neutral-7">{{ hasCameraPermission ? 'Permisos concedidos.' : 'Necesario para usar
                   la cámara.' }}</p>
               </ion-label>
-              <div slot="end" class="d-flex fl-align-center ml-auto">
+              <div slot="end" class="d-flex ai-center ml-auto">
                 <ion-button *ngIf="!hasCameraPermission" mode="ios" size="small" fill="solid" shape="round"
                   class="btn-white-error" [disabled]="hasCameraPermission" (click)="requestCameraPermission()">
                   <span *ngIf="!hasCameraPermission">Permitir</span>
@@ -441,8 +439,7 @@
             <div class="multimedia-compact-list">
               <!-- MODO URL: Formato de col 8 (3 columnas en desktop, 1 en móvil) -->
               <div class="row w-100 margin-none" *ngIf="globalMediaMode === 'url'">
-                <div class="form-item col-12 animate-fade-in" *ngFor="let type of imageTypes"
-                  style="margin-bottom: var(--space-s); padding: 0;">
+                <div class="form-item col-12 animate-fade-in url-input-item" *ngFor="let type of imageTypes">
                   <ion-input mode="md" fill="outline" [label]="type.label" labelPlacement="stacked"
                     [ngModel]="getPlayerImage(type.key)"
                     (ionInput)="updatePlayerImage(type.key, $any($event.target).value); previews[type.key] = $any($event.target).value"
@@ -457,20 +454,18 @@
               <!-- MODO UPLOAD: Subida de archivos con cámara/galería en formato ion-item limpio con separadores -->
               <ng-container *ngIf="globalMediaMode === 'upload'">
                 <ng-container *ngFor="let type of imageTypes; let last = last">
-                  <ion-item class="animate-fade-in" mode="md" lines="none"
-                    style="--background: transparent; --padding-start: 4px; --inner-padding-end: 4px; margin-bottom: 4px;">
-                    <ion-icon slot="start" [name]="type.icon" color="primary" class="fs-22"
-                      style="margin-right: 12px;"></ion-icon>
+                  <ion-item class="animate-fade-in upload-media-item" mode="md" lines="none">
+                    <ion-icon slot="start" [name]="type.icon" color="primary"
+                      class="fs-22 upload-media-icon"></ion-icon>
                     <ion-label>
-                      <h3 class="f-semibold fs-14 text-neutral-9" style="margin: 0 0 2px 0;">{{ type.label }}</h3>
-                      <p class="fs-12 text-neutral-5" style="margin: 0;">{{ type.helper }}</p>
+                      <h3 class="f-semibold fs-14 text-neutral-9 upload-media-title">{{ type.label }}</h3>
+                      <p class="fs-12 text-neutral-5 upload-media-subtitle">{{ type.helper }}</p>
                     </ion-label>
 
-                    <div slot="end" class="d-flex fl-align-center gap-xs" style="margin: 0;">
+                    <div slot="end" class="d-flex ai-center gap-xs upload-media-actions">
                       <!-- Si existe previsualización -->
                       <ng-container *ngIf="previews[type.key]">
-                        <div class="mini-preview-circle" style="margin: 0;"
-                          (click)="openImageViewer(previews[type.key]!, type.label)">
+                        <div class="mini-preview-circle" (click)="openImageViewer(previews[type.key]!, type.label)">
                           <img [src]="getSafeUrl(previews[type.key])" (error)="handleImageError($event, type.key)"
                             referrerpolicy="no-referrer">
                         </div>
@@ -492,7 +487,7 @@
                       </ng-container>
 
                       <input type="file" #fileInputGeneric (change)="onFileSelected($event, type.key)" accept="image/*"
-                        style="display: none;">
+                        class="hidden-input">
                     </div>
                   </ion-item>
                   <div class="separator my-s" *ngIf="!last"></div>

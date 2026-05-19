@@ -2,12 +2,12 @@ import { Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonApp, IonRouterOutlet, IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
+import { NetworkPlugin } from './core/plugins/network-plugin';
 import { CommonModule } from '@angular/common';
-import { AuthService } from './core/services/auth.service';
+import { AuthService } from './core/services/auth/auth.service';
 import { addIcons } from 'ionicons';
-import { footballOutline } from 'ionicons/icons';
+import { footballOutline, wifiOutline } from 'ionicons/icons';
 import { take } from 'rxjs/operators';
-import { Auth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-root',
@@ -18,17 +18,21 @@ import { Auth } from '@angular/fire/auth';
 })
 export class AppComponent implements OnInit {
   showSplash = true;
+  isOffline = false;
 
   private router = inject(Router);
   private authService = inject(AuthService);
-  private auth = inject(Auth);
+  private networkService = inject(NetworkPlugin);
 
   constructor() {
-    addIcons({ footballOutline });
+    addIcons({ footballOutline, wifiOutline });
     this.initDeepLinks();
   }
 
   ngOnInit() {
+    // 1. Monitorear estado de red inicial y cambios
+    this.initNetworkMonitoring();
+
     // Duración mínima del splash + comprobación de sesión
     const minSplash = new Promise<void>(resolve => setTimeout(resolve, 1500));
 
@@ -49,6 +53,19 @@ export class AppComponent implements OnInit {
         this.router.navigate([ruta], { replaceUrl: true });
       }
     });
+  }
+
+  private async initNetworkMonitoring() {
+    try {
+      const status = await this.networkService.getStatus();
+      this.isOffline = !status.connected;
+
+      this.networkService.onStatusChange((newStatus) => {
+        this.isOffline = !newStatus.connected;
+      });
+    } catch (e) {
+      console.warn('[NETWORK] Error al inicializar el monitoreo de red:', e);
+    }
   }
 
   private initDeepLinks() {

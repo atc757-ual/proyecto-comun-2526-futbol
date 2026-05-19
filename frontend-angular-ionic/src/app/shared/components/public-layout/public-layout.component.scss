@@ -187,7 +187,6 @@
 .layout-hero-banner {
   background: var(--bg-hero);
   width: 100%;
-  animation: fade-in-down 0.5s ease-out;
 
   .main-content {
     padding: var(--space-m) var(--container-padding-desktop) var(--space-base) var(--container-padding-desktop);
@@ -224,7 +223,6 @@
 .layout-hero-breadcrumbs {
   background: var(--bg-breadcrumbs);
   width: 100%;
-  animation: fade-in-down 0.5s ease-out;
 
   .main-content {
     padding: var(--space-s) var(--container-padding-desktop);
@@ -304,42 +302,7 @@
   }
 }
 
-// FOOTER
-.main-footer-gray {
-  background: var(--color-footer) !important;
-  border-top: 1px solid var(--color-neutral-2);
 
-  .main-content.footer {
-    padding: 0 var(--container-padding-desktop);
-
-    @media (max-width: 767px) {
-      padding: 0 var(--space-base);
-    }
-  }
-}
-
-.footer-slim-content {
-  height: var(--footer-height);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.footer-socials {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-
-  .social-icon {
-    color: var(--color-neutral-6);
-    font-size: var(--fs-22);
-    transition: color 0.2s;
-
-    &:hover {
-      color: var(--color-neutral-8);
-    }
-  }
-}
 
 .animate-fade-in {
   animation: fadeIn 0.5s ease-out;

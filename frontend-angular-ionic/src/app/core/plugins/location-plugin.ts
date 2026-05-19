@@ -6,56 +6,74 @@ import { Capacitor } from '@capacitor/core';
   providedIn: 'root',
 })
 export class LocationPlugin {
-  
   private ngZone = inject(NgZone);
+
+  // Sistema de Caché de Ubicación
+  private lastPosition: Position | null = null;
+  private lastPositionTs: number = 0;
+
+  /**
+   * Valida si la coordenada GPS recibida es finita y real (no nula o ficticia)
+   */
+  private isPositionValid(pos: Position | null): boolean {
+    if (!pos) return false;
+    const c: any = pos.coords;
+    if (!c) return false;
+    const lat = Number(c.latitude);
+    const lng = Number(c.longitude);
+    return Number.isFinite(lat) && Number.isFinite(lng) && !(lat === 0 && lng === 0 && typeof c.accuracy === 'undefined');
+  }
+
+  /**
+   * Limpia la posición cacheada manualmente
+   */
+  clearCachedPosition() {
+    this.lastPosition = null;
+    this.lastPositionTs = 0;
+  }
 
   /**
    * Obtiene la ubicación actual del dispositivo
    */
-  async getCurrentPosition(): Promise<Position | null> {
-    try {
-      const hasPermission = await this.requestGeolocationPermission();
-      
-      if (Capacitor.getPlatform() === 'web') {
-        return new Promise((resolve) => {
-          navigator.geolocation.getCurrentPosition(
-            (pos) => this.ngZone.run(() => resolve({
-              coords: {
-                latitude: pos.coords.latitude,
-                longitude: pos.coords.longitude,
-                accuracy: pos.coords.accuracy,
-                altitudeAccuracy: pos.coords.altitudeAccuracy,
-                altitude: pos.coords.altitude,
-                speed: pos.coords.speed,
-                heading: pos.coords.heading,
-              },
-              timestamp: pos.timestamp
-            } as any)),
-            (err) => this.ngZone.run(() => {
-              if (err.code !== 1) {
-                console.warn('[GPS Web] Error obteniendo coordenada real. Usando fallback:', err.message);
-              }
-              // Fallback para pintar el mapa aunque el OS bloquee: Centro de España/Madrid por defecto
-              resolve({
-                coords: { latitude: 40.4168, longitude: -3.7038, accuracy: 100 } as any,
-                timestamp: Date.now()
-              } as Position);
-            }),
-            { enableHighAccuracy: false, timeout: 5000 }
-          );
-        });
+  async getCurrentPosition(options?: {
+    useCache?: boolean;
+    maxAgeMs?: number;
+    enableHighAccuracy?: boolean;
+    timeout?: number;
+  }): Promise<Position | null> {
+    const useCache = options?.useCache ?? false; // Deshabilitado por defecto
+    const maxAgeMs = options?.maxAgeMs ?? 10000; // 10 segundos por defecto
+
+    // Si hay una posición válida en caché y no ha expirado, la retornamos de inmediato
+    if (useCache && this.lastPosition && (Date.now() - this.lastPositionTs) <= maxAgeMs && this.isPositionValid(this.lastPosition)) {
+      // Evitar retornar si coincide con Madrid fallback
+      const lat = this.lastPosition.coords.latitude;
+      const lng = this.lastPosition.coords.longitude;
+      const isMadridFallback = Math.abs(lat - 40.4168) < 0.0001 && Math.abs(lng - (-3.7038)) < 0.0001;
+      if (!isMadridFallback) {
+        console.log('[GPS-PLUGIN] Retornando ubicación desde caché.');
+        return this.lastPosition;
       }
+    }
 
-      if (!hasPermission) return null;
+    try {
+      const geoOptions: any = {
+        enableHighAccuracy: options?.enableHighAccuracy ?? false,
+        timeout: options?.timeout ?? 10000
+      };
 
-      const position = await Geolocation.getCurrentPosition({
-        enableHighAccuracy: true,
-        timeout: 10000
-      });
+      // Usar Capacitor Geolocation unificado directamente, que funciona de forma estable en todas las plataformas
+      const position = await Geolocation.getCurrentPosition(geoOptions);
+      const isMadridFallback = Math.abs(position.coords.latitude - 40.4168) < 0.0001 && Math.abs(position.coords.longitude - (-3.7038)) < 0.0001;
+      
+      if (this.isPositionValid(position) && !isMadridFallback) {
+        this.lastPosition = position;
+        this.lastPositionTs = Date.now();
+      }
       return position;
     } catch (error) {
-      console.error('Error al obtener la ubicación:', error);
-      // Fallback nativo
+      console.warn('[GPS] Error obteniendo ubicación real. Usando fallback de Madrid:', error);
+      // Retornar fallback para evitar que rompa el mapa
       return {
         coords: { latitude: 40.4168, longitude: -3.7038, accuracy: 100 } as any,
         timestamp: Date.now()
@@ -86,17 +104,24 @@ export class LocationPlugin {
     if (Capacitor.getPlatform() === 'web') {
       try {
         const permissionStatus = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
-        
+
         if (permissionStatus.state === 'granted') {
+          // Intentar obtener la posición de fondo para precargar la caché
+          try {
+            const pos = await new Promise<any>((res, rej) => navigator.geolocation.getCurrentPosition(res, rej));
+            if (this.isPositionValid(pos)) {
+              this.lastPosition = pos;
+              this.lastPositionTs = Date.now();
+            }
+          } catch (e) { }
           return true;
         }
-        
+
         if (permissionStatus.state === 'denied') {
           return false;
         }
 
         return new Promise((resolve) => {
-          // Listener para responder instantáneamente en cuanto el usuario hace clic en "Permitir"
           permissionStatus.onchange = () => {
             this.ngZone.run(() => {
               if (permissionStatus.state === 'granted') resolve(true);
@@ -104,28 +129,37 @@ export class LocationPlugin {
             });
           };
 
-          // Forzamos el prompt — el callback corre dentro de NgZone
           navigator.geolocation.getCurrentPosition(
-            () => this.ngZone.run(() => resolve(true)),
-            (err) => this.ngZone.run(() => {
-              if (err.code === 1) {
-                resolve(false);
-              } else {
-                resolve(true);
+            (pos) => this.ngZone.run(() => {
+              const position = pos as any;
+              if (this.isPositionValid(position)) {
+                this.lastPosition = position;
+                this.lastPositionTs = Date.now();
               }
+              resolve(true);
             }),
-            { 
-              enableHighAccuracy: false, 
-              timeout: 10000,           
-              maximumAge: 0 
+            (err) => this.ngZone.run(() => {
+              resolve(err.code !== 1);
+            }),
+            {
+              enableHighAccuracy: false,
+              timeout: 10000,
+              maximumAge: 0
             }
           );
         });
       } catch (e) {
-        // Fallback si la API permissions no está soportada
+        // Fallback si navigator.permissions no es soportado
         return new Promise((resolve) => {
           navigator.geolocation.getCurrentPosition(
-            () => this.ngZone.run(() => resolve(true)),
+            (pos) => this.ngZone.run(() => {
+              const position = pos as any;
+              if (this.isPositionValid(position)) {
+                this.lastPosition = position;
+                this.lastPositionTs = Date.now();
+              }
+              resolve(true);
+            }),
             (err) => this.ngZone.run(() => resolve(err.code !== 1)),
             { enableHighAccuracy: false, timeout: 10000 }
           );
@@ -134,7 +168,6 @@ export class LocationPlugin {
     }
 
     try {
-      // En nativo, Capacitor tiene un método específico
       const status = await Geolocation.requestPermissions();
       return status.location === 'granted';
     } catch (e) {

@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './shared/components/main-layout/main-layout.component';
 import { PublicLayoutComponent } from './shared/components/public-layout/public-layout.component';
-import { authGuard, adminGuard, masterGuard } from './core/guards/auth.guard';
+import { authGuard, adminGuard, masterGuard, guestGuard, publicPlayerGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -28,6 +28,7 @@ export const routes: Routes = [
   // 1. AUTH LAYOUT (Login, Register, etc.)
   {
     path: 'auth',
+    canActivate: [guestGuard],
     loadComponent: () => import('./shared/components/auth-layout/auth-layout.component').then((m) => m.AuthLayoutComponent),
     children: [
       { path: 'login', loadComponent: () => import('./features/auth/login/login.page').then((m) => m.LoginPage) },
@@ -36,23 +37,19 @@ export const routes: Routes = [
     ]
   },
 
-  // 2. PUBLIC ROUTES (Con su propio Layout explícito)
+  // 2. PUBLIC ROUTES (Con su propio Layout explícito y compartido)
   {
-    path: 'players-public',
+    path: '',
     component: PublicLayoutComponent,
     children: [
       {
-        path: '',
+        path: 'players-public',
+        canActivate: [publicPlayerGuard],
         loadComponent: () => import('./features/players/public/players-public/players-public.page').then((m) => m.PlayersPublicPage),
-      }
-    ]
-  },
-  {
-    path: 'player-detail-public/:id',
-    component: PublicLayoutComponent,
-    children: [
+      },
       {
-        path: '',
+        path: 'player-detail-public/:id',
+        canActivate: [publicPlayerGuard],
         loadComponent: () => import('./features/players/public/player-detail-public/player-detail-public.page').then((m) => m.PlayerDetailPublicPage),
       }
     ]

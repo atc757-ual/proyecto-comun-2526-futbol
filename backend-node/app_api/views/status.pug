@@ -1,0 +1,199 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title Dashboard de Estado - Football Backend
+    style.
+      :root {
+        --bg-color: #0b0f19;
+        --card-bg: #111827;
+        --border-color: #1f2937;
+        --text-main: #f3f4f6;
+        --text-muted: #9ca3af;
+        --primary: #10b981;
+        --primary-glow: rgba(16, 185, 129, 0.15);
+        --accent: #059669;
+        --success: #34d399;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+      body {
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem 1rem;
+      }
+      .container {
+        width: 100%;
+        max-width: 900px;
+      }
+      header {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+      h1 {
+        font-size: 2.2rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.025em;
+      }
+      .subtitle {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+      .card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        transition: transform 0.2s ease, border-color 0.2s ease;
+      }
+      .card:hover {
+        transform: translateY(-2px);
+        border-color: var(--primary);
+      }
+      .card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1.2rem;
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .card-title::before {
+        content: '';
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--primary);
+      }
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.65rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .info-row:last-child {
+        border-bottom: none;
+      }
+      .info-label {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+      }
+      .info-value {
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+      .badge {
+        padding: 0.25rem 0.6rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+      .badge-success {
+        background-color: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+      }
+      .badge-neutral {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: var(--text-main);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .btn {
+        display: inline-block;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: #ffffff;
+        text-decoration: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        text-align: center;
+        transition: opacity 0.2s, transform 0.2s;
+        box-shadow: 0 4px 10px var(--primary-glow);
+        margin-top: 1rem;
+      }
+      .btn:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+      }
+      footer {
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 0.8rem;
+        margin-top: 3rem;
+      }
+  body
+    .container
+      header
+        h1 ⚽ Dashboard de Estado
+        p.subtitle Tecnologías y Recursos Web/Móvil (TRWM) - Matrícula de Honor
+      
+      .grid
+        .card
+          .card-title Estado del Servidor
+          .info-row
+            span.info-label Servicio Express
+            span.info-value.badge.badge-success Activo
+          .info-row
+            span.info-label Puerto
+            span.info-value #{port}
+          .info-row
+            span.info-label Entorno
+            span.info-value.badge.badge-neutral #{env}
+          .info-row
+            span.info-label Uptime
+            span.info-value #{uptime}
+            
+        .card
+          .card-title Base de Datos MongoDB
+          .info-row
+            span.info-label Conexión Mongoose
+            span.info-value.badge.badge-success #{dbState}
+          .info-row
+            span.info-label Host DB
+            span.info-value #{dbHost}
+          .info-row
+            span.info-label Base de Datos
+            span.info-value #{dbName}
+            
+        .card
+          .card-title Métricas del Sistema
+          .info-row
+            span.info-label Jugadores Totales
+            span.info-value.badge.badge-neutral #{totalPlayers}
+          .info-row
+            span.info-label Comentarios Totales
+            span.info-value.badge.badge-neutral #{totalComments}
+          .info-row
+            span.info-label Usuarios Registrados
+            span.info-value.badge.badge-neutral #{totalUsers}
+
+      .card(style="text-align: center; padding: 2rem;")
+        h2(style="margin-bottom: 0.5rem; font-weight: 700; font-size: 1.4rem;") API Interactiva & Documentación
+        p.subtitle Accede a la especificación Swagger / OpenAPI de los endpoints de Node.js
+        a.btn(href="/api-docs" target="_blank") Ver Swagger UI
+
+      footer
+        p &copy; 2026 - Proyecto Común de Fútbol (TRWM/DWSC). Desarrollado por Alex.

@@ -4,10 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule, LoadingController, NavController } from '@ionic/angular';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { NewsItem } from '../../../core/models/news.model';
-import { NEWS_SERVICE_TOKEN } from '../../../core/services/news.service.token';
-import { AuthService } from '../../../core/services/auth.service';
-import { PlatformService } from 'src/app/core/services/platform.service';
-import { LayoutService } from 'src/app/core/services/layout.service';
+import { NEWS_SERVICE_TOKEN } from '../../../core/services/news/news.service.token';
+import { AuthService } from '../../../core/services/auth/auth.service';
+import { PlatformService } from 'src/app/core/services/system/platform.service';
+import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { addIcons } from 'ionicons';
 import { addCircleOutline, newspaperOutline, homeOutline, settingsOutline, chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
 

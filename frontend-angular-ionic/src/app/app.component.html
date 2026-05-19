@@ -11,4 +11,16 @@
       <ion-spinner name="crescent" color="primary"></ion-spinner>
     </div>
   </div>
+
+  <!-- Offline Overlay: Bloquea la app si no hay internet -->
+  <div class="offline-overlay" *ngIf="isOffline">
+    <div class="offline-center">
+      <div class="offline-logo-circle animate-pulse">
+        <ion-icon name="wifi-outline"></ion-icon>
+      </div>
+      <h1 class="offline-title">Sin Conexión</h1>
+      <p class="offline-message">Comprueba tu conexión a Internet para seguir usando la aplicación.</p>
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
+    </div>
+  </div>
 </ion-app>

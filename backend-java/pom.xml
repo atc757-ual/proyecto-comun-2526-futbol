@@ -13,6 +13,7 @@
     <modules>
         <module>common-futbol</module>
         <module>gateway</module>
+        <module>user-client</module>
         <module>player-client</module>
         <module>player-feign</module>
         <module>comment-client</module>

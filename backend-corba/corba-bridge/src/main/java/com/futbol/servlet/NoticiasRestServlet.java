@@ -7,7 +7,10 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import org.omg.CORBA.*;
 import org.omg.CosNaming.*;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import BufferApp.*;
 import com.futbol.utils.*;
 
@@ -157,7 +160,7 @@ public class NoticiasRestServlet extends HttpServlet {
 
         try {
             System.out.println("[BRIDGE-BULK] Iniciando carga masiva...");
-            NewsItem[] noticias = mapper.readValue(request.getReader(), NewsItem[].class);
+            NewsItem[] noticias = leerNoticiasDesdeRequest(request);
             List<NewsItem> validadas = new ArrayList<>();
 
             for (NewsItem n : noticias) {
@@ -215,7 +218,7 @@ public class NoticiasRestServlet extends HttpServlet {
         try {
             System.out.println("[BRIDGE-POST] Iniciando publicacion...");
             // 1. Leer una sola vez el JSON del request
-            NewsItem noticiaRecibida = mapper.readValue(request.getReader(), NewsItem.class);
+            NewsItem noticiaRecibida = leerNoticiaDesdeRequest(request);
             
             // 2. Validar contra XSD antes de guardar (Pipeline de limpieza)
             String xsdPath = getXsdPath();
@@ -252,7 +255,7 @@ public class NoticiasRestServlet extends HttpServlet {
         try {
             System.out.println("[BRIDGE-PUT] Iniciando actualizacion...");
             // 1. Leer JSON una sola vez
-            NewsItem noticiaRecibida = mapper.readValue(request.getReader(), NewsItem.class);
+            NewsItem noticiaRecibida = leerNoticiaDesdeRequest(request);
             
             // 2. Validar contra XSD (Pipeline de limpieza)
             String xsdPath = getXsdPath();
@@ -385,6 +388,42 @@ public class NoticiasRestServlet extends HttpServlet {
         fullResponse.put("result", result);
         fullResponse.put("data", data != null ? data : new java.util.ArrayList<>());
         response.getWriter().println(mapper.writeValueAsString(fullResponse));
+    }
+
+    private NewsItem leerNoticiaDesdeRequest(HttpServletRequest request) throws IOException {
+        JsonNode root = mapper.readTree(request.getReader());
+        if (root != null && root.isObject()) {
+            normalizarFecha((ObjectNode) root);
+        }
+        return mapper.treeToValue(root, NewsItem.class);
+    }
+
+    private NewsItem[] leerNoticiasDesdeRequest(HttpServletRequest request) throws IOException {
+        JsonNode root = mapper.readTree(request.getReader());
+        if (root != null && root.isArray()) {
+            ArrayNode array = (ArrayNode) root;
+            for (JsonNode node : array) {
+                if (node != null && node.isObject()) {
+                    normalizarFecha((ObjectNode) node);
+                }
+            }
+        }
+        return mapper.treeToValue(root, NewsItem[].class);
+    }
+
+    private void normalizarFecha(ObjectNode node) {
+        if (node.hasNonNull("date")) {
+            return;
+        }
+
+        if (node.hasNonNull("publishedDate")) {
+            node.set("date", node.get("publishedDate"));
+            return;
+        }
+
+        if (node.hasNonNull("publishdate")) {
+            node.set("date", node.get("publishdate"));
+        }
     }
 
     private NewsService getCorbaService() throws Exception {

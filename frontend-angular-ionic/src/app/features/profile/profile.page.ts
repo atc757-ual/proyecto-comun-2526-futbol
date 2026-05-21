@@ -5,7 +5,7 @@ import {
   personOutline, mailOutline, timeOutline, keyOutline,
   shieldCheckmarkOutline, logOutOutline, serverOutline,
   checkmarkCircleOutline, alertCircleOutline, closeOutline, chevronForward,
-  key, homeOutline, cafeOutline, logoNodejs
+  key, homeOutline, cafeOutline, logoNodejs, openOutline
 } from 'ionicons/icons';
 import { RouterModule, Router } from '@angular/router';
 import {
@@ -50,7 +50,7 @@ export class ProfilePage implements OnInit {
       personOutline, mailOutline, timeOutline, keyOutline,
       shieldCheckmarkOutline, logOutOutline, serverOutline,
       checkmarkCircleOutline, alertCircleOutline, closeOutline, chevronForward,
-      key, cafeOutline, logoNodejs
+      key, cafeOutline, logoNodejs, openOutline
     });
   }
 
@@ -224,6 +224,10 @@ export class ProfilePage implements OnInit {
 
       await actionSheet.present();
     }
+  }
+
+  openNodeStatusDashboard() {
+    window.open('/status', '_blank', 'noopener,noreferrer');
   }
 
   handleAvatarError(event: any) {

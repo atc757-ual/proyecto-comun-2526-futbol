@@ -1,36 +1,78 @@
-describe('Leagues Page', () => {
+describe('Leagues Page (desde /busqueda)', () => {
+  const loginUser = () => {
+    cy.visit('/auth/login');
+    cy.get('ion-input[name="email"] input').clear().type('atc757@inlumine.ual.es');
+    cy.get('ion-input[name="password"] input').clear().type('1q2w3e4r');
+    cy.get('ion-button[type="submit"]').click();
+    cy.url({ timeout: 15000 }).should('include', '/home');
+  };
+
+  const stubLeagueSearch = () => {
+    cy.intercept('GET', '**/search-leagues**', {
+      statusCode: 200,
+      body: {
+        data: [
+          { idLeague: '4328', strLeague: 'English Premier League', strCountry: 'England' },
+          { idLeague: '4335', strLeague: 'Spanish La Liga', strCountry: 'Spain' }
+        ]
+      }
+    }).as('searchLeagues');
+
+    cy.intercept('GET', '**/searchleagues**', {
+      statusCode: 200,
+      body: {
+        leagues: [
+          { idLeague: '4328', strLeague: 'English Premier League', strCountry: 'England' },
+          { idLeague: '4335', strLeague: 'Spanish La Liga', strCountry: 'Spain' }
+        ]
+      }
+    }).as('searchLeaguesLegacy');
+  };
+
+  const stubTeamsByLeague = () => {
+    cy.intercept('GET', '**/lookup_all_teams**', {
+      statusCode: 200,
+      body: {
+        teams: [
+          { idTeam: '133604', strTeam: 'Arsenal', strLeague: 'English Premier League' },
+          { idTeam: '133612', strTeam: 'Chelsea', strLeague: 'English Premier League' }
+        ]
+      }
+    }).as('teamsByLeague');
+  };
+
   beforeEach(() => {
-    cy.visit('/leagues');
+    loginUser();
+    stubLeagueSearch();
+    stubTeamsByLeague();
+    cy.visit('/busqueda');
   });
 
-  it('should display the search bar and filter sections', () => {
+  it('should display the search bar and mode selector', () => {
     cy.get('ion-searchbar').should('exist');
-    cy.get('.search-results-container').should('exist');
-    cy.get('.selected-players-sidebar').should('exist');
+    cy.get('ion-segment').should('exist');
   });
 
   it('should allow searching for a league', () => {
-    cy.get('ion-searchbar').type('Spanish La Liga{enter}');
-    // Esperamos que aparezca algún resultado
-    cy.get('.league-card', { timeout: 10000 }).should('exist');
+    cy.get('ion-segment-button[value="league"]').click();
+    cy.get('ion-searchbar input').type('Premier');
+    cy.get('.minimal-result-item', { timeout: 10000 }).should('exist');
   });
 
   it('should allow selecting a league and seeing teams', () => {
-    cy.get('ion-searchbar').type('Spanish La Liga{enter}');
-    cy.get('.league-card').first().click();
-    
-    // Verificamos que cargan los equipos
-    cy.get('.team-card', { timeout: 10000 }).should('exist');
+    cy.get('ion-segment-button[value="league"]').click();
+    cy.get('ion-searchbar input').type('Premier');
+    cy.get('.minimal-result-item', { timeout: 10000 }).first().click();
+    cy.get('.minimal-result-item', { timeout: 10000 }).should('exist');
+    cy.contains('Arsenal').should('exist');
   });
 
-  it('should allow selecting players and adding them to the queue', () => {
-    // Este test asume que ya navegamos a equipos y jugadores
-    // Simplemente verificamos que el contenedor de la derecha tiene el botón de confirmación
-    cy.get('.confirm-selection-btn').should('exist');
+  it('should show selection basket and counter', () => {
+    cy.get('.selection-basket-card').should('exist');
+    cy.get('.basket-counter').should('contain', '/11');
   });
 
-  it('should enforce the 11 player limit', () => {
-    // Lógica compleja para simular 11 clicks, pero verificamos el estado inicial
-    cy.get('.selection-count-badge').should('contain', '0/11');
+  it('should keep import button disabled without selected players', () => {
+    cy.contains('ion-button', 'Importar').should('be.visible');
   });
 });

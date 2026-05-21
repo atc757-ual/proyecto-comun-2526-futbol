@@ -5,7 +5,7 @@ import {
   IonItem, IonLabel, IonThumbnail,
   IonIcon, IonButton, IonSkeletonText, IonSearchbar, IonSpinner,
   IonCard, IonCardContent, IonCardHeader, IonCardTitle,
-  ToastController, NavController, ModalController
+  NavController, ModalController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -23,6 +23,7 @@ import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 import { RouterModule } from '@angular/router';
 import { NEWS_SERVICE_TOKEN } from '../../../core/services/news/news.service.token';
+import { ToastService } from 'src/app/core/services/ui/toast.service';
 
 @Component({
   selector: 'app-manage-news',
@@ -42,7 +43,7 @@ export class ManageNewsPage implements OnInit {
   private authService = inject(AuthService);
   private layoutService = inject(LayoutService);
   private modalCtrl = inject(ModalController);
-  private toastCtrl = inject(ToastController);
+  private toastService = inject(ToastService);
   private navCtrl = inject(NavController);
 
   news: NewsItem[] = [];
@@ -276,17 +277,12 @@ export class ManageNewsPage implements OnInit {
     this.showToast('Exportación completada', 'success', 'checkmark-circle-outline');
   }
 
-  async showToast(message: string, type: 'success' | 'danger' | 'warning' | 'info', icon: string) {
-    const toast = await this.toastCtrl.create({
-      message,
-      duration: 5000,
-      position: 'top',
-      cssClass: `toast-${type === 'danger' ? 'error' : type}`,
-      icon: icon,
-      mode: 'ios',
-      buttons: [{ role: 'cancel', icon: 'close-outline' }]
-    });
-    toast.present();
+  showToast(message: string, type: 'success' | 'danger' | 'warning' | 'info', icon: string) {
+    if (type === 'success') {
+      this.toastService.showSuccess(message);
+    } else {
+      this.toastService.showError(message);
+    }
   }
 }
 

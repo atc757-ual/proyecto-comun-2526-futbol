@@ -6,6 +6,7 @@ COPY pom.xml .
 COPY config-server ./config-server
 COPY eureka-server ./eureka-server
 COPY gateway ./gateway
+COPY user-client ./user-client
 COPY player-client ./player-client
 COPY comment-client ./comment-client
 COPY player-feign ./player-feign

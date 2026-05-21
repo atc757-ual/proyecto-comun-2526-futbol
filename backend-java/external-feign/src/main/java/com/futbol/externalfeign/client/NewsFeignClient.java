@@ -22,6 +22,9 @@ public interface NewsFeignClient {
     @PostMapping
     ApiResult<NewsDTO> create(@RequestHeader("Authorization") String auth, @RequestHeader("X-User-Role") String role, @RequestBody NewsDTO news);
 
+    @PostMapping("/bulk")
+    ApiResult<List<NewsDTO>> bulkCreate(@RequestHeader("Authorization") String auth, @RequestHeader("X-User-Role") String role, @RequestBody List<NewsDTO> newsList);
+
     @PutMapping("/{id}")
     ApiResult<NewsDTO> update(@RequestHeader("Authorization") String auth, @RequestHeader("X-User-Role") String role, @PathVariable("id") String id, @RequestBody NewsDTO news);
 

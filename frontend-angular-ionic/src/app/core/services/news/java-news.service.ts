@@ -21,6 +21,26 @@ export class JavaNewsService implements INewsService {
   
   private apiUrl = environment.javaApiUrl + '/news';
 
+  private normalizeDateForApi(dateValue?: string): string {
+    if (!dateValue) return '';
+
+    // UI input type="date" typically uses YYYY-MM-DD
+    if (dateValue.includes('-')) {
+      const [year, month, day] = dateValue.split('T')[0].split('-');
+      if (year && month && day) return `${day}/${month}/${year}`;
+    }
+
+    // Already in expected CORBA format DD/MM/YYYY
+    return dateValue;
+  }
+
+  private normalizeNewsForApi(news: NewsItem): NewsItem {
+    return {
+      ...news,
+      date: this.normalizeDateForApi(news.date)
+    };
+  }
+
   private getUserRoleHeader(): string {
     const token = localStorage.getItem('jwt_token');
     if (!token) return 'USER';
@@ -75,7 +95,7 @@ export class JavaNewsService implements INewsService {
               await this.storageService.deleteImageByUrl(oldImageUrl, 'news');
             }
           }
-          const finalNews = { ...news, imageUrl };
+          const finalNews = this.normalizeNewsForApi({ ...news, imageUrl });
           const request$ = isEdit ? this.updateNews(finalNews) : this.addNews(finalNews);
           request$.subscribe({
             next: (res) => { observer.next(res); observer.complete(); },
@@ -90,12 +110,12 @@ export class JavaNewsService implements INewsService {
 
   addNews(news: NewsItem): Observable<any> {
     const headers = new HttpHeaders({ 'X-User-Role': this.getUserRoleHeader() });
-    return this.http.post(this.apiUrl, news, { headers });
+    return this.http.post(this.apiUrl, this.normalizeNewsForApi(news), { headers });
   }
 
   updateNews(news: NewsItem): Observable<any> {
     const headers = new HttpHeaders({ 'X-User-Role': this.getUserRoleHeader() });
-    return this.http.put(`${this.apiUrl}/${news.id}`, news, { headers });
+    return this.http.put(`${this.apiUrl}/${news.id}`, this.normalizeNewsForApi(news), { headers });
   }
 
   deleteNews(id: string): Observable<any> {
@@ -105,7 +125,11 @@ export class JavaNewsService implements INewsService {
 
   bulkAddNews(newsList: NewsItem[]): Observable<any> {
     const headers = new HttpHeaders({ 'X-User-Role': this.getUserRoleHeader() });
-    return this.http.post(`${this.apiUrl}/bulk`, newsList, { headers });
+    return this.http.post(
+      `${this.apiUrl}/bulk`,
+      newsList.map(news => this.normalizeNewsForApi(news)),
+      { headers }
+    );
   }
 
   mapToNews(item: any): NewsItem {

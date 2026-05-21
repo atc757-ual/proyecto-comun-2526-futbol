@@ -5,7 +5,7 @@ import {
   IonButton, IonIcon, IonSearchbar,
   IonSpinner,
   IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonItem, IonLabel,
-  IonInput, IonSelect, IonSelectOption, IonThumbnail, ModalController, ToastController
+  IonThumbnail, ModalController
 } from '@ionic/angular/standalone';
 import { RouterModule } from '@angular/router';
 import { addIcons } from 'ionicons';
@@ -13,12 +13,13 @@ import {
   addOutline, filterOutline, personOutline, happyOutline,
   thumbsUpOutline, sadOutline, shieldOutline, searchOutline, trashOutline, createOutline,
   personAddOutline, optionsOutline, flagOutline, chevronForwardOutline, calendarOutline, settingsOutline,
-  closeCircleOutline, chevronBackOutline, eyeOutline, alertCircleOutline, checkmarkCircleOutline, peopleOutline
+  closeCircleOutline, chevronBackOutline, eyeOutline, peopleOutline
 } from 'ionicons/icons';
 import { PLAYER_SERVICE_TOKEN } from '../../../core/services/players/player.service.token';
 import { Player } from '../../../core/models/player.model';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { LayoutService } from '../../../core/services/ui/layout.service';
+import { ToastService } from '../../../core/services/ui/toast.service';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 
 @Component({
@@ -38,7 +39,7 @@ export class PlayersPage implements OnInit {
   private authService = inject(AuthService);
   private layoutService = inject(LayoutService);
   private modalCtrl = inject(ModalController);
-  private toastCtrl = inject(ToastController);
+  private toastService = inject(ToastService);
 
   // --- SIGNALS DE ESTADO ---
   // ... (rest of signals stay the same)
@@ -46,7 +47,6 @@ export class PlayersPage implements OnInit {
   public searchTerm = signal<string>('');
   public isLoading = signal<boolean>(false);
   public isAdmin = false;
-  public focusedField: string | null = null;
 
   // Paginación con Signals
   public currentPage = signal<number>(1);
@@ -98,22 +98,6 @@ export class PlayersPage implements OnInit {
     return this.filteredPlayers().slice(startIndex, endIndex);
   });
 
-  public filters = {
-    name: '',
-    teamLeague: '',
-    dateFrom: ''
-  };
-
-  get hasActiveFilters(): boolean {
-    return !!(this.searchTerm() || this.filters.dateFrom);
-  }
-
-  get availableLeagues(): string[] {
-    const leagues = this._allPlayers()
-      .map(p => p.league)
-      .filter((l): l is string => !!l);
-    return [...new Set(leagues)].sort();
-  }
 
   constructor() {
     addIcons({
@@ -133,8 +117,6 @@ export class PlayersPage implements OnInit {
       closeCircleOutline,
       chevronBackOutline,
       eyeOutline,
-      alertCircleOutline,
-      checkmarkCircleOutline,
       happyOutline,
       thumbsUpOutline,
       sadOutline,
@@ -228,20 +210,6 @@ export class PlayersPage implements OnInit {
     return pages;
   }
 
-  onFilterClick() {
-    console.log('Abrir filtros avanzados');
-    // Aquí podrías abrir un modal o un panel lateral de filtros
-  }
-
-  setFocus(field: string | null) {
-    this.focusedField = field;
-  }
-
-  applyFilters() {
-    this.playerService.searchPlayers(this.filters).subscribe(data => {
-      this._allPlayers.set(data);
-    });
-  }
 
   async deletePlayer(player: Player) {
     const modal = await this.modalCtrl.create({
@@ -249,8 +217,8 @@ export class PlayersPage implements OnInit {
       componentProps: {
         title: '¿Eliminar jugador?',
         message: `Estás a punto de borrar a "${player.name}". Esta acción no se puede deshacer.`,
-        confirmText: 'Eliminar ahora',
-        cancelText: 'Cancelar',
+        confirmText: 'Sí, eliminar',
+        cancelText: 'No, cancelar',
         type: 'delete'
       },
       cssClass: 'premium-modal'
@@ -267,25 +235,13 @@ export class PlayersPage implements OnInit {
   private executeDeletion(id: string) {
     this.playerService.deletePlayer(id).subscribe({
       next: () => {
-        this.showToast('Jugador eliminado correctamente', 'success', 'checkmark-circle-outline');
+        this.toastService.showSuccess('Jugador eliminado correctamente');
         this.loadPlayers();
       },
       error: () => {
-        this.showToast('Error al eliminar el jugador', 'error', 'alert-circle-outline');
+        this.toastService.showError('Error al eliminar el jugador');
       }
     });
-  }
-
-  async showToast(message: string, type: 'success' | 'error', icon: string) {
-    const toast = await this.toastCtrl.create({
-      message,
-      duration: 3000,
-      position: 'top', // Ahora arriba
-      icon: icon,     // Propiedad directa para asegurar visibilidad
-      cssClass: `toast-${type}`,
-      buttons: [{ icon: icon, side: 'start', handler: () => { } }]
-    });
-    toast.present();
   }
 
   handleImageError(event: any) {

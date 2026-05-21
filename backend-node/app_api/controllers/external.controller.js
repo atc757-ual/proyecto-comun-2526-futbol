@@ -79,15 +79,6 @@ const searchTSDBPlayersByTeam = async (req, res) => {
     }
 };
 
-const getTSDBLeagues = async (req, res) => {
-    try {
-        const leagues = await tsdbService.getLeagues();
-        return sendApiResult(res, 200, "Ligas TSDB recuperadas", leagues);
-    } catch (error) {
-        return sendApiResult(res, 500, "Error TSDB: " + error.message);
-    }
-};
-
 const searchTSDBLeagues = async (req, res) => {
     try {
         const { name } = req.query;
@@ -170,7 +161,6 @@ module.exports = {
     searchTSDBTeams,
     getTSDBPlayersByTeam,
     searchTSDBPlayersByTeam,
-    getTSDBLeagues,
     searchTSDBLeagues,
     getTSDBLiveScores,
     getTSDBTeamsByLeague,

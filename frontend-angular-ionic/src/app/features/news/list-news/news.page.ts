@@ -8,6 +8,7 @@ import { NEWS_SERVICE_TOKEN } from '../../../core/services/news/news.service.tok
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { PlatformService } from 'src/app/core/services/system/platform.service';
 import { LayoutService } from 'src/app/core/services/ui/layout.service';
+import { ToastService } from 'src/app/core/services/ui/toast.service';
 import { addIcons } from 'ionicons';
 import { addCircleOutline, newspaperOutline, homeOutline, settingsOutline, chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
 
@@ -26,6 +27,7 @@ export class NewsPage implements OnInit, OnDestroy {
   public platformService = inject(PlatformService);
   public layoutService = inject(LayoutService);
   private navCtrl = inject(NavController);
+  private toastService = inject(ToastService);
 
   newsList: NewsItem[] = [];
   featuredNews: NewsItem[] = []; // Nueva lista para el sidebar
@@ -109,8 +111,8 @@ export class NewsPage implements OnInit, OnDestroy {
 
         this.isLoading = false;
       },
-      error: (err) => {
-        console.error('Error cargando noticias:', err);
+      error: () => {
+        this.toastService.showError('Error cargando las noticias');
         this.isLoading = false;
       }
     });
@@ -122,7 +124,7 @@ export class NewsPage implements OnInit, OnDestroy {
         // Mostramos solo las 5 primeras en el sidebar
         this.featuredNews = news.slice(0, 5);
       },
-      error: (err) => console.error('Error cargando destacadas:', err)
+      error: () => this.toastService.showError('Error cargando noticias destacadas')
     });
   }
 

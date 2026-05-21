@@ -3,6 +3,10 @@ package com.futbol.externalfeign.controller;
 import com.futbol.externalfeign.client.FootballFeignClient;
 import com.futbol.externalfeign.dto.ApiResult;
 import com.futbol.externalfeign.dto.FootballApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/feign/external")
+@Tag(name = "External Feign API", description = "Cliente Feign para integración con API Football")
 public class ExternalFeignController {
 
     private final FootballFeignClient footballClient;
@@ -23,6 +28,11 @@ public class ExternalFeignController {
     }
 
     @GetMapping("/players")
+        @Operation(summary = "Buscar jugadores en API Football (Feign)")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Consulta externa exitosa"),
+            @ApiResponse(responseCode = "500", description = "Error en proveedor externo")
+        })
     public ApiResult<FootballApiResponse> searchPlayers(@RequestParam String name) {
         try {
             String cleanName = name != null ? name.replace("+", " ").trim().replaceAll("\\s+", " ") : "";

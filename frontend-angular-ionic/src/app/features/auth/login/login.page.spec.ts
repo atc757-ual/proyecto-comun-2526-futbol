@@ -7,7 +7,7 @@ import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { PlatformService } from 'src/app/core/services/system/platform.service';
 import { ToastService } from 'src/app/core/services/ui/toast.service';
 
-fdescribe('LoginPage', () => {
+describe('LoginPage', () => {
   let component: LoginPage;
   let fixture: ComponentFixture<LoginPage>;
   let authServiceMock: jasmine.SpyObj<AuthService>;

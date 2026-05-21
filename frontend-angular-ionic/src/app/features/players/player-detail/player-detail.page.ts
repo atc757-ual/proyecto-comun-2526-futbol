@@ -1,14 +1,15 @@
-import { Component, OnInit, inject, Input, signal, CUSTOM_ELEMENTS_SCHEMA, NgZone, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, Input, signal, CUSTOM_ELEMENTS_SCHEMA, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, firstValueFrom } from 'rxjs';
 import {
   IonIcon, IonCard, IonCardContent, IonButton, IonAvatar, IonSegment, IonSegmentButton, IonLabel,
-  IonSpinner, LoadingController, NavController, AlertController, ToastController, ModalController,
+  IonSpinner, LoadingController, NavController, AlertController, ModalController,
   IonTextarea
 } from '@ionic/angular/standalone';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { ConfirmModalComponent } from 'src/app/shared/components/confirm-modal/confirm-modal.component';
+import { ToastService } from '../../../core/services/ui/toast.service';
 import { addIcons } from 'ionicons';
 import {
   star, starOutline, footballOutline, shieldOutline,
@@ -51,11 +52,10 @@ import { register } from 'swiper/element/bundle';
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class PlayerDetailPage implements OnInit {
+export class PlayerDetailPage implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
 
   @Input() set id(playerId: string) {
-    console.log('[PLAYER-DETAIL] Setter ID ejecutado con:', playerId);
     if (playerId) {
       this.player = null; // Limpiamos rastro anterior
       this.loadPlayer(playerId);
@@ -84,7 +84,7 @@ export class PlayerDetailPage implements OnInit {
   private navCtrl = inject(NavController);
   private layoutService = inject(LayoutService);
   private alertCtrl = inject(AlertController);
-  private toastCtrl = inject(ToastController);
+  private toastService = inject(ToastService);
   private modalCtrl = inject(ModalController);
   private activePermissionModal: any = null;
   private confettiService = inject(ConfettiService);
@@ -118,9 +118,11 @@ export class PlayerDetailPage implements OnInit {
   activeSegment = 'history'; // Variable para controlar las pestañas
 
   get isOwner(): boolean {
-    if (!this.player || !this.player.user_id) return false;
+    if (!this.player) return false;
+    const ownerId = this.player.user_id || this.player.userId;
+    if (!ownerId) return false;
     const currentUid = this.authService.getUID();
-    return String(currentUid).trim() === String(this.player.user_id).trim();
+    return String(currentUid).trim() === String(ownerId).trim();
   }
 
   // Lógica de Centro de Comentarios
@@ -151,7 +153,6 @@ export class PlayerDetailPage implements OnInit {
   private scrollLeft = 0;
 
   // Estados de Focus para el Formulario
-  public nameFocused = false;
   public commentFocused = false;
 
   private statsInterval: any;
@@ -222,9 +223,7 @@ export class PlayerDetailPage implements OnInit {
   }
 
   ionViewDidEnter() {
-    // Si ya tenemos coordenadas, forzamos el redibujo del mapa
     if (this.player?.location?.coordinates) {
-      console.log('[PLAYER-DETAIL] ionViewDidEnter: Inicializando mapa de respaldo...');
       setTimeout(() => {
         this.initDetailMap(this.player!.location!.coordinates![1], this.player!.location!.coordinates![0]);
       }, 300);
@@ -236,24 +235,19 @@ export class PlayerDetailPage implements OnInit {
    * Pide permiso DIRECTAMENTE sin pasar por el modal.
    */
   public async checkPermissionsOnboarding() {
-    console.log('[PLAYER-DETAIL] Botón pulsado: Pidiendo permiso vía LocationPlugin...');
     this.isRequestingPermission = true;
     this.cdr.detectChanges();
 
     try {
-      // Usamos el servicio del proyecto para solicitar el permiso
       const granted = await this.locationService.requestGeolocationPermission();
       this.hasGeoPermission.set(granted);
 
       if (granted) {
-        console.log('[PLAYER-DETAIL] Permiso concedido vía plugin.');
         localStorage.setItem('last_permission_prompt_player_detail', Date.now().toString());
         this.captureUserLocation();
-      } else {
-        console.warn('[PLAYER-DETAIL] Permiso denegado o cerrado silenciosamente.');
       }
-    } catch (err) {
-      console.error('[PLAYER-DETAIL] Error solicitando permisos:', err);
+    } catch {
+      // permiso denegado o error nativo
     } finally {
       this.isRequestingPermission = false;
       this.cdr.detectChanges();
@@ -339,15 +333,6 @@ export class PlayerDetailPage implements OnInit {
           this.player = player;
           this.isLoading = false;
 
-          const currentUser = this.authService.currentUser();
-          console.log('[PLAYER-DETAIL] --- INICIO CARGA JUGADOR ---');
-          console.log('[PLAYER-DETAIL] Player ID:', id);
-          console.log('[PLAYER-DETAIL] Player UserID:', player.user_id);
-          console.log('[PLAYER-DETAIL] Current UserUID:', currentUser?.uid);
-          console.log('[PLAYER-DETAIL] ¿isOwner?:', this.isOwner);
-          console.log('[PLAYER-DETAIL] Location Data:', player.location);
-          console.log('[PLAYER-DETAIL] Coordinates:', player.location?.coordinates);
-
           if (player.tsdb_ids?.player_id) {
             this.loadExtraData(player.tsdb_ids.player_id);
           }
@@ -378,10 +363,8 @@ export class PlayerDetailPage implements OnInit {
           this.isLoading = false;
         },
         error: (err) => {
-          console.error('[PlayerDetail] Error crítico al cargar jugador:', err);
           this.isLoading = false;
           if (err.status === 401 || err.status === 403) {
-            console.warn('[PlayerDetail] Acceso no autorizado (401/403). Redirigiendo amigablemente al perfil público...');
             this.navCtrl.navigateRoot(`/player-detail-public/${id}`);
           } else {
             this.showToast('Error al cargar el perfil del jugador', 'danger');
@@ -389,7 +372,6 @@ export class PlayerDetailPage implements OnInit {
         }
       });
     } catch (error) {
-      console.error('[PlayerDetail] Excepción en loadPlayer:', error);
       this.isLoading = false;
     }
   }
@@ -483,7 +465,7 @@ export class PlayerDetailPage implements OnInit {
     this.playerService.toggleFavorite(this.player._id, newStatus).subscribe({
       next: (updatedPlayer) => {
         const msg = newStatus ? 'Añadido a tus favoritos' : 'Eliminado de favoritos';
-        this.showToast(msg, 'success', newStatus ? 'heart' : 'heart-outline');
+        this.showToast(msg, 'success');
       },
       error: () => {
         if (this.player) this.player.isFavorite = !newStatus;
@@ -544,7 +526,7 @@ export class PlayerDetailPage implements OnInit {
       rating: this.editingRating
     }).subscribe({
       next: () => {
-        this.showToast('Comentario actualizado', 'success', 'checkmark-circle-outline');
+        this.showToast('Comentario actualizado', 'success');
         this.editingCommentId = null;
         this.loadPlayer(this.player!._id!);
       },
@@ -573,7 +555,7 @@ export class PlayerDetailPage implements OnInit {
     if (data === true) {
       this.playerService.deleteComment(this.player._id!, commentId).subscribe({
         next: () => {
-          this.showToast('Eliminado', 'success', 'trash-outline');
+          this.showToast('Eliminado', 'success');
           this.loadPlayer(this.player!._id!);
         },
         error: () => this.showToast('Error al borrar', 'danger')
@@ -631,7 +613,7 @@ export class PlayerDetailPage implements OnInit {
 
     this.playerService.addComment(this.player._id, commentData).subscribe({
       next: () => {
-        this.showToast('¡Gracias por tu comentario!', 'success', 'chatbubble-outline');
+        this.showToast('¡Gracias por tu comentario!', 'success');
         this.newComment = '';
         this.newRating = 5;
         this.isSubmittingComment = false;
@@ -719,45 +701,23 @@ export class PlayerDetailPage implements OnInit {
     return stars;
   }
 
-  private async showToast(message: string, color: string, icon: string = 'alert-circle-outline') {
-    // Mapeo de clases de éxito/error personalizadas
-    const customClass = color === 'success' ? 'toast-success' : (color === 'danger' ? 'toast-error' : 'player-toast');
-
-    const toast = await this.toastCtrl.create({
-      message,
-      duration: 3500,
-      position: 'top',
-      color: color === 'success' || color === 'danger' ? undefined : color,
-      cssClass: customClass,
-      mode: 'ios',
-      icon: icon
-    });
-    toast.present();
+  private showToast(message: string, color: string) {
+    if (color === 'success') {
+      this.toastService.showSuccess(message);
+    } else {
+      this.toastService.showError(message);
+    }
   }
 
   private loadDescriptiveLocation(lat: number, lng: number) {
-    console.group('%c [CONCEPTO 1] API EXTERNA GEOCODING ', 'background: #2196f3; color: #fff; font-weight: bold;');
-    console.log('ENVIANDO ->', { lat, lng });
-    console.groupEnd();
-
     this.isLoadingLocation = true;
     this.playerService.reverseGeocode(lat, lng).subscribe({
       next: (addr) => {
-        console.group('%c [CONCEPTO 1] RESPUESTA API OK ', 'background: #4caf50; color: #fff; font-weight: bold;');
-        console.log('RECIBIDO ->', addr);
-        console.groupEnd();
-
         this.descriptiveLocation = addr;
         this.isLoadingLocation = false;
-
-        // Inicializar mapa
         setTimeout(() => this.initDetailMap(lat, lng), 1000);
       },
-      error: (err) => {
-        console.group('%c [CONCEPTO 1] ERROR API ', 'background: #f44336; color: #fff; font-weight: bold;');
-        console.error('ERROR ->', err);
-        console.groupEnd();
-
+      error: () => {
         this.isLoadingLocation = false;
         setTimeout(() => this.initDetailMap(lat, lng), 1000);
       }
@@ -810,47 +770,24 @@ export class PlayerDetailPage implements OnInit {
   }
 
   private async captureUserLocation() {
-    console.log('%c[GPS] INTENTO DE CAPTURA...', 'color: #002eff; font-weight: bold; font-size: 12px;');
-
-    if (!this.hasGeoPermission()) {
-      console.warn('[GPS] Captura abortada: No hay permisos de geolocalización concedidos aún.');
-      return;
-    }
+    if (!this.hasGeoPermission()) return;
 
     try {
-      console.log('%c[GPS] PERMISOS OK. BUSCANDO SEÑAL...', 'color: #002eff; font-weight: bold; font-size: 12px;');
-
       const pos = await Geolocation.getCurrentPosition({
         enableHighAccuracy: false,
         timeout: 10000
       });
 
-      if (pos && pos.coords) {
+      if (pos?.coords) {
         this.userCoords.set({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        console.log('%c[GPS] CAPTURADO CON ÉXITO (Capacitor)', 'background: #002eff; color: white; padding: 4px 8px; border-radius: 4px;');
-        console.table({
-          latitud: pos.coords.latitude,
-          longitud: pos.coords.longitude,
-          precision: pos.coords.accuracy + 'm'
-        });
       }
-    } catch (err: any) {
-      console.warn('[GPS] Capacitor falló, intentando fallback nativo...', err);
-
+    } catch {
       if ('geolocation' in navigator) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
             this.userCoords.set({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-            console.log('%c[GPS] CAPTURADO CON ÉXITO (Nativo)', 'background: #2dd36f; color: white; padding: 4px 8px; border-radius: 4px;');
-            console.table({
-              latitud: pos.coords.latitude,
-              longitud: pos.coords.longitude,
-              metodo: 'Nativo Navegador'
-            });
           },
-          (geoErr) => {
-            console.error('[GPS] FALLO CRÍTICO:', geoErr.message);
-          },
+          () => {},
           { timeout: 10000 }
         );
       }
@@ -883,23 +820,13 @@ export class PlayerDetailPage implements OnInit {
       const success = await this.shareCardPlugin.shareElementAsImage(cardElement, this.player.name);
       if (success) {
         this.hapticsService.notification('success');
-        const toast = await this.toastCtrl.create({
-          message: 'Ficha compartida con éxito',
-          duration: 2000,
-          color: 'success'
-        });
-        await toast.present();
+        this.toastService.showSuccess('Ficha compartida con éxito');
       } else {
         throw new Error('Plugin returned false');
       }
     } catch (error) {
       this.hapticsService.notification('error');
-      const toast = await this.toastCtrl.create({
-        message: 'No se pudo compartir la ficha',
-        duration: 2000,
-        color: 'danger'
-      });
-      await toast.present();
+      this.toastService.showError('No se pudo compartir la ficha');
     } finally {
       await loading.dismiss();
     }

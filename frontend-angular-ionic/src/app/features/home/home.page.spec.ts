@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule, Platform } from '@ionic/angular';
+import { IonicModule } from '@ionic/angular';
+import { Platform } from '@ionic/angular/standalone';
 import { HomePage } from './home.page';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -11,15 +12,25 @@ import { NEWS_SERVICE_TOKEN } from 'src/app/core/services/news/news.service.toke
 import { AuthService } from 'src/app/core/services/auth/auth.service';
 import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { Auth } from '@angular/fire/auth';
-import { ToastController, AlertController, ModalController } from '@ionic/angular';
+import { ToastController, AlertController, ModalController } from '@ionic/angular/standalone';
+import { ToastService } from 'src/app/core/services/ui/toast.service';
 
 describe('HomePage', () => {
   let component: HomePage;
   let fixture: ComponentFixture<HomePage>;
   let playerService: any;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    const modalSpy = jasmine.createSpyObj('HTMLIonModalElement', ['present', 'onWillDismiss']);
+    modalSpy.onWillDismiss.and.returnValue(Promise.resolve({ data: true }));
+    const modalCtrlMock = jasmine.createSpyObj('ModalController', ['create']);
+    modalCtrlMock.create.and.returnValue(Promise.resolve(modalSpy));
+
+    const alertSpy = jasmine.createSpyObj('HTMLIonAlertElement', ['present', 'onWillDismiss']);
+    const alertCtrlMock = jasmine.createSpyObj('AlertController', ['create']);
+    alertCtrlMock.create.and.returnValue(Promise.resolve(alertSpy));
+
+    await TestBed.configureTestingModule({
       imports: [
         IonicModule.forRoot(),
         HomePage,
@@ -61,10 +72,25 @@ describe('HomePage', () => {
           provide: Auth,
           useValue: {}
         },
-        { provide: Platform, useValue: { is: () => false } },
+        {
+          provide: Platform,
+          useValue: {
+            is: () => false,
+            backButton: {
+              subscribeWithPriority: () => ({ unsubscribe: () => {} })
+            }
+          }
+        },
         { provide: ToastController, useValue: {} },
-        { provide: AlertController, useValue: {} },
-        { provide: ModalController, useValue: {} }
+        { provide: AlertController, useValue: alertCtrlMock },
+        { provide: ModalController, useValue: modalCtrlMock },
+        {
+          provide: ToastService,
+          useValue: {
+            showSuccess: () => Promise.resolve(),
+            showError: () => Promise.resolve()
+          }
+        }
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
     }).compileComponents();
@@ -73,7 +99,11 @@ describe('HomePage', () => {
     component = fixture.componentInstance;
     playerService = TestBed.inject(PLAYER_SERVICE_TOKEN);
     fixture.detectChanges();
-  }));
+  });
+
+  afterEach(() => {
+    fixture.destroy();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

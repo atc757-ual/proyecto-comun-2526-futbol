@@ -13,6 +13,7 @@
     min-width: 70px;
     position: relative;
     overflow: hidden;
+    cursor: pointer;
 
     .item-img {
       width: 100%;
@@ -88,6 +89,7 @@
   .item-info {
     flex: 1;
     min-width: 0;
+    cursor: pointer;
 
     .item-title {
       font-size: var(--fs-14);
@@ -166,12 +168,6 @@
       --border-radius: 8px;
       font-size: 16px;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
-      /* Colores permanentes suaves (Garantizados por Ionic) */
-      &.view {
-        --background: var(--blue-primary-010);
-        --color: var(--blue-primary-100);
-      }
 
       &.edit {
         --background: var(--green-010);
@@ -268,7 +264,7 @@
   border-radius: 12px;
   padding: var(--space-s);
   margin-top: var(--space-s);
-  border: 1px dashed var(--color-success);
+  border: 1px solid var(--color-success);
 
   .panel-inner {
     display: flex;
@@ -337,21 +333,5 @@
     max-width: 320px;
     margin: 0 auto;
     line-height: 1.5;
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out forwards;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }

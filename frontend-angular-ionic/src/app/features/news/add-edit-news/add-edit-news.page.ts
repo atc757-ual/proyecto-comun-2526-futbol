@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { IonicModule, ToastController, NavController } from '@ionic/angular';
+import { IonicModule, NavController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
   cloudUploadOutline, sendOutline, arrowBackOutline,
@@ -16,6 +16,7 @@ import { AuthService } from '../../../core/services/auth/auth.service';
 import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { PlatformService } from 'src/app/core/services/system/platform.service';
 import { NEWS_SERVICE_TOKEN } from '../../../core/services/news/news.service.token';
+import { ToastService } from 'src/app/core/services/ui/toast.service';
 
 @Component({
   selector: 'app-add-edit-news',
@@ -27,7 +28,7 @@ import { NEWS_SERVICE_TOKEN } from '../../../core/services/news/news.service.tok
 export class AddEditNewsPage implements OnInit {
   private newsService = inject(NEWS_SERVICE_TOKEN);
   private authService = inject(AuthService);
-  private toastCtrl = inject(ToastController);
+  private toastService = inject(ToastService);
   private navCtrl = inject(NavController);
   private layoutService = inject(LayoutService);
   private route = inject(ActivatedRoute);
@@ -353,24 +354,12 @@ export class AddEditNewsPage implements OnInit {
     this.navCtrl.back();
   }
 
-  private async showToast(message: string, type: 'success' | 'error' | 'warning' | 'danger') {
-    const iconMap = {
-      'success': 'checkmark-circle-outline',
-      'error': 'alert-circle-outline',
-      'danger': 'alert-circle-outline',
-      'warning': 'alert-circle-outline'
-    };
-
-    const toast = await this.toastCtrl.create({
-      message,
-      duration: 3000,
-      position: 'top',
-      cssClass: type === 'success' ? 'toast-success' : 'toast-error',
-      icon: iconMap[type],
-      mode: 'ios',
-      buttons: [{ role: 'cancel' }]
-    });
-    await toast.present();
+  private showToast(message: string, type: 'success' | 'error' | 'warning' | 'danger') {
+    if (type === 'success') {
+      this.toastService.showSuccess(message);
+    } else {
+      this.toastService.showError(message);
+    }
   }
 
 }

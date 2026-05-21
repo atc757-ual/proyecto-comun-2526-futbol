@@ -1,4 +1,4 @@
-import { Component, Input, inject, OnInit, ChangeDetectorRef, effect, signal, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, Input, inject, OnInit, OnDestroy, ChangeDetectorRef, effect, signal, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -47,7 +47,7 @@ import { register } from 'swiper/element/bundle';
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class PlayerDetailPublicPage implements OnInit {
+export class PlayerDetailPublicPage implements OnInit, OnDestroy {
   private _playerId: string = '';
   @Input() set id(playerId: string) {
     if (playerId) {

@@ -1,0 +1,27 @@
+openapi:
+  title: Football - User API
+  description: Microservicio de gestión de usuarios
+  version: 1.0.0
+  contact:
+    name: Alex Taquila Camasca
+    email: atc757@inlumine.ual.es
+    url: https://es.linkedin.com/in/alextaquilacamasca
+
+server:
+  port: 8083
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/football_db
+    username: root
+    password: root
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+
+info:
+  application:
+    name: ${spring.application.name}
+    description: Microservicio de gestión de usuarios de fútbol
+    version: 1.0.0

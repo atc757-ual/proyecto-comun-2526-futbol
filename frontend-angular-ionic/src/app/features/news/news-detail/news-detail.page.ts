@@ -1,7 +1,7 @@
-import { Component, Input, inject, CUSTOM_ELEMENTS_SCHEMA, ViewChild, OnInit } from '@angular/core';
+import { Component, Input, inject, CUSTOM_ELEMENTS_SCHEMA, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, IonContent, AlertController, ToastController, NavController, ModalController } from '@ionic/angular';
+import { IonicModule, IonContent, AlertController, NavController, ModalController } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
 import { ConfirmModalComponent } from 'src/app/shared/components/confirm-modal/confirm-modal.component';
 import { NewsItem } from 'src/app/core/models/news.model';
@@ -12,6 +12,7 @@ import { alertCircleOutline, arrowBackOutline, newspaperOutline, eyeOutline, eye
 import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { StorageService } from 'src/app/core/services/system/storage.service';
 import { NEWS_SERVICE_TOKEN } from '../../../core/services/news/news.service.token';
+import { ToastService } from 'src/app/core/services/ui/toast.service';
 
 @Component({
   selector: 'app-news-detail',
@@ -21,14 +22,14 @@ import { NEWS_SERVICE_TOKEN } from '../../../core/services/news/news.service.tok
   imports: [IonicModule, CommonModule, FormsModule, RouterModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class NewsDetailPage implements OnInit {
+export class NewsDetailPage {
   private newsService = inject(NEWS_SERVICE_TOKEN);
   private authService = inject(AuthService);
   private router = inject(Router);
   public platformService = inject(PlatformService); // Aseguramos que sea public
   public layoutService = inject(LayoutService);
   private alertCtrl = inject(AlertController);
-  private toastCtrl = inject(ToastController);
+  private toastService = inject(ToastService);
   private navCtrl = inject(NavController);
   private modalCtrl = inject(ModalController);
   private storageService = inject(StorageService);
@@ -44,9 +45,6 @@ export class NewsDetailPage implements OnInit {
     }
   }
 
-  async ngOnInit() {
-    // El Layout se configurará dinámicamente en loadData al recibir los datos
-  }
   constructor() {
     addIcons({
       alertCircleOutline, arrowBackOutline, addCircleOutline,
@@ -98,15 +96,12 @@ export class NewsDetailPage implements OnInit {
     });
   }
 
-  async showToast(message: string, color: string, icon: string) {
-    const toast = await this.toastCtrl.create({
-      message,
-      duration: 3000,
-      position: 'top',
-      cssClass: color === 'success' ? 'toast-success' : 'toast-error',
-      icon: icon
-    });
-    await toast.present();
+  showToast(message: string, color: string, icon: string) {
+    if (color === 'success') {
+      this.toastService.showSuccess(message);
+    } else {
+      this.toastService.showError(message);
+    }
   }
 
   private loadSidebarList() {
@@ -177,10 +172,9 @@ export class NewsDetailPage implements OnInit {
 
         this.showToast(message, color, icon);
       },
-      error: (err) => {
+      error: () => {
         this.isUpdatingStatus = false;
         this.showToast('Error al actualizar el estado', 'danger', 'alert-circle-outline');
-        console.error('[STATUS-UPDATE] Error:', err);
       }
     });
   }
@@ -225,28 +219,11 @@ export class NewsDetailPage implements OnInit {
     // 2. Borrar registro de CORBA
     this.newsService.deleteNews(this.selectedNew.id).subscribe({
       next: async () => {
-        const toast = await this.toastCtrl.create({
-          message: '¡Noticia eliminada con éxito!',
-          duration: 2000,
-          position: 'top',
-          cssClass: 'toast-success',
-          icon: 'checkmark-circle-outline',
-          buttons: [{ role: 'cancel' }]
-        });
-        toast.present();
-
+        this.toastService.showSuccess('¡Noticia eliminada con éxito!');
         this.router.navigate(['/news']);
       },
-      error: async (err) => {
-        const toast = await this.toastCtrl.create({
-          message: 'Error al eliminar la noticia',
-          duration: 4000,
-          position: 'top',
-          cssClass: 'toast-error',
-          icon: 'alert-circle-outline',
-          buttons: [{ role: 'cancel' }]
-        });
-        toast.present();
+      error: async () => {
+        this.toastService.showError('Error al eliminar la noticia');
       }
     });
   }

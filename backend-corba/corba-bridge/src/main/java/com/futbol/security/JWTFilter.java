@@ -148,7 +148,7 @@ public class JWTFilter implements Filter {
         String payload = partes[1];
         int padding = 4 - (payload.length() % 4);
         if (padding != 4) {
-            payload += "=".repeat(padding);
+            payload += new String(new char[padding]).replace('\0', '=');
         }
         return new String(Base64.getUrlDecoder().decode(payload), StandardCharsets.UTF_8);
     }

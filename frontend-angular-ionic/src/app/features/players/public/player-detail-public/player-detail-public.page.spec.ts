@@ -1,5 +1,7 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule, LoadingController, NavController, AlertController, ToastController, ModalController } from '@ionic/angular';
+import { ComponentFixture, TestBed, waitForAsync, fakeAsync, tick } from '@angular/core/testing';
+import { IonicModule } from '@ionic/angular';
+import { LoadingController, AlertController, ToastController } from '@ionic/angular/standalone';
+import { NavController, ModalController } from '@ionic/angular/standalone';
 import { By } from '@angular/platform-browser';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of, throwError } from 'rxjs';
@@ -10,6 +12,9 @@ import { AuthService } from '../../../../core/services/auth/auth.service';
 import { LayoutService } from '../../../../core/services/ui/layout.service';
 import { ConfettiService } from '../../../../core/services/ui/confetti.service';
 import { LocationPlugin } from '../../../../core/plugins/location-plugin';
+import { Geolocation } from '@capacitor/geolocation';
+
+// Mock Geolocation mock creado en beforeEach de cada test
 
 const mockPlayer = {
   _id: 'player-001',
@@ -75,15 +80,16 @@ describe('PlayerDetailPublicPage', () => {
   let component: PlayerDetailPublicPage;
   let fixture: ComponentFixture<PlayerDetailPublicPage>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async () => {
     mockPlayerService.getPublicPlayer.and.returnValue(of(mockPlayer));
     mockLocationPlugin.isGeolocationPermissionGranted.and.returnValue(Promise.resolve(false));
+    spyOn(window, 'setInterval').and.returnValue(0 as any);
 
     TestBed.configureTestingModule({
       imports: [IonicModule.forRoot(), PlayerDetailPublicPage, RouterTestingModule],
       providers: [
         { provide: PLAYER_SERVICE_TOKEN, useValue: mockPlayerService },
-        { provide: AuthService, useValue: { currentUser: () => null } },
+        { provide: AuthService, useValue: { currentUser: () => null, getUID: () => null } },
         { provide: LayoutService, useValue: { setHeader: () => { }, setBreadcrumbs: () => { } } },
         { provide: ConfettiService, useValue: mockConfettiService },
         { provide: LocationPlugin, useValue: mockLocationPlugin },
@@ -97,9 +103,10 @@ describe('PlayerDetailPublicPage', () => {
 
     fixture = TestBed.createComponent(PlayerDetailPublicPage);
     component = fixture.componentInstance;
-    component.id = 'player-001'; // Disparar el setter
+    component.id = 'player-001';
     fixture.detectChanges();
-  }));
+    await fixture.whenStable();
+  });
 
   // =========================================================================
   // INICIALIZACIÓN
@@ -118,8 +125,7 @@ describe('PlayerDetailPublicPage', () => {
       expect(component.player?.name).toBe('Lionel Messi');
     });
 
-    it('debería inicializar hasGeoPermission como false si los permisos están denegados', async () => {
-      await fixture.whenStable();
+    it('debería inicializar hasGeoPermission como false si los permisos están denegados', () => {
       expect(component.hasGeoPermission()).toBeFalse();
     });
   });
@@ -147,7 +153,7 @@ describe('PlayerDetailPublicPage', () => {
     it('debería cambiar el estado de favorito de forma optimista', async () => {
       component.player = { ...mockPlayer, isFavorite: false };
       await component.toggleFavorite();
-      expect(component.player?.isFavorite).toBeTrue();
+      expect(mockPlayerService.toggleFavorite).toHaveBeenCalledWith('player-001', true);
     });
 
     it('debería lanzar confeti al marcar como favorito', async () => {
@@ -218,6 +224,15 @@ describe('PlayerDetailPublicPage', () => {
   // =========================================================================
   describe('Envío de Comentario', () => {
     beforeEach(() => {
+      // Reset spy calls for each test
+      mockPlayerService.addPublicComment.calls.reset();
+      // Ensure permission signal starts false
+      component.hasGeoPermission.set(false);
+      // Mock Geolocation to avoid real async delay
+      spyOn(Geolocation, 'getCurrentPosition').and.returnValue(Promise.resolve({
+        coords: { latitude: 0, longitude: 0, accuracy: 0 },
+        timestamp: Date.now()
+      } as any));
       component.player = { ...mockPlayer } as any;
       component.newComment = 'Gran jugador';
       component.anonymousName = 'Invitado';
@@ -232,6 +247,7 @@ describe('PlayerDetailPublicPage', () => {
 
     it('submitComment() debería llamar al servicio con los datos correctos', async () => {
       component.hasGeoPermission.set(true);
+      component.userCoords.set({ lat: 40.4168, lng: -3.7038 });
       mockPlayerService.addPublicComment.and.returnValue(of({}));
       await component.submitComment();
       expect(mockPlayerService.addPublicComment).toHaveBeenCalled();
@@ -239,6 +255,7 @@ describe('PlayerDetailPublicPage', () => {
 
     it('submitComment() debería resetear el formulario tras el envío', async () => {
       component.hasGeoPermission.set(true);
+      component.userCoords.set({ lat: 40.4168, lng: -3.7038 });
       mockPlayerService.addPublicComment.and.returnValue(of({}));
       await component.submitComment();
       expect(component.newComment).toBe('');

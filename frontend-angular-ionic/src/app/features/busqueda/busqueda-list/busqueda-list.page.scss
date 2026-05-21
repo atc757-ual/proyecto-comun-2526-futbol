@@ -572,4 +572,18 @@
 .map-info-footer {
   background: var(--color-neutral-010);
   border-top: 1px solid var(--color-neutral-2);
+
+  .map-address-info {
+    flex: 1;
+    min-width: 0;
+
+    ion-icon {
+      flex-shrink: 0;
+    }
+
+    ion-spinner {
+      width: 15px;
+      height: 10px;
+    }
+  }
 }

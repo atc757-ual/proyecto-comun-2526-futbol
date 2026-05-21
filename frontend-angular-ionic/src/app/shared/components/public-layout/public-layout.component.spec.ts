@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { PublicLayoutComponent } from './public-layout.component';
 import { RouterTestingModule } from '@angular/router/testing';
-import { IonicModule, MenuController, NavController } from '@ionic/angular';
+import { IonicModule } from '@ionic/angular';
+import { MenuController, NavController } from '@ionic/angular/standalone';
 import { AuthService } from 'src/app/core/services/auth/auth.service';
 import { PlatformService } from 'src/app/core/services/system/platform.service';
 import { LayoutService } from 'src/app/core/services/ui/layout.service';
@@ -17,16 +18,20 @@ describe('PublicLayoutComponent', () => {
   beforeEach(waitForAsync(() => {
     const menuCtrlMock = jasmine.createSpyObj('MenuController', ['enable']);
     const navCtrlMock = jasmine.createSpyObj('NavController', ['navigateRoot']);
-    const authServiceMock = jasmine.createSpyObj('AuthService', ['logout', 'currentUser']);
+    const authServiceMock = jasmine.createSpyObj('AuthService', ['logout', 'currentUser', 'userData']);
     const platformServiceMock = {
       isDesktop: true,
       isMobileApp: false
     };
     const layoutServiceMock = {
-      breadcrumbs: () => []
+      breadcrumbs: () => [],
+      showHero: () => false,
+      title: () => '',
+      subtitle: () => ''
     };
 
     authServiceMock.currentUser.and.returnValue(null);
+    authServiceMock.userData.and.returnValue(null);
     authServiceMock.logout.and.returnValue(Promise.resolve());
 
     TestBed.configureTestingModule({
@@ -86,7 +91,7 @@ describe('PublicLayoutComponent', () => {
     });
 
     it('should do nothing if allowed', () => {
-      authServiceSpy.currentUser.and.returnValue({ id: '123' });
+      authServiceSpy.currentUser.and.returnValue({ uid: '123' } as any);
       const mockEvent = jasmine.createSpyObj('Event', ['preventDefault', 'stopPropagation']);
       const mockItem = { url: '/players' };
 
@@ -99,7 +104,7 @@ describe('PublicLayoutComponent', () => {
 
   describe('onLogoClick navigation checking', () => {
     it('should navigate to /home if user is logged in', () => {
-      authServiceSpy.currentUser.and.returnValue({ id: '123' });
+      authServiceSpy.currentUser.and.returnValue({ uid: '123' } as any);
       const mockEvent = jasmine.createSpyObj('Event', ['preventDefault', 'stopPropagation']);
 
       component.onLogoClick(mockEvent);

@@ -1,5 +1,6 @@
-import { ComponentFixture, TestBed, waitForAsync, fakeAsync, tick } from '@angular/core/testing';
-import { IonicModule, ModalController } from '@ionic/angular';
+import { ComponentFixture, TestBed, waitForAsync, fakeAsync, tick, flush } from '@angular/core/testing';
+import { IonicModule } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import { BusquedaListPage } from './busqueda-list.page';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -74,7 +75,7 @@ describe('BusquedaListPage', () => {
         IonicModule.forRoot(),
         BusquedaListPage,
         HttpClientTestingModule,
-        RouterTestingModule
+        RouterTestingModule.withRoutes([{ path: 'players', redirectTo: '' }])
       ],
       providers: [
         { provide: PLAYER_SERVICE_TOKEN, useValue: mockPlayerService },
@@ -109,8 +110,9 @@ describe('BusquedaListPage', () => {
       expect(component.searchType).toBe('player');
     });
 
-    it('debería inicializar isCheckingGeo como true', () => {
-      expect(component.isCheckingGeo).toBeTrue();
+    it('debería inicializar isCheckingGeo como false después de verificar', () => {
+      // After waitForAsync + fixture.detectChanges, ngOnInit has completed, so isCheckingGeo = false
+      expect(component.isCheckingGeo).toBeFalse();
     });
 
     it('debería cargar mis jugadores al iniciar', () => {
@@ -359,6 +361,8 @@ describe('BusquedaListPage', () => {
 
       expect(mockToastService.showSuccess).toHaveBeenCalled();
       expect(mockConfettiService.goldCelebrate).toHaveBeenCalled();
+      
+      flush(); // clear any remaining timers
     }));
   });
 

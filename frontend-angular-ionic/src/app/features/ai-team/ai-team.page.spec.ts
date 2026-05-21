@@ -33,7 +33,7 @@ describe('AiTeamPage (Karma/Jasmine)', () => {
       analyzeMyTeam: jasmine.createSpy('analyzeMyTeam').and.returnValue(of({
         analysis: 'Buen equipo con equilibrio táctico.',
         formation: '4-3-3',
-        starPlayer: 'Jugador 10',
+        starPlayer: 'Jugador 5',
         justification: 'Es el que más aporta al ataque.',
         idealEleven: mockPlayersList.map(p => ({
           name: p.name,
@@ -81,7 +81,7 @@ describe('AiTeamPage (Karma/Jasmine)', () => {
 
   it('should initialize header and breadcrumbs on ngOnInit', () => {
     component.ngOnInit();
-    expect(mockLayoutService.setHeader).toHaveBeenCalledWith(jasmine.objectContaining({ title: 'Futbol AI' }));
+    expect(mockLayoutService.setHeader).toHaveBeenCalledWith(jasmine.objectContaining({ title: 'Fútbol AI' }));
     expect(mockLayoutService.setBreadcrumbs).toHaveBeenCalled();
   });
 
@@ -109,13 +109,13 @@ describe('AiTeamPage (Karma/Jasmine)', () => {
     
     expect(mockAiService.analyzeMyTeam).toHaveBeenCalled();
     expect(component.analysisData).not.toBeNull();
-    expect(component.analysisData?.starPlayer).toBe('Jugador 10');
+    expect(component.analysisData?.starPlayer).toBe('Jugador 5');
     expect(mockLayoutService.setAILoading).toHaveBeenCalledWith(false);
     expect(component.isGenerating).toBeFalse();
 
     // Comprobar matching de imágenes
     expect(component.analysisData?.idealEleven[0].image_url).toBe('url-1');
-    expect((component.analysisData as any).starPlayerImage).toBe('url-10');
+    expect((component.analysisData as any).starPlayerImage).toBe('url-5');
 
     // Detener intervalo asíncrono pendiente
     component.generateTeam();
@@ -126,7 +126,7 @@ describe('AiTeamPage (Karma/Jasmine)', () => {
     component.analysisData = {
       analysis: 'Test',
       formation: '4-3-3',
-      starPlayer: 'Jugador 10',
+      starPlayer: 'Jugador 5',
       justification: 'Test',
       idealEleven: [
         { name: 'Portero', position: 'PO', role: 'Portero' },

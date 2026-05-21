@@ -71,6 +71,22 @@
                 [checked]="platformService.getUseJavaBackend()" (ionChange)="toggleBackend()"></ion-toggle>
             </div>
           </div>
+
+          <div class="separator my-s" *ngIf="!platformService.getUseJavaBackend()"></div>
+
+          <ion-item
+            *ngIf="!platformService.getUseJavaBackend()"
+            lines="none"
+            class="action-item is-blue"
+            detail="true"
+            button
+            (click)="openNodeStatusDashboard()">
+            <ion-icon slot="start" name="server-outline"></ion-icon>
+            <ion-label>
+              <h3 class="f-bold">Dashboard de Estado Node</h3>
+              <p>Abre /status en una pestaña nueva</p>
+            </ion-label>
+          </ion-item>
         </div>
       </ion-card-content>
       <ion-button (click)="confirmLogout()" expand="block" mode="ios" fill="outline" color="danger" shape="round"

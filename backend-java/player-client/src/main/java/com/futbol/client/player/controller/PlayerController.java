@@ -9,6 +9,8 @@ import com.futbol.player.feign.dto.PlayerPublicDTO;
 import org.springframework.http.HttpStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -81,6 +83,7 @@ public class PlayerController {
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Obtener jugador por ID", description = "Devuelve el detalle completo de un jugador")
     public ResponseEntity<ApiResult<Player>> getPlayerById(@PathVariable Long id) {
         Player player = playerRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Jugador no encontrado con ID: " + id));
@@ -89,6 +92,11 @@ public class PlayerController {
     }
 
     @PostMapping
+    @Operation(summary = "Crear jugador", description = "Crea un jugador nuevo con validación de campos")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Jugador creado"),
+        @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
+    })
     public ResponseEntity<ApiResult<Player>> createPlayer(@Valid @RequestBody Player player) {
         log.info("[PLAYER-CLIENT] Recibida petición POST para crear jugador: {}", player);
         try {
@@ -103,6 +111,12 @@ public class PlayerController {
     }
 
     @PutMapping
+    @Operation(summary = "Actualizar jugador", description = "Actualiza un jugador existente por su ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Jugador actualizado"),
+        @ApiResponse(responseCode = "404", description = "Jugador no encontrado"),
+        @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
+    })
     public ResponseEntity<ApiResult<Player>> updatePlayer(@Valid @RequestBody Player player) {
         log.info("[PLAYER-CLIENT] Recibida petición PUT para actualizar jugador con ID {}: {}", player.getId(), player);
         try {
@@ -120,6 +134,11 @@ public class PlayerController {
     }
 
     @PutMapping("/{id}/favorite")
+    @Operation(summary = "Actualizar favorito", description = "Marca o desmarca un jugador como favorito")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Favorito actualizado"),
+        @ApiResponse(responseCode = "404", description = "Jugador no encontrado")
+    })
     public ResponseEntity<ApiResult<Player>> toggleFavorite(
             @PathVariable Long id,
             @RequestParam Boolean isFavorite) {
@@ -132,6 +151,11 @@ public class PlayerController {
     }
 
     @DeleteMapping("/{id}")
+    @Operation(summary = "Eliminar jugador", description = "Elimina jugador y sus comentarios asociados")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Jugador eliminado"),
+        @ApiResponse(responseCode = "404", description = "Jugador no encontrado")
+    })
     public ResponseEntity<ApiResult<Void>> deletePlayer(@PathVariable Long id) {
         log.info("[PLAYER-CLIENT] Recibida petición DELETE para jugador con ID: {}", id);
         if (!playerRepository.existsById(id)) {

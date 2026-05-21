@@ -1,4 +1,4 @@
-﻿<form (ngSubmit)="onPublish()" #newsForm="ngForm">
+<form (ngSubmit)="onPublish()" #newsForm="ngForm">
   <div class="row">
     <div class="col-8 col-sm-12 pr-base px-0-sm mb-base">
       <ion-card>
@@ -44,7 +44,7 @@
               placeholder="Un breve resumen que enganche al lector..." class="futbol-input" [autoGrow]="true" rows="4"
               helperText="Resumen o frase importante" errorText="Min. 10 carácteres" (ionFocus)="setFocus('summary')"
               (ionBlur)="setFocus(null)" [class.is-focused]="focusedField === 'summary'"
-              [class.input-error]="summaryModel.invalid && summaryModel.touched" style="min-height: 80px;">
+              [class.input-error]="summaryModel.invalid && summaryModel.touched">
               <ion-icon *ngIf="isSummaryValid()" slot="end" name="checkmark-circle-outline" color="primary"
                 class="fs-20"></ion-icon>
             </ion-textarea>
@@ -59,7 +59,7 @@
               rows="5" helperText="Cuerpo principal de la noticia" errorText="Min. 20 carácteres"
               (ionFocus)="setFocus('content')" (ionBlur)="setFocus(null)"
               [class.is-focused]="focusedField === 'content'"
-              [class.input-error]="contentModel.invalid && contentModel.touched" style="min-height: 150px;">
+              [class.input-error]="contentModel.invalid && contentModel.touched">
               <ion-icon *ngIf="isContentValid()" slot="end" name="checkmark-circle-outline" color="primary"
                 class="fs-20"></ion-icon>
             </ion-textarea>
@@ -135,8 +135,7 @@
 
 
           <!-- Active Status Toggle -->
-          <div class="status-container mb-base d-flex ai-center jc-between"
-            style="padding: 4px 8px;">
+          <div class="status-container mb-base d-flex ai-center jc-between">
             <div class="d-flex ai-center">
               <ion-icon name="eye-outline" [color]="newsData.isActive ? 'primary' : 'medium'"
                 class="fs-24 mr-s"></ion-icon>
@@ -180,15 +179,15 @@
 
           <!-- Área de Carga (Solo visible si NO hay imagen) -->
           <div class="image-upload-area" *ngIf="!previewImage" (click)="fileInput.click()">
-            <div class="upload-content" style="flex-direction: column; gap: 4px;">
-              <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="upload-content">
+              <div class="upload-title-row">
                 <ion-icon name="cloud-upload-outline"></ion-icon>
                 <span>Subir imagen de portada</span>
               </div>
               <span class="fs-12 mt-s f-regular text-primary">Imagen 1920x1080px (recomendada)</span>
             </div>
           </div>
-          <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;">
+          <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" class="d-none">
           <div class="action-buttons-stack">
             <ion-button expand="block" mode="ios" shape="round" (click)="onPublish()"
               [disabled]="!newsForm.valid || isPublishing || !previewImage || !hasChanges || newsData.title.length < 5">

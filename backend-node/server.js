@@ -40,7 +40,11 @@ const mongoose = require('mongoose');
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'app_api', 'views'));
 
-app.get('/', async (req, res) => {
+app.get('/status.css', (req, res) => {
+  res.sendFile(path.join(__dirname, 'app_api', 'views', 'status.css'));
+});
+
+const renderStatusDashboard = async (req, res) => {
   try {
     const Player = mongoose.models.Player || mongoose.model('Player');
     const User = mongoose.models.User || mongoose.model('User');
@@ -87,7 +91,11 @@ app.get('/', async (req, res) => {
     console.error('Error al renderizar el dashboard de estado:', error);
     res.status(500).send('Error interno del servidor al cargar el panel de estado');
   }
-});
+};
+
+// Mantener visibilidad local y exponer ruta limpia para reverse proxy
+app.get('/', renderStatusDashboard);
+app.get('/status', renderStatusDashboard);
 
 
 // Captura de errores 404
@@ -109,8 +117,7 @@ if (process.env.NODE_ENV !== 'test') {
 
   process.on('uncaughtException', (err) => {
     console.error('[SERVER-CRITICAL] Uncaught Exception thrown:', err);
-    // En producción podrías querer hacer un restart suave, 
-    // pero aquí evitamos que el servidor se detenga.
+    // En producción podría hacerse un restart suave,  pero aquí evitamos que el servidor se detenga.
   });
 }
 

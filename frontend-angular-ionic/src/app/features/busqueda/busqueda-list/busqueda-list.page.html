@@ -176,7 +176,7 @@
                     </div>
                     <ion-checkbox *ngIf="!isAlreadyAdded(player.strPlayer)"
                       [checked]="selectedPlayers.has(player.idPlayer)" mode="md"
-                      style="pointer-events: none;"></ion-checkbox>
+                      class="pe-none"></ion-checkbox>
                   </div>
                 </div>
               </div>
@@ -283,15 +283,15 @@
         <div class="map-container-wrapper animate-fade-in" *ngIf="hasLocation && hasGeoPermission">
           <div id="busqueda-map" class="mini-scouting-map"></div>
           <div class="map-info-footer d-flex ai-center jc-between p-xs">
-            <div class="d-flex ai-center gap-xs overflow-hidden" style="flex: 1; min-width: 0;">
-              <ion-icon name="location-outline" class="text-primary fs-14" style="flex-shrink: 0;"></ion-icon>
+            <div class="d-flex ai-center gap-xs overflow-hidden map-address-info">
+              <ion-icon name="location-outline" class="text-primary fs-14"></ion-icon>
               <span class="fs-10 text-neutral-7 f-regular text-ellipsis" *ngIf="!isRevGeocoding">{{ currentAddress
                 }}</span>
-              <ion-spinner name="dots" *ngIf="isRevGeocoding" style="width: 15px; height: 10px;"></ion-spinner>
+              <ion-spinner name="dots" *ngIf="isRevGeocoding"></ion-spinner>
             </div>
             <!-- Coordenadas GPS -->
             <div class="d-flex ai-center gap-xs ml-auto pl-s" *ngIf="currentLocation?.coordinates">
-              <span class="fs-10 f-bold text-neutral-8 bg-neutral-2 px-xs py-xxs border-radius-soft" style="white-space: nowrap;">
+              <span class="fs-10 f-semibold text-neutral-8 px-xs py-xxs border-radius-soft nowrap">
                 {{ currentLocation!.coordinates![1] | number:'1.4-4' }}, {{ currentLocation!.coordinates![0] | number:'1.4-4' }}
               </span>
             </div>

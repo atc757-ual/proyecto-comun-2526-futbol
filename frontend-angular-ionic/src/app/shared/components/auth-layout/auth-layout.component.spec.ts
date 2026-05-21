@@ -12,8 +12,11 @@ describe('AuthLayoutComponent', () => {
 
   beforeEach(waitForAsync(() => {
     const layoutServiceMock = {
-      showHero: () => false,
-      breadcrumbs: () => []
+      showHero: jasmine.createSpy('showHero').and.returnValue(false),
+      breadcrumbs: jasmine.createSpy('breadcrumbs').and.returnValue([]),
+      isLogin: jasmine.createSpy('isLogin').and.returnValue(false),
+      authTitle: jasmine.createSpy('authTitle').and.returnValue('Bienvenido'),
+      authSubtitle: jasmine.createSpy('authSubtitle').and.returnValue('Accede a tu cuenta')
     };
     const platformServiceMock = {
       isDesktop: true,

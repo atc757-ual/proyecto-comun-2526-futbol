@@ -86,8 +86,7 @@
     <ion-checkbox mode="ios" slot="start" [(ngModel)]="acceptTerms" name="acceptTerms" [disabled]="!termsInteractable"
       (ionChange)="onTermsCheckboxChange($event)"></ion-checkbox>
     <ion-label class="f-medium ml-s">
-      Acepto los <a class="text-primary f-semibold pointer" (click)="openTermsOverlay()"
-        style="text-decoration: underline; cursor: pointer;">Términos y Condiciones</a>
+      Acepto los <a class="text-primary f-semibold terms-link" (click)="openTermsOverlay()">Términos y Condiciones</a>
     </ion-label>
   </ion-item>
 
@@ -132,8 +131,7 @@
               [disabled]="!hasReadTerms" (click)="acceptAndCloseOverlay()">
               He leído y acepto los términos
             </ion-button>
-            <p class="text-neutral-5 fs-12 mt-s" *ngIf="!hasReadTerms"
-              style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+            <p class="text-neutral-5 fs-12 mt-s d-flex ai-center jc-center gap-xs" *ngIf="!hasReadTerms">
               <ion-icon name="arrow-down-outline" class="pulse-animation"></ion-icon>
               Por favor, desplázate hasta el final para poder aceptar.
             </p>

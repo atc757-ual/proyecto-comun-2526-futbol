@@ -14,13 +14,13 @@ const formatToCorbaDate = (dateStr) => {
     if (dateStr.includes('-')) {
         const parts = dateStr.split('T')[0].split('-');
         if (parts.length === 3) {
-            return `${parts[2]}/${parts[1]}/2025`; // DD/MM/2025
+            return `${parts[2]}/${parts[1]}/${parts[0]}`; // YYYY-MM-DD -> DD/MM/YYYY
         }
     }
     if (dateStr.includes('/')) {
         const parts = dateStr.split('/');
         if (parts.length === 3) {
-            return `${parts[0].padStart(2, '0')}/${parts[1].padStart(2, '0')}/2025`;
+            return `${parts[0].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[2]}`;
         }
     }
     return dateStr;
@@ -60,8 +60,8 @@ const findOne = async (id, req) => {
 const create = async (newsData, req) => {
     const adminName = req.user?.email || req.user?.name || 'admin@futbol.com';
     const now = new Date();
-    const displayDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/2025`;
-    const isoDate2025 = `2025-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}T${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}.000Z`;
+    const displayDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`;
+    const isoDate = now.toISOString();
 
     const payload = {
         id: newsData.id || `news-${Math.random().toString(36).substr(2, 9)}`,
@@ -77,8 +77,8 @@ const create = async (newsData, req) => {
         isFeatured: newsData.isFeatured !== undefined ? newsData.isFeatured : false,
         createdBy: adminName,
         updatedBy: adminName,
-        createdAt: isoDate2025,
-        updatedAt: isoDate2025
+        createdAt: isoDate,
+        updatedAt: isoDate
     };
 
     const response = await axios.post(CORBA_BRIDGE_URL, payload, { headers: getHeaders(req) });
@@ -90,7 +90,7 @@ const update = async (id, newsData, req) => {
     const payload = {
         id: id,
         ...newsData,
-        date: formatToCorbaDate(newsData.date) || "12/05/2025",
+        date: formatToCorbaDate(newsData.date),
         updatedBy: req.user?.email || 'Admin',
         updatedAt: isoDate
     };
@@ -123,8 +123,8 @@ const bulkCreate = async (newsList, req) => {
 
     const adminName = req.user?.email || req.user?.name || 'admin@futbol.com';
     const now = new Date();
-    const displayDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/2025`;
-    const isoDate2025 = `2025-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}T${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}.000Z`;
+    const displayDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`;
+    const isoDate = now.toISOString();
 
     try {
         const payload = newsList.map((n, index) => {
@@ -143,8 +143,8 @@ const bulkCreate = async (newsList, req) => {
                 isFeatured: n.isFeatured !== undefined ? n.isFeatured : false,
                 createdBy: adminName,
                 updatedBy: adminName,
-                createdAt: isoDate2025,
-                updatedAt: isoDate2025
+                createdAt: isoDate,
+                updatedAt: isoDate
             };
         });
 

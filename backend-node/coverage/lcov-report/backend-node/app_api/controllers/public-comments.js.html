@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">31.25% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>5/16</span>
+                <span class='fraction'>16/16</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">75% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/8</span>
+                <span class='fraction'>6/8</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>1/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">31.25% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>5/16</span>
+                <span class='fraction'>16/16</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -100,20 +100,20 @@
 <a name='L35'></a><a href='#L35'>35</a>
 <a name='L36'></a><a href='#L36'>36</a>
 <a name='L37'></a><a href='#L37'>37</a>
-<a name='L38'></a><a href='#L38'>38</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
+<a name='L38'></a><a href='#L38'>38</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -122,19 +122,19 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const mongoose = require('mongoose');
@@ -142,32 +142,32 @@ const Player = mongoose.model('Player');
 const { sendApiResult } = require('./apiResult');
 &nbsp;
 // POST /api/public/players/:playerid/comments
-const publicCommentsCreate = <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
-<span class="cstat-no" title="statement not covered" >    try {</span>
-        const player = <span class="cstat-no" title="statement not covered" >await Player.findById(req.params.playerid).exec();</span>
-<span class="cstat-no" title="statement not covered" >        if (!player) {</span>
-<span class="cstat-no" title="statement not covered" >            return sendApiResult(res, 404, "Jugador no encontrado");</span>
+const publicCommentsCreate = async (req, res) =&gt; {
+    try {
+        const player = await Player.findById(req.params.playerid).exec();
+        if (!player) {
+            return sendApiResult(res, 404, "Jugador no encontrado");
         }
 &nbsp;
         // Estructura simplificada para la comunidad pública
-        const newComment = <span class="cstat-no" title="statement not covered" >{</span>
+        const newComment = {
             content: req.body.content,
-            rating: req.body.rating || 5,
-            autor_name: req.body.autor_name || 'Invitado',
+            rating: req.body.rating || <span class="branch-1 cbranch-no" title="branch not covered" >5,</span>
+            autor_name: req.body.autor_name || <span class="branch-1 cbranch-no" title="branch not covered" >'Invitado',</span>
             user_id: req.body.user_id || null,
             status: true,
             created_at: new Date()
         };
 &nbsp;
-<span class="cstat-no" title="statement not covered" >        player.comments.push(newComment);</span>
-        const savedPlayer = <span class="cstat-no" title="statement not covered" >await player.save();</span>
-        const lastComment = <span class="cstat-no" title="statement not covered" >savedPlayer.comments[savedPlayer.comments.length - 1];</span>
+        player.comments.push(newComment);
+        const savedPlayer = await player.save();
+        const lastComment = savedPlayer.comments[savedPlayer.comments.length - 1];
 &nbsp;
-<span class="cstat-no" title="statement not covered" >        sendApiResult(res, 201, "Opinión publicada con éxito", lastComment);</span>
+        sendApiResult(res, 201, "Opinión publicada con éxito", lastComment);
 &nbsp;
     } catch (err) {
-<span class="cstat-no" title="statement not covered" >        console.error('[BACKEND-PUBLIC] Error en publicCommentsCreate:', err);</span>
-<span class="cstat-no" title="statement not covered" >        sendApiResult(res, 400, "Error al publicar en la comunidad: " + err.message);</span>
+        console.error('[BACKEND-PUBLIC] Error en publicCommentsCreate:', err);
+        sendApiResult(res, 400, "Error al publicar en la comunidad: " + err.message);
     }
 };
 &nbsp;
@@ -181,7 +181,7 @@ module.exports = {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-05-19T18:12:29.147Z
+                at 2026-05-20T20:52:44.743Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

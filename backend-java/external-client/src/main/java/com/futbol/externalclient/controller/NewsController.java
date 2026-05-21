@@ -8,11 +8,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/api/news")
 @Tag(name = "News API", description = "Gestión de noticias a través del Bridge CORBA")
 public class NewsController {
+
+    private static final Pattern ISO_DATE_PATTERN = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}$");
+    private static final Pattern CORBA_DATE_PATTERN = Pattern.compile("^\\d{2}/\\d{2}/\\d{4}$");
 
     private final NewsFeignClient newsClient;
 
@@ -54,7 +58,20 @@ public class NewsController {
             @RequestHeader("Authorization") String auth,
             @RequestHeader("X-User-Role") String role,
             @RequestBody NewsDTO news) {
+        normalizeDate(news);
         return newsClient.create(auth, role, news);
+    }
+
+    @PostMapping("/bulk")
+    @Operation(summary = "Carga masiva de noticias (Admin)")
+    public ApiResult<List<NewsDTO>> bulkCreateNews(
+            @RequestHeader("Authorization") String auth,
+            @RequestHeader("X-User-Role") String role,
+            @RequestBody List<NewsDTO> newsList) {
+        if (newsList != null) {
+            newsList.forEach(this::normalizeDate);
+        }
+        return newsClient.bulkCreate(auth, role, newsList);
     }
 
     @PutMapping("/{id}")
@@ -64,6 +81,7 @@ public class NewsController {
             @RequestHeader("X-User-Role") String role,
             @PathVariable String id,
             @RequestBody NewsDTO news) {
+        normalizeDate(news);
         return newsClient.update(auth, role, id, news);
     }
 
@@ -74,5 +92,26 @@ public class NewsController {
             @RequestHeader("X-User-Role") String role,
             @PathVariable String id) {
         return newsClient.delete(auth, role, id);
+    }
+
+    private void normalizeDate(NewsDTO news) {
+        if (news == null || news.getDate() == null) {
+            return;
+        }
+
+        String rawDate = news.getDate().trim();
+        if (rawDate.isEmpty()) {
+            return;
+        }
+
+        if (CORBA_DATE_PATTERN.matcher(rawDate).matches()) {
+            return;
+        }
+
+        String dateOnly = rawDate.contains("T") ? rawDate.split("T")[0] : rawDate;
+        if (ISO_DATE_PATTERN.matcher(dateOnly).matches()) {
+            String[] parts = dateOnly.split("-");
+            news.setDate(parts[2] + "/" + parts[1] + "/" + parts[0]);
+        }
     }
 }

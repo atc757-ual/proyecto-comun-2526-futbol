@@ -4,9 +4,10 @@ import { FormsModule } from '@angular/forms';
 import {
   IonButton, IonIcon, IonSearchbar, IonSpinner,
   IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonItem, IonLabel,
-  IonInput, IonSelect, IonSelectOption, IonThumbnail, ModalController, ToastController,
+  IonInput, IonSelect, IonSelectOption, IonThumbnail, ModalController,
   IonBadge
 } from '@ionic/angular/standalone';
+import { ToastService } from '../../../core/services/ui/toast.service';
 import { RouterModule } from '@angular/router';
 import { addIcons } from 'ionicons';
 import {
@@ -39,14 +40,13 @@ export class PlayersAllPage implements OnInit {
   private authService = inject(AuthService);
   private layoutService = inject(LayoutService);
   private modalCtrl = inject(ModalController);
-  private toastCtrl = inject(ToastController);
+  private toastService = inject(ToastService);
 
   // --- SIGNALS DE ESTADO ---
   private _allPlayers = signal<Player[]>([]);
   public searchTerm = signal<string>('');
   public isLoading = signal<boolean>(false);
   public isAdmin = false;
-  public focusedField: string | null = null;
 
   // Paginación con Signals
   public currentPage = signal<number>(1);
@@ -221,25 +221,13 @@ export class PlayersAllPage implements OnInit {
   private executeDeletion(id: string) {
     this.playerService.deletePlayer(id).subscribe({
       next: () => {
-        this.showToast('Jugador eliminado correctamente', 'success', 'checkmark-circle-outline');
+        this.toastService.showSuccess('Jugador eliminado correctamente');
         this.loadPlayers();
       },
       error: () => {
-        this.showToast('Error al eliminar el jugador', 'error', 'alert-circle-outline');
+        this.toastService.showError('Error al eliminar el jugador');
       }
     });
-  }
-
-  async showToast(message: string, type: 'success' | 'error', icon: string) {
-    const toast = await this.toastCtrl.create({
-      message,
-      duration: 3000,
-      position: 'top',
-      icon: icon,
-      cssClass: `toast-${type}`,
-      buttons: [{ icon: icon, side: 'start', handler: () => { } }]
-    });
-    toast.present();
   }
 
   handleImageError(event: any) {

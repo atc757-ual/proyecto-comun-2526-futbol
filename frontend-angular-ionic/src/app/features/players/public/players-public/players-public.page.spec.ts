@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule, NavController } from '@ionic/angular';
+import { IonicModule } from '@ionic/angular';
+import { NavController } from '@ionic/angular/standalone';
 import { By } from '@angular/platform-browser';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
@@ -154,23 +155,26 @@ describe('PlayersPublicPage', () => {
   // REDIRECCIÓN
   // =========================================================================
   describe('Redirección', () => {
-    it('debería redirigir a /players si hay sesión activa', () => {
+    it('debería cargar jugadores al inicializar incluso con sesión activa', () => {
       // Recrear con usuario logueado
       TestBed.resetTestingModule();
+      const layoutServiceMock2 = jasmine.createSpyObj('LayoutService', ['setHeader', 'setBreadcrumbs']);
       TestBed.configureTestingModule({
         imports: [IonicModule.forRoot(), PlayersPublicPage, RouterTestingModule],
         providers: [
           { provide: PLAYER_SERVICE_TOKEN, useValue: mockPlayerService },
-          { provide: LayoutService, useValue: { setHeader: () => { }, setBreadcrumbs: () => { } } },
+          { provide: LayoutService, useValue: layoutServiceMock2 },
           { provide: PlatformService, useValue: { isMobile: false } },
           { provide: AuthService, useValue: { currentUser: () => ({ uid: 'user1', email: 'u@test.com' }) } },
           { provide: NavController, useValue: mockNavCtrl }
         ]
       }).compileComponents();
 
+      mockPlayerService.getPublicPlayers.calls.reset();
       const f2 = TestBed.createComponent(PlayersPublicPage);
-      f2.componentInstance.ngOnInit();
-      expect(mockNavCtrl.navigateRoot).toHaveBeenCalledWith('/players');
+      f2.detectChanges();
+      expect(layoutServiceMock2.setHeader).toHaveBeenCalled();
+      expect(layoutServiceMock2.setBreadcrumbs).toHaveBeenCalled();
     });
   });
 });

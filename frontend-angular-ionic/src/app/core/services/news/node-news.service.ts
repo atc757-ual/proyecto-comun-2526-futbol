@@ -22,6 +22,26 @@ export class NodeNewsService implements INewsService {
   private feedUrl = environment.nodeApiUrl + '/news'; 
   private featuredUrl = environment.nodeApiUrl + '/news'; 
 
+  private normalizeDateForApi(dateValue?: string): string {
+    if (!dateValue) return '';
+
+    // UI input type="date" typically uses YYYY-MM-DD
+    if (dateValue.includes('-')) {
+      const [year, month, day] = dateValue.split('T')[0].split('-');
+      if (year && month && day) return `${day}/${month}/${year}`;
+    }
+
+    // Already in expected CORBA format DD/MM/YYYY
+    return dateValue;
+  }
+
+  private normalizeNewsForApi(news: NewsItem): NewsItem {
+    return {
+      ...news,
+      date: this.normalizeDateForApi(news.date)
+    };
+  }
+
   private getUserRoleHeader(): string {
     const token = localStorage.getItem('jwt_token');
     if (!token) return 'USER';
@@ -148,7 +168,7 @@ export class NodeNewsService implements INewsService {
           }
 
           // 2. Preparar Payload Final
-          const finalNews = { ...news, imageUrl };
+          const finalNews = this.normalizeNewsForApi({ ...news, imageUrl });
           
           // 3. Llamar a la API de Node (que llama a CORBA)
           const request$ = isEdit ? this.updateNews(finalNews) : this.addNews(finalNews);
@@ -172,7 +192,7 @@ export class NodeNewsService implements INewsService {
     const user = this.auth.currentUser;
     
     const payload = {
-      ...news,
+      ...this.normalizeNewsForApi(news),
       createdBy: user?.email || 'Anónimo',
       createdAt: new Date().toISOString()
     };
@@ -184,7 +204,7 @@ export class NodeNewsService implements INewsService {
     const user = this.auth.currentUser;
 
     const payload = {
-      ...news,
+      ...this.normalizeNewsForApi(news),
       updatedBy: user?.email || 'Anónimo',
       updatedAt: new Date().toISOString()
     };
@@ -201,6 +221,6 @@ export class NodeNewsService implements INewsService {
    * Carga masiva de noticias (Admin)
    */
   bulkAddNews(newsList: NewsItem[]): Observable<any> {
-    return this.http.post(`${this.apiUrl}/bulk`, newsList);
+    return this.http.post(`${this.apiUrl}/bulk`, newsList.map(news => this.normalizeNewsForApi(news)));
   }
 }

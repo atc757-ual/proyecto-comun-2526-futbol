@@ -41,14 +41,13 @@ public class SecurityConfig {
             .pathMatchers("/actuator/**").permitAll()
             .pathMatchers(HttpMethod.GET, "/api/players/public/**").permitAll()
             .pathMatchers(HttpMethod.GET, "/api/news/**").permitAll()
-            .pathMatchers(HttpMethod.GET, "/api/external/live/**", "/api/external/tv/**").permitAll()
             // Rutas Protegidas (Requieren Login)
             .pathMatchers(HttpMethod.POST, "/api/players").authenticated()
             .pathMatchers(HttpMethod.PUT, "/api/players/**").authenticated()
             .pathMatchers(HttpMethod.DELETE, "/api/players/**").authenticated()
             .pathMatchers(HttpMethod.POST, "/api/players/*/comments").authenticated()
+            .pathMatchers(HttpMethod.GET, "/api/external/**").authenticated()
             .pathMatchers(HttpMethod.POST, "/api/ai/analyze").authenticated()
-            .pathMatchers(HttpMethod.GET, "/api/external/players").authenticated()
             // El resto requiere autenticación básica
             .anyExchange().authenticated();
 

@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule, ModalController, ToastController } from '@ionic/angular';
+import { IonicModule } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import { PlayersPage } from './players.page';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -7,6 +8,7 @@ import { of } from 'rxjs';
 import { PLAYER_SERVICE_TOKEN } from '../../../core/services/players/player.service.token';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { LayoutService } from '../../../core/services/ui/layout.service';
+import { ToastService } from '../../../core/services/ui/toast.service';
 
 describe('PlayersPage', () => {
   let component: PlayersPage;
@@ -43,7 +45,13 @@ describe('PlayersPage', () => {
           }
         },
         { provide: ModalController, useValue: {} },
-        { provide: ToastController, useValue: {} }
+        {
+          provide: ToastService,
+          useValue: {
+            showSuccess: () => Promise.resolve(),
+            showError: () => Promise.resolve()
+          }
+        }
       ]
     }).compileComponents();
 

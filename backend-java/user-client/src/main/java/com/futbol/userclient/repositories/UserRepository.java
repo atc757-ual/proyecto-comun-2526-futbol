@@ -1,8 +1,9 @@
-package com.futbol.gateway.repositories;
+package com.futbol.userclient.repositories;
 
-import com.futbol.gateway.models.User;
+import com.futbol.userclient.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
 import java.util.Optional;
 import java.util.List;
 

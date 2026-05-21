@@ -51,7 +51,7 @@ public class XMLParser {
      * @return El valor de texto del elemento, o cadena vacía si no existe
      */
     public static String getText(Document doc, String tagName) {
-        var nodes = doc.getElementsByTagName(tagName);
+        org.w3c.dom.NodeList nodes = doc.getElementsByTagName(tagName);
         if (nodes.getLength() > 0 && nodes.item(0).getTextContent() != null) {
             return nodes.item(0).getTextContent().trim();
         }

@@ -56,20 +56,8 @@ export class NodePlayerService implements IPlayerService {
     );
   }
 
-  getPlayerSquad(externalId: number): Observable<any> {
-    return this.http.get<any>(`${environment.nodeApiUrl}/external/player-squad/${externalId}`).pipe(
-      map(res => res.data)
-    );
-  }
-
-  getLatestPlayerStats(externalId: number): Observable<any> {
-    return this.http.get<any>(`${environment.nodeApiUrl}/external/player-stats-latest/${externalId}`).pipe(
-      map(res => res.data)
-    );
-  }
-
   searchTSDBPlayers(name: string): Observable<any[]> {
-    return this.http.get<any>(`${environment.nodeApiUrl}/external/tsdb/search`, {
+    return this.http.get<any>(`${environment.nodeApiUrl}/external/tsdb/search-players`, {
       params: { name }
     }).pipe(
       map(res => res.data || [])
@@ -88,21 +76,10 @@ export class NodePlayerService implements IPlayerService {
     );
   }
 
-  getPlayerCareer(id: string): Observable<any[]> {
-    return this.http.get<any>(`${environment.nodeApiUrl}/external/tsdb/career/${id}`).pipe(
-      map(res => res.data || [])
-    );
-  }
 
   lookupTSDBLeague(id: string): Observable<any> {
     return this.http.get<any>(`${environment.nodeApiUrl}/external/tsdb/league/${id}`).pipe(
       map(res => res.data)
-    );
-  }
-
-  getTSDBLeagues(): Observable<any[]> {
-    return this.http.get<any>(`${environment.nodeApiUrl}/external/tsdb/leagues`).pipe(
-      map(res => res.data || [])
     );
   }
 

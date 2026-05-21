@@ -78,6 +78,35 @@ services:
       retries: 10
       start_period: 40s
 
+  user-client:
+    build:
+      context: ./backend-java
+      args:
+        SERVICE_NAME: user-client
+    container_name: football-user-client
+    environment:
+      JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://football-postgres:5432/${DB_NAME:-football_db}"
+      SPRING_DATASOURCE_USERNAME: "${DB_USER:-root}"
+      SPRING_DATASOURCE_PASSWORD: "${DB_PASSWORD:-root}"
+      SERVER_PORT: 8083
+      FIREBASE_SERVICE_ACCOUNT: "/app/firebase-credentials.json"
+    volumes:
+      - ./firebase-credentials.json:/app/firebase-credentials.json
+    depends_on:
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      db-java:
+        condition: service_started
+    networks:
+      - football-network
+    ports:
+      - "8083:8083"
+
   gateway:
     build:
       context: ./backend-java
@@ -105,6 +134,8 @@ services:
         condition: service_healthy
       eureka-server:
         condition: service_healthy
+      user-client:
+        condition: service_started
     networks:
       - football-network
 

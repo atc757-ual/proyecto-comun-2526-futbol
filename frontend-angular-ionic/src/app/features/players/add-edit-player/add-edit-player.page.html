@@ -360,7 +360,7 @@
                 </div>
                 <!-- Coordenadas GPS -->
                 <div class="d-flex ai-center gap-xs ml-auto pl-s" *ngIf="player.location?.coordinates">
-                  <span class="fs-10 f-bold text-neutral-8 bg-neutral-2 px-xs py-xxs border-radius-soft coord-span">
+                  <span class="fs-10 f-semibold text-neutral-8 px-xs py-xxs border-radius-soft coord-span">
                     {{ $any(player.location?.coordinates)[1] | number:'1.4-4' }}, {{
                     $any(player.location?.coordinates)[0] | number:'1.4-4' }}
                   </span>

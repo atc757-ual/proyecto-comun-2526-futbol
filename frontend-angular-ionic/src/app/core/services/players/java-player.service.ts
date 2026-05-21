@@ -479,6 +479,8 @@ export class JavaPlayerService implements IPlayerService {
       p.birth_country = p.birth_country || p.birthCountry;
       p.secondary_team = p.secondary_team || p.secondaryTeam;
       p.external_id = p.external_id !== undefined && p.external_id !== null ? p.external_id : p.externalId;
+      p.user_id = p.user_id || p.userId;
+      p.userId = p.userId || p.user_id;
       p.is_manual = p.is_manual !== undefined ? p.is_manual : p.isManual;
       p.is_favorite = p.is_favorite !== undefined ? p.is_favorite : p.isFavorite;
       p.is_featured = p.is_featured !== undefined ? p.is_featured : p.isFeatured;

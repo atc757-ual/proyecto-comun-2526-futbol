@@ -15,7 +15,7 @@ const mockPlayers = Array.from({ length: 12 }, (_, i) => ({
   name: `Jugador ${i}`,
   team: `Equipo ${i % 3}`,
   league: 'La Liga',
-  nationality: i % 2 === 0 ? 'Español' : 'Argentino',
+  nationality: i % 2 === 0 ? 'España' : 'Argentina',
   age: 20 + i,
   position: 'Delantero',
   image_url: '',
@@ -26,7 +26,7 @@ const mockPlayerDetail = {
   _id: 'player-0',
   name: 'Jugador 0',
   team: 'Equipo 0',
-  nationality: 'Español',
+  nationality: 'España',
   age: 20,
   position: 'Delantero',
   league: 'La Liga',
@@ -45,14 +45,14 @@ const mockPlayerDetail = {
 const stubPublicPlayers = (alias = 'getPublicPlayers') => {
   cy.intercept('GET', '**/players/public**', {
     statusCode: 200,
-    body: mockPlayers
+    body: { data: mockPlayers }
   }).as(alias);
 };
 
 const stubPlayerDetail = (alias = 'getPlayerDetail') => {
   cy.intercept('GET', `**/players/public/${mockPlayerDetail._id}**`, {
     statusCode: 200,
-    body: mockPlayerDetail
+    body: { data: mockPlayerDetail }
   }).as(alias);
 };
 
@@ -117,7 +117,7 @@ describe('Players Public — Búsqueda', () => {
   });
 
   it('debería filtrar por nacionalidad', () => {
-    cy.get('ion-searchbar').find('input').type('Español');
+    cy.get('ion-searchbar').find('input').type('España');
     cy.get('.player-premium-card, .player-mobile-item').should('have.length.at.least', 1);
   });
 });
@@ -258,7 +258,7 @@ describe('Player Detail Public — Comentarios Paginados', () => {
   beforeEach(() => {
     cy.intercept('GET', `**/players/public/${mockPlayerDetail._id}**`, {
       statusCode: 200,
-      body: playerWithComments
+      body: { data: playerWithComments }
     }).as('getPlayerWithComments');
 
     cy.visit(`/player-detail-public/${mockPlayerDetail._id}`);

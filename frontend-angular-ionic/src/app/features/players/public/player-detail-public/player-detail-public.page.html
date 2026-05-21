@@ -157,8 +157,7 @@
                 <div class="d-flex ai-center jc-between gap-s">
                   <ion-button
                     [disabled]="!newComment.trim() || !anonymousName.trim() || !hasGeoPermission() || isSubmittingComment || newRating === 0"
-                    (click)="submitComment()" mode="ios" shape="round" class="futbol-btn-primary f-bold flex-grow-1 m-0"
-                    style="min-height: 42px;">
+                    (click)="submitComment()" mode="ios" shape="round" class="futbol-btn-primary f-bold flex-grow-1 m-0">
                     <ion-spinner name="crescent" *ngIf="isSubmittingComment" slot="start" size="small"></ion-spinner>
                     <span *ngIf="!isSubmittingComment">Publicar Opinión</span>
                     <span *ngIf="isSubmittingComment">Publicando...</span>

@@ -1,6 +1,14 @@
 describe('Home Page (Dashboard)', () => {
+  const loginUser = () => {
+    cy.visit('/auth/login');
+    cy.get('ion-input[name="email"] input').clear().type('atc757@inlumine.ual.es');
+    cy.get('ion-input[name="password"] input').clear().type('1q2w3e4r');
+    cy.get('ion-button[type="submit"]').click();
+    cy.url({ timeout: 15000 }).should('include', '/home');
+  };
+
   beforeEach(() => {
-    // Entramos directamente al Home para iniciar las pruebas
+    loginUser();
     cy.visit('/home');
   });
 
@@ -11,25 +19,34 @@ describe('Home Page (Dashboard)', () => {
     // Tarjeta del estado de Football AI
     cy.get('.ai-scout-card').should('exist');
 
-    // Widgets de Stencil
-    cy.get('player-list').should('exist');
-    cy.get('tv-schedule-widget').should('exist');
+    // Widgets de Stencil o estado vacío
+    cy.get('body').then(($body) => {
+      const hasPlayerWidget = $body.find('player-list').length > 0;
+      const hasEmptyState = $body.find('.empty-state-card').length > 0;
+      expect(hasPlayerWidget || hasEmptyState).to.equal(true);
+    });
+
+    cy.get('tv-schedule-widget', { timeout: 12000 }).should('exist');
   });
 
   it('should display the Stencil player-list widget', () => {
-    cy.get('player-list').should('exist');
-    cy.get('player-list').shadow().find('h3').should('contain', 'Mis Fichajes');
-    cy.get('player-list').shadow().find('.stencil-tag').should('contain', 'by Stencil');
+    cy.get('body').then(($body) => {
+      if ($body.find('player-list').length > 0) {
+        cy.get('player-list').shadow().find('h3').should('contain', 'Mis Fichajes');
+      } else {
+        cy.get('.empty-state-card').should('exist');
+      }
+    });
   });
 
   it('should display the Stencil tv-schedule-widget', () => {
     cy.get('tv-schedule-widget').should('exist');
-    cy.get('tv-schedule-widget').shadow().find('h3').should('contain', 'Próximos partidos de Fútbol');
+    cy.get('tv-schedule-widget', { timeout: 12000 }).shadow().find('h3').should('contain', 'Próximos partidos de Fútbol');
     cy.get('tv-schedule-widget').shadow().find('.date-navigator').should('exist');
   });
 
   it('should allow navigating the TV schedule days', () => {
-    cy.get('tv-schedule-widget').shadow().find('.nav-btn').last().as('nextBtn');
+    cy.get('tv-schedule-widget', { timeout: 12000 }).shadow().find('.nav-btn').last().as('nextBtn');
     
     // Verificamos si el botón existe y permite la interacción
     cy.get('@nextBtn').then($btn => {

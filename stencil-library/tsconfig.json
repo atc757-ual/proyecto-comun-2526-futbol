@@ -8,7 +8,7 @@
       "dom",
       "es2017"
     ],
-    "moduleResolution": "node",
+    "moduleResolution": "node16",
     "module": "esnext",
     "target": "es2017",
     "noUnusedLocals": true,
@@ -17,7 +17,8 @@
     "jsxFactory": "h",
     "inlineSourceMap": true,
     "inlineSources": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "ignoreDeprecations": "5.0"
   },
   "include": [
     "src"

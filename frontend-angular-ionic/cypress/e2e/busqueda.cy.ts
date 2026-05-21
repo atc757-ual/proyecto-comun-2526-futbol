@@ -13,11 +13,11 @@
 
 // ─── Helper: login antes de cada suite ────────────────────────────────────────
 const login = () => {
-  cy.visit('/login');
-  cy.get('ion-input[name="email"] input').type('admin@test.com');
-  cy.get('ion-input[name="password"] input').type('admin123456');
+  cy.visit('/auth/login');
+  cy.get('ion-input[name="email"] input').clear().type('atc757@inlumine.ual.es');
+  cy.get('ion-input[name="password"] input').clear().type('1q2w3e4r');
   cy.get('ion-button[type="submit"]').click();
-  cy.url().should('include', '/home');
+  cy.url({ timeout: 15000 }).should('include', '/home');
   cy.visit('/busqueda');
   cy.url().should('include', '/busqueda');
 };

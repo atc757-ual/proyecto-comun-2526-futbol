@@ -9,10 +9,11 @@ import {
   IonItem, IonLabel, IonInput, IonSelect,
   IonSelectOption, IonButton, IonIcon, IonCard, IonCardContent,
   IonCardHeader, IonAvatar,
-  IonSpinner, ToastController, NavController, LoadingController,
+  IonSpinner, NavController, LoadingController,
   IonSegment, IonSegmentButton, AlertController, IonSearchbar,
   IonCheckbox, IonList, IonBadge, IonImg, IonTextarea, ModalController, IonModal
 } from '@ionic/angular/standalone';
+import { ToastService } from '@core/services/ui/toast.service';
 import { addIcons } from 'ionicons';
 import {
   cameraOutline, searchOutline, saveOutline,
@@ -65,7 +66,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private navCtrl = inject(NavController);
-  private toastCtrl = inject(ToastController);
+  private toastService = inject(ToastService);
   private loadingCtrl = inject(LoadingController);
   private layoutService = inject(LayoutService);
   private cameraPlugin = inject(CameraPlugin) as CameraPlugin;
@@ -102,7 +103,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   public isRevGeocoding: boolean = false;
   public isDataLoading = false;
 
-  // Paginación
+  // PaginaciÃƒÆ’Ã‚Â³n
   public currentPage = 1;
   public pageSize = 11;
 
@@ -187,8 +188,8 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
 
   get importButtonLabel() {
     const count = this.selectedApiPlayers.length;
-    if (count === 0) return 'Seleccionar Jugadores';
-    return count === 1 ? 'Cargar 1 Jugador' : `Cargar ${count} Jugadores`;
+    if (count === 0) return 'Seleccionar jugadores';
+    return count === 1 ? 'Cargar jugador' : `Cargar ${count} jugadores`;
   }
 
   public player: Player = {
@@ -247,37 +248,37 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
 
   feet = ['Right', 'Left', 'Ambidextrous'];
 
-  // Estados de los inputs (Patrón Noticias)
+  // Estados de los inputs (PatrÃƒÆ’Ã‚Â³n Noticias)
   focusedField: string | null = null;
   nameTouched = false;
   teamTouched = false;
   leagueTouched = false;
   imageTouched = false;
 
-  // Manejo de Imágenes (Patrón Noticias)
+  // Manejo de ImÃƒÆ’Ã‚Â¡genes (PatrÃƒÆ’Ã‚Â³n Noticias)
   selectedFile: File | null = null;
   previewImage: string | undefined | null = null;
   initialPreviewImage: string | undefined | null = null;
   isPublishing = false;
 
-  // Mapa y Ubicación
+  // Mapa y UbicaciÃƒÆ’Ã‚Â³n
   public hasLocation = false;
   public isCapturingLocation = false;
   public isCheckingGeo = true;
 
-  // Gestión Multimedia Avanzada
+  // GestiÃƒÆ’Ã‚Â³n Multimedia Avanzada
   public imageTypes = [
     { key: 'image_url', label: 'Foto Principal', icon: 'person-outline', helper: 'Imagen principal para el avatar y listas.' },
     { key: 'cutout', label: 'Foto Secundaria', icon: 'sparkles-outline', helper: 'Foto sin fondo para el efecto de volteo.' },
-    { key: 'banner', label: 'Banner', icon: 'image-outline', helper: 'Fondo decorativo para las estadísticas.' }
+    { key: 'banner', label: 'Banner', icon: 'image-outline', helper: 'Fondo decorativo para las estadÃƒÆ’Ã‚Â­sticas.' }
   ];
 
   public globalMediaMode: 'upload' | 'url' = 'url';
 
-  // Previsualizaciones específicas para cada tipo
+  // Previsualizaciones especÃƒÆ’Ã‚Â­ficas para cada tipo
   public previews: { [key: string]: string | null } = {};
 
-  // Visor de imágenes en pantalla completa
+  // Visor de imÃƒÆ’Ã‚Â¡genes en pantalla completa
   public activeViewerImage: string | null = null;
   public activeViewerTitle: string | null = null;
 
@@ -294,7 +295,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
 
   setGlobalMediaMode(mode: 'upload' | 'url') {
     this.globalMediaMode = mode;
-    
+
     // Clear all image fields on both player and previews when switching modes!
     this.player.image_url = '';
     if (this.player.images) {
@@ -303,8 +304,8 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       this.player.images.banner = '';
     }
     this.previews = {};
-    
-    // Si pasamos a upload y no hay cámara, lanzamos onboarding
+
+    // Si pasamos a upload y no hay cÃƒÆ’Ã‚Â¡mara, lanzamos onboarding
     if (mode === 'upload' && !this.hasCameraPermission) {
       this.checkPermissionsOnboarding();
     }
@@ -335,11 +336,6 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    console.log('[ADD-PLAYER] ngOnInit disparado');
-
-    // El onboarding se lanzará solo cuando el usuario pase a modo MANUAL
-    // para evitar intrusión al cargar la página en modo búsqueda.
-
     // Capturar el ID del usuario actual
     this.authService.user$.subscribe(user => {
       if (user) {
@@ -352,15 +348,15 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       this.isEditMode = true;
       this.layoutService.setHeader({
         title: 'Editar jugador',
-        subtitle: 'Edita la información de tu jugador',
+        subtitle: 'Edita la informaciÃƒÆ’Ã‚Â³n de tu jugador',
         showHero: true
       });
       this.loadPlayer(this.playerId);
-      this.entryMode = 'manual'; // En edición siempre manual
+      this.entryMode = 'manual'; // En ediciÃƒÆ’Ã‚Â³n siempre manual
     } else {
       this.layoutService.setHeader({
         title: 'Nuevo jugador',
-        subtitle: 'Añade un nuevo jugador a tu base de datos',
+        subtitle: 'AÃƒÆ’Ã‚Â±ade un nuevo jugador a tu base de datos',
         showHero: true
       });
     }
@@ -374,14 +370,13 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     // Inicializar previsualizaciones si ya hay datos
     this.syncPreviews();
 
-    // Si ya tenemos permisos, capturamos ubicación automáticamente. Si no, abrimos el onboarding explicativo.
+    // Si ya tenemos permisos, capturamos ubicaciÃƒÆ’Ã‚Â³n automÃƒÆ’Ã‚Â¡ticamente. Si no, abrimos el onboarding explicativo.
     Promise.all([
       this.checkGeoPermission(),
       this.checkCameraPermission()
     ]).then(() => {
       if (this.hasGeoPermission) {
         if (!this.isEditMode) {
-          console.log('[GPS] Permiso detectado, capturando ubicación automáticamente...');
           this.captureLocation();
         }
       } else {
@@ -393,47 +388,33 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   }
 
   public async checkPermissionsOnboarding() {
-    console.log('[ADD-PLAYER] Verificando onboarding de permisos...');
     const lastPrompt = localStorage.getItem('last_permission_prompt_add_player');
     const now = Date.now();
     const oneDay = 24 * 60 * 60 * 1000;
 
-    // 1. Si ya preguntamos en las últimas 24h, respetamos al usuario y salimos
     if (lastPrompt && (now - parseInt(lastPrompt)) < oneDay) {
-      console.log('[ADD-PLAYER] Cooldown de 24h activo. No se muestra el modal.');
-      if (!this.isEditMode && !this.hasLocation) {
-        this.captureLocation();
-      }
+      if (!this.isEditMode && !this.hasLocation) this.captureLocation();
       return;
     }
 
-    // 2. Verificación de permisos reales
+    // 2. VerificaciÃƒÆ’Ã‚Â³n de permisos reales
     try {
       const geoResult = await navigator.permissions.query({ name: 'geolocation' as any });
       let cameraState: PermissionState = 'prompt';
       try {
         const camResult = await navigator.permissions.query({ name: 'camera' as any });
         cameraState = camResult.state;
-      } catch (e) {
+      } catch {
         cameraState = 'prompt';
       }
 
-      console.log('[ADD-PLAYER] Estado Real:', { geolocation: geoResult.state, camera: cameraState });
-
-      // Si AMBOS están concedidos ya, no hay nada que preguntar
       if (geoResult.state === 'granted' && cameraState === 'granted') {
-        console.log('[ADD-PLAYER] Permisos ya concedidos. Saliendo...');
-        if (!this.isEditMode && !this.hasLocation) {
-          this.captureLocation();
-        }
+        if (!this.isEditMode && !this.hasLocation) this.captureLocation();
         return;
       }
-    } catch (e) {
-      console.warn('[ADD-PLAYER] Error consultando permisos:', e);
-    }
+    } catch { /* sin Permissions API */ }
 
-    // 3. Abrimos el modal
-    console.log('[ADD-PLAYER] Intentando abrir modal de permisos...');
+    // Abrir modal de permisos
     try {
       const modal = await this.modalCtrl.create({
         component: PermissionModalComponent,
@@ -443,37 +424,27 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       });
 
       this.activePermissionModal = modal;
-      console.log('[ADD-PLAYER] Modal creado, llamando a present()...');
       await modal.present();
 
-      // REGISTRO DE HORA: Solo cuando el usuario cierra o termina con el modal
-      const { data } = await modal.onWillDismiss();
-      console.log('[ADD-PLAYER] Modal cerrado con data:', data);
+      await modal.onWillDismiss();
       localStorage.setItem('last_permission_prompt_add_player', now.toString());
 
-      // REFRESCAR TARJETAS: Actualizamos el estado tras cerrar el modal
       await Promise.all([
         this.checkGeoPermission(),
         this.checkCameraPermission()
       ]);
 
-      // Capturar la ubicación (con o sin permiso concedido, para que cargue el mapa/fallback)
-      if (!this.isEditMode && !this.hasLocation) {
-        this.captureLocation();
-      }
+      if (!this.isEditMode && !this.hasLocation) this.captureLocation();
 
-    } catch (error) {
-      console.error('[ADD-PLAYER] ERROR FATAL al abrir modal:', error);
-      if (!this.isEditMode && !this.hasLocation) {
-        this.captureLocation();
-      }
+    } catch {
+      if (!this.isEditMode && !this.hasLocation) this.captureLocation();
     }
   }
 
   loadLocalPlayers() {
     this.playerService.getPlayers().subscribe({
       next: (data) => this.localPlayers = data,
-      error: () => console.warn('No se pudieron cargar los jugadores locales para comparación')
+      error: () => console.warn('No se pudieron cargar los jugadores locales para comparaciÃƒÆ’Ã‚Â³n')
     });
   }
 
@@ -524,7 +495,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     this.hasGeoPermission = granted;
     if (granted) {
       this.cdr.detectChanges();
-      this.showToast('¡Permisos de ubicación activos!', 'success', 'shield-checkmark-outline');
+      this.showToast('Permisos de ubicacion activos!', 'success');
       await this.captureLocation();
     }
   }
@@ -535,7 +506,6 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       try {
         result = await this.cameraPlugin.requestCameraPermission();
       } catch (capacitorError: any) {
-        // Fallback for Web (si Capacitor falla por estar en navegador)
         if (navigator.mediaDevices) {
           const stream = await navigator.mediaDevices.getUserMedia({ video: true });
           stream.getTracks().forEach(track => track.stop());
@@ -544,17 +514,15 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
           throw capacitorError;
         }
       }
-
       this.hasCameraPermission = result;
       if (result) {
-        this.showToast('¡Permisos de cámara activos!', 'success', 'camera-outline');
+        this.showToast('Permisos de camara activos!', 'success');
       } else {
-        this.showToast('¡Cámara bloqueada! Usa el candado del navegador.', 'danger', 'lock-closed-outline');
+        this.showToast('Camara bloqueada! Usa el candado del navegador.', 'danger');
       }
       return result;
-    } catch (e) {
-      console.warn('Cámara bloqueada o no disponible:', e);
-      this.showToast('¡Cámara bloqueada! Usa el candado del navegador.', 'danger', 'lock-closed-outline');
+    } catch {
+      this.showToast('Camara bloqueada! Usa el candado del navegador.', 'danger');
       return false;
     }
   }
@@ -576,7 +544,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     try {
       this.hasCameraPermission = await this.cameraPlugin.isCameraPermissionGranted();
     } catch (e) {
-      console.warn('No se pudo verificar el permiso de cámara:', e);
+      
     }
   }
 
@@ -587,8 +555,8 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     try {
       // 1. Disparamos el prompt del navegador
       navigator.geolocation.getCurrentPosition(
-        () => { /* Se maneja en la lógica de estado abajo */ },
-        () => { /* Se maneja en la lógica de estado abajo */ },
+        () => { /* Se maneja en la lÃƒÆ’Ã‚Â³gica de estado abajo */ },
+        () => { /* Se maneja en la lÃƒÆ’Ã‚Â³gica de estado abajo */ },
         { timeout: 15000 }
       );
 
@@ -608,16 +576,16 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
               setTimeout(resolve, 15000);
             });
           }
-          
+
           const finalStatus = await navigator.permissions.query({ name: 'geolocation' as any });
-          
+
           this.ngZone.run(async () => {
             this.hasGeoPermission = finalStatus.state === 'granted';
             this.isCapturingLocation = false;
-            if (this.hasGeoPermission) {
-              this.showToast('¡Permisos de ubicación activos!', 'success', 'shield-checkmark-outline');
-              await this.captureLocation();
-            }
+              if (this.hasGeoPermission) {
+                this.showToast('Ãƒâ€šÃ‚Â¡Permisos de ubicaciÃƒÆ’Ã‚Â³n activos!', 'success');
+                await this.captureLocation();
+              }
             this.cdr.detectChanges();
           });
           return;
@@ -633,7 +601,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
           this.ngZone.run(async () => {
             this.hasGeoPermission = true;
             this.isCapturingLocation = false;
-            this.showToast('¡Permisos de ubicación activos!', 'success', 'shield-checkmark-outline');
+            this.showToast('Ãƒâ€šÃ‚Â¡Permisos de ubicaciÃƒÆ’Ã‚Â³n activos!', 'success');
             await this.captureLocation();
             this.cdr.detectChanges();
           });
@@ -664,14 +632,14 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   segmentChanged(event: any) {
     this.entryMode = event.detail.value;
 
-    // Si cambiamos a manual, reseteamos los valores de búsqueda de IA y lanzamos onboarding si hace falta
+    // Si cambiamos a manual, reseteamos los valores de bÃƒÆ’Ã‚Âºsqueda de IA y lanzamos onboarding si hace falta
     if (this.entryMode === 'manual') {
       this.apiSearchQuery = '';
       this.apiResults = [];
       this.selectedApiPlayers = [];
       this.currentPage = 1;
 
-      // Lanzamos onboarding solo aquí para no molestar en la búsqueda inicial
+      // Lanzamos onboarding solo aquÃƒÆ’Ã‚Â­ para no molestar en la bÃƒÆ’Ã‚Âºsqueda inicial
       this.checkPermissionsOnboarding();
     }
   }
@@ -712,10 +680,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         this.hasSearchedApi = true;
       },
       error: (err) => {
-        console.error('Error searching TSDB:', err);
-        this.isSearchingApi = false;
-        this.hasSearchedApi = true;
-        this.showToast('Error al conectar con el servicio de scouting', 'danger', 'alert-circle-outline');
+        this.showToast('Error al conectar con el servicio de scouting', 'danger');
       }
     });
   }
@@ -758,7 +723,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     this.entryMode = 'manual';
     this.cdr.detectChanges();
     loading.dismiss();
-    this.showToast('Datos profesionales importados', 'success', 'checkmark-circle-outline');
+    this.showToast('Datos profesionales importados', 'success');
   }
 
   isSelected(apiPlayer: any): boolean {
@@ -771,26 +736,26 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
 
   async toggleApiSelection(apiPlayer: any) {
     if (!this.isSelected(apiPlayer) && this.selectedApiPlayers.length >= 11) {
-      this.showToast('Has alcanzado el límite de 11 cracks', 'warning', 'alert-circle-outline');
+      this.showToast('Has alcanzado el lÃƒÆ’Ã‚Â­mite de 11 cracks', 'warning');
       return;
     }
 
     const isAlreadySelected = this.isSelected(apiPlayer);
 
     if (isAlreadySelected) {
-      // Quitar de la selección filtrando por ID
+      // Quitar de la selecciÃƒÆ’Ã‚Â³n filtrando por ID
       this.selectedApiPlayers = this.selectedApiPlayers.filter(p => p.externalId !== apiPlayer.externalId);
     } else {
-      // LÍMITE DE 11 JUGADORES
+      // LÃƒÆ’Ã‚ÂMITE DE 11 JUGADORES
       if (this.selectedApiPlayers.length >= 11) {
-        this.showToast('Solo puedes añadir hasta 11 cracks a la vez', 'warning', 'alert-circle-outline');
+        this.showToast('Solo puedes aÃƒÆ’Ã‚Â±adir hasta 11 cracks a la vez', 'warning');
         return;
       }
 
-      // Añadir a la selección
+      // AÃƒÆ’Ã‚Â±adir a la selecciÃƒÆ’Ã‚Â³n
       this.selectedApiPlayers = [...this.selectedApiPlayers, apiPlayer];
 
-      // Si no tiene los detalles aún, los cargamos en segundo plano
+      // Si no tiene los detalles aÃƒÆ’Ã‚Âºn, los cargamos en segundo plano
       if (!apiPlayer.details) {
         try {
           const details = await firstValueFrom(this.playerService.lookupTSDBPlayer(apiPlayer.externalId)) as any;
@@ -819,13 +784,13 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   async importSelectedPlayers() {
     if (this.selectedApiPlayers.length === 0) return;
     if (!this.hasLocation || !this.player.location?.coordinates) {
-      this.showToast('Activa el GPS antes de guardar jugadores.', 'warning', 'navigate-outline');
+      this.showToast('Activa el GPS antes de guardar jugadores.', 'warning');
       return;
     }
 
     this.isImporting = true;
 
-    // Construir el payload GeoJSON explícito para la BD
+    // Construir el payload GeoJSON explÃƒÆ’Ã‚Â­cito para la BD
     const locationPayload = {
       type: 'Point' as const,
       coordinates: [
@@ -833,9 +798,8 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         this.player.location.coordinates[1]  // lat
       ]
     };
-    console.log('[ADD-PLAYER] Ubicación GeoJSON a adjuntar:', JSON.stringify(locationPayload));
 
-    // Preparar los datos con ubicación y user_id
+    // Preparar los datos con ubicaciÃƒÆ’Ã‚Â³n y user_id
     const playersToImport = this.getSelectedPlayersArray().map(p => ({
       ...p,
       location: locationPayload,
@@ -852,10 +816,9 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         const count = playersToImport.length;
         this.showToast(
           count === 1
-            ? 'Se ha registrado el jugador con éxito'
-            : `Se han registrado ${count} jugadores con éxito`,
-          'success',
-          'checkmark-circle-outline'
+            ? 'Se ha registrado el jugador con ÃƒÆ’Ã‚Â©xito'
+            : `Se han registrado ${count} jugadores con ÃƒÆ’Ã‚Â©xito`,
+          'success'
         );
         setTimeout(() => this.navCtrl.back(), 750);
       },
@@ -866,8 +829,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
           count === 1
             ? 'Error al registrar el jugador'
             : 'Error al registrar los jugadores',
-          'danger',
-          'alert-circle-outline'
+          'danger'
         );
       }
     });
@@ -880,10 +842,9 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
 
     try {
       const pos = await this.locationPlugin.getCurrentPosition({ useCache: false, enableHighAccuracy: false });
-      console.log('[GPS] Ubicación capturada:', pos);
 
       if (!pos) {
-        throw new Error('No se obtuvo posición');
+        throw new Error('No se obtuvo posiciÃƒÆ’Ã‚Â³n');
       }
 
       this.player.location = {
@@ -899,37 +860,23 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       setTimeout(() => {
         this.initMap();
       }, 500);
-    } catch (error: any) {
-      console.warn('[GPS] Error capturando ubicación, aplicando fallback de Madrid:', error);
+    } catch {
       this.isCapturingLocation = false;
-
-      // Fallback de Madrid
-      this.player.location = {
-        type: 'Point',
-        coordinates: [-3.7038, 40.4168]
-      };
-
+      this.player.location = { type: 'Point', coordinates: [-3.7038, 40.4168] };
       this.hasLocation = true;
       this.cdr.detectChanges();
-
-      setTimeout(() => {
-        this.initMap();
-      }, 500);
+      setTimeout(() => this.initMap(), 500);
     }
   }
 
   initMap() {
-    if (!this.player.location?.coordinates || this.player.location.coordinates.length < 2) {
-      console.warn('[Map] No hay coordenadas válidas para inicializar el mapa');
-      return;
-    }
+    if (!this.player.location?.coordinates || this.player.location.coordinates.length < 2) return;
 
     const [lng, lat] = this.player.location.coordinates;
-    console.log('[Map] Inicializando en:', lat, lng);
 
     // Inicializar el mapa
     const mapObj = this.mapPlugin.initMap('player-map', lat, lng, 15);
-    const marker = this.mapPlugin.addMarker(lat, lng, 'Ubicación del Scouting', true);
+    const marker = this.mapPlugin.addMarker(lat, lng, 'UbicaciÃƒÆ’Ã‚Â³n del Scouting', true);
 
     // Truco Leaflet: Forzar redibujo para evitar zonas grises
     setTimeout(() => {
@@ -946,7 +893,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       this.updateAddress();
     });
 
-    // Carga inicial de dirección
+    // Carga inicial de direcciÃƒÆ’Ã‚Â³n
     this.updateAddress();
   }
 
@@ -961,7 +908,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
           this.cdr.detectChanges();
         },
         error: () => {
-          this.currentAddress = 'Ubicación seleccionada';
+          this.currentAddress = 'UbicaciÃƒÆ’Ã‚Â³n seleccionada';
           this.isRevGeocoding = false;
           this.cdr.detectChanges();
         }
@@ -987,13 +934,13 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     this.previewImage = null;
     this.syncPreviews();
     this.cdr.detectChanges();
-    this.showToast('Multimedia limpiada', 'success', 'trash-outline');
+    this.showToast('Multimedia limpiada', 'success');
   }
 
   clearSelection() {
     this.selectedApiPlayers = [];
     this.cdr.detectChanges();
-    this.showToast('Selección limpiada', 'success', 'trash-outline');
+    this.showToast('SelecciÃƒÆ’Ã‚Â³n limpiada', 'success');
   }
 
   updatePlayerImage(key: string, value: string) {
@@ -1051,8 +998,8 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         this.previews[key] = base64;
         this.cdr.detectChanges();
       }
-    } catch (e) {
-      console.error('Error al tomar foto:', e);
+    } catch {
+      // cÃƒÆ’Ã‚Â¡mara no disponible
     }
   }
 
@@ -1063,7 +1010,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   }
   async onSave() {
     if (!this.player.name || !this.player.team) {
-      this.showToast('Nombre y Equipo son obligatorios', 'warning', 'alert-circle-outline');
+      this.showToast('Nombre y Equipo son obligatorios', 'warning');
       return;
     }
 
@@ -1074,12 +1021,11 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       this.player.is_manual = true;
     }
 
-    // 1. Asegurar ubicación (si no es edición)
+    // 1. Asegurar ubicaciÃƒÆ’Ã‚Â³n (si no es ediciÃƒÆ’Ã‚Â³n)
     if (!this.isEditMode && !this.player.location) {
       await this.captureLocation();
     }
 
-    console.log('[FRONTEND] Guardando jugador con location:', this.player.location);
     this.isPublishing = true;
 
     this.playerService.savePlayer(this.playerId, this.player, this.selectedFile, this.initialPreviewImage as string | null).subscribe({
@@ -1087,14 +1033,13 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         this.isPublishing = false;
         this.confettiService.celebrate();
         if (res && (res._id || res.id)) {
-          this.showToast(`Jugador ${this.isEditMode ? 'actualizado' : 'creado'} con éxito`, 'success', 'checkmark-circle-outline');
+          this.showToast(`Jugador ${this.isEditMode ? 'actualizado' : 'creado'} con ÃƒÆ’Ã‚Â©xito`, 'success');
           setTimeout(() => this.router.navigate(['/players']), 750);
         }
       },
-      error: (err: any) => {
+      error: () => {
         this.isPublishing = false;
-        console.error('[SAVE-PLAYER] Error:', err);
-        this.showToast('Error al guardar el crack', 'danger', 'alert-circle-outline');
+        this.showToast('Error al guardar el crack', 'danger');
       }
     });
   }
@@ -1124,22 +1069,11 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     this.mapPlugin.destroyMap();
   }
 
-  private async showToast(message: string, type: 'success' | 'danger' | 'warning', icon?: string) {
-    const iconMap = {
-      'success': 'checkmark-circle-outline',
-      'danger': 'alert-circle-outline',
-      'warning': 'alert-circle-outline'
-    };
-
-    const toast = await this.toastCtrl.create({
-      message,
-      duration: 3000,
-      position: 'top',
-      cssClass: type === 'success' ? 'toast-success' : 'toast-error',
-      icon: icon || iconMap[type],
-      mode: 'ios',
-      buttons: [{ role: 'cancel' }]
-    });
-    await toast.present();
+  private showToast(message: string, type: 'success' | 'danger' | 'warning') {
+    if (type === 'success') {
+      this.toastService.showSuccess(message);
+    } else {
+      this.toastService.showError(message);
+    }
   }
 }

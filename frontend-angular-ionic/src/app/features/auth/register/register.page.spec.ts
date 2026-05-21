@@ -115,7 +115,7 @@ describe('RegisterPage Karma Unit Tests', () => {
     component.confirmPass = 'password123';
     component.acceptTerms = true;
 
-    authServiceMock.register.and.returnValue(Promise.resolve());
+    authServiceMock.register.and.returnValue(Promise.resolve() as any);
     
     // Configuro el spy del ModalController para retornar una promesa resuelta
     const modalSpy = jasmine.createSpyObj('HTMLIonModalElement', ['present', 'onWillDismiss']);
@@ -136,7 +136,7 @@ describe('RegisterPage Karma Unit Tests', () => {
     component.confirmPass = 'password123';
     component.acceptTerms = true;
 
-    authServiceMock.register.and.returnValue(Promise.reject({ code: 'auth/email-already-in-use' }));
+    authServiceMock.register.and.returnValue(Promise.reject({ code: 'auth/email-already-in-use' }) as any);
 
     await component.onRegister();
 

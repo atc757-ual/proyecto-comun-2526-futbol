@@ -1,6 +1,6 @@
 package com.futbol.gateway.controllers;
 
-import com.futbol.gateway.dto.ApiResult;
+import com.futbol.common.dto.ApiResult;
 import com.futbol.gateway.models.PlayerAnalysisResponse;
 import com.futbol.gateway.services.PlayerAIService;
 import io.swagger.v3.oas.annotations.Operation;

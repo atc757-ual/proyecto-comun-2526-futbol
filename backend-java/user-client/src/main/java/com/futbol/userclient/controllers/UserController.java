@@ -1,5 +1,7 @@
 package com.futbol.userclient.controllers;
 
+import com.futbol.common.dto.ApiResult;
+import com.futbol.common.dto.Result;
 import com.futbol.userclient.models.User;
 import com.futbol.userclient.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,7 +34,7 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "Usuario sincronizado"),
             @ApiResponse(responseCode = "500", description = "Error interno")
         })
-    public ResponseEntity<?> syncUser(@RequestBody Map<String, Object> body) {
+    public ResponseEntity<ApiResult<Object>> syncUser(@RequestBody Map<String, Object> body) {
         try {
             String firebaseUid = (String) body.get("firebaseUid");
             String email = (String) body.get("email");
@@ -57,7 +59,7 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "Usuario encontrado"),
             @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
         })
-    public ResponseEntity<?> getUserByFirebaseUid(@PathVariable String firebaseUid) {
+    public ResponseEntity<ApiResult<Object>> getUserByFirebaseUid(@PathVariable String firebaseUid) {
         try {
             Optional<User> userOpt = userService.findByFirebaseUid(firebaseUid);
             if (userOpt.isEmpty()) {
@@ -78,7 +80,7 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "Usuario encontrado"),
             @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
         })
-    public ResponseEntity<?> getUserByEmail(@PathVariable String email) {
+    public ResponseEntity<ApiResult<Object>> getUserByEmail(@PathVariable String email) {
         try {
             Optional<User> userOpt = userService.findByEmail(email);
             if (userOpt.isEmpty()) {
@@ -99,7 +101,7 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "Búsqueda exitosa"),
             @ApiResponse(responseCode = "500", description = "Error interno")
         })
-    public ResponseEntity<?> searchUsers(@RequestParam(required = false) String email) {
+    public ResponseEntity<ApiResult<Object>> searchUsers(@RequestParam(required = false) String email) {
         try {
             String searchEmail = email != null ? email : "";
             List<User> users = userService.searchUsersByEmail(searchEmail);
@@ -119,7 +121,7 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "Usuario promovido"),
             @ApiResponse(responseCode = "400", description = "Email faltante")
         })
-    public ResponseEntity<?> makeAdmin(@RequestBody Map<String, String> body) {
+    public ResponseEntity<ApiResult<Object>> makeAdmin(@RequestBody Map<String, String> body) {
         try {
             String email = body.get("email");
             if (email == null || email.trim().isEmpty()) {
@@ -141,7 +143,7 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "Rol removido"),
             @ApiResponse(responseCode = "400", description = "Email faltante")
         })
-    public ResponseEntity<?> removeAdmin(@RequestBody Map<String, String> body) {
+    public ResponseEntity<ApiResult<Object>> removeAdmin(@RequestBody Map<String, String> body) {
         try {
             String email = body.get("email");
             if (email == null || email.trim().isEmpty()) {
@@ -163,7 +165,7 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "Estado actualizado"),
             @ApiResponse(responseCode = "400", description = "Parámetros inválidos")
         })
-    public ResponseEntity<?> toggleStatus(@RequestBody Map<String, Object> body) {
+    public ResponseEntity<ApiResult<Object>> toggleStatus(@RequestBody Map<String, Object> body) {
         try {
             String email = (String) body.get("email");
             Boolean disabled = (Boolean) body.get("disabled");
@@ -193,26 +195,13 @@ public class UserController {
         return map;
     }
 
-    private ResponseEntity<?> buildSuccessResponse(String detail, Object data) {
-        Map<String, Object> response = new HashMap<>();
-        Map<String, Object> result = new HashMap<>();
-        result.put("status", "OK");
-        result.put("code", "200");
-        result.put("description", "OK");
-        result.put("descriptionDetail", detail);
-        response.put("result", result);
-        response.put("data", data);
+    private ResponseEntity<ApiResult<Object>> buildSuccessResponse(String detail, Object data) {
+        ApiResult<Object> response = new ApiResult<>(new Result("200", "OK", detail), data);
         return ResponseEntity.ok(response);
     }
 
-    private ResponseEntity<?> buildErrorResponse(int status, String detail) {
-        Map<String, Object> response = new HashMap<>();
-        Map<String, Object> result = new HashMap<>();
-        result.put("status", "NOK");
-        result.put("code", String.valueOf(status));
-        result.put("description", "NOK");
-        result.put("descriptionDetail", detail);
-        response.put("result", result);
+    private ResponseEntity<ApiResult<Object>> buildErrorResponse(int status, String detail) {
+        ApiResult<Object> response = new ApiResult<>(new Result(String.valueOf(status), "NOK", detail), null);
         return ResponseEntity.status(status).body(response);
     }
 }

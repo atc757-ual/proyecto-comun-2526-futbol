@@ -1,7 +1,7 @@
 package com.futbol.externalclient.controller;
 
 import com.futbol.externalfeign.client.TsdbFeignClient;
-import com.futbol.externalfeign.dto.ApiResult;
+import com.futbol.common.dto.ApiResult;
 import com.futbol.externalfeign.dto.ExternalPlayerDTO;
 import com.futbol.externalfeign.dto.TsdbSearchResponse;
 import io.swagger.v3.oas.annotations.Operation;

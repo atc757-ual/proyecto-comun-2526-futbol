@@ -1,9 +1,12 @@
 describe('Manage News Page', () => {
   const loginUser = () => {
+    const emailInputSelector = 'ion-input[name="email"] input:not([disabled]):visible';
+    const passwordInputSelector = 'ion-input[name="password"] input:not([disabled]):visible';
+
     cy.visit('/auth/login');
-    cy.get('ion-input[name="email"] input').clear().type('atc757@inlumine.ual.es');
-    cy.get('ion-input[name="password"] input').clear().type('1q2w3e4r');
-    cy.get('ion-button[type="submit"]').click();
+    cy.get(emailInputSelector).should('be.visible').clear().type('atc757@inlumine.ual.es');
+    cy.get(passwordInputSelector).should('be.visible').clear().type('1q2w3e4r');
+    cy.contains('ion-button', 'Iniciar Sesión').click();
     cy.url({ timeout: 15000 }).should('include', '/home');
   };
 

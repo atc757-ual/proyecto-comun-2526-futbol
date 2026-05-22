@@ -22,7 +22,15 @@
                 <ng-container *ngFor="let player of pagedPlayers(); let last = last">
                   <!-- VERSIÓN DESKTOP: CARDS -->
                   <ion-card class="player-premium-card hide-on-phone animate-fade-in"
-                    [routerLink]="['/player-detail-public', player._id]">
+                    role="button" tabindex="0"
+                    (click)="goToPlayerDetail(player._id)"
+                    (keydown.enter)="goToPlayerDetail(player._id)"
+                    (keydown.space)="goToPlayerDetail(player._id); $event.preventDefault()">
+                    <!-- DEBUG: Mostrar el _id del jugador -->
+                    <div style="font-size:10px;color:#c00;background:#fffbe6;padding:2px 4px;border-radius:3px;margin-bottom:2px;">
+                      <span *ngIf="player._id; else noId">ID: {{ player._id }}</span>
+                      <ng-template #noId><b>Sin _id</b></ng-template>
+                    </div>
                     <div class="card-image-container">
                       <img [src]="player.image_url"
                         onerror="this.onerror=null;this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiB2aWV3Qm94PSIwIDAgODAwIDgwMCI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI4MDAiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgZm9udC1mYW1pbHk9InN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtc2l6ZT0iODAiIGZpbGw9IiM0NzU1NjkiPjQwNDwvdGV4dD48L3N2Zz4='" />
@@ -48,7 +56,7 @@
 
                   <!-- VERSIÓN MÓVIL (Unificada con la principal) -->
                   <ion-item class="player-mobile-item hide-on-desktop animate-fade-in" lines="none" [button]="true"
-                    [routerLink]="['/player-detail-public', player._id]">
+                    (click)="goToPlayerDetail(player._id)">
                     <ion-thumbnail slot="start" class="mobile-thumb">
                       <img [src]="player.image_url"
                         onerror="this.onerror=null;this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiB2aWV3Qm94PSIwIDAgODAwIDgwMCI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI4MDAiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgZm9udC1mYW1pbHk9InN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtc2l6ZT0iODAiIGZpbGw9IiM0NzU1NjkiPjQwNDwvdGV4dD48L3N2Zz4='" />

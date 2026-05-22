@@ -68,23 +68,13 @@ public class JWTFilter implements Filter {
         // Añadir headers CORS a todas las respuestas
         setCorsHeaders(httpResponse);
 
-        String path = httpRequest.getRequestURI();
-        String method = httpRequest.getMethod();
-
-        // El feed y lectura individual de noticias es de libre acceso público sin token
-        if ("GET".equalsIgnoreCase(method) && (path.endsWith("/feed") || path.contains("/noticias/feed") || path.endsWith("/noticias") || path.contains("/api/noticias"))) {
-            System.out.println("[DEBUG-JWT] Permitiendo acceso público libre a: " + path);
-            chain.doFilter(request, response);
-            return;
-        }
-
         // Extraer el token del header Authorization
         String authHeader = httpRequest.getHeader("Authorization");
         System.out.println("[DEBUG-JWT] Header Authorization recibido: " + (authHeader != null ? "SI" : "NO"));
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             System.err.println("[DEBUG-JWT] ERROR: Token faltante o formato invalido");
-            enviarError(httpResponse, HttpServletResponse.SC_UNAUTHORIZED, "NOK", "No autorizado: Token faltante");
+            enviarError(httpResponse, HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized", "Autenticacion requerida");
             return;
         }
 
@@ -95,7 +85,7 @@ public class JWTFilter implements Filter {
             // Verificar el token JWT
             if (!verificarToken(token)) {
                 System.err.println("[DEBUG-JWT] ERROR: Firma RSA INVALIDA");
-                enviarError(httpResponse, HttpServletResponse.SC_UNAUTHORIZED, "NOK", "No autorizado: Token o firma inválida");
+                enviarError(httpResponse, HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized", "Autenticacion requerida");
                 return;
             }
 
@@ -111,8 +101,8 @@ public class JWTFilter implements Filter {
         } catch (Exception e) {
             System.err.println("[DEBUG-JWT] EXCEPCION durante la verificacion: " + e.getMessage());
             e.printStackTrace();
-            enviarError(httpResponse, HttpServletResponse.SC_UNAUTHORIZED, "NOK",
-                    "No autorizado: Error al verificar el token: " + e.getMessage());
+            enviarError(httpResponse, HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized",
+                "Autenticacion requerida");
         }
     }
 

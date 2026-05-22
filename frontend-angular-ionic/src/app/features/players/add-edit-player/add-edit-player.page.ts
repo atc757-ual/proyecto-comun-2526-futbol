@@ -869,13 +869,13 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     }
   }
 
-  initMap() {
+  async initMap() {
     if (!this.player.location?.coordinates || this.player.location.coordinates.length < 2) return;
 
     const [lng, lat] = this.player.location.coordinates;
 
     // Inicializar el mapa
-    const mapObj = this.mapPlugin.initMap('player-map', lat, lng, 15);
+    const mapObj = await this.mapPlugin.initMap('player-map', lat, lng, 15);
     const marker = this.mapPlugin.addMarker(lat, lng, 'UbicaciÃƒÆ’Ã‚Â³n del Scouting', true);
 
     // Truco Leaflet: Forzar redibujo para evitar zonas grises

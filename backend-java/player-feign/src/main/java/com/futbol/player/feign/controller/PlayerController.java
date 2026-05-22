@@ -1,8 +1,8 @@
 package com.futbol.player.feign.controller;
 
+import com.futbol.common.dto.ApiResult;
 import com.futbol.player.feign.model.PlayerDTO;
 import com.futbol.player.feign.model.PlayerFullDTO;
-import com.futbol.player.feign.dto.ApiResult;
 import com.futbol.player.feign.service.PlayerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

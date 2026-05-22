@@ -301,7 +301,7 @@ export class BusquedaListPage implements OnInit {
     }
   }
 
-  initMap(retryCount = 0) {
+  async initMap(retryCount = 0) {
     if (!this.currentLocation?.coordinates || this.currentLocation.coordinates.length < 2) return;
     const [lng, lat] = this.currentLocation.coordinates;
 
@@ -314,7 +314,7 @@ export class BusquedaListPage implements OnInit {
     }
 
     try {
-      const mapObj = this.mapPlugin.initMap('busqueda-map', lat, lng, 14);
+      const mapObj = await this.mapPlugin.initMap('busqueda-map', lat, lng, 14);
       if (!mapObj) return;
 
       const marker = this.mapPlugin.addMarker(lat, lng, 'Ubicación de Scouting', true);

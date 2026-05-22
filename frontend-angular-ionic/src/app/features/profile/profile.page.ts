@@ -2,22 +2,30 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { addIcons } from 'ionicons';
 import {
-  personOutline, mailOutline, timeOutline, keyOutline,
+  personOutline, timeOutline, keyOutline,
   shieldCheckmarkOutline, logOutOutline, serverOutline,
-  checkmarkCircleOutline, alertCircleOutline, closeOutline, chevronForward,
-  key, homeOutline, cafeOutline, logoNodejs, openOutline
+  closeOutline, homeOutline, cafeOutline, logoNodejs
 } from 'ionicons/icons';
 import { RouterModule, Router } from '@angular/router';
 import {
   IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonItem, IonIcon,
   IonLabel, IonSpinner, IonBadge, IonButton, IonToggle,
-  ToastController, AlertController, ActionSheetController, ModalController
+  ActionSheetController, ModalController
 } from '@ionic/angular/standalone';
 import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { AuthService } from 'src/app/core/services/auth/auth.service';
 import { PlatformService } from 'src/app/core/services/system/platform.service';
+import { ToastService } from 'src/app/core/services/ui/toast.service';
 import { Auth } from '@angular/fire/auth';
 import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
+
+type ProfileUserInfo = {
+  name: string;
+  email: string;
+  avatar: string;
+  lastLogin: string;
+  role: string;
+};
 
 @Component({
   selector: 'app-profile',
@@ -35,22 +43,21 @@ export class ProfilePage implements OnInit {
   private auth = inject(Auth);
   private layoutService = inject(LayoutService);
   private router = inject(Router);
-  private toastCtrl = inject(ToastController);
-  private alertCtrl = inject(AlertController);
+  private toastService = inject(ToastService);
   private actionSheetCtrl = inject(ActionSheetController);
   private modalCtrl = inject(ModalController);
   public platformService = inject(PlatformService);
 
+  private readonly fallbackAvatar = 'https://ui-avatars.com/api/?name=User&background=e2e8f0&color=0f172a&bold=true';
   public useSpringBoot = false;
   public isSendingReset = false;
   public resetCooldown = false;
 
   constructor() {
     addIcons({
-      personOutline, mailOutline, timeOutline, keyOutline,
+      personOutline, timeOutline, keyOutline,
       shieldCheckmarkOutline, logOutOutline, serverOutline,
-      checkmarkCircleOutline, alertCircleOutline, closeOutline, chevronForward,
-      key, cafeOutline, logoNodejs, openOutline
+      closeOutline, cafeOutline, logoNodejs
     });
   }
 
@@ -77,25 +84,16 @@ export class ProfilePage implements OnInit {
     return this.authService.isAdmin() || this.authService.isMasterAdmin();
   }
 
-  get currentUserInfo() {
+  get currentUserInfo(): ProfileUserInfo {
     const fireUser = this.auth.currentUser;
     const dbUser = this.authService.userData();
 
-    let lastLoginFormatted = 'Desconocido';
-    if (fireUser?.metadata?.lastSignInTime) {
-      const date = new Date(fireUser.metadata.lastSignInTime);
-      lastLoginFormatted = date.toLocaleString('es-ES', {
-        day: '2-digit', month: 'short', year: 'numeric',
-        hour: '2-digit', minute: '2-digit'
-      });
-    }
-
-    const name = dbUser?.name || 'Usuario';
+    const name = this.capitalizeWords(dbUser?.name || 'Usuario');
     return {
-      name: name,
+      name,
       email: fireUser?.email || '',
       avatar: `https://ui-avatars.com/api/?name=${name}&background=e2e8f0&color=0f172a&bold=true`,
-      lastLogin: lastLoginFormatted,
+      lastLogin: this.formatLastLogin(fireUser?.metadata?.lastSignInTime),
       role: this.isAdmin ? 'Administrador' : 'Usuario'
     };
   }
@@ -105,9 +103,11 @@ export class ProfilePage implements OnInit {
 
     // 1. Sincronizar primero con el nuevo backend para obtener su JWT de forma atómica
     try {
-      await this.authService.syncUserWithBackend(targetVal);
+      await this.authService.syncUserWithBackend(targetVal, true);
     } catch (err) {
       console.error('[PROFILE] Error de sincronización al cambiar backend:', err);
+      await this.toastService.showError(`No se pudo cambiar al backend ${targetVal ? 'Java' : 'Node'}.`, 3500);
+      return;
     }
 
     // 2. Hacer el cambio efectivo del BehaviorSubject en el PlatformService
@@ -115,15 +115,7 @@ export class ProfilePage implements OnInit {
     this.useSpringBoot = this.platformService.getUseJavaBackend();
     const newVal = this.useSpringBoot;
 
-    const toast = await this.toastCtrl.create({
-      message: `Backend cambiado a ${newVal ? 'Java' : 'Node'} al instante`,
-      duration: 2000,
-      position: 'top',
-      cssClass: 'toast-success',
-      icon: 'checkmark-circle-outline',
-      mode: 'ios'
-    });
-    await toast.present();
+    await this.toastService.showSuccess(`Backend cambiado a ${newVal ? 'Java' : 'Node'} al instante`);
   }
 
   async sendPasswordReset() {
@@ -132,26 +124,10 @@ export class ProfilePage implements OnInit {
     this.isSendingReset = true;
     try {
       await this.authService.sendResetPasswordEmail(email);
-      const toast = await this.toastCtrl.create({
-        message: '¡Enlace enviado! Revisa tu bandeja de entrada.',
-        duration: 5000,
-        position: 'top',
-        cssClass: 'toast-success',
-        icon: 'checkmark-circle-outline',
-        mode: 'ios'
-      });
-      await toast.present();
+      await this.toastService.showSuccess('¡Enlace enviado! Revisa tu bandeja de entrada.', 5000);
       this.startCooldown(5 * 60 * 1000);
-    } catch (error) {
-      const toast = await this.toastCtrl.create({
-        message: 'Error al enviar el enlace.',
-        duration: 3000,
-        position: 'top',
-        cssClass: 'toast-error',
-        icon: 'alert-circle-outline',
-        mode: 'ios'
-      });
-      await toast.present();
+    } catch {
+      await this.toastService.showError('Error al enviar el enlace.', 3000);
     } finally {
       this.isSendingReset = false;
     }
@@ -232,6 +208,27 @@ export class ProfilePage implements OnInit {
 
   handleAvatarError(event: any) {
     event.target.onerror = null;
-    event.target.src = 'https://ui-avatars.com/api/?name=User&background=e2e8f0&color=0f172a&bold=true';
+    event.target.src = this.fallbackAvatar;
+  }
+
+  private formatLastLogin(lastSignInTime?: string | null): string {
+    if (!lastSignInTime) {
+      return 'Desconocido';
+    }
+
+    const date = new Date(lastSignInTime);
+    return date.toLocaleString('es-ES', {
+      day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+  }
+
+  private capitalizeWords(value: string): string {
+    return value
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
   }
 }

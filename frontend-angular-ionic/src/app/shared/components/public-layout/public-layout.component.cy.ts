@@ -1,6 +1,7 @@
 import { PublicLayoutComponent } from './public-layout.component';
-import { IonicModule, MenuController, NavController } from '@ionic/angular';
-import { RouterModule } from '@angular/router';
+import { IonicModule } from '@ionic/angular';
+import { MenuController, NavController } from '@ionic/angular/standalone';
+import { RouterTestingModule } from '@angular/router/testing';
 import { APP_BASE_HREF } from '@angular/common';
 import { AuthService } from 'src/app/core/services/auth/auth.service';
 import { PlatformService } from 'src/app/core/services/system/platform.service';
@@ -16,11 +17,15 @@ describe('PublicLayoutComponent Component Cypress Tests', () => {
   beforeEach(() => {
     authServiceMock = {
       currentUser: () => null,
+      userData: () => null,
       logout: () => Promise.resolve()
     };
 
     layoutServiceMock = {
-      breadcrumbs: () => [{ label: 'Fichajes Públicos', url: '/public/players' }]
+      showHero: () => false,
+      title: () => 'Public Test',
+      subtitle: () => '',
+      breadcrumbs: () => [{ label: 'Fichajes Publicos', url: '/public/players' }]
     };
 
     platformServiceMock = {
@@ -37,9 +42,9 @@ describe('PublicLayoutComponent Component Cypress Tests', () => {
     };
   });
 
-  it('should mount successfully and render public page details', () => {
+  function mountComponent() {
     cy.mount(PublicLayoutComponent, {
-      imports: [IonicModule.forRoot(), RouterModule.forRoot([])],
+      imports: [IonicModule.forRoot(), RouterTestingModule],
       providers: [
         { provide: APP_BASE_HREF, useValue: '/' },
         { provide: AuthService, useValue: authServiceMock },
@@ -49,26 +54,20 @@ describe('PublicLayoutComponent Component Cypress Tests', () => {
         { provide: NavController, useValue: navCtrlMock }
       ]
     });
+  }
+
+  it('should mount successfully and render public breadcrumbs', () => {
+    mountComponent();
 
     cy.get('ion-content').should('exist');
     cy.get('ion-breadcrumbs').should('exist');
-    cy.get('ion-breadcrumb').should('contain', 'Fichajes Públicos');
+    cy.contains('ion-breadcrumb', 'Fichajes Publicos').should('exist');
   });
 
   it('should redirect to login if header logo is clicked without session', () => {
-    cy.mount(PublicLayoutComponent, {
-      imports: [IonicModule.forRoot(), RouterModule.forRoot([])],
-      providers: [
-        { provide: APP_BASE_HREF, useValue: '/' },
-        { provide: AuthService, useValue: authServiceMock },
-        { provide: LayoutService, useValue: layoutServiceMock },
-        { provide: PlatformService, useValue: platformServiceMock },
-        { provide: MenuController, useValue: menuCtrlMock },
-        { provide: NavController, useValue: navCtrlMock }
-      ]
-    });
+    mountComponent();
 
-    cy.get('.header-logo-container').should('exist').click();
+    cy.get('.logo-box').should('exist').click();
     cy.get('@navigateRoot').should('have.been.calledWith', '/login');
   });
 });

@@ -15,8 +15,14 @@ public class ApiResult<T> implements Serializable {
         this.data = data;
     }
 
+    public ApiResult(String code, String detail, T data) {
+        boolean isSuccess = code != null && code.length() == 3 && code.startsWith("2");
+        this.result = new Result(code, isSuccess ? "OK" : "NOK", detail);
+        this.data = data;
+    }
+
     public static <T> ApiResult<T> success(String detail, T data) {
-        return new ApiResult<>(new Result("200", "OK", "Procesamiento concluído exitosamente"), data);
+        return new ApiResult<>(new Result("200", "OK", detail), data);
     }
 
     public static <T> ApiResult<T> error(String code, String detail) {

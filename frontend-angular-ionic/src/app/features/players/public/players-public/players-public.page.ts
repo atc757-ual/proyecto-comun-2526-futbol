@@ -129,6 +129,14 @@ export class PlayersPublicPage implements OnInit {
     this.currentPage.set(1);
   }
 
+  goToPlayerDetail(playerId?: string) {
+    if (!playerId) {
+      return;
+    }
+
+    this.navCtrl.navigateForward(`/player-detail-public/${playerId}`);
+  }
+
   goToPage(page: number) {
     this.currentPage.set(page);
   }

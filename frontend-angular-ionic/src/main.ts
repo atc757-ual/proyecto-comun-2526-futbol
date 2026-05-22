@@ -10,7 +10,6 @@ import { environment } from './environments/environment';
 // Firebase
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
 import { provideAuth, getAuth } from '@angular/fire/auth';
-import { provideFirestore, getFirestore } from '@angular/fire/firestore';
 import { provideStorage, getStorage } from '@angular/fire/storage';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { authInterceptor } from './app/core/interceptors/auth.interceptor';
@@ -27,14 +26,6 @@ if (environment.production) {
   enableProdMode();
 }
 
-import { register } from 'swiper/element/bundle';
-import { defineCustomElements as defineIonicElements } from '@ionic/pwa-elements/loader';
-import { defineCustomElements as defineFootballElements } from '../../stencil-library/loader';
-
-register();
-defineIonicElements(window);
-defineFootballElements(window);
-
 bootstrapApplication(AppComponent, {
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
@@ -43,7 +34,6 @@ bootstrapApplication(AppComponent, {
     provideHttpClient(withInterceptors([authInterceptor])),
     provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
     provideAuth(() => getAuth()),
-    provideFirestore(() => getFirestore()),
     provideStorage(() => getStorage()),
     {
       provide: PLAYER_SERVICE_TOKEN,
@@ -58,4 +48,15 @@ bootstrapApplication(AppComponent, {
       useClass: AIProxyService
     }
   ],
+}).then(async () => {
+  const loaderTasks: Promise<unknown>[] = [
+    import('@ionic/pwa-elements/loader').then(({ defineCustomElements }) => defineCustomElements(window)),
+    import('../../stencil-library/loader').then(({ defineCustomElements }) => defineCustomElements(window))
+  ];
+
+  if (!customElements.get('swiper-container')) {
+    loaderTasks.push(import('swiper/element/bundle').then(({ register }) => register()));
+  }
+
+  await Promise.all(loaderTasks);
 }).catch(err => console.log(err));

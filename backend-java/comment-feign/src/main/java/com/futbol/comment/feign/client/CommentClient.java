@@ -1,6 +1,6 @@
 package com.futbol.comment.feign.client;
 
-import com.futbol.comment.feign.dto.ApiResult;
+import com.futbol.common.dto.ApiResult;
 import com.futbol.comment.feign.model.CommentDTO;
 import com.futbol.comment.feign.service.CommentFallbackFactory;
 import org.springframework.cloud.openfeign.FeignClient;

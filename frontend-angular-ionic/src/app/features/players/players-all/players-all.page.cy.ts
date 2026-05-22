@@ -6,6 +6,7 @@ import { AuthService } from 'src/app/core/services/auth/auth.service';
 import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { ToastService } from 'src/app/core/services/ui/toast.service';
 import { Router } from '@angular/router';
+import { ModalController } from '@ionic/angular/standalone';
 import { of } from 'rxjs';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
@@ -18,11 +19,20 @@ describe('PlayersAllPage Component', () => {
         { provide: AuthService, useValue: { isAdmin: () => false, getUserId: () => '123' } },
         { provide: LayoutService, useValue: { setHeader: () => {}, setBreadcrumbs: () => {} } },
         { provide: ToastService, useValue: {} },
-        { provide: Router, useValue: { navigate: () => {} } }
+        { provide: Router, useValue: { navigate: () => {} } },
+        {
+          provide: ModalController,
+          useValue: {
+            create: () => Promise.resolve({
+              present: () => Promise.resolve(),
+              onWillDismiss: () => Promise.resolve({ data: true })
+            })
+          }
+        }
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
     });
 
-    cy.get('.search-container').should('exist');
+    cy.contains('Búsqueda global').should('exist');
   });
 });

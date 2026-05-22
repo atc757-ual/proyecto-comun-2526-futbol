@@ -6,6 +6,7 @@ import * as L from 'leaflet';
 })
 export class MapPlugin {
   private map: L.Map | null = null;
+  private static stylesheetPromise: Promise<void> | null = null;
 
   constructor() {
     // Configuración de iconos por defecto para Leaflet en entornos Angular/Ionic
@@ -29,7 +30,8 @@ export class MapPlugin {
   /**
    * Inicializa el mapa en un contenedor específico
    */
-  initMap(elementId: string, lat: number, lng: number, zoom: number = 13): L.Map {
+  async initMap(elementId: string, lat: number, lng: number, zoom: number = 13): Promise<L.Map> {
+    await this.ensureLeafletStyles();
     console.log(`[MAP-PLUGIN] Inicializando mapa en #${elementId} para [${lat}, ${lng}]`);
     if (this.map) {
       console.log('[MAP-PLUGIN] Eliminando instancia anterior del mapa');
@@ -43,6 +45,30 @@ export class MapPlugin {
     }).addTo(this.map);
 
     return this.map;
+  }
+
+  private ensureLeafletStyles(): Promise<void> {
+    if (typeof document === 'undefined') {
+      return Promise.resolve();
+    }
+
+    if (document.getElementById('leaflet-stylesheet')) {
+      return Promise.resolve();
+    }
+
+    if (!MapPlugin.stylesheetPromise) {
+      MapPlugin.stylesheetPromise = new Promise((resolve, reject) => {
+        const link = document.createElement('link');
+        link.id = 'leaflet-stylesheet';
+        link.rel = 'stylesheet';
+        link.href = 'assets/leaflet/leaflet.css';
+        link.onload = () => resolve();
+        link.onerror = () => reject(new Error('No se pudo cargar leaflet.css'));
+        document.head.appendChild(link);
+      });
+    }
+
+    return MapPlugin.stylesheetPromise;
   }
 
   /**

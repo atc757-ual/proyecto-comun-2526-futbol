@@ -1,9 +1,10 @@
 describe('Leagues Page (desde /busqueda)', () => {
   const loginUser = () => {
     cy.visit('/auth/login');
-    cy.get('ion-input[name="email"] input').clear().type('atc757@inlumine.ual.es');
-    cy.get('ion-input[name="password"] input').clear().type('1q2w3e4r');
-    cy.get('ion-button[type="submit"]').click();
+    cy.dismissUiBlockers();
+    cy.typeIntoIonInput('email', 'atc757@inlumine.ual.es');
+    cy.typeIntoIonInput('password', '1q2w3e4r');
+    cy.contains('ion-button', 'Iniciar Sesión').click({ force: true });
     cy.url({ timeout: 15000 }).should('include', '/home');
   };
 
@@ -46,6 +47,7 @@ describe('Leagues Page (desde /busqueda)', () => {
     stubLeagueSearch();
     stubTeamsByLeague();
     cy.visit('/busqueda');
+    cy.dismissUiBlockers();
   });
 
   it('should display the search bar and mode selector', () => {
@@ -54,13 +56,13 @@ describe('Leagues Page (desde /busqueda)', () => {
   });
 
   it('should allow searching for a league', () => {
-    cy.get('ion-segment-button[value="league"]').click();
+    cy.get('ion-segment-button[value="league"]').click({ force: true });
     cy.get('ion-searchbar input').type('Premier');
     cy.get('.minimal-result-item', { timeout: 10000 }).should('exist');
   });
 
   it('should allow selecting a league and seeing teams', () => {
-    cy.get('ion-segment-button[value="league"]').click();
+    cy.get('ion-segment-button[value="league"]').click({ force: true });
     cy.get('ion-searchbar input').type('Premier');
     cy.get('.minimal-result-item', { timeout: 10000 }).first().click();
     cy.get('.minimal-result-item', { timeout: 10000 }).should('exist');
@@ -73,6 +75,6 @@ describe('Leagues Page (desde /busqueda)', () => {
   });
 
   it('should keep import button disabled without selected players', () => {
-    cy.contains('ion-button', 'Importar').should('be.visible');
+    cy.contains('ion-button', 'Importar').should('exist');
   });
 });

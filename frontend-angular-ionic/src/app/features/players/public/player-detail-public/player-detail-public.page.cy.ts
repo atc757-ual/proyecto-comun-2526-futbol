@@ -8,6 +8,7 @@ import { NavController, ModalController } from '@ionic/angular/standalone';
 import { ConfettiService } from '../../../../core/services/ui/confetti.service';
 import { ToastService } from '../../../../core/services/ui/toast.service';
 import { LocationPlugin } from '../../../../core/plugins/location-plugin';
+import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { Player } from '../../../../core/models/player.model';
 
@@ -21,18 +22,20 @@ describe('PlayerDetailPublicPage Component Tests with Cypress', () => {
   let toastServiceMock: any;
   let locationPluginMock: any;
 
-  const mockPlayer: Player = {
-    id: '1',
+  const mockPlayer = {
+    _id: '1',
     name: 'Alex Oxlade-Chamberlain',
     position: 'Centrocampista',
     team: 'Besiktas',
     league: 'Süper Lig',
     nationality: 'Inglaterra',
     age: 30,
-    photo_url: 'https://example.com/photo.jpg',
-    photo_cutout_url: 'https://example.com/cutout.jpg',
+    user_id: 'user-1',
+    image_url: 'https://example.com/photo.jpg',
+    images: {
+      cutout: 'https://example.com/cutout.jpg'
+    },
     number: 15,
-    is_premium: false,
     stats: {
       partidos: 20,
       goles: 5,
@@ -46,7 +49,7 @@ describe('PlayerDetailPublicPage Component Tests with Cypress', () => {
       weaknesses: ['Velocidad', 'Defensa'],
       tactical_notes: 'Jugador muy técnico con buena visión.'
     }
-  };
+  } as unknown as Player;
 
   const mockComments = [
     {
@@ -60,15 +63,15 @@ describe('PlayerDetailPublicPage Component Tests with Cypress', () => {
 
   beforeEach(() => {
     playerServiceMock = {
-      getPlayerById: cy.stub().returns(of(mockPlayer)).as('getPlayerStub'),
-      getLeagueDetails: cy.stub().returns(of({ id: 'l1', name: 'Süper Lig' })).as('getLeagueStub'),
-      getPlayerTeams: cy.stub().returns(of([])).as('getTeamsStub'),
-      getComments: cy.stub().returns(of(mockComments)).as('getCommentsStub'),
-      addComment: cy.stub().returns(of({ id: 'c2', authorName: 'Invitado', content: 'Nuevo comentario', rating: 4 })).as('addCommentStub')
+      getPublicPlayer: (cy.stub().returns(of(mockPlayer)) as any).as('getPlayerStub'),
+      getLeagueDetails: (cy.stub().returns(of({ id: 'l1', name: 'Süper Lig' })) as any).as('getLeagueStub'),
+      getPlayerTeams: (cy.stub().returns(of([])) as any).as('getTeamsStub'),
+      getComments: (cy.stub().returns(of(mockComments)) as any).as('getCommentsStub'),
+      addComment: (cy.stub().returns(of({ id: 'c2', authorName: 'Invitado', content: 'Nuevo comentario', rating: 4 })) as any).as('addCommentStub')
     };
     authServiceMock = {
-      currentUser: cy.stub().returns(null).as('currentUserStub'),
-      userData: cy.stub().returns(null).as('userDataStub')
+      currentUser: (cy.stub().returns(null) as any).as('currentUserStub'),
+      userData: (cy.stub().returns(null) as any).as('userDataStub')
     };
     navCtrlMock = {
       navigateRoot: cy.stub().as('navigateRootStub')
@@ -88,8 +91,8 @@ describe('PlayerDetailPublicPage Component Tests with Cypress', () => {
       showError: cy.stub().as('toastErrorStub')
     };
     locationPluginMock = {
-      isGeolocationPermissionGranted: cy.stub().resolves(false).as('isGeoGrantedStub'),
-      requestGeolocationPermission: cy.stub().resolves(false).as('requestGeoStub')
+      isGeolocationPermissionGranted: (cy.stub().resolves(false) as any).as('isGeoGrantedStub'),
+      requestGeolocationPermission: (cy.stub().resolves(false) as any).as('requestGeoStub')
     };
   });
 
@@ -104,13 +107,15 @@ describe('PlayerDetailPublicPage Component Tests with Cypress', () => {
         { provide: ModalController, useValue: modalCtrlMock },
         { provide: ConfettiService, useValue: confettiServiceMock },
         { provide: ToastService, useValue: toastServiceMock },
-        { provide: LocationPlugin, useValue: locationPluginMock }
+        { provide: LocationPlugin, useValue: locationPluginMock },
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => '1' } } } }
       ],
       componentProperties: {
         id: '1'
       }
     });
 
+    cy.get('@getPlayerStub').should('have.been.calledWith', '1');
     cy.contains('Alex Oxlade-Chamberlain').should('exist');
     cy.contains('Centrocampista').should('exist');
     cy.contains('Besiktas').should('exist');
@@ -127,13 +132,15 @@ describe('PlayerDetailPublicPage Component Tests with Cypress', () => {
         { provide: ModalController, useValue: modalCtrlMock },
         { provide: ConfettiService, useValue: confettiServiceMock },
         { provide: ToastService, useValue: toastServiceMock },
-        { provide: LocationPlugin, useValue: locationPluginMock }
+        { provide: LocationPlugin, useValue: locationPluginMock },
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => '1' } } } }
       ],
       componentProperties: {
         id: '1'
       }
     });
 
+    cy.get('@getPlayerStub').should('have.been.calledWith', '1');
     // Validamos que el envoltorio del cutout no sea visible inicialmente o no tenga la clase is-visible
     cy.get('.cutout-wrapper').should('not.have.class', 'is-visible');
 

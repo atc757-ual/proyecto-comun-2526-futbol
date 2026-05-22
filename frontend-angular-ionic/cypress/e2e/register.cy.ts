@@ -1,9 +1,9 @@
 describe('Register Page E2E Flow - Casos Reales', () => {
   const fillRegisterForm = (email: string, password = '1q2w3e4r') => {
-    cy.get('ion-input[name="fullName"] input').clear().type('Alex Test');
-    cy.get('ion-input[name="email"] input').clear().type(email);
-    cy.get('ion-input[name="password"] input').clear().type(password);
-    cy.get('ion-input[name="confirmPassword"] input').clear().type(password);
+    cy.typeIntoIonInput('fullName', 'Alex Test');
+    cy.typeIntoIonInput('email', email);
+    cy.typeIntoIonInput('password', password);
+    cy.typeIntoIonInput('confirmPassword', password);
   };
 
   const acceptTerms = () => {

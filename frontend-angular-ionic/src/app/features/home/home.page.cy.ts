@@ -10,9 +10,27 @@ import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { ToastService } from 'src/app/core/services/ui/toast.service';
 import { Auth } from '@angular/fire/auth';
 import { of } from 'rxjs';
+import { ModalController } from '@ionic/angular';
+import { ModalController as StandaloneModalController } from '@ionic/angular/standalone';
 
 describe('HomePage Component', () => {
   it('mounts and renders correctly', () => {
+    const modalMock = {
+      create: cy.stub().resolves({
+        present: cy.stub().resolves(),
+        onWillDismiss: cy.stub().resolves({ data: false })
+      })
+    };
+
+    cy.window().then((win) => {
+      Object.defineProperty(win.navigator, 'permissions', {
+        configurable: true,
+        value: {
+          query: cy.stub().resolves({ state: 'granted' })
+        }
+      });
+    });
+
     mount(HomePage, {
       imports: [IonicModule.forRoot(), HomePage, HttpClientTestingModule, RouterTestingModule],
       providers: [
@@ -35,11 +53,13 @@ describe('HomePage Component', () => {
         },
         { provide: LayoutService, useValue: { setHeader: () => {}, setBreadcrumbs: () => {} } },
         { provide: ToastService, useValue: {} },
-        { provide: Auth, useValue: {} }
+        { provide: Auth, useValue: {} },
+        { provide: ModalController, useValue: modalMock },
+        { provide: StandaloneModalController, useValue: modalMock }
       ]
     });
 
-    cy.get('app-home').should('exist');
-    cy.contains('¡Hola, TestUser!').should('exist');
+    cy.get('.ai-scout-card').should('exist');
+    cy.contains('Necesitas más jugadores').should('exist');
   });
 });

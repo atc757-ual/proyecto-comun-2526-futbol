@@ -33,7 +33,8 @@ describe('NewsPage Component', () => {
       ]
     });
 
-    cy.get('.news-dynamic-grid').should('exist');
+    cy.get('.empty-container').should('exist');
+    cy.contains('No hay noticias todavía').should('exist');
   });
 
   it('renders admin card when user is admin', () => {

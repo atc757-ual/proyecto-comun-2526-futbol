@@ -29,33 +29,33 @@ public class ExternalAIController {
     public ApiResult<com.futbol.externalclient.dto.PlayerAnalysisResponse> analyzeLocalTeam() {
         try {
             // 1. Obtener jugadores de la BD local
-            com.futbol.player.feign.dto.ApiResult<List<PlayerDTO>> result = playerClient.getAllPlayers(null, null, null);
+            ApiResult<List<PlayerDTO>> result = playerClient.getAllPlayers(null, null, null);
             
             if (result.getData() == null || result.getData().isEmpty()) {
                 return ApiResult.error("404", "No hay jugadores en la base de datos local para analizar");
             }
 
             // 2. Construir Prompt profesional (Homologado con Node)
-            StringBuilder prompt = new StringBuilder("Eres un Director Técnico de Élite y experto analista de Big Data futbolístico.\n");
-            prompt.append("Tu tarea es armar el MEJOR EQUIPO POSIBLE (máximo 11 titulares) basado ÚNICAMENTE en los datos de los jugadores proporcionados.\n\n");
-            prompt.append("REGLA DE ORO: Si el usuario tiene menos de 11 jugadores, NO inventes jugadores. Usa los que hay y explica en el análisis que el equipo está incompleto pero que esta es la mejor disposición para ellos.\n");
+            StringBuilder prompt = new StringBuilder("Eres un Director Tecnico de Elite y experto analista de Big Data futbolistico.\n");
+            prompt.append("Tu tarea es armar el MEJOR EQUIPO POSIBLE (maximo 11 titulares) basado UNICAMENTE en los datos de los jugadores proporcionados.\n\n");
+            prompt.append("REGLA DE ORO: Si el usuario tiene menos de 11 jugadores, NO inventes jugadores. Usa los que hay y explica en el analisis que el equipo esta incompleto pero que esta es la mejor disposicion para ellos.\n");
             prompt.append("Si tiene más de 11, selecciona a los mejores 11 para la formación ideal.\n\n");
-            prompt.append("INSTRUCCIÓN CRÍTICA: Responde ÚNICAMENTE con el objeto JSON solicitado.\n");
+            prompt.append("INSTRUCCION CRITICA: Responde UNICAMENTE con el objeto JSON solicitado.\n");
             prompt.append("Estructura esperada:\n");
             prompt.append("{\n");
-            prompt.append("  \"analysis\": \"análisis general\",\n");
+            prompt.append("  \"analysis\": \"analisis general\",\n");
             prompt.append("  \"formation\": \"4-3-3, 4-4-2 o Incompleta\",\n");
             prompt.append("  \"idealEleven\": [ {\"name\": \"nombre\", \"position\": \"PO|DF|MC|DL\", \"role\": \"rol\"} ],\n");
             prompt.append("  \"starPlayer\": \"nombre\",\n");
-            prompt.append("  \"justification\": \"justificación técnica\",\n");
+            prompt.append("  \"justification\": \"justificacion tecnica\",\n");
             prompt.append("  \"tacticalRecommendations\": [\"rec1\", \"rec2\"]\n");
             prompt.append("}\n");
-            prompt.append("NO incluyas bloques de código ni explicaciones fuera del JSON.\n\n");
+            prompt.append("NO incluyas bloques de codigo ni explicaciones fuera del JSON.\n\n");
             
             prompt.append("DATOS DEL PLANTEL DEL USUARIO:\n");
             result.getData().forEach(p -> {
                 prompt.append("- ").append(p.getName())
-                      .append(": Posición ").append(p.getPosition() != null ? p.getPosition() : "N/A")
+                      .append(": Posicion ").append(p.getPosition() != null ? p.getPosition() : "N/A")
                       .append(", Equipo: ").append(p.getTeam() != null ? p.getTeam() : "N/A")
                       .append(", Nac: ").append(p.getNationality() != null ? p.getNationality() : "N/A")
                       .append(Boolean.TRUE.equals(p.getIsFavorite()) ? " [FAVORITO]" : "")

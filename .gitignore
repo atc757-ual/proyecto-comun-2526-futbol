@@ -56,3 +56,10 @@ logs/
 
 # Documentos locales
 documentacion_rubricas/
+
+# Cypress screenshots and videos (nested and local)
+**/cypress/screenshots/
+**/cypress/videos/
+/cypress/screenshots/
+/cypress/videos/
+

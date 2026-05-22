@@ -1,7 +1,7 @@
 package com.futbol.externalfeign.controller;
 
 import com.futbol.externalfeign.client.FootballFeignClient;
-import com.futbol.externalfeign.dto.ApiResult;
+import com.futbol.common.dto.ApiResult;
 import com.futbol.externalfeign.dto.FootballApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

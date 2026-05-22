@@ -1,18 +1,22 @@
 package com.futbol.player.feign.service;
 
+import com.futbol.common.dto.ApiResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import com.futbol.player.feign.client.PlayerClient;
 import com.futbol.comment.feign.client.CommentClient;
 import com.futbol.player.feign.model.PlayerDTO;
 import com.futbol.comment.feign.model.CommentDTO;
 import com.futbol.player.feign.model.PlayerFullDTO;
-import com.futbol.player.feign.dto.ApiResult;
 import org.springframework.http.HttpStatus;
 import java.util.List;
 
 @Service
 public class PlayerService {
+
+    private static final Logger logger = LoggerFactory.getLogger(PlayerService.class);
     
     @Autowired
     private PlayerClient playerClient;
@@ -38,7 +42,7 @@ public class PlayerService {
 
         // 2. Buscamos sus comentarios
         // IMPORTANTE: Obtenemos la data directamente para evitar conflicto de tipos de ApiResult
-        com.futbol.comment.feign.dto.ApiResult<List<CommentDTO>> commentRes = commentClient.getCommentsByPlayer(id);
+        ApiResult<List<CommentDTO>> commentRes = commentClient.getCommentsByPlayer(id);
         List<CommentDTO> comments = (commentRes != null) ? commentRes.getData() : null;
         
         PlayerFullDTO full = new PlayerFullDTO(playerRes.getData(), comments);
@@ -59,8 +63,7 @@ public class PlayerService {
         try {
             commentClient.deleteByPlayerId(id);
         } catch (Exception e) {
-            // Logueamos pero continuamos para no bloquear el borrado del jugador si el servicio de comentarios falla
-            System.err.println("Error eliminando comentarios para el jugador " + id + ": " + e.getMessage());
+            logger.warn("Error eliminando comentarios para el jugador {}", id, e);
         }
 
         // 2. Eliminamos el jugador

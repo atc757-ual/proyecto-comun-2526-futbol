@@ -86,6 +86,7 @@ services:
     container_name: football-user-client
     environment:
       JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
+      SPRING_APPLICATION_NAME: user-client
       SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
       SPRING_DATASOURCE_URL: "jdbc:postgresql://football-postgres:5432/${DB_NAME:-football_db}"
@@ -119,6 +120,7 @@ services:
       JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       SPRING_CONFIG_IMPORT: "optional:configserver:http://football-config-server:8888"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://football-eureka-server:8761/eureka/"
+      INITIAL_ADMIN_EMAIL: ${INITIAL_ADMIN_EMAIL:-alex142407@gmail.com}
       FIREBASE_SERVICE_ACCOUNT: "/app/firebase-credentials.json"
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
       SPRING_AI_GEMINI_API_KEY: ${GOOGLE_API_KEY}

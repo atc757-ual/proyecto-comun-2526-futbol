@@ -5,6 +5,7 @@ import { LayoutService } from '../../../../core/services/ui/layout.service';
 import { PlatformService } from '../../../../core/services/system/platform.service';
 import { AuthService } from '../../../../core/services/auth/auth.service';
 import { NavController } from '@ionic/angular/standalone';
+import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { Player } from '../../../../core/models/player.model';
 
@@ -17,36 +18,36 @@ describe('PlayersPublicPage Component Tests with Cypress', () => {
 
   const mockPlayers: Player[] = [
     {
-      id: '1',
+      _id: '1',
       name: 'Alex Oxlade-Chamberlain',
       position: 'Centrocampista',
       team: 'Besiktas',
       league: 'Süper Lig',
       nationality: 'Inglaterra',
       age: 30,
-      photo_url: '',
-      photo_cutout_url: '',
+      user_id: 'user-1',
+      image_url: '',
       number: 15,
-      is_premium: false
+      images: { cutout: '' }
     },
     {
-      id: '2',
+      _id: '2',
       name: 'Lionel Messi',
       position: 'Delantero',
       team: 'Inter Miami',
       league: 'MLS',
       nationality: 'Argentina',
       age: 36,
-      photo_url: '',
-      photo_cutout_url: '',
+      user_id: 'user-2',
+      image_url: '',
       number: 10,
-      is_premium: true
+      images: { cutout: '' }
     }
   ];
 
   beforeEach(() => {
     playerServiceMock = {
-      getPublicPlayers: cy.stub().returns(of(mockPlayers)).as('getPublicPlayersStub')
+      getPublicPlayers: (cy.stub().returns(of(mockPlayers)) as any).as('getPublicPlayersStub')
     };
     layoutServiceMock = {
       setHeader: cy.stub().as('setHeaderStub'),
@@ -57,8 +58,8 @@ describe('PlayersPublicPage Component Tests with Cypress', () => {
       isDesktop: true
     };
     authServiceMock = {
-      currentUser: cy.stub().returns(null).as('currentUserStub'),
-      userData: cy.stub().returns(null).as('userDataStub')
+      currentUser: (cy.stub().returns(null) as any).as('currentUserStub'),
+      userData: (cy.stub().returns(null) as any).as('userDataStub')
     };
     navCtrlMock = {
       navigateRoot: cy.stub().as('navigateRootStub')
@@ -73,12 +74,13 @@ describe('PlayersPublicPage Component Tests with Cypress', () => {
         { provide: LayoutService, useValue: layoutServiceMock },
         { provide: PlatformService, useValue: platformServiceMock },
         { provide: AuthService, useValue: authServiceMock },
-        { provide: NavController, useValue: navCtrlMock }
+        { provide: NavController, useValue: navCtrlMock },
+        { provide: ActivatedRoute, useValue: { snapshot: { queryParams: {} } } }
       ]
     });
 
-    // Validamos que se muestren las tarjetas de los jugadores
-    cy.get('ion-card').should('have.length', 2);
+    // Validamos que se muestren solo las tarjetas reales de jugadores
+    cy.get('ion-card.player-premium-card').should('have.length', 2);
     cy.contains('Alex Oxlade-Chamberlain').should('exist');
     cy.contains('Lionel Messi').should('exist');
   });
@@ -91,15 +93,16 @@ describe('PlayersPublicPage Component Tests with Cypress', () => {
         { provide: LayoutService, useValue: layoutServiceMock },
         { provide: PlatformService, useValue: platformServiceMock },
         { provide: AuthService, useValue: authServiceMock },
-        { provide: NavController, useValue: navCtrlMock }
+        { provide: NavController, useValue: navCtrlMock },
+        { provide: ActivatedRoute, useValue: { snapshot: { queryParams: {} } } }
       ]
     });
 
-    // Escribimos "Lionel" en el buscador
+    // Escribimos "Lionel" en el buscador real del componente Ionic
     cy.get('ion-searchbar input').type('Lionel');
 
-    // Confirmamos que solo quede 1 tarjeta con Messi y no Chamberlain
-    cy.get('ion-card').should('have.length', 1);
+    // Confirmamos que solo quede 1 tarjeta de jugador con Messi y no Chamberlain
+    cy.get('ion-card.player-premium-card').should('have.length', 1);
     cy.contains('Lionel Messi').should('exist');
     cy.contains('Alex Oxlade-Chamberlain').should('not.exist');
   });

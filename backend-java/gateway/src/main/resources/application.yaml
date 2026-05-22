@@ -10,7 +10,7 @@ spring:
       globalcors:
         cors-configurations:
           '[/**]':
-            allowedOrigins: "*"
+            allowedOrigins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost,http://localhost:4200,http://localhost:8100,http://35.255.218.37}
             allowedMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
             allowedHeaders: "*"
       routes:
@@ -88,8 +88,17 @@ management:
 
 # Configuración de Seguridad Personalizada
 jwt:
-  secret: ${JWT_SECRET:esta-es-una-clave-secreta-muy-larga-y-segura-para-el-futbol-2526}
   expiration: 36000 # 10 horas
+  private:
+    key:
+      path: ${JWT_PRIVATE_KEY_PATH:/app/private_key.pem}
+  public:
+    key:
+      path: ${JWT_PUBLIC_KEY_PATH:/app/public.key}
+
+app:
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost,http://localhost:4200,http://localhost:8100,http://35.255.218.37}
 
 firebase:
   service-account:
@@ -98,3 +107,12 @@ firebase:
 google:
   api:
     key: ${GOOGLE_API_KEY:tu-clave-aqui}
+
+openapi:
+  title: Gateway API
+  description: Gateway de autenticacion, seguridad y orquestacion del ecosistema Futbol 2526
+  version: 1.0.0
+  contact:
+    name: Alex Taquila Camasca
+    email: atc757@inlumine.ual.es
+    url: https://es.linkedin.com/in/alextaquilacamasca

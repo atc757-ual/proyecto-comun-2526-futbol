@@ -9,7 +9,7 @@ import {
   chevronForward, football, chevronBack, newspaperOutline, settingsOutline, tvOutline,
   logOutOutline, keyOutline, shieldCheckmarkOutline, closeOutline, footballOutline,
   checkmarkCircleOutline, alertCircleOutline, personOutline, mailOutline, radioOutline,
-  serverOutline, sparklesOutline
+  serverOutline, sparklesOutline, peopleOutline
 } from 'ionicons/icons';
 import { RouterModule, Router } from '@angular/router';
 import { LayoutService } from 'src/app/core/services/ui/layout.service';
@@ -63,7 +63,7 @@ export class HomePage implements OnInit, OnDestroy {
       chevronBack, newspaperOutline, settingsOutline, tvOutline,
       logOutOutline, keyOutline, personOutline, radioOutline,
       closeOutline, checkmarkCircleOutline, alertCircleOutline,
-      sparklesOutline
+      sparklesOutline, peopleOutline
     });
 
     // Sincronizo de forma reactiva el nombre del usuario en la cabecera

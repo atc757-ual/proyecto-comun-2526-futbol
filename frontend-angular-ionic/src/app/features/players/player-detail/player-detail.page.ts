@@ -742,9 +742,9 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
     console.log(`[PLAYER-DETAIL] Contenedor ${elementId} encontrado. Lat: ${lat}, Lng: ${lng}`);
 
     try {
-      this.zone.runOutsideAngular(() => {
+      this.zone.runOutsideAngular(async () => {
         // Inicializar con el ID dinámico
-        const mapObj = this.mapPlugin.initMap(elementId, lat, lng, 14);
+        const mapObj = await this.mapPlugin.initMap(elementId, lat, lng, 14);
 
         if (mapObj) {
           this.mapPlugin.addMarker(lat, lng, undefined, false);

@@ -1,9 +1,9 @@
 describe('Players Feature Smoke E2E', () => {
   const loginUser = () => {
     cy.visit('/auth/login');
-    cy.get('ion-input[name="email"] input').clear().type('atc757@inlumine.ual.es');
-    cy.get('ion-input[name="password"] input').clear().type('1q2w3e4r');
-    cy.get('ion-button[type="submit"]').click();
+    cy.typeIntoIonInput('email', 'atc757@inlumine.ual.es');
+    cy.typeIntoIonInput('password', '1q2w3e4r');
+    cy.contains('ion-button', 'Iniciar Sesión').click();
     cy.url({ timeout: 15000 }).should('include', '/home');
   };
 

@@ -1,6 +1,4 @@
 import { Routes } from '@angular/router';
-import { MainLayoutComponent } from './shared/components/main-layout/main-layout.component';
-import { PublicLayoutComponent } from './shared/components/public-layout/public-layout.component';
 import { authGuard, adminGuard, masterGuard, guestGuard, publicPlayerGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
@@ -40,7 +38,7 @@ export const routes: Routes = [
   // 2. PUBLIC ROUTES (Con su propio Layout explícito y compartido)
   {
     path: '',
-    component: PublicLayoutComponent,
+    loadComponent: () => import('./shared/components/public-layout/public-layout.component').then((m) => m.PublicLayoutComponent),
     children: [
       {
         path: 'players-public',
@@ -58,7 +56,7 @@ export const routes: Routes = [
   // 3. MAIN LAYOUT (Todo lo demás protegido)
   {
     path: '',
-    component: MainLayoutComponent,
+    loadComponent: () => import('./shared/components/main-layout/main-layout.component').then((m) => m.MainLayoutComponent),
     canActivate: [authGuard],
     children: [
       { path: 'home', loadComponent: () => import('./features/home/home.page').then((m) => m.HomePage) },
@@ -83,5 +81,3 @@ export const routes: Routes = [
     redirectTo: 'home'
   }
 ];
-
-// Touch for recompilation

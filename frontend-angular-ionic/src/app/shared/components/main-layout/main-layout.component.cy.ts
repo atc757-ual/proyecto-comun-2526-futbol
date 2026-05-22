@@ -1,6 +1,7 @@
 import { MainLayoutComponent } from './main-layout.component';
-import { IonicModule, MenuController, NavController } from '@ionic/angular';
-import { RouterModule } from '@angular/router';
+import { IonicModule } from '@ionic/angular';
+import { ActionSheetController, MenuController, ModalController, NavController } from '@ionic/angular/standalone';
+import { RouterTestingModule } from '@angular/router/testing';
 import { APP_BASE_HREF } from '@angular/common';
 import { AuthService } from 'src/app/core/services/auth/auth.service';
 import { PlatformService } from 'src/app/core/services/system/platform.service';
@@ -12,6 +13,8 @@ describe('MainLayoutComponent Component Cypress Tests', () => {
   let platformServiceMock: any;
   let menuCtrlMock: any;
   let navCtrlMock: any;
+  let modalCtrlMock: any;
+  let actionSheetCtrlMock: any;
 
   beforeEach(() => {
     authServiceMock = {
@@ -25,14 +28,18 @@ describe('MainLayoutComponent Component Cypress Tests', () => {
       showHero: () => false,
       breadcrumbs: () => [{ label: 'Inicio', url: '/home' }],
       title: () => 'Test Panel',
-      subtitle: () => 'Subtítulo del layout',
+      subtitle: () => 'Subtitulo del layout',
+      aiLoading: () => false,
+      aiThinkingText: () => '',
+      isHome: () => false,
       setHeader: () => {},
       setBreadcrumbs: () => {}
     };
 
     platformServiceMock = {
       isDesktop: true,
-      isMobileApp: false
+      isMobileApp: false,
+      isWebMobile: false
     };
 
     menuCtrlMock = {
@@ -43,40 +50,49 @@ describe('MainLayoutComponent Component Cypress Tests', () => {
     navCtrlMock = {
       navigateRoot: cy.stub().as('navigateRoot')
     };
+
+    modalCtrlMock = {
+      create: cy.stub().resolves({
+        present: cy.stub().resolves(),
+        onWillDismiss: cy.stub().resolves({ data: false })
+      })
+    };
+
+    actionSheetCtrlMock = {
+      create: cy.stub().resolves({ present: cy.stub().resolves() })
+    };
   });
 
-  it('should mount successfully with custom title and breadcrumbs', () => {
+  function mountComponent() {
     cy.mount(MainLayoutComponent, {
-      imports: [IonicModule.forRoot(), RouterModule.forRoot([])],
+      imports: [IonicModule.forRoot(), RouterTestingModule],
       providers: [
         { provide: APP_BASE_HREF, useValue: '/' },
         { provide: AuthService, useValue: authServiceMock },
         { provide: LayoutService, useValue: layoutServiceMock },
         { provide: PlatformService, useValue: platformServiceMock },
         { provide: MenuController, useValue: menuCtrlMock },
-        { provide: NavController, useValue: navCtrlMock }
+        { provide: NavController, useValue: navCtrlMock },
+        { provide: ModalController, useValue: modalCtrlMock },
+        { provide: ActionSheetController, useValue: actionSheetCtrlMock }
       ]
     });
+  }
+
+  it('should mount successfully with breadcrumbs in desktop mode', () => {
+    mountComponent();
 
     cy.get('ion-menu').should('exist');
     cy.get('ion-breadcrumbs').should('exist');
-    cy.get('ion-breadcrumb').should('contain', 'Inicio');
+    cy.contains('ion-breadcrumb', 'Inicio').should('exist');
+    cy.get('.main-header').should('exist');
   });
 
-  it('should display desktop side panel links', () => {
-    cy.mount(MainLayoutComponent, {
-      imports: [IonicModule.forRoot(), RouterModule.forRoot([])],
-      providers: [
-        { provide: APP_BASE_HREF, useValue: '/' },
-        { provide: AuthService, useValue: authServiceMock },
-        { provide: LayoutService, useValue: layoutServiceMock },
-        { provide: PlatformService, useValue: platformServiceMock },
-        { provide: MenuController, useValue: menuCtrlMock },
-        { provide: NavController, useValue: navCtrlMock }
-      ]
-    });
+  it('should display desktop navigation items', () => {
+    mountComponent();
 
-    cy.get('.desktop-nav-links').should('exist');
-    cy.get('.desktop-nav-link').should('have.length.at.least', 2);
+    cy.get('.nav-header-row').should('exist');
+    cy.get('.nav-links-centered li').should('have.length.at.least', 4);
+    cy.contains('.nav-links-centered li', 'AI').should('exist');
   });
 });

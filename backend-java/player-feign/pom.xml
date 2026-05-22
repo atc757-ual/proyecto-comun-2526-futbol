@@ -53,6 +53,11 @@
 		</dependency>
 		<dependency>
 			<groupId>com.futbol</groupId>
+			<artifactId>common-futbol</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.futbol</groupId>
 			<artifactId>comment-feign</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>

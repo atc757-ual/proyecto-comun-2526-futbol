@@ -2,7 +2,7 @@ import { defineConfig } from "cypress";
 
 export default defineConfig({
   e2e: {
-      baseUrl: 'http://localhost',
+      baseUrl: 'http://localhost:4200',
     setupNodeEvents(on, config) {
       // implement node event listeners here
     },
@@ -12,6 +12,15 @@ export default defineConfig({
     devServer: {
       framework: "angular",
       bundler: "webpack",
+      options: {
+        projectConfig: {
+          root: "",
+          sourceRoot: "src",
+          buildOptions: {
+            tsConfig: "tsconfig.cy.json"
+          }
+        }
+      }
     },
     specPattern: 'src/**/*.cy.ts',
   },
@@ -19,3 +28,4 @@ export default defineConfig({
   viewportHeight: 720,
   video: false,
 });
+

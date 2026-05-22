@@ -8,8 +8,6 @@
       "dom",
       "es2017"
     ],
-    "moduleResolution": "node16",
-    "module": "esnext",
     "target": "es2017",
     "noUnusedLocals": true,
     "noUnusedParameters": true,

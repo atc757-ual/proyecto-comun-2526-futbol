@@ -1,15 +1,21 @@
 package com.futbol.gateway.controllers;
 
+import com.futbol.common.dto.ApiResult;
+import com.futbol.common.dto.Result;
 import com.futbol.gateway.feign.UserServiceClient;
 import com.futbol.gateway.security.JWTUtil;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.jsonwebtoken.Claims;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,11 +27,16 @@ import java.util.Map;
 @Tag(name = "Auth API", description = "Autenticación y gestión de usuarios administradores vía gateway")
 public class AuthController {
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+
     @Autowired
     private UserServiceClient userServiceClient;
 
     @Autowired
     private JWTUtil jwtUtil;
+
+    @Value("${INITIAL_ADMIN_EMAIL:}")
+    private String initialAdminEmail;
 
     @PostMapping("/signin")
         @Operation(summary = "Iniciar sesión con Firebase ID Token", description = "Valida token Firebase, sincroniza usuario y devuelve JWT local")
@@ -33,8 +44,12 @@ public class AuthController {
             @ApiResponse(responseCode = "200", description = "Autenticación exitosa"),
             @ApiResponse(responseCode = "401", description = "Token Firebase inválido o expirado")
         })
-    public ResponseEntity<?> loginFirebase(@RequestBody Map<String, String> body) {
+    public ResponseEntity<ApiResult<Object>> loginFirebase(@RequestBody Map<String, String> body) {
         String idToken = body.get("idToken");
+
+        if (idToken == null || idToken.isBlank()) {
+            return buildErrorResponse(400, "Falta el idToken de Firebase");
+        }
         
         try {
             // 1. Verificar token con Firebase
@@ -42,10 +57,14 @@ public class AuthController {
             String uid = decodedToken.getUid();
             String email = decodedToken.getEmail() != null ? decodedToken.getEmail().toLowerCase() : null;
             String name = (String) decodedToken.getClaims().get("name");
+                boolean isInitialAdmin = email != null
+                    && initialAdminEmail != null
+                    && !initialAdminEmail.isBlank()
+                    && email.equalsIgnoreCase(initialAdminEmail);
             
             // 2. Leer Custom Claim de Admin
             Boolean isAdminClaim = (Boolean) decodedToken.getClaims().get("admin");
-            boolean isAdmin = (isAdminClaim != null && isAdminClaim);
+                boolean isAdmin = (isAdminClaim != null && isAdminClaim) || isInitialAdmin;
 
             // 3. Sincronizar usuario con user-client (vía Feign)
             Map<String, Object> syncRequest = new HashMap<>();
@@ -54,33 +73,25 @@ public class AuthController {
             syncRequest.put("name", name);
             syncRequest.put("isAdmin", isAdmin);
 
-            Map<String, Object> syncResponse = userServiceClient.syncUser(syncRequest);
-            Map<String, Object> userData = (Map<String, Object>) syncResponse.get("data");
+            ApiResult<Object> syncResponse = userServiceClient.syncUser(syncRequest);
+            Object userData = syncResponse != null ? syncResponse.getData() : null;
 
             // 4. Generar JWT local
-            String token = jwtUtil.generateToken(uid, isAdmin ? "admin" : "user");
+            String token = jwtUtil.generateToken(uid, isAdmin ? "admin" : "user", isInitialAdmin);
 
             // 5. Responder
-            Map<String, Object> response = new HashMap<>();
             Map<String, Object> data = new HashMap<>();
             data.put("token", token);
             data.put("user", userData);
-            
-            Map<String, String> result = new HashMap<>();
-            result.put("status", "OK");
-            
-            response.put("result", result);
-            response.put("data", data);
 
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(new ApiResult<>(new Result("200", "OK", "Autenticación exitosa"), data));
 
+        } catch (FirebaseAuthException e) {
+            logger.error("Fallo validando token Firebase en Gateway. code={} message={}", e.getAuthErrorCode(), e.getMessage(), e);
+            return buildErrorResponse(401, "Token Firebase inválido o expirado");
         } catch (Exception e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            Map<String, String> result = new HashMap<>();
-            result.put("status", "NOK");
-            result.put("description", "Error de autenticación: " + e.getMessage());
-            errorResponse.put("result", result);
-            return ResponseEntity.status(401).body(errorResponse);
+            logger.error("Error inesperado en /api/auth/signin del Gateway: {}", e.getMessage(), e);
+            return buildErrorResponse(401, "Token Firebase inválido o expirado");
         }
     }
 
@@ -91,7 +102,7 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "No autorizado"),
             @ApiResponse(responseCode = "403", description = "Requiere rol MASTER")
         })
-    public ResponseEntity<?> getUsers(
+    public ResponseEntity<ApiResult<Object>> getUsers(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @RequestParam(value = "email", required = false) String email) {
         
@@ -111,7 +122,7 @@ public class AuthController {
             return ResponseEntity.ok(userServiceClient.searchUsers(email != null ? email : ""));
             
         } catch (Exception e) {
-            return buildErrorResponse(401, "Token inválido o error: " + e.getMessage());
+            return buildErrorResponse(401, "Token inválido o expirado");
         }
     }
 
@@ -123,7 +134,7 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "No autorizado"),
             @ApiResponse(responseCode = "403", description = "Requiere rol MASTER")
         })
-    public ResponseEntity<?> setAdminRole(
+    public ResponseEntity<ApiResult<Object>> setAdminRole(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @RequestBody Map<String, String> body) {
             
@@ -150,7 +161,7 @@ public class AuthController {
             return ResponseEntity.ok(userServiceClient.makeAdmin(request));
             
         } catch (Exception e) {
-            return buildErrorResponse(500, "Error al promover usuario: " + e.getMessage());
+            return buildErrorResponse(500, "Error interno al promover usuario");
         }
     }
 
@@ -162,7 +173,7 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "No autorizado"),
             @ApiResponse(responseCode = "403", description = "Requiere rol MASTER")
         })
-    public ResponseEntity<?> removeAdminRole(
+    public ResponseEntity<ApiResult<Object>> removeAdminRole(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @RequestBody Map<String, String> body) {
             
@@ -189,7 +200,7 @@ public class AuthController {
             return ResponseEntity.ok(userServiceClient.removeAdmin(request));
             
         } catch (Exception e) {
-            return buildErrorResponse(500, "Error al revocar rol: " + e.getMessage());
+            return buildErrorResponse(500, "Error interno al revocar rol");
         }
     }
 
@@ -201,7 +212,7 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "No autorizado"),
             @ApiResponse(responseCode = "403", description = "Requiere rol MASTER")
         })
-    public ResponseEntity<?> toggleUserStatus(
+    public ResponseEntity<ApiResult<Object>> toggleUserStatus(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @RequestBody Map<String, Object> body) {
             
@@ -230,21 +241,14 @@ public class AuthController {
             return ResponseEntity.ok(userServiceClient.toggleStatus(request));
             
         } catch (Exception e) {
-            return buildErrorResponse(500, "Error al cambiar estado del usuario: " + e.getMessage());
+            return buildErrorResponse(500, "Error interno al cambiar estado del usuario");
         }
     }
 
 
 
-    private ResponseEntity<?> buildErrorResponse(int status, String detail) {
-        Map<String, Object> response = new HashMap<>();
-        Map<String, Object> result = new HashMap<>();
-        result.put("status", "NOK");
-        result.put("code", String.valueOf(status));
-        result.put("description", "NOK");
-        result.put("descriptionDetail", detail);
-        
-        response.put("result", result);
+    private ResponseEntity<ApiResult<Object>> buildErrorResponse(int status, String detail) {
+        ApiResult<Object> response = new ApiResult<>(new Result(String.valueOf(status), "NOK", detail), null);
         return ResponseEntity.status(status).body(response);
     }
 }

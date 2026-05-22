@@ -2,9 +2,9 @@ import { Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonApp, IonRouterOutlet, IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
+import { Auth, user } from '@angular/fire/auth';
 import { NetworkPlugin } from './core/plugins/network-plugin';
 import { CommonModule } from '@angular/common';
-import { AuthService } from './core/services/auth/auth.service';
 import { addIcons } from 'ionicons';
 import { footballOutline, wifiOutline } from 'ionicons/icons';
 import { take } from 'rxjs/operators';
@@ -21,7 +21,7 @@ export class AppComponent implements OnInit {
   isOffline = false;
 
   private router = inject(Router);
-  private authService = inject(AuthService);
+  private auth = inject(Auth);
   private networkService = inject(NetworkPlugin);
 
   constructor() {
@@ -36,10 +36,10 @@ export class AppComponent implements OnInit {
     // Duración mínima del splash + comprobación de sesión
     const minSplash = new Promise<void>(resolve => setTimeout(resolve, 1500));
 
-    // Esperar al observable de Firebase para tener la certeza del estado del usuario
+    // Consultar el estado nativo de Firebase aquí evita arrastrar AuthService al bundle inicial.
     const authCheck = new Promise<string>(resolve => {
-      this.authService.user$.pipe(take(1)).subscribe(user => {
-        resolve(user ? '/home' : '/auth/login');
+      user(this.auth).pipe(take(1)).subscribe(currentUser => {
+        resolve(currentUser || localStorage.getItem('jwt_token') ? '/home' : '/auth/login');
       });
     });
 

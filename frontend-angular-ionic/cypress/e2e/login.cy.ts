@@ -1,13 +1,22 @@
 describe('Login Flow - Casos Reales', () => {
+  const emailInputSelector = 'ion-input[name="email"] input:not([disabled]):visible';
+  const passwordInputSelector = 'ion-input[name="password"] input:not([disabled]):visible';
+
   const fillAndSubmitLogin = (email: string, password: string) => {
-    cy.get('ion-input[name="email"] input').clear().type(email);
-    cy.get('ion-input[name="password"] input').clear().type(password);
-    cy.get('ion-button[type="submit"]').click();
+    cy.get(emailInputSelector).should('be.visible').clear().type(email);
+    cy.get(passwordInputSelector).should('be.visible').clear().type(password);
+    cy.get('ion-button[type="submit"]').should('exist');
+    cy.contains('ion-button', 'Iniciar Sesión').click();
   };
 
   const assertErrorToast = () => {
     cy.get('ion-toast', { timeout: 12000 }).should('exist');
     cy.get('ion-toast').shadow().find('.toast-message').should('not.be.empty');
+  };
+
+  const assertErrorToastContains = (text: string) => {
+    cy.get('ion-toast', { timeout: 12000 }).should('exist');
+    cy.get('ion-toast').shadow().find('.toast-message').should('contain.text', text);
   };
 
   beforeEach(() => {
@@ -29,6 +38,12 @@ describe('Login Flow - Casos Reales', () => {
   it('muestra error para usuario inhabilitado (juanperez@gmail.com)', () => {
     fillAndSubmitLogin('juanperez@gmail.com', 'clave-inventada-123');
     assertErrorToast();
+    cy.url().should('include', '/auth/login');
+  });
+
+  it('muestra error para usuario no verificado (testuser_1779357123840@test.com)', () => {
+    fillAndSubmitLogin('testuser_1779357123840@test.com', '1q2w3e4r');
+    assertErrorToastContains('Debes verificar tu correo electrónico antes de iniciar sesión');
     cy.url().should('include', '/auth/login');
   });
 

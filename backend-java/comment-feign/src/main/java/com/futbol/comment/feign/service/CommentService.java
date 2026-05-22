@@ -1,7 +1,7 @@
 package com.futbol.comment.feign.service;
 
 import com.futbol.comment.feign.client.CommentClient;
-import com.futbol.comment.feign.dto.ApiResult;
+import com.futbol.common.dto.ApiResult;
 import com.futbol.comment.feign.model.CommentDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -1,6 +1,6 @@
 package com.futbol.player.feign.exceptions;
 
-import com.futbol.player.feign.dto.ApiResult;
+import com.futbol.common.dto.ApiResult;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

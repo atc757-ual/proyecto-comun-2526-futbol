@@ -1,4 +1,4 @@
-﻿<div class="row fl-col-rev-sm">
+﻿<div class="row fl-col-rev-sm profile-page">
   <!-- COLUMNA IZQUIERDA (8): Configuración y Seguridad -->
   <div class="col-8 col-sm-12 mr-base mx-0-sm">
     <ion-card class="premium-card mb-base">
@@ -54,28 +54,28 @@
           <!-- SELECCIÓN DE BACKEND -->
           <div class="backend-switcher-login mt-0">
             <div class="d-flex jc-between ai-center p-s br-soft border-neutral-2"
-              [class.bg-primary-light]="platformService.getUseJavaBackend()"
-              [class.bg-success-light]="!platformService.getUseJavaBackend()">
+              [class.bg-primary-light]="useSpringBoot"
+              [class.bg-success-light]="!useSpringBoot">
               <div class="d-flex ai-center gap-s">
-                <div class="icon-circle-s" [class.bg-primary]="platformService.getUseJavaBackend()"
-                  [class.bg-success]="!platformService.getUseJavaBackend()">
-                  <ion-icon *ngIf="platformService.getUseJavaBackend()" name="cafe-outline" class="text-white fs-24"></ion-icon>
-                  <ion-icon *ngIf="!platformService.getUseJavaBackend()" name="logo-nodejs" class="text-white fs-24"></ion-icon>
+                <div class="icon-circle-s" [class.bg-primary]="useSpringBoot"
+                  [class.bg-success]="!useSpringBoot">
+                  <ion-icon *ngIf="useSpringBoot" name="cafe-outline" class="text-white fs-24"></ion-icon>
+                  <ion-icon *ngIf="!useSpringBoot" name="logo-nodejs" class="text-white fs-24"></ion-icon>
                 </div>
                 <div class="fl-direction-column">
-                  <div class="fs-14 f-bold text-neutral-8 mr-xs ">{{ platformService.getUseJavaBackend() ? 'Java Microservicios' : 'Node.js Express' }}</div>
+                  <div class="fs-14 f-bold text-neutral-8 mr-xs ">{{ useSpringBoot ? 'Java Microservicios' : 'Node.js Express' }}</div>
                   <div class="fs-12 text-neutral-7">Backend seleccionado</div>
                 </div>
               </div>
-              <ion-toggle mode="ios" [color]="platformService.getUseJavaBackend() ? 'primary' : 'success'"
-                [checked]="platformService.getUseJavaBackend()" (ionChange)="toggleBackend()"></ion-toggle>
+              <ion-toggle mode="ios" [color]="useSpringBoot ? 'primary' : 'success'"
+                [checked]="useSpringBoot" (ionChange)="toggleBackend()"></ion-toggle>
             </div>
           </div>
 
-          <div class="separator my-s" *ngIf="!platformService.getUseJavaBackend()"></div>
+          <div class="separator my-s" *ngIf="!useSpringBoot"></div>
 
           <ion-item
-            *ngIf="!platformService.getUseJavaBackend()"
+            *ngIf="!useSpringBoot"
             lines="none"
             class="action-item is-blue"
             detail="true"

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import {
   IonIcon, IonContent,
+  IonHeader, IonToolbar,
   IonBackButton, IonBreadcrumbs, IonBreadcrumb,
   MenuController, NavController
 } from '@ionic/angular/standalone';
@@ -23,6 +24,7 @@ import { LayoutService } from 'src/app/core/services/ui/layout.service';
   imports: [
     CommonModule,
     RouterModule,
+    IonHeader, IonToolbar,
     IonContent, IonIcon,
     IonBackButton, IonBreadcrumbs,
     IonBreadcrumb

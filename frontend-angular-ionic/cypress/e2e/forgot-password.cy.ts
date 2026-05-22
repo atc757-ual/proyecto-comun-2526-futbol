@@ -10,12 +10,14 @@ describe('Forgot Password E2E Flow', () => {
     cy.get('.step-item.active').should('contain', 'Solicitud');
     
     // Pruebo formato de email inválido
-    cy.get('ion-input[name="email"] input').type('correo-incorrecto').blur();
+    cy.typeIntoIonInput('email', 'correo-incorrecto');
+    cy.get('ion-input[name="email"] input').blur({ force: true });
     cy.get('ion-input[name="email"]')
       .should('have.class', 'input-error');
 
     // Corrijo por un correo válido
-    cy.get('ion-input[name="email"] input').clear().type('admin@test.com').blur();
+    cy.typeIntoIonInput('email', 'admin@test.com');
+    cy.get('ion-input[name="email"] input').blur({ force: true });
     cy.get('ion-input[name="email"]').should('not.have.class', 'input-error');
 
     // Hago click en Enviar enlace
@@ -41,18 +43,20 @@ describe('Forgot Password E2E Flow', () => {
     cy.contains('Introduce tu nueva contraseña para acceder a tu cuenta.').should('be.visible');
 
     // Escribo una clave muy corta en Nueva Contraseña
-    cy.get('ion-input[name="newPassword"] input').type('12345').blur();
+    cy.typeIntoIonInput('newPassword', '12345');
+    cy.get('ion-input[name="newPassword"] input').blur({ force: true });
     cy.get('ion-input[name="newPassword"]')
       .should('have.class', 'input-error');
 
     // Escribo una clave válida pero discrepante en Confirmar Contraseña
-    cy.get('ion-input[name="newPassword"] input').clear().type('password123');
-    cy.get('ion-input[name="confirmPassword"] input').type('password321').blur();
+    cy.typeIntoIonInput('newPassword', 'password123');
+    cy.typeIntoIonInput('confirmPassword', 'password321');
+    cy.get('ion-input[name="confirmPassword"] input').blur({ force: true });
     cy.get('ion-input[name="confirmPassword"]')
       .should('have.class', 'input-error');
 
     // Corrijo ambas claves para que coincidan
-    cy.get('ion-input[name="confirmPassword"] input').clear().type('password123');
+    cy.typeIntoIonInput('confirmPassword', 'password123');
     cy.get('ion-input[name="confirmPassword"]').should('not.have.class', 'input-error');
 
     // Envío el formulario

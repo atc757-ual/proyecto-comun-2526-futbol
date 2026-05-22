@@ -290,152 +290,6 @@
 }
 
 /* --- STATS DASHBOARD (Carousel Version) --- */
-.stats-dashboard {
-  display: flex;
-  overflow-x: auto;
-  gap: var(--space-s);
-  padding: var(--space-xs);
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  cursor: grab;
-  user-select: none;
-
-  &.grabbing {
-    cursor: grabbing;
-    scroll-snap-type: none;
-  }
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-
-  -ms-overflow-style: none;
-  /* IE and Edge */
-  scrollbar-width: none;
-  /* Firefox */
-  -ms-overflow-style: none;
-  /* IE and Edge */
-  scrollbar-width: none;
-  /* Firefox */
-
-  .stat-box {
-    flex: 0 0 calc(100% / 3.4 - 10px);
-    scroll-snap-align: start;
-    background: var(--color-neutral-0);
-    padding: var(--space-s);
-    border-radius: var(--border-radius-soft);
-    border: var(--border-thin) solid var(--color-neutral-1);
-    display: flex;
-    align-items: center;
-    gap: var(--space-xs);
-    transition: all var(--transition-base);
-
-    @media (max-width: 768px) {
-      flex: 0 0 calc(100% / 2.3 - 10px);
-    }
-
-    .stat-icon {
-      width: 36px;
-      height: 36px;
-      background: var(--blue-primary-010);
-      border-radius: var(--border-radius-small);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--color-primary);
-      font-size: var(--fs-22);
-
-      .mini-league-badge {
-        width: 24px;
-        height: 24px;
-        object-fit: contain;
-      }
-    }
-
-    .stat-data {
-      display: flex;
-      flex-direction: column;
-
-      .stat-label {
-        font-size: var(--fs-12);
-        font-weight: var(--fw-bold);
-        color: var(--color-neutral-5);
-        text-transform: uppercase;
-      }
-
-      .stat-value {
-        font-size: var(--fs-14);
-        font-weight: var(--fw-bold);
-        color: var(--color-neutral-9);
-      }
-    }
-  }
-}
-
-.stat-dots-container {
-  .stat-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--color-neutral-3);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-    &.active {
-      background: var(--color-primary);
-      width: 18px;
-      border-radius: 4px;
-    }
-  }
-}
-
-/* --- ENTEL CARDS --- */
-.player-card {
-  background: var(--color-neutral-0);
-  border-radius: var(--border-radius-soft);
-  border: var(--border-thin) solid var(--color-neutral-1);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
-  margin-bottom: var(--space-base);
-
-  ion-card-header {
-    padding: var(--space-base) var(--space-base) var(--space-xs);
-
-    ion-card-title {
-      font-weight: var(--fw-bold);
-      font-size: var(--fs-16);
-      color: var(--color-neutral-9);
-    }
-  }
-
-  ion-card-content {
-    padding: 0 var(--space-base) var(--space-base);
-  }
-}
-
-.bio-wrapper {
-  position: relative;
-  max-height: 140px;
-  overflow: hidden;
-  transition: max-height var(--transition-slow) cubic-bezier(0.4, 0, 0.2, 1);
-
-  &.expanded {
-    max-height: 3000px;
-  }
-
-  .bio-text {
-    color: var(--color-neutral-8);
-    font-size: var(--fs-14);
-  }
-
-  .bio-fade {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 60px;
-    background: linear-gradient(to top, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
-    pointer-events: none;
-  }
-}
 
 .futbol-segment {
   --background: transparent;
@@ -631,51 +485,8 @@
 }
 
 /* --- SCOUTING HUB PREMIUM --- */
-.scouting-helper-box {
-  padding: var(--space-xs) var(--space-s);
-  border-left: 4px solid var(--color-primary);
-  font-size: var(--fs-12);
-  background-color: var(--blue-primary-010);
-
-
-}
 
 /* --- DASHBOARD HERO BANNER (COL 8) --- */
-.dashboard-hero-banner {
-  position: relative;
-  width: 100%;
-  height: 85px;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-  margin-bottom: var(--space-base);
-  border: 1px solid rgba(var(--color-primary-rgb), 0.1);
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
-  }
-
-  .banner-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to right, rgba(0, 46, 255, 0.5) 0%, transparent 70%);
-    z-index: 1;
-  }
-
-  .banner-content {
-    position: absolute;
-    bottom: 12px;
-    left: 16px;
-    z-index: 2;
-  }
-
-  &:hover img {
-    transform: scale(1.05);
-  }
-}
 
 /* --- CARD FLIP ACTION (COL 4) --- */
 .card-flip-action {
@@ -747,48 +558,7 @@
   }
 }
 
-.rating-mini {
-  display: flex;
-  gap: 3px;
-
-  ion-icon {
-    font-size: var(--fs-14);
-    color: var(--color-neutral-3);
-    stroke-width: 32px;
-    stroke: currentColor;
-
-    &.active {
-      color: var(--color-warning);
-    }
-  }
-}
-
-.empty-reports-state {
-  text-align: center;
-  padding: var(--space-base) var(--space-m);
-
-  .empty-icon-box {
-    width: var(--space-xl);
-    height: var(--space-xl);
-    background: var(--blue-primary-010);
-    border-radius: var(--border-radius-circle);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto var(--space-base);
-
-    ion-icon {
-      font-size: 28px;
-      color: var(--color-neutral-3);
-    }
-  }
-}
-
 .community-container-v {
-  display: flex;
-  flex-direction: column;
-  /* gap: var(--space-base); */
-
   .form-inline-grid {
     display: grid;
     gap: var(--space-xs);
@@ -829,115 +599,10 @@
       grid-area: actions;
     }
   }
+
 }
 
 .comment-bubble {
-  padding: var(--space-base) var(--space-s) var(--space-s);
-  background: var(--color-neutral-1);
-  border-radius: var(--border-radius-soft);
-  margin-bottom: var(--space-s);
-  transition: all var(--transition-base) ease;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-
-  &:hover {
-    background: rgba(var(--color-neutral-rgb), 0.05);
-  }
-
-  .bubble-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 4px;
-
-    .mini-avatar {
-      width: 28px;
-      height: 28px;
-      margin: 0;
-
-      img {
-        width: 100%;
-        height: 100%;
-      }
-    }
-
-    .author-info {
-      display: flex;
-      flex-direction: column;
-      line-height: 1.2;
-    }
-
-    .author {
-      font-weight: var(--fw-semibold);
-      color: var(--color-neutral-9);
-      font-size: var(--fs-14);
-    }
-
-    .date {
-      font-size: var(--fs-10);
-      color: var(--color-neutral-7);
-      text-transform: uppercase;
-      margin: 2px 0 0 0;
-    }
-
-    .rating-mini {
-      display: flex;
-      gap: 1px;
-
-      ion-icon {
-        font-size: var(--fs-14);
-        color: var(--color-warning);
-
-        @media (max-width: 768px) {
-          font-size: 11px;
-        }
-      }
-    }
-  }
-
-  .content {
-    font-size: var(--fs-14);
-    color: var(--color-neutral-8);
-    line-height: 1.5;
-    background: transparent;
-    padding: 0;
-    margin: 8px 12px 8px 40px;
-    overflow-wrap: break-word;
-    word-break: break-word;
-
-    @media (max-width: 768px) {
-      margin: 8px 0;
-    }
-  }
-
-  .bubble-footer {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 4px;
-
-    .actions {
-      display: flex;
-      gap: var(--space-s);
-
-      button {
-        background: transparent;
-        color: var(--color-neutral-5);
-        font-size: var(--fs-18);
-        padding: 0;
-
-        &:hover {
-          color: var(--color-primary);
-        }
-
-        &.delete:hover {
-          color: var(--color-danger);
-        }
-      }
-    }
-  }
-
   &.is-editing {
     background: var(--color-neutral-0);
     border: var(--border-thin) solid var(--color-primary-light);
@@ -1000,28 +665,6 @@
   }
 }
 
-.player-loader {
-  position: fixed;
-  inset: 0;
-  background: var(--color-neutral-0);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  .loader-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-s);
-
-    span {
-      font-weight: var(--fw-bold);
-      color: var(--color-primary);
-      font-size: var(--fs-14);
-    }
-  }
-}
 
 @media (max-width: 768px) {
   .stats-dashboard {
@@ -1157,35 +800,6 @@
   }
 }
 
-.bio-wrapper {
-  position: relative;
-  overflow: hidden;
-  transition: max-height 0.5s ease-in-out;
-  max-height: 120px; // Altura colapsada
-
-  &.expanded {
-    max-height: 2000px;
-  }
-
-  .bio-text {
-    margin: 0;
-    font-size: var(--fs-14);
-    line-height: 1.6;
-    color: var(--color-neutral-7);
-    text-align: justify;
-  }
-
-  .bio-fade {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 60px;
-    background: linear-gradient(to bottom, transparent, var(--color-neutral-0));
-    pointer-events: none;
-  }
-}
-
 .btn-expand {
   --color: var(--color-primary);
   font-weight: var(--fw-bold);
@@ -1275,105 +889,6 @@
 }
 
 /* --- PERMISOS Y VERIFICACIÓN --- */
-.verified-geo-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-  margin-left: auto;
-  gap: 8px;
-  background: var(--blue-primary-010);
-  color: var(--color-primary);
-  padding: 6px 14px;
-  border-radius: 8px;
-  font-size: var(--fs-12);
-  font-weight: 700;
-  border: 1px solid var(--blue-primary-050);
-  box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.08);
-  margin-bottom: 16px;
-  width: fit-content;
-
-  ion-icon {
-    font-size: 18px;
-  }
-}
-
-.permission-needed-box {
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-  border: 1px solid #bbf7d0;
-  border-radius: 8px;
-  position: relative;
-  overflow: hidden;
-
-  .permission-flex-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-
-    @media (max-width: 768px) {
-      flex-direction: column;
-      text-align: center;
-      gap: 12px;
-    }
-  }
-
-  .permission-info-side {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-
-    @media (max-width: 768px) {
-      flex-direction: column;
-      gap: 8px;
-    }
-  }
-
-  .text-content {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .lock-icon-container {
-    position: relative;
-    width: 48px;
-    height: 48px;
-    background: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.12);
-    margin: 0 auto 12px;
-
-    ion-icon {
-      font-size: 24px;
-      color: #10b981; // Success Green
-      position: relative;
-      z-index: 2;
-    }
-
-    .icon-pulse {
-      position: absolute;
-      inset: -4px;
-      background: rgba(16, 185, 129, 0.15);
-      border-radius: 50%;
-      animation: geoPulse 2s infinite ease-out;
-      z-index: 1;
-    }
-  }
-}
-
-@keyframes geoPulse {
-  0% {
-    transform: scale(1);
-    opacity: 0.8;
-  }
-
-  100% {
-    transform: scale(1.5);
-    opacity: 0;
-  }
-}
 
 .mini-avatar-form {
   width: 32px;
@@ -1394,18 +909,6 @@
   animation: fadeInGeo 0.5s ease-out forwards;
 }
 
-.btn-white-bg {
-  --background: #ffffff !important;
-  --background-hover: #f2f2f2 !important;
-  --background-activated: #f2f2f2 !important;
-  --background-focused: #f2f2f2 !important;
-  --color: var(--color-success) !important;
-  --ripple-color: var(--color-success) !important;
-  --border-color: var(--color-success) !important;
-  --border-style: solid !important;
-  --border-width: 1px !important;
-  font-weight: 700;
-}
 
 @keyframes fadeInGeo {
   from {

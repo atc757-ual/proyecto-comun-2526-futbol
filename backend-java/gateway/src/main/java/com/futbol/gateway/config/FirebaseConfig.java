@@ -3,15 +3,20 @@ package com.futbol.gateway.config;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
 import java.io.FileInputStream;
+import java.io.File;
 import java.io.IOException;
 
 @Configuration
 public class FirebaseConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(FirebaseConfig.class);
 
     @Value("${firebase.service-account.path}")
     private String serviceAccountPath;
@@ -20,18 +25,25 @@ public class FirebaseConfig {
     public void initialize() {
         try {
             if (FirebaseApp.getApps().isEmpty()) {
-                FileInputStream serviceAccount = new FileInputStream(serviceAccountPath);
+                File credentialsFile = new File(serviceAccountPath);
+                logger.info("Inicializando Firebase Admin SDK en Gateway con credencial: {}", credentialsFile.getAbsolutePath());
 
-                FirebaseOptions options = FirebaseOptions.builder()
-                        .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                        .build();
+                if (!credentialsFile.exists() || !credentialsFile.isFile()) {
+                    logger.error("No existe el archivo de credenciales de Firebase en la ruta configurada: {}", credentialsFile.getAbsolutePath());
+                    return;
+                }
 
-                FirebaseApp.initializeApp(options);
-                System.out.println("Firebase Admin SDK inicializado correctamente en el Gateway.");
+                try (FileInputStream serviceAccount = new FileInputStream(credentialsFile)) {
+                    FirebaseOptions options = FirebaseOptions.builder()
+                            .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                            .build();
+
+                    FirebaseApp.initializeApp(options);
+                    logger.info("Firebase Admin SDK inicializado correctamente en el Gateway.");
+                }
             }
         } catch (IOException e) {
-            System.err.println("ERROR: No se pudo inicializar Firebase Admin SDK. Verifique la ruta: " + serviceAccountPath);
-            e.printStackTrace();
+            logger.error("No se pudo inicializar Firebase Admin SDK. Verifique la ruta configurada: {}", serviceAccountPath, e);
         }
     }
 }

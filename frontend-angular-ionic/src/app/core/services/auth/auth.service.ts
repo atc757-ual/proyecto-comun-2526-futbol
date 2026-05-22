@@ -1,12 +1,12 @@
-import { inject, Injectable, signal, computed, EnvironmentInjector, runInInjectionContext } from '@angular/core';
+import { inject, Injectable, signal, computed } from '@angular/core';
 import {
   Auth, user, signInWithEmailAndPassword,
   signOut, createUserWithEmailAndPassword,
   sendPasswordResetEmail, confirmPasswordReset,
   verifyPasswordResetCode, ActionCodeSettings
 } from '@angular/fire/auth';
-import { Firestore, doc, getDoc } from '@angular/fire/firestore';
 import { setPersistence, browserLocalPersistence, browserSessionPersistence } from 'firebase/auth';
+import { getApp } from 'firebase/app';
 import { Platform } from '@ionic/angular/standalone';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { firstValueFrom, map } from 'rxjs';
@@ -18,10 +18,8 @@ import { PreferencesPlugin } from '../../plugins/preferences-plugin';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private auth = inject(Auth);
-  private firestore = inject(Firestore);
   private http = inject(HttpClient);
   private platform = inject(Platform);
-  private injector = inject(EnvironmentInjector);
   private preferencesPlugin = inject(PreferencesPlugin);
 
   // --- SIGNALS DE ESTADO ---
@@ -159,12 +157,13 @@ export class AuthService {
 
     this.syncPromise = (async () => {
       try {
-        const idToken = await firebaseUser.getIdToken(forceRefresh);
-        
         // Decidimos el backend dinámicamente o por targetBackend si se proporciona
         const useJava = targetBackend !== undefined 
           ? targetBackend 
           : this.platformService.getUseJavaBackend();
+
+        const shouldForceRefresh = forceRefresh || targetBackend !== undefined;
+        const idToken = await firebaseUser.getIdToken(shouldForceRefresh);
 
         const baseUrl = useJava 
           ? environment.javaApiUrl 
@@ -408,18 +407,20 @@ export class AuthService {
    * Lee los Términos y Condiciones desde Firestore
    */
   async getTermsAndConditions() {
-    return runInInjectionContext(this.injector, async () => {
-      try {
-        const termsDocRef = doc(this.firestore, 'app_config', 'terms');
-        const termsDoc = await getDoc(termsDocRef);
-        if (termsDoc.exists()) {
-          return termsDoc.data();
-        }
-        return null;
-      } catch (error: any) {
-        console.error('[AUTH] Error al leer Términos y Condiciones:', error);
-        return null;
+    try {
+      const { getFirestore, doc, getDoc } = await import('firebase/firestore');
+      const firestore = getFirestore(getApp());
+      const termsDocRef = doc(firestore, 'app_config', 'terms');
+      const termsDoc = await getDoc(termsDocRef);
+
+      if (termsDoc.exists()) {
+        return termsDoc.data();
       }
-    });
+
+      return null;
+    } catch (error: any) {
+      console.error('[AUTH] Error al leer Términos y Condiciones:', error);
+      return null;
+    }
   }
 }

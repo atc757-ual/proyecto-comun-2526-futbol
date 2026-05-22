@@ -1,6 +1,8 @@
 package com.futbol.gateway.security;
 
 import io.jsonwebtoken.Claims;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,6 +20,8 @@ import java.util.List;
 
 @Component
 public class JwtWebFilter implements WebFilter {
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtWebFilter.class);
 
     @Autowired
     private JWTUtil jwtUtil;
@@ -45,8 +49,7 @@ public class JwtWebFilter implements WebFilter {
                             .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth));
                 }
             } catch (Exception e) {
-                System.err.println("[GATEWAY-JWT-ERROR] Falló la validación del token JWT en el Gateway: " + e.getMessage());
-                e.printStackTrace();
+                logger.warn("Falló la validación del token JWT en el Gateway", e);
             }
         }
         return chain.filter(exchange);

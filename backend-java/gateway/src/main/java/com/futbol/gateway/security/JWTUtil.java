@@ -3,6 +3,8 @@ package com.futbol.gateway.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +24,8 @@ import java.util.Map;
 
 @Component
 public class JWTUtil {
+
+    private static final Logger logger = LoggerFactory.getLogger(JWTUtil.class);
 
     @Value("${jwt.private.key.path:/app/private_key.pem}")
     private String privateKeyPath;
@@ -49,9 +53,9 @@ public class JWTUtil {
                 PKCS8EncodedKeySpec privSpec = new PKCS8EncodedKeySpec(privKeyBytes);
                 KeyFactory kf = KeyFactory.getInstance("RSA");
                 this.privateKey = kf.generatePrivate(privSpec);
-                System.out.println("[JWTUtil] Llave privada RS256 cargada correctamente");
+                logger.info("Llave privada RS256 cargada correctamente");
             } else {
-                System.err.println("[JWTUtil] ERROR: Archivo de llave privada no encontrado en " + privateKeyPath);
+                logger.error("Archivo de llave privada no encontrado en {}", privateKeyPath);
             }
 
             // Cargar Llave Pública para verificar (X509)
@@ -65,13 +69,12 @@ public class JWTUtil {
                 X509EncodedKeySpec pubSpec = new X509EncodedKeySpec(pubKeyBytes);
                 KeyFactory kf = KeyFactory.getInstance("RSA");
                 this.publicKey = kf.generatePublic(pubSpec);
-                System.out.println("[JWTUtil] Llave pública RS256 cargada correctamente");
+                logger.info("Llave pública RS256 cargada correctamente");
             } else {
-                System.err.println("[JWTUtil] ERROR: Archivo de llave pública no encontrado en " + publicKeyPath);
+                logger.error("Archivo de llave pública no encontrado en {}", publicKeyPath);
             }
         } catch (Exception e) {
-            System.err.println("[JWTUtil] ERROR crítico al cargar llaves RSA: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Error crítico al cargar llaves RSA", e);
         }
     }
 
@@ -92,8 +95,13 @@ public class JWTUtil {
     }
 
     public String generateToken(String userId, String role) {
+        return generateToken(userId, role, false);
+    }
+
+    public String generateToken(String userId, String role, boolean isMaster) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", role);
+        claims.put("master", isMaster);
         claims.put("id", userId); // PARIDAD TOTAL: Node espera el Firebase UID en decoded.id
         return Jwts.builder()
                 .setClaims(claims)

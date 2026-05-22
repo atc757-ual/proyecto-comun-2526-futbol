@@ -1,6 +1,6 @@
 package com.futbol.externalfeign.client;
 
-import com.futbol.externalfeign.dto.ApiResult;
+import com.futbol.common.dto.ApiResult;
 import com.futbol.externalfeign.dto.NewsDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;

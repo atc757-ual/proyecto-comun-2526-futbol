@@ -1,0 +1,14 @@
+*
+!frontend-angular-ionic/
+!stencil-library/
+
+frontend-angular-ionic/node_modules/
+frontend-angular-ionic/www/
+frontend-angular-ionic/.angular/
+frontend-angular-ionic/.tmp-cy-auth.log
+frontend-angular-ionic/cypress/videos/
+frontend-angular-ionic/cypress/screenshots/
+
+stencil-library/node_modules/
+stencil-library/www/
+stencil-library/dist/

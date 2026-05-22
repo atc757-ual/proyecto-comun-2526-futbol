@@ -1,7 +1,7 @@
 package com.futbol.externalclient.controller;
 
+import com.futbol.common.dto.ApiResult;
 import com.futbol.externalfeign.client.NewsFeignClient;
-import com.futbol.externalfeign.dto.ApiResult;
 import com.futbol.externalfeign.dto.NewsDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

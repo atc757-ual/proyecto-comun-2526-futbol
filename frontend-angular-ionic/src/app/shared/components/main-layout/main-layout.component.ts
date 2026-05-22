@@ -4,8 +4,9 @@ import { Router, RouterModule } from '@angular/router';
 import {
   IonIcon, ActionSheetController, ModalController,
   IonMenu, IonContent, IonMenuToggle, IonButton, IonItem, IonLabel,
-  IonBackButton, IonBreadcrumbs, IonBreadcrumb, IonFooter, IonTabBar,
-  IonTabButton, MenuController, NavController
+  IonBackButton, IonBreadcrumbs, IonBreadcrumb, IonTabBar,
+  IonHeader, IonToolbar, IonTabs, IonRouterOutlet, IonButtons,
+  IonTabButton, IonFooter, MenuController, NavController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -26,9 +27,10 @@ import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component'
   imports: [
     CommonModule,
     RouterModule,
+    IonHeader, IonToolbar, IonTabs, IonRouterOutlet, IonButtons,
     IonMenu, IonContent, IonIcon, IonMenuToggle, IonButton,
     IonItem, IonLabel, IonBackButton, IonBreadcrumbs,
-    IonBreadcrumb, IonFooter, IonTabBar, IonTabButton
+    IonBreadcrumb, IonTabBar, IonTabButton, IonFooter
   ]
 })
 export class MainLayoutComponent implements OnDestroy {
@@ -40,11 +42,11 @@ export class MainLayoutComponent implements OnDestroy {
   private navCtrl = inject(NavController);
 
   public appPages = [
-    { title: 'Inicio', url: '/home', icon: 'home-outline' },
-    { title: 'Mi plantilla', url: '/players', icon: 'football-outline' },
-    { title: 'Fútbol AI', url: '/ai-team', icon: 'sparkles-outline' },
-    { title: 'Búsqueda', url: '/busqueda', icon: 'search-outline' },
-    { title: 'Noticias', url: '/news', icon: 'newspaper-outline' }
+    { tab: 'home', title: 'Inicio', url: '/home', icon: 'home-outline' },
+    { tab: 'players', title: 'Mi plantilla', url: '/players', icon: 'football-outline' },
+    { tab: 'ai-team', title: 'Fútbol AI', url: '/ai-team', icon: 'sparkles-outline' },
+    { tab: 'busqueda', title: 'Búsqueda', url: '/busqueda', icon: 'search-outline' },
+    { tab: 'news', title: 'Noticias', url: '/news', icon: 'newspaper-outline' }
   ];
 
   constructor() {
@@ -62,12 +64,21 @@ export class MainLayoutComponent implements OnDestroy {
     this.menuCtrl.close();
   }
 
+  isCurrentHome(): boolean {
+    const currentUrl = (this.router.url || '').split('?')[0].split('#')[0].toLowerCase();
+    return currentUrl === '/home';
+  }
+
   /**
    * Lógica de navegación inteligente para marcar secciones activas
    */
   isTabActive(tabUrl: string): boolean {
-    const currentUrl = this.router.url.toLowerCase();
-    const targetUrl = tabUrl.toLowerCase();
+    const currentUrl = (this.router.url || '').toLowerCase();
+    const targetUrl = (tabUrl || '').toLowerCase();
+
+    if (!targetUrl) {
+      return false;
+    }
 
     // 1. HOME: Solo si es exactamente /home
     if (targetUrl === '/home') {

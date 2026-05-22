@@ -10,6 +10,7 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root'
 })
 export class PlatformService {
+  private static readonly FORCE_MOBILE_APP_KEY = 'force_mobile_app_mode';
   private platform = inject(Platform);
 
 
@@ -43,9 +44,10 @@ export class PlatformService {
   private updatePlatformInfo() {
     const width = window.innerWidth;
     const desktop = width >= 768;
+    const forcedMobileApp = localStorage.getItem(PlatformService.FORCE_MOBILE_APP_KEY) === 'true';
 
     // DETECCIÓN REAL: Determina si se está ejecutando dentro de un contenedor nativo (Capacitor/Cordova)
-    const mobileApp = this.platform.is('capacitor') || this.platform.is('cordova');
+    const mobileApp = forcedMobileApp || this.platform.is('capacitor') || this.platform.is('cordova');
 
     // MODO WEB MOBILE: Navegador móvil fuera de la app híbrida instalable
     const webMobile = !desktop && !mobileApp;
@@ -59,6 +61,11 @@ export class PlatformService {
   get isDesktop(): boolean { return this.isDesktopSub.value; }
   get isMobileApp(): boolean { return this.isMobileAppSub.value; }
   get isWebMobile(): boolean { return this.isWebMobileSub.value; }
+
+  setForceMobileAppMode(value: boolean) {
+    localStorage.setItem(PlatformService.FORCE_MOBILE_APP_KEY, String(value));
+    this.updatePlatformInfo();
+  }
 
   /**
    * Obtiene la preferencia de backend guardada en la caché local al arrancar la app.

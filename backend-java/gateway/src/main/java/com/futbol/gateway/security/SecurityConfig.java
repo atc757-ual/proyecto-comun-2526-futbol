@@ -1,5 +1,6 @@
 package com.futbol.gateway.security;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -11,6 +12,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
+import java.util.List;
+
 @Configuration
 @EnableWebFluxSecurity
 public class SecurityConfig {
@@ -18,11 +21,18 @@ public class SecurityConfig {
     private final JsonAuthenticationEntryPoint authenticationEntryPoint;
     private final JsonAccessDeniedHandler accessDeniedHandler;
     private final JwtWebFilter jwtWebFilter;
+    private final List<String> allowedOrigins;
 
-    public SecurityConfig(JsonAuthenticationEntryPoint authenticationEntryPoint, JsonAccessDeniedHandler accessDeniedHandler, JwtWebFilter jwtWebFilter) {
+    public SecurityConfig(
+        JsonAuthenticationEntryPoint authenticationEntryPoint,
+        JsonAccessDeniedHandler accessDeniedHandler,
+        JwtWebFilter jwtWebFilter,
+        @Value("#{'${app.cors.allowed-origins:http://localhost:4200,http://localhost:8100}'.split(',')}") List<String> allowedOrigins
+    ) {
         this.authenticationEntryPoint = authenticationEntryPoint;
         this.accessDeniedHandler = accessDeniedHandler;
         this.jwtWebFilter = jwtWebFilter;
+        this.allowedOrigins = allowedOrigins;
     }
 
     @Bean
@@ -40,8 +50,8 @@ public class SecurityConfig {
             .pathMatchers("/api/auth/**").permitAll()
             .pathMatchers("/actuator/**").permitAll()
             .pathMatchers(HttpMethod.GET, "/api/players/public/**").permitAll()
-            .pathMatchers(HttpMethod.GET, "/api/news/**").permitAll()
             // Rutas Protegidas (Requieren Login)
+            .pathMatchers(HttpMethod.GET, "/api/news/**").authenticated()
             .pathMatchers(HttpMethod.POST, "/api/players").authenticated()
             .pathMatchers(HttpMethod.PUT, "/api/players/**").authenticated()
             .pathMatchers(HttpMethod.DELETE, "/api/players/**").authenticated()
@@ -57,7 +67,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOriginPattern("*");
+        configuration.setAllowedOrigins(allowedOrigins.stream().map(String::trim).filter(origin -> !origin.isEmpty()).toList());
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
         configuration.setAllowCredentials(true);

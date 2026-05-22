@@ -13,7 +13,8 @@ describe('Futbol AI Page E2E Tests', () => {
   });
 
   it('should display the main Futbol AI page title and layout', () => {
-    cy.contains('Futbol AI').should('be.visible');
+    cy.get('ion-card').first().should('contain.text', 'Futbol AI');
+    cy.contains('div', '¡Hola, soy Futbol AI!').should('be.visible');
     cy.get('ion-card').should('exist');
   });
 

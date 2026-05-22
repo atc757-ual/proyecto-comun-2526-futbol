@@ -1,6 +1,6 @@
 import { ForgotPasswordPage } from './forgot-password.page';
 import { IonicModule } from '@ionic/angular';
-import { AuthService } from '../../core/services/auth/auth.service';
+import { AuthService } from '../../../core/services/auth/auth.service';
 import { NavController } from '@ionic/angular/standalone';
 import { ActivatedRoute } from '@angular/router';
 import { ToastService } from '../../../core/services/ui/toast.service';
@@ -15,8 +15,8 @@ describe('ForgotPasswordPage Component Tests with Cypress', () => {
   beforeEach(() => {
     // Configuro los mocks de los servicios necesarios en primera persona
     authServiceMock = {
-      sendResetPasswordEmail: cy.stub().resolves().as('sendEmailStub'),
-      confirmReset: cy.stub().resolves().as('confirmResetStub')
+      sendResetPasswordEmail: (cy.stub().resolves() as any).as('sendEmailStub'),
+      confirmReset: (cy.stub().resolves() as any).as('confirmResetStub')
     };
     navCtrlMock = {
       navigateRoot: cy.stub().as('navigateStub')

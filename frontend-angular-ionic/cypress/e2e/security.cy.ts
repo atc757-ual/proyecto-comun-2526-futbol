@@ -1,27 +1,39 @@
 describe('Admin Security Page E2E Tests', () => {
   const loginUser = () => {
     cy.visit('/auth/login');
-    cy.get('ion-input[name="email"] input').clear().type('atc757@inlumine.ual.es');
-    cy.get('ion-input[name="password"] input').clear().type('1q2w3e4r');
-    cy.get('ion-button[type="submit"]').click();
-    cy.url({ timeout: 15000 }).should('include', '/home');
+    cy.dismissUiBlockers();
+
+    cy.url().then((url) => {
+      if (url.includes('/home')) {
+        return;
+      }
+
+      cy.typeIntoIonInput('email', 'atc757@inlumine.ual.es');
+      cy.typeIntoIonInput('password', '1q2w3e4r');
+      cy.contains('ion-button', 'Iniciar Sesión', { timeout: 10000 }).click({ force: true });
+      cy.url({ timeout: 20000 }).should((nextUrl) => {
+        const ok = nextUrl.includes('/home') || nextUrl.includes('/admin-security');
+        expect(ok).to.equal(true);
+      });
+    });
   };
 
   beforeEach(() => {
     loginUser();
     cy.visit('/admin-security');
+    cy.dismissUiBlockers();
   });
 
   it('should display firebase native claims and backend API status cards', () => {
-    cy.get('body').then(($body) => {
-      if ($body.find('.premium-card').length > 0) {
+    cy.url().then((url) => {
+      if (url.includes('/admin-security')) {
+        cy.contains('Estado de Protección').should('be.visible');
         cy.contains('Seguridad Nativa Firebase').should('be.visible');
         cy.contains('Seguridad API Node.js').should('be.visible');
+        cy.get('.premium-card').should('have.length.at.least', 1);
       } else {
-        cy.url().should((url) => {
-          const ok = url.includes('/home') || url.includes('/auth/login');
-          expect(ok).to.equal(true);
-        });
+        const ok = url.includes('/home') || url.includes('/auth/login');
+        expect(ok).to.equal(true);
       }
     });
   });

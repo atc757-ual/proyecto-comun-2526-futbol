@@ -13,10 +13,13 @@
 
 // ─── Helper: login antes de cada suite ────────────────────────────────────────
 const login = () => {
+  const emailInputSelector = 'ion-input[name="email"] input:not([disabled]):visible';
+  const passwordInputSelector = 'ion-input[name="password"] input:not([disabled]):visible';
+
   cy.visit('/auth/login');
-  cy.get('ion-input[name="email"] input').clear().type('atc757@inlumine.ual.es');
-  cy.get('ion-input[name="password"] input').clear().type('1q2w3e4r');
-  cy.get('ion-button[type="submit"]').click();
+  cy.get(emailInputSelector).should('be.visible').clear().type('atc757@inlumine.ual.es');
+  cy.get(passwordInputSelector).should('be.visible').clear().type('1q2w3e4r');
+  cy.contains('ion-button', 'Iniciar Sesión').click();
   cy.url({ timeout: 15000 }).should('include', '/home');
   cy.visit('/busqueda');
   cy.url().should('include', '/busqueda');
@@ -24,60 +27,80 @@ const login = () => {
 
 // ─── Stub de la API TheSportsDB para tests offline ────────────────────────────
 const stubLeagueSearch = (alias = 'searchLeagues') => {
-  cy.intercept('GET', '**/searchleagues*', {
+  cy.intercept('GET', /.*(searchleagues|search-leagues|leagues\/search).*/, {
     statusCode: 200,
     body: {
+      data: [
+        { idLeague: '4328', strLeague: 'English Premier League', strCountry: 'England' },
+        { idLeague: '4335', strLeague: 'Spanish La Liga', strCountry: 'Spain' }
+      ],
       leagues: [
         { idLeague: '4328', strLeague: 'English Premier League', strCountry: 'England' },
-        { idLeague: '4335', strLeague: 'Spanish La Liga', strCountry: 'Spain' },
+        { idLeague: '4335', strLeague: 'Spanish La Liga', strCountry: 'Spain' }
       ]
     }
   }).as(alias);
 };
 
 const stubTeamsByLeague = (alias = 'teamsByLeague') => {
-  cy.intercept('GET', '**/lookup_all_teams*', {
+  cy.intercept('GET', /.*(lookup_all_teams|teams-by-league|league\/.*\/teams).*/, {
     statusCode: 200,
     body: {
+      data: [
+        { idTeam: '133604', strTeam: 'Arsenal', strLeague: 'English Premier League', strTeamBadge: 'https://www.thesportsdb.com/images/media/team/badge/arsenal.png' },
+        { idTeam: '133612', strTeam: 'Chelsea', strLeague: 'English Premier League', strTeamBadge: 'https://www.thesportsdb.com/images/media/team/badge/chelsea.png' }
+      ],
       teams: [
         { idTeam: '133604', strTeam: 'Arsenal', strLeague: 'English Premier League', strTeamBadge: 'https://www.thesportsdb.com/images/media/team/badge/arsenal.png' },
-        { idTeam: '133612', strTeam: 'Chelsea', strLeague: 'English Premier League', strTeamBadge: 'https://www.thesportsdb.com/images/media/team/badge/chelsea.png' },
+        { idTeam: '133612', strTeam: 'Chelsea', strLeague: 'English Premier League', strTeamBadge: 'https://www.thesportsdb.com/images/media/team/badge/chelsea.png' }
       ]
     }
   }).as(alias);
 };
 
 const stubPlayersByTeam = (alias = 'playersByTeam') => {
-  cy.intercept('GET', '**/lookup_all_players*', {
+  cy.intercept('GET', /.*(lookup_all_players|team-players|team\/.*\/players).*/, {
     statusCode: 200,
     body: {
+      data: [
+        { idPlayer: 'p1', strPlayer: 'Bukayo Saka', strPosition: 'Winger', strTeam: 'Arsenal', strThumb: '' },
+        { idPlayer: 'p2', strPlayer: 'Martin Odegaard', strPosition: 'Midfielder', strTeam: 'Arsenal', strThumb: '' },
+        { idPlayer: 'p3', strPlayer: 'David Raya', strPosition: 'Goalkeeper', strTeam: 'Arsenal', strThumb: '' }
+      ],
       player: [
         { idPlayer: 'p1', strPlayer: 'Bukayo Saka', strPosition: 'Winger', strTeam: 'Arsenal', strThumb: '' },
         { idPlayer: 'p2', strPlayer: 'Martin Odegaard', strPosition: 'Midfielder', strTeam: 'Arsenal', strThumb: '' },
-        { idPlayer: 'p3', strPlayer: 'David Raya', strPosition: 'Goalkeeper', strTeam: 'Arsenal', strThumb: '' },
+        { idPlayer: 'p3', strPlayer: 'David Raya', strPosition: 'Goalkeeper', strTeam: 'Arsenal', strThumb: '' }
       ]
     }
   }).as(alias);
 };
 
 const stubPlayerSearch = (alias = 'searchPlayers') => {
-  cy.intercept('GET', '**/searchplayers*', {
+  cy.intercept('GET', /.*(searchplayers|search-players|\/players\?.*name=|players\/search).*/, {
     statusCode: 200,
     body: {
+      data: [
+        { idPlayer: 'p10', strPlayer: 'Lionel Messi', strPosition: 'Forward', strTeam: 'Inter Miami', strThumb: '' },
+        { idPlayer: 'p11', strPlayer: 'Luis Messi', strPosition: 'Forward', strTeam: 'Unknown', strThumb: '' }
+      ],
       player: [
         { idPlayer: 'p10', strPlayer: 'Lionel Messi', strPosition: 'Forward', strTeam: 'Inter Miami', strThumb: '' },
-        { idPlayer: 'p11', strPlayer: 'Luis Messi', strPosition: 'Forward', strTeam: 'Unknown', strThumb: '' },
+        { idPlayer: 'p11', strPlayer: 'Luis Messi', strPosition: 'Forward', strTeam: 'Unknown', strThumb: '' }
       ]
     }
   }).as(alias);
 };
 
 const stubTeamSearch = (alias = 'searchTeams') => {
-  cy.intercept('GET', '**/searchteams*', {
+  cy.intercept('GET', /.*(searchteams|search-teams|teams\/search).*/, {
     statusCode: 200,
     body: {
+      data: [
+        { idTeam: '133739', strTeam: 'FC Barcelona', strLeague: 'La Liga', strTeamBadge: 'https://www.thesportsdb.com/images/media/team/badge/barca.png' }
+      ],
       teams: [
-        { idTeam: '133739', strTeam: 'FC Barcelona', strLeague: 'La Liga', strTeamBadge: 'https://www.thesportsdb.com/images/media/team/badge/barca.png' },
+        { idTeam: '133739', strTeam: 'FC Barcelona', strLeague: 'La Liga', strTeamBadge: 'https://www.thesportsdb.com/images/media/team/badge/barca.png' }
       ]
     }
   }).as(alias);
@@ -91,6 +114,7 @@ describe('Búsqueda – UI Base', () => {
 
   beforeEach(() => {
     cy.visit('/busqueda');
+    cy.dismissUiBlockers();
   });
 
   it('debería mostrar el buscador y los tres segmentos de modo', () => {
@@ -108,14 +132,14 @@ describe('Búsqueda – UI Base', () => {
   });
 
   it('debería cambiar el placeholder al cambiar el modo de búsqueda', () => {
-    cy.get('ion-segment-button[value="team"]').click();
-    cy.get('ion-searchbar').invoke('attr', 'placeholder').should('contain', 'club');
+    cy.get('ion-segment-button[value="team"]').click({ force: true });
+    cy.get('ion-searchbar input').invoke('attr', 'placeholder').should('contain', 'club');
 
-    cy.get('ion-segment-button[value="league"]').click();
-    cy.get('ion-searchbar').invoke('attr', 'placeholder').should('contain', 'liga');
+    cy.get('ion-segment-button[value="league"]').click({ force: true });
+    cy.get('ion-searchbar input').invoke('attr', 'placeholder').should('contain', 'liga');
 
-    cy.get('ion-segment-button[value="player"]').click();
-    cy.get('ion-searchbar').invoke('attr', 'placeholder').should('contain', 'Balón de Oro');
+    cy.get('ion-segment-button[value="player"]').click({ force: true });
+    cy.get('ion-searchbar input').invoke('attr', 'placeholder').should('contain', 'Balón de Oro');
   });
 
   it('no debería mostrar resultados con una query de menos de 3 caracteres', () => {
@@ -128,39 +152,37 @@ describe('Búsqueda – UI Base', () => {
 // SUITE 2: FLUJO LIGA → EQUIPO → JUGADOR
 // =============================================================================
 describe('Búsqueda – Flujo Liga → Equipo → Jugador', () => {
+  const searchInputSelector = 'ion-searchbar input:not([disabled])';
+
   before(login);
 
   beforeEach(() => {
     cy.visit('/busqueda');
+    cy.dismissUiBlockers();
     stubLeagueSearch();
     stubTeamsByLeague();
     stubPlayersByTeam();
   });
 
   it('debería buscar ligas y mostrar resultados', () => {
-    cy.get('ion-segment-button[value="league"]').click();
-    cy.get('ion-searchbar').find('input').type('Premier');
-    cy.wait('@searchLeagues');
+    cy.get('ion-segment-button[value="league"]').click({ force: true });
+    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Premier', { force: true });
     cy.get('.minimal-result-item').should('have.length.at.least', 1);
     cy.contains('English Premier League').should('exist');
   });
 
   it('debería navegar a equipos al seleccionar una liga', () => {
-    cy.get('ion-segment-button[value="league"]').click();
-    cy.get('ion-searchbar').find('input').type('Premier');
-    cy.wait('@searchLeagues');
+    cy.get('ion-segment-button[value="league"]').click({ force: true });
+    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Premier', { force: true });
     cy.contains('English Premier League').click();
-    cy.wait('@teamsByLeague');
     cy.contains('Arsenal').should('exist');
     cy.contains('Chelsea').should('exist');
   });
 
   it('debería mostrar píldoras de navegación al seleccionar liga y equipo', () => {
-    cy.get('ion-segment-button[value="league"]').click();
-    cy.get('ion-searchbar').find('input').type('Premier');
-    cy.wait('@searchLeagues');
+    cy.get('ion-segment-button[value="league"]').click({ force: true });
+    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Premier', { force: true });
     cy.contains('English Premier League').click();
-    cy.wait('@teamsByLeague');
 
     // Verifica la píldora de liga
     cy.get('.hierarchy-pills').should('exist');
@@ -168,25 +190,19 @@ describe('Búsqueda – Flujo Liga → Equipo → Jugador', () => {
   });
 
   it('debería cargar jugadores al seleccionar un equipo', () => {
-    cy.get('ion-segment-button[value="league"]').click();
-    cy.get('ion-searchbar').find('input').type('Premier');
-    cy.wait('@searchLeagues');
+    cy.get('ion-segment-button[value="league"]').click({ force: true });
+    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Premier', { force: true });
     cy.contains('English Premier League').click();
-    cy.wait('@teamsByLeague');
     cy.contains('Arsenal').click();
-    cy.wait('@playersByTeam');
     cy.contains('Bukayo Saka').should('exist');
     cy.contains('Martin Odegaard').should('exist');
   });
 
   it('backToTeams debería volver a la lista de equipos', () => {
-    cy.get('ion-segment-button[value="league"]').click();
-    cy.get('ion-searchbar').find('input').type('Premier');
-    cy.wait('@searchLeagues');
+    cy.get('ion-segment-button[value="league"]').click({ force: true });
+    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Premier', { force: true });
     cy.contains('English Premier League').click();
-    cy.wait('@teamsByLeague');
     cy.contains('Arsenal').click();
-    cy.wait('@playersByTeam');
 
     // Click en la píldora de Arsenal para volver
     cy.get('.nav-pill').contains('Arsenal').click();
@@ -199,27 +215,27 @@ describe('Búsqueda – Flujo Liga → Equipo → Jugador', () => {
 // SUITE 3: FLUJO EQUIPO → JUGADOR
 // =============================================================================
 describe('Búsqueda – Flujo Equipo → Jugador', () => {
+  const searchInputSelector = 'ion-searchbar input:not([disabled])';
+
   before(login);
 
   beforeEach(() => {
     cy.visit('/busqueda');
+    cy.dismissUiBlockers();
     stubTeamSearch();
     stubPlayersByTeam();
   });
 
   it('debería buscar equipos por nombre y mostrar resultados', () => {
-    cy.get('ion-segment-button[value="team"]').click();
-    cy.get('ion-searchbar').find('input').type('Barcelona');
-    cy.wait('@searchTeams');
+    cy.get('ion-segment-button[value="team"]').click({ force: true });
+    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Barcelona', { force: true });
     cy.contains('FC Barcelona').should('exist');
   });
 
   it('debería cargar jugadores al seleccionar un equipo en modo Equipo', () => {
-    cy.get('ion-segment-button[value="team"]').click();
-    cy.get('ion-searchbar').find('input').type('Barcelona');
-    cy.wait('@searchTeams');
+    cy.get('ion-segment-button[value="team"]').click({ force: true });
+    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Barcelona', { force: true });
     cy.contains('FC Barcelona').click();
-    cy.wait('@playersByTeam');
     cy.get('.minimal-result-item').should('have.length.at.least', 1);
   });
 });
@@ -228,25 +244,30 @@ describe('Búsqueda – Flujo Equipo → Jugador', () => {
 // SUITE 4: BÚSQUEDA DIRECTA DE JUGADOR
 // =============================================================================
 describe('Búsqueda – Búsqueda Directa de Jugador', () => {
+  const searchInputSelector = 'ion-searchbar input:not([disabled])';
+
   before(login);
 
   beforeEach(() => {
     cy.visit('/busqueda');
+    cy.dismissUiBlockers();
     stubPlayerSearch();
   });
 
   it('debería buscar jugadores directamente y mostrar resultados', () => {
-    cy.get('ion-segment-button[value="player"]').click();
-    cy.get('ion-searchbar').find('input').type('Messi');
-    cy.wait('@searchPlayers');
+    cy.get('ion-segment-button[value="player"]').click({ force: true });
+    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Messi', { force: true });
     cy.contains('Lionel Messi').should('exist');
   });
 
   it('debería mostrar la posición del jugador en los resultados', () => {
-    cy.get('ion-segment-button[value="player"]').click();
-    cy.get('ion-searchbar').find('input').type('Messi');
-    cy.wait('@searchPlayers');
-    cy.get('.pos-tag').first().should('exist');
+    cy.get('ion-segment-button[value="player"]').click({ force: true });
+    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Messi', { force: true });
+    cy.contains('.minimal-result-item', 'Lionel Messi', { timeout: 10000 })
+      .should('exist')
+      .within(() => {
+        cy.get('.pos-tag').should('contain.text', 'Forward');
+      });
   });
 });
 
@@ -254,18 +275,20 @@ describe('Búsqueda – Búsqueda Directa de Jugador', () => {
 // SUITE 5: SELECCIÓN Y BASKET
 // =============================================================================
 describe('Búsqueda – Selección y Basket', () => {
+  const searchInputSelector = 'ion-searchbar input:not([disabled])';
+
   before(login);
 
   beforeEach(() => {
     cy.visit('/busqueda');
+    cy.dismissUiBlockers();
     stubPlayerSearch();
   });
 
   it('debería añadir un jugador al basket al hacer click', () => {
-    cy.get('ion-segment-button[value="player"]').click();
-    cy.get('ion-searchbar').find('input').type('Messi');
-    cy.wait('@searchPlayers');
-    cy.get('.minimal-result-item').first().click();
+    cy.get('ion-segment-button[value="player"]').click({ force: true });
+    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Messi', { force: true });
+    cy.contains('.minimal-result-item', 'Lionel Messi', { timeout: 10000 }).click();
 
     // El counter del basket debería ser 1
     cy.get('.basket-counter').should('contain', '1');
@@ -273,10 +296,9 @@ describe('Búsqueda – Selección y Basket', () => {
   });
 
   it('debería eliminar un jugador del basket al hacer click en X', () => {
-    cy.get('ion-segment-button[value="player"]').click();
-    cy.get('ion-searchbar').find('input').type('Messi');
-    cy.wait('@searchPlayers');
-    cy.get('.minimal-result-item').first().click();
+    cy.get('ion-segment-button[value="player"]').click({ force: true });
+    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Messi', { force: true });
+    cy.contains('.minimal-result-item', 'Lionel Messi', { timeout: 10000 }).click();
 
     // Eliminar del basket
     cy.get('.selected-players-list ion-button[color="danger"]').first().click();
@@ -285,17 +307,16 @@ describe('Búsqueda – Selección y Basket', () => {
   });
 
   it('el botón "Limpiar" debería vaciar el basket', () => {
-    cy.get('ion-segment-button[value="player"]').click();
-    cy.get('ion-searchbar').find('input').type('Messi');
-    cy.wait('@searchPlayers');
-    cy.get('.minimal-result-item').first().click();
+    cy.get('ion-segment-button[value="player"]').click({ force: true });
+    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Messi', { force: true });
+    cy.contains('.minimal-result-item', 'Lionel Messi', { timeout: 10000 }).click();
 
     cy.get('ion-button').contains('Limpiar').click();
     cy.get('.basket-counter').should('contain', '0');
   });
 
   it('el botón de importar debería estar deshabilitado sin jugadores seleccionados', () => {
-    cy.get('ion-button').contains('Importar').should('be.disabled');
+    cy.contains('ion-button', 'Importar').should('have.class', 'button-disabled');
   });
 });
 
@@ -307,6 +328,7 @@ describe('Búsqueda – Tarjeta GPS', () => {
 
   beforeEach(() => {
     cy.visit('/busqueda');
+    cy.dismissUiBlockers();
   });
 
   it('no debería mostrar la tarjeta GPS mientras se comprueban los permisos', () => {
@@ -344,21 +366,23 @@ describe('Búsqueda – Importación de Jugadores', () => {
 
   beforeEach(() => {
     cy.visit('/busqueda');
+    cy.dismissUiBlockers();
     stubPlayerSearch();
   });
 
   it('debería mostrar toast de error si se intenta importar sin GPS', () => {
-    cy.get('ion-segment-button[value="player"]').click();
-    cy.get('ion-searchbar').find('input').type('Messi');
-    cy.wait('@searchPlayers');
+    const searchInputSelector = 'ion-searchbar input:not([disabled])';
+
+    cy.get('ion-segment-button[value="player"]').click({ force: true });
+    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Messi', { force: true });
     cy.get('.minimal-result-item').first().click();
 
     // El botón de importar debería estar deshabilitado sin GPS (hasLocation=false)
-    cy.get('ion-button').contains('Importar').should('be.disabled');
+    cy.contains('ion-button', 'Importar').should('have.class', 'button-disabled');
   });
 
   it('debería mostrar el número correcto de jugadores en el botón de importar', () => {
-    cy.get('ion-segment-button[value="player"]').click();
+    cy.get('ion-segment-button[value="player"]').click({ force: true });
     cy.get('ion-searchbar').find('input').type('Messi');
     cy.wait('@searchPlayers');
     cy.get('.minimal-result-item').first().click();

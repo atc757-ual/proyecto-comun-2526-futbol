@@ -1,6 +1,6 @@
 package com.futbol.comment.feign.controller;
 
-import com.futbol.comment.feign.dto.ApiResult;
+import com.futbol.common.dto.ApiResult;
 import com.futbol.comment.feign.model.CommentDTO;
 import com.futbol.comment.feign.service.CommentService;
 

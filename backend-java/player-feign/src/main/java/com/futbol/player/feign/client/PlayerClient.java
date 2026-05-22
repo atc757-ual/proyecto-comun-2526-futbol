@@ -2,9 +2,9 @@ package com.futbol.player.feign.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
+import com.futbol.common.dto.ApiResult;
 import com.futbol.player.feign.service.PlayerFallbackFactory;
 import com.futbol.player.feign.model.PlayerDTO;
-import com.futbol.player.feign.dto.ApiResult;
 import java.util.List;
 
 @FeignClient(name="PLAYER-CLIENT", fallbackFactory = PlayerFallbackFactory.class)

@@ -2,11 +2,13 @@ package com.futbol.servlet;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.UUID;
 import java.util.List;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import org.omg.CORBA.*;
 import org.omg.CosNaming.*;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -164,8 +166,7 @@ public class NoticiasRestServlet extends HttpServlet {
             List<NewsItem> validadas = new ArrayList<>();
 
             for (NewsItem n : noticias) {
-                // Blindaje anti-nulos para CORBA
-                if (n.id == null) n.id = "";
+// Blindaje anti-nulos para CORBA (mantener valores por defecto)
                 if (n.title == null) n.title = "";
                 if (n.author == null) n.author = "";
                 if (n.summary == null) n.summary = "";
@@ -178,6 +179,8 @@ public class NoticiasRestServlet extends HttpServlet {
                 if (n.updatedBy == null) n.updatedBy = "Admin";
                 if (n.createdAt == null) n.createdAt = "";
                 if (n.updatedAt == null) n.updatedAt = "";
+                // Generar siempre un ID nuevo (ignora el que pueda venir)
+                n.id = generateId();
 
                 System.out.println("[BRIDGE-BULK] Procesando noticia ID: " + n.id + " | Titulo: " + n.title);
 
@@ -219,8 +222,11 @@ public class NoticiasRestServlet extends HttpServlet {
             System.out.println("[BRIDGE-POST] Iniciando publicacion...");
             // 1. Leer una sola vez el JSON del request
             NewsItem noticiaRecibida = leerNoticiaDesdeRequest(request);
-            
-            // 2. Validar contra XSD antes de guardar (Pipeline de limpieza)
+            // 2. Generar ID si falta (o sobrescribir para asegurar que el bridge lo crea)
+            if (noticiaRecibida.id == null || noticiaRecibida.id.isEmpty()) {
+                noticiaRecibida.id = generateId();
+            }
+            // 3. Validar contra XSD antes de guardar (Pipeline de limpieza)
             String xsdPath = getXsdPath();
             NewsItem noticiaLimpia;
             try {
@@ -348,7 +354,7 @@ public class NoticiasRestServlet extends HttpServlet {
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             System.err.println("[BRIDGE-AUTH] Denegado: Sin Token");
-            enviarRespuesta(response, HttpServletResponse.SC_UNAUTHORIZED, false, "Token no proporcionado", null);
+            enviarRespuesta(response, HttpServletResponse.SC_UNAUTHORIZED, false, "Autenticacion requerida", null);
             return false;
         }
         return true;
@@ -358,7 +364,7 @@ public class NoticiasRestServlet extends HttpServlet {
         String userRole = request.getHeader("X-User-Role");
         if (userRole == null || !userRole.equalsIgnoreCase("ADMIN")) {
             System.err.println("[BRIDGE-AUTH] Denegado: Requiere ADMIN y es " + userRole);
-            enviarRespuesta(response, HttpServletResponse.SC_FORBIDDEN, false, "Requiere ADMIN", null);
+            enviarRespuesta(response, HttpServletResponse.SC_FORBIDDEN, false, "Permisos insuficientes", null);
             return false;
         }
         return true;
@@ -393,9 +399,13 @@ public class NoticiasRestServlet extends HttpServlet {
     private NewsItem leerNoticiaDesdeRequest(HttpServletRequest request) throws IOException {
         JsonNode root = mapper.readTree(request.getReader());
         if (root != null && root.isObject()) {
-            normalizarFecha((ObjectNode) root);
+            ObjectNode node = (ObjectNode) root;
+            normalizarFecha(node);
+            normalizarEstado(node);
         }
-        return mapper.treeToValue(root, NewsItem.class);
+        return mapper.readerFor(NewsItem.class)
+                .without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .readValue(root);
     }
 
     private NewsItem[] leerNoticiasDesdeRequest(HttpServletRequest request) throws IOException {
@@ -404,11 +414,15 @@ public class NoticiasRestServlet extends HttpServlet {
             ArrayNode array = (ArrayNode) root;
             for (JsonNode node : array) {
                 if (node != null && node.isObject()) {
-                    normalizarFecha((ObjectNode) node);
+                    ObjectNode objectNode = (ObjectNode) node;
+                    normalizarFecha(objectNode);
+                    normalizarEstado(objectNode);
                 }
             }
         }
-        return mapper.treeToValue(root, NewsItem[].class);
+        return mapper.readerFor(NewsItem[].class)
+                .without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .readValue(root);
     }
 
     private void normalizarFecha(ObjectNode node) {
@@ -426,6 +440,45 @@ public class NoticiasRestServlet extends HttpServlet {
         }
     }
 
+    private void normalizarEstado(ObjectNode node) {
+        if (node.has("isActive")) {
+            return;
+        }
+
+        JsonNode statusNode = node.get("status");
+        if (statusNode == null || statusNode.isNull()) {
+            return;
+        }
+
+        if (statusNode.isBoolean()) {
+            node.set("isActive", statusNode);
+            return;
+        }
+
+        if (statusNode.isInt() || statusNode.isLong()) {
+            node.put("isActive", statusNode.asInt() != 0);
+            return;
+        }
+
+        if (!statusNode.isTextual()) {
+            return;
+        }
+
+        String normalizedStatus = statusNode.asText("").trim().toLowerCase();
+        if (normalizedStatus.isEmpty()) {
+            return;
+        }
+
+        boolean isActive = normalizedStatus.equals("active")
+                || normalizedStatus.equals("published")
+                || normalizedStatus.equals("public")
+                || normalizedStatus.equals("visible")
+                || normalizedStatus.equals("true")
+                || normalizedStatus.equals("1");
+
+        node.put("isActive", isActive);
+    }
+
     private NewsService getCorbaService() throws Exception {
         String orbHost = System.getenv("ORB_HOST") != null ? System.getenv("ORB_HOST") : "localhost";
         String[] orbArgs = {"-ORBInitialPort", "1050", "-ORBInitialHost", orbHost};
@@ -441,5 +494,13 @@ public class NoticiasRestServlet extends HttpServlet {
             xsdPath = System.getProperty("user.dir") + "/src/main/resources/noticias.xsd";
         }
         return xsdPath;
+    }
+
+    /**
+     * Genera un ID que cumple con el patrón XSD '[a-zA-Z0-9\-_]+'
+     * Utiliza UUID sin guiones para obtener sólo caracteres alfanuméricos.
+     */
+    private String generateId() {
+        return UUID.randomUUID().toString().replaceAll("-", "");
     }
 }

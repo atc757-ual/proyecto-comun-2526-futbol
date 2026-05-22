@@ -909,13 +909,12 @@
 .limit-tag {
   background: var(--red-010);
   margin: 0 0 var(--space-s) 0;
-  padding: var(--space-xs) var(--space-base);
+  padding: var(--space-xs) var(--space-s);
   border-radius: var(--border-radius-soft);
   display: flex;
   align-items: center;
   gap: var(--space-s);
   border: 1px solid var(--red-050);
-  margin: var(--space-s) var(--space-base);
 
   ion-icon {
     font-size: var(--fs-20);
@@ -1182,6 +1181,7 @@
   &.bg-permission-active {
     background: var(--color-success-010);
     border-color: var(--color-success-100);
+
     ion-icon[slot="start"] {
       color: var(--color-success);
     }
@@ -1190,6 +1190,7 @@
   &.bg-permission-denied {
     background: var(--red-010);
     border-color: var(--red-050);
+
     ion-icon[slot="start"] {
       color: var(--color-error);
     }
@@ -1198,6 +1199,7 @@
   &.bg-permission-info {
     background: var(--blue-primary-010);
     border-color: var(--color-primary);
+
     ion-icon[slot="start"] {
       color: var(--color-primary);
     }

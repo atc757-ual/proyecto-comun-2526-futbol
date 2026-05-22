@@ -1,5 +1,7 @@
 describe('Players Feature Smoke E2E', () => {
   const loginUser = () => {
+    cy.clearLocalStorage();
+    cy.clearCookies();
     cy.visit('/auth/login');
     cy.typeIntoIonInput('email', 'atc757@inlumine.ual.es');
     cy.typeIntoIonInput('password', '1q2w3e4r');

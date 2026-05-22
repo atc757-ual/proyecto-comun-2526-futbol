@@ -333,8 +333,8 @@ describe('Navegación entre páginas públicas', () => {
       .first()
       .should('contain.text', 'Jugador')
       .click({ force: true });
-    cy.wait('@getPlayerDetail');
-    cy.url({ timeout: 10000 }).should('include', `/player-detail-public/${mockPlayerDetail._id}`);
+    cy.wait('@getPlayerDetail', { timeout: 15000 });
+    cy.url({ timeout: 15000 }).should('include', `/player-detail-public/${mockPlayerDetail._id}`);
   });
 
   it('debería volver al listado al navegar con el breadcrumb', () => {

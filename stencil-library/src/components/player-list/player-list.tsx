@@ -69,7 +69,7 @@ export class PlayerList {
         {hasMore && (
           <div class="widget-footer">
             <button class="view-more-btn" onClick={() => this.viewMoreClicked.emit()}>
-              Ver mis jugadores
+              Ver todos mis jugadores
             </button>
           </div>
         )}

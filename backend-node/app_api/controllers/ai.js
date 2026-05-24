@@ -1,6 +1,7 @@
 const aiService = require('../services/ai.service');
 const mongoose = require('mongoose');
 const Player = mongoose.model('Player');
+const { sendApiResult } = require('./apiResult');
 
 /**
  * POST /api/ai/analyze
@@ -16,9 +17,7 @@ const analyzeMyTeam = async (req, res) => {
                                     .limit(30);
 
         if (!players || players.length === 0) {
-            return res.status(404).json({
-                result: { status: "NOK", description: "No tienes jugadores registrados para analizar." }
-            });
+            return sendApiResult(res, 404, "No tienes jugadores registrados para analizar.");
         }
 
         console.log(`[AI-CONTROLLER] Analizando ${players.length} jugadores para UID: ${firebaseUid}`);
@@ -26,16 +25,7 @@ const analyzeMyTeam = async (req, res) => {
         // 2. Llamar al servicio de IA
         const analysis = await aiService.analyzePlayers(players);
 
-        return res.status(200).json({
-            result: {
-                transactionId: require('crypto').randomUUID(),
-                code: "200",
-                description: "OK",
-                descriptionDetail: "Análisis de IA generado exitosamente",
-                responseTimestamp: new Date().toISOString()
-            },
-            data: analysis
-        });
+        return sendApiResult(res, 200, "Análisis de IA generado exitosamente", analysis);
 
     } catch (err) {
         const errorMessage = err.message || "";
@@ -43,20 +33,10 @@ const analyzeMyTeam = async (req, res) => {
 
         // Si es un error de cuota (Rate Limit), devolvemos 429 en lugar de 500
         if (errorMessage.includes('429') || errorMessage.toLowerCase().includes('quota')) {
-            return res.status(429).json({
-                result: { 
-                    status: "NOK", 
-                    description: "¡FootballAI está recargando pilas! 🔋 Mañana tendremos más consejos para ti." 
-                }
-            });
+            return sendApiResult(res, 429, "¡FootballAI está recargando pilas! 🔋 Mañana tendremos más consejos para ti.");
         }
 
-        res.status(500).json({
-            result: { 
-                status: "NOK", 
-                description: "Lo sentimos, el entrenador IA no está disponible en este momento. Revisa tu conexión o inténtalo más tarde." 
-            }
-        });
+        return sendApiResult(res, 500, "Lo sentimos, el entrenador IA no está disponible en este momento. Revisa tu conexión o inténtalo más tarde.");
     }
 };
 

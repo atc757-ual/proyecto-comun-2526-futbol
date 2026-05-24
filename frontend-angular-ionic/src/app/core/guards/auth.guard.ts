@@ -6,10 +6,23 @@ import { map, take } from 'rxjs';
 import { ActivatedRouteSnapshot } from '@angular/router';
 
 // Guard para rutas protegidas: bloquea si no hay sesión
-export const authGuard = () => {
+export const authGuard = (route: ActivatedRouteSnapshot, state: import('@angular/router').RouterStateSnapshot) => {
   const auth = inject(Auth);
   const authService = inject(AuthService);
   const navCtrl = inject(NavController);
+
+  // Función auxiliar para manejar redirección de invitados
+  const handleGuestRedirect = () => {
+    // Si intentan entrar a /player-detail/:id sin sesión, mandarlos a su versión pública
+    if (state.url && state.url.includes('/player-detail/')) {
+      const parts = state.url.split('/');
+      const id = parts[parts.length - 1];
+      navCtrl.navigateRoot(`/player-detail-public/${id}`, { animated: false });
+    } else {
+      navCtrl.navigateRoot('/auth/login', { animated: false });
+    }
+    return false;
+  };
 
   // Comprobación síncrona primero (evita race condition con Firebase)
   if (auth.currentUser || localStorage.getItem('jwt_token')) {
@@ -20,8 +33,7 @@ export const authGuard = () => {
     take(1),
     map(user => {
       if (user) return true;
-      navCtrl.navigateRoot('/auth/login', { animated: false });
-      return false;
+      return handleGuestRedirect();
     })
   );
 };

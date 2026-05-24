@@ -14,5 +14,15 @@ public class PlayerPublicDTO {
     @JsonProperty("_id")
     private Long id;
     private String name;
-    private String photo;
+    
+    @JsonProperty("image_url")
+    private String imageUrl;
+    
+    private String team;
+    private Integer age;
+    private String nationality;
+    private String position;
+    
+    @JsonProperty("created_at")
+    private java.time.LocalDateTime createdAt;
 }

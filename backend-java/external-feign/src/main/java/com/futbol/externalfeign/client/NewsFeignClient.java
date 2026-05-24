@@ -11,23 +11,45 @@ import java.util.List;
 public interface NewsFeignClient {
 
     @GetMapping
-    ApiResult<List<NewsDTO>> findAll(@RequestHeader(value = "Authorization", required = false) String auth, @RequestHeader("X-User-Role") String role);
+    ApiResult<List<NewsDTO>> findAll(
+            @RequestHeader(value = "Authorization", required = false) String auth,
+            @RequestHeader("X-User-Role") String role,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer limit);
 
     @GetMapping("/feed")
-    ApiResult<List<NewsDTO>> getFeed(@RequestHeader(value = "Authorization", required = false) String auth);
+    ApiResult<List<NewsDTO>> getFeed(
+            @RequestHeader(value = "Authorization", required = false) String auth,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer limit);
 
     @GetMapping("/{id}")
-    ApiResult<NewsDTO> findById(@RequestHeader(value = "Authorization", required = false) String auth, @PathVariable("id") String id);
+    ApiResult<NewsDTO> findById(
+            @RequestHeader(value = "Authorization", required = false) String auth,
+            @PathVariable("id") String id);
 
     @PostMapping
-    ApiResult<NewsDTO> create(@RequestHeader("Authorization") String auth, @RequestHeader("X-User-Role") String role, @RequestBody NewsDTO news);
+    ApiResult<NewsDTO> create(
+            @RequestHeader("Authorization") String auth,
+            @RequestHeader("X-User-Role") String role,
+            @RequestBody NewsDTO news);
 
     @PostMapping("/bulk")
-    ApiResult<List<NewsDTO>> bulkCreate(@RequestHeader("Authorization") String auth, @RequestHeader("X-User-Role") String role, @RequestBody List<NewsDTO> newsList);
+    ApiResult<List<NewsDTO>> bulkCreate(
+            @RequestHeader("Authorization") String auth,
+            @RequestHeader("X-User-Role") String role,
+            @RequestBody List<NewsDTO> newsList);
 
     @PutMapping("/{id}")
-    ApiResult<NewsDTO> update(@RequestHeader("Authorization") String auth, @RequestHeader("X-User-Role") String role, @PathVariable("id") String id, @RequestBody NewsDTO news);
+    ApiResult<NewsDTO> update(
+            @RequestHeader("Authorization") String auth,
+            @RequestHeader("X-User-Role") String role,
+            @PathVariable("id") String id,
+            @RequestBody NewsDTO news);
 
     @DeleteMapping("/{id}")
-    ApiResult<Void> delete(@RequestHeader("Authorization") String auth, @RequestHeader("X-User-Role") String role, @PathVariable("id") String id);
+    ApiResult<Void> delete(
+            @RequestHeader("Authorization") String auth,
+            @RequestHeader("X-User-Role") String role,
+            @PathVariable("id") String id);
 }

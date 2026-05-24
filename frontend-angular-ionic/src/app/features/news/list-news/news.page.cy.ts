@@ -23,7 +23,7 @@ describe('NewsPage Component', () => {
         },
         {
           provide: AuthService,
-          useValue: { isAdmin: () => true }
+          useValue: { isAdmin: () => true, currentUser: () => null, userData: () => null, firstName: () => '' }
         },
         { provide: LayoutService, useValue: { setHeader: () => {}, setBreadcrumbs: () => {} } },
         { provide: PlatformService, useValue: { isDesktop: true } },
@@ -50,7 +50,7 @@ describe('NewsPage Component', () => {
         },
         {
           provide: AuthService,
-          useValue: { isAdmin: () => true }
+          useValue: { isAdmin: () => true, currentUser: () => null, userData: () => null, firstName: () => '' }
         },
         { provide: LayoutService, useValue: { setHeader: () => {}, setBreadcrumbs: () => {} } },
         { provide: PlatformService, useValue: { isDesktop: true } },

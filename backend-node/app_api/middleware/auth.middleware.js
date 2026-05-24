@@ -6,34 +6,24 @@ const { sendApiResult } = require('../controllers/apiResult');
 
 // Leer la llave pública para verificar RS256
 const publicKeyPath = path.join(__dirname, '../../public_key.pem');
-let secretOrKey = process.env.JWT_SECRET || 'clave-por-defecto';
+let secretOrKey;
+let jwtAlgorithm;
 
 if (fs.existsSync(publicKeyPath)) {
     secretOrKey = fs.readFileSync(publicKeyPath, 'utf8');
-    console.log('✅ Llave pública RS256 cargada para verificación');
+    jwtAlgorithm = 'RS256';
+} else if (process.env.JWT_SECRET) {
+    secretOrKey = process.env.JWT_SECRET;
+    jwtAlgorithm = 'HS256';
 } else {
-    console.warn('⚠️ No se encontró public_key.pem, usando secret por defecto');
+    throw new Error('FATAL: Se requiere JWT_SECRET o public_key.pem. El servidor no puede arrancar sin seguridad JWT.');
 }
 
 /**
  * Middleware para autorizar peticiones.
  */
 const authorizeRequest = async (req, res, next) => {
-    if (process.env.NODE_ENV === 'test') {
-        const User = mongoose.model('User');
-        let testUser = await User.findOne({ firebaseUid: 'test-user-id' });
-        if (!testUser) {
-            testUser = await User.create({
-                name: 'Test User',
-                email: 'test@example.com',
-                firebaseUid: 'test-user-id',
-                role: 'admin',
-                is_active: true
-            });
-        }
-        req.user = testUser;
-        return next();
-    }
+
 
     let header = req.headers.Authorization || req.headers.authorization;
 
@@ -45,32 +35,34 @@ const authorizeRequest = async (req, res, next) => {
 
     const User = mongoose.model('User');
 
-    jwt.verify(token, secretOrKey, async (err, decoded) => {
-        if (err) {
-            console.error('JWT Verify Error:', err.message);
-            return sendApiResult(res, 401, "No autorizado: Token inválido o expirado");
-        }
 
-        try {
-            let user = await User.findOne({
-                firebaseUid: decoded.id || decoded.sub, 
-                is_active: true, 
-                blocked: false 
-            }).select('-password');
 
-            if (!user) {
-                return sendApiResult(res, 401, "No autorizado: El usuario no existe");
+        jwt.verify(token, secretOrKey, { algorithms: [jwtAlgorithm] }, async (err, decoded) => {
+            if (err) {
+                console.error('JWT Verify Error:', err.message);
+                return sendApiResult(res, 401, "No autorizado: Token inválido o expirado");
             }
 
-            // Inyectamos el usuario de BD y los claims del token
-            req.user = user;
-            req.tokenClaims = decoded; 
-            
-            return next();
-        } catch (error) {
-            return sendApiResult(res, 500, "Error interno al verificar autorización");
-        }
-    });
+            try {
+                let user = await User.findOne({
+                    firebaseUid: decoded.id || decoded.sub, 
+                    is_active: true,
+                    blocked: false 
+                }).select('-password');
+
+                if (!user) {
+                    return sendApiResult(res, 401, "No autorizado: El usuario no existe");
+                }
+
+                // Inyectamos el usuario de BD y los claims del token
+                req.user = user;
+                req.tokenClaims = decoded; 
+
+                return next();
+            } catch (error) {
+                return sendApiResult(res, 500, "Error interno al verificar autorización");
+            }
+        });
 };
 
 /**

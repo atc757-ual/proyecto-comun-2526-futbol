@@ -14,8 +14,6 @@ class AIService {
             const modelName = "gemini-flash-latest"; // Nombre oficial verificado
             const version = "v1beta"; 
 
-            console.log(`[AI-DEBUG] CONFIGURANDO MODELO: ${modelName} en versión ${version}`);
-
             this.model = new ChatGoogleGenerativeAI({
                 model: modelName,
                 apiVersion: version,
@@ -23,8 +21,6 @@ class AIService {
                 temperature: 0.2,
                 maxOutputTokens: 4096,
             });
-
-            console.log(`[AI-DEBUG] Modelo instanciado correctamente.`);
         }
 
         // Definimos el esquema de respuesta estructurada con Zod para el análisis táctico
@@ -85,8 +81,7 @@ class AIService {
 
             // Establezco el fallback si el servicio de IA falla o está en circuito abierto
             this.aiBreaker.fallback((input, error) => {
-                console.warn(`[CIRCUIT-BREAKER-AI] Fallback activo. Detalle: ${error.message}`);
-                throw new Error("El servicio de análisis táctico por IA está temporalmente fuera de línea. Inténtalo más tarde.");
+                throw error;
             });
 
             // Registro los estados de control del disyuntor de IA para visualizarlos en mi terminal
@@ -121,8 +116,6 @@ class AIService {
                 `- ${p.name}: Posición ${p.position || 'N/A'}, Equipo: ${p.team || 'N/A'}, Liga: ${p.league || 'N/A'}, Edad: ${p.age || 'N/A'}, Nac: ${p.nationality || 'N/A'}${p.isFavorite ? ' [FAVORITO]' : ''}`
             ).join('\n');
 
-            console.log("[AI-DEBUG] Solicitando análisis para:", players.length, "jugadores");
-
             // Ejecuto la llamada de IA a través del Circuit Breaker protegido
             const response = await this.aiBreaker.fire({
                 players_data: playersData
@@ -130,10 +123,9 @@ class AIService {
 
             // Obtengo el texto de la respuesta
             let text = typeof response === 'string' ? response : response.content;
-            console.log("[AI-DEBUG] Respuesta raw de la IA:", text);
 
             // Limpieza del formato devuelto
-            let cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
+            let cleanText = text.replace(/```(?:json)?\s*/g, "").replace(/```/g, "").trim();
 
             const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
@@ -143,12 +135,10 @@ class AIService {
             try {
                 return JSON.parse(cleanText);
             } catch (parseError) {
-                console.error("[AI-DEBUG] Error al parsear JSON limpio:", parseError);
                 throw new Error("El formato de respuesta de la IA no es un JSON válido");
             }
 
         } catch (error) {
-            console.error("[AI-DEBUG] Error crítico en servicio de IA:", error);
             throw new Error("Fallo en la comunicación con la IA: " + error.message);
         }
     }

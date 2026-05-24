@@ -12,6 +12,17 @@ let adminToken = generateJWT("admin_uid", "admin");
 
 jest.setTimeout(30000); // 30 segundos de margen global
 
+// Esperar a que Mongoose esté conectado antes de correr cualquier test
+beforeAll(async () => {
+    if (mongoose.connection.readyState !== 1) {
+        await new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => reject(new Error('Mongoose connection timeout')), 15000);
+            mongoose.connection.once('connected', () => { clearTimeout(timeout); resolve(); });
+            mongoose.connection.once('error', (err) => { clearTimeout(timeout); reject(err); });
+        });
+    }
+});
+
 // Limpiar las colecciones antes de cada prueba para tener tests aislados
 beforeEach(async () => {
     if (mongoose.connection.readyState === 1) {
@@ -52,17 +63,18 @@ describe("CRUD de Jugadores", () => {
 
     // Prueba de obtención de todos los PROPIOS
     test("Debería retornar la lista de jugadores PROPIOS (GET /api/players)", async () => {
-        // El middleware de test inyecta 'test-user-id'
-        await Player.create({ ...reqAddPlayer, user_id: 'test-user-id' });
+        // We now inject adminToken, so the user_id must be 'admin_uid'
+        await Player.create({ ...reqAddPlayer, user_id: 'admin_uid' });
         
         const response = await request(app)
             .get("/api/players")
+            .set('Authorization', `Bearer ${adminToken}`)
             .expect('Content-Type', /json/)
             .expect(200);
             
         expect(Array.isArray(response.body.data)).toBe(true);
         expect(response.body.data.length).toBeGreaterThan(0);
-        expect(response.body.data[0].user_id).toBe('test-user-id');
+        expect(response.body.data[0].user_id).toBe('admin_uid');
     });
 
     // Prueba de obtención de todos (Base de datos global)
@@ -84,6 +96,7 @@ describe("CRUD de Jugadores", () => {
         
         const response = await request(app)
             .get(`/api/players/${newPlayer._id}`)
+            .set('Authorization', `Bearer ${adminToken}`)
             .expect(200)
             .expect('Content-Type', /application\/json/);
             
@@ -96,6 +109,7 @@ describe("CRUD de Jugadores", () => {
         const fakeId = new mongoose.Types.ObjectId();
         await request(app)
             .get(`/api/players/${fakeId}`)
+            .set('Authorization', `Bearer ${adminToken}`)
             .expect(404);
     });
 

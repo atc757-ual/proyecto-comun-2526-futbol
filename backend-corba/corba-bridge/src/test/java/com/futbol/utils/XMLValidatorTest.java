@@ -88,10 +88,15 @@ public class XMLValidatorTest {
         n.date = "30/04/2026";
         n.title = "Bellingham anota un hat-trick";
         n.author = "Carlos Pérez Redactor";
+        n.summary = "Bellingham marcó tres goles decisivos en la victoria del Real Madrid.";
         n.content = "El centrocampista inglés Jude Bellingham anotó tres goles en la victoria del Real Madrid";
         n.imageUrl = "https://img.futbol.com/bellingham.jpg";
         n.category = "Resultados";
         n.tags = new String[]{"futbol", "champions"};
+        n.createdAt = "";
+        n.updatedAt = "";
+        n.createdBy = "";
+        n.updatedBy = "";
         return n;
     }
 }

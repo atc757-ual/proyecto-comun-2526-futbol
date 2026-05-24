@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 import {
   IonButton, IonIcon, IonSearchbar, IonList, IonItem, IonLabel, IonCheckbox, IonSpinner,
   IonBadge, IonCard, IonCardContent, IonAvatar, IonSegment, IonSegmentButton, IonChip,
-  ModalController
+  ModalController, IonContent
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -31,6 +31,8 @@ import { PLAYER_SERVICE_TOKEN } from '../../../core/services/players/player.serv
 import { ConfettiService } from '../../../core/services/ui/confetti.service';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { GpsPermissionCardComponent } from '../../../shared/components/gps-permission-card/gps-permission-card.component';
+import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
+import { PageFooterComponent } from '../../../shared/components/page-footer/page-footer.component';
 
 @Component({
   selector: 'app-busqueda-list',
@@ -41,7 +43,7 @@ import { GpsPermissionCardComponent } from '../../../shared/components/gps-permi
     CommonModule, FormsModule, RouterModule,
     IonButton, IonIcon, IonSearchbar, IonList, IonItem, IonLabel, IonCheckbox, IonSpinner,
     IonBadge, IonCard, IonCardContent, IonAvatar, IonSegment, IonSegmentButton, IonChip,
-    PaginationComponent, GpsPermissionCardComponent
+    PaginationComponent, GpsPermissionCardComponent, IonContent, PageHeaderComponent, PageFooterComponent
   ]
 })
 export class BusquedaListPage implements OnInit {
@@ -142,16 +144,14 @@ export class BusquedaListPage implements OnInit {
     });
   }
 
+  public pageTitle = 'Centro de búsqueda';
+  public pageSubtitle = 'Busca por liga, equipo o jugador y añádelo a tu lista';
+  public breadcrumbs = [
+    { label: '', url: '/home', icon: 'home-outline' },
+    { label: 'Búsqueda', url: '' }
+  ];
+
   ngOnInit() {
-    this.layoutService.setHeader({
-      title: 'Centro de búsqueda',
-      subtitle: 'Busca por liga, equipo o jugador y añádelo a tu lista',
-      showHero: true
-    });
-    this.layoutService.setBreadcrumbs([
-      { label: '', url: '/home', icon: 'home-outline' },
-      { label: 'Búsqueda', url: '' },
-    ]);
 
     this.loadMyPlayers();
 

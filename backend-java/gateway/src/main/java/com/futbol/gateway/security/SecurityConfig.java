@@ -48,8 +48,10 @@ public class SecurityConfig {
             .authorizeExchange()
             // Rutas Públicas
             .pathMatchers("/api/auth/**").permitAll()
-            .pathMatchers("/actuator/**").permitAll()
+            .pathMatchers("/actuator/health").permitAll()
+            .pathMatchers("/actuator/**").authenticated()
             .pathMatchers(HttpMethod.GET, "/api/players/public/**").permitAll()
+            .pathMatchers("/api/comments/public/**").permitAll()
             // Rutas Protegidas (Requieren Login)
             .pathMatchers(HttpMethod.GET, "/api/news/**").authenticated()
             .pathMatchers(HttpMethod.POST, "/api/players").authenticated()
@@ -69,7 +71,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(allowedOrigins.stream().map(String::trim).filter(origin -> !origin.isEmpty()).toList());
         configuration.addAllowedMethod("*");
-        configuration.addAllowedHeader("*");
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-User-Role", "X-Transaction-Id", "Accept"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

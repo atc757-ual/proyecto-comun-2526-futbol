@@ -78,6 +78,7 @@
 
 
 @media (max-width: 767px) {
+
   .col-8,
   .col-4 {
     width: 100% !important;
@@ -361,11 +362,11 @@
 .rating-stars-input {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-xs);
   height: 24px;
 
   ion-icon {
-    font-size: 24px;
+    font-size: var(--fs-20);
     color: var(--color-neutral-3, #e2e8f0);
     cursor: pointer;
     transition: transform 0.2s;

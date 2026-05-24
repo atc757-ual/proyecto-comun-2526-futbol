@@ -6,7 +6,7 @@
       <!-- LADO IZQUIERDO: FORMULARIO -->
       <div class="auth-form-side">
         <div class="form-wrapper" [class.is-mobile-app]="platformService.isMobileApp">
-          
+
           <!-- Back Link Placeholder (Mantiene la altura fija haya o no botón) -->
           <div class="back-btn-placeholder">
             <ion-back-button *ngIf="!layoutService.isLogin()" defaultHref="/auth/login" text="" icon="arrow-back"
@@ -33,18 +33,16 @@
             <router-outlet></router-outlet>
           </div>
 
-          <!-- ðŸ“± FOOTER NATIVO APP (MÍNIMO - SOLO EN NATIVO APP) -->
+          <!-- FOOTER NATIVO APP (MÍNIMO - SOLO EN NATIVO APP) -->
           <footer class="auth-global-footer hide-on-desktop" *ngIf="platformService.isMobileApp">
-            <div class="d-flex jc-between ai-center px-s">
-              <span class="text-neutral-7 fs-13">© 2026 Fútbol Club. By Alex Taquila.</span>
-              <div class="d-flex gap-s">
-                <a href="https://www.linkedin.com/in/alextaquilacamasca/" target="_blank" class="icon-footer">
-                  <ion-icon name="logo-linkedin" class="pointer"></ion-icon>
-                </a>
-                <a href="https://github.com/atc757-ual/" target="_blank" class="icon-footer">
-                  <ion-icon name="logo-github" class="pointer"></ion-icon>
-                </a>
-              </div>
+            <span class="text-neutral-7 fs-14">© 2026 Fútbol Club. By Alex Taquila.</span>
+            <div class="d-flex gap-s ai-center jc-center mt-xs">
+              <a href="https://www.linkedin.com/in/alextaquilacamasca/" target="_blank" class="icon-footer">
+                <ion-icon name="logo-linkedin" class="pointer"></ion-icon>
+              </a>
+              <a href="https://github.com/atc757-ual/" target="_blank" class="icon-footer">
+                <ion-icon name="logo-github" class="pointer"></ion-icon>
+              </a>
             </div>
           </footer>
 
@@ -64,26 +62,6 @@
     </div>
 
     <!-- ðŸ’» FOOTER WEB UNIFICADO (GRIS - NO FIJO - DESPLAZABLE AL FINAL) -->
-    <footer class="main-footer-gray" *ngIf="!platformService.isMobileApp">
-      <div class="footer">
-        <div class="footer-slim-content">
-          <div class="footer-left">
-            <span class="copyright-text fs-14 text-neutral-7">© 2026 Fútbol Club. By Alex Taquila.</span>
-          </div>
-          <div class="footer-right">
-            <div class="footer-socials">
-              <span class="fs-14 text-neutral-7 hide-on-phone">Sígueme en:</span>
-              <a href="https://www.linkedin.com/in/alextaquilacamasca" target="_blank" class="social-icon">
-                <ion-icon name="logo-linkedin"></ion-icon>
-              </a>
-              <a href="https://github.com/atc757-ual" target="_blank" class="social-icon">
-                <ion-icon name="logo-github"></ion-icon>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </footer>
-
+    <app-page-footer *ngIf="!platformService.isMobileApp"></app-page-footer>
   </div>
 </ion-content>

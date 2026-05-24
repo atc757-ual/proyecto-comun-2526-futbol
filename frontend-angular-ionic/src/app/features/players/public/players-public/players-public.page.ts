@@ -5,11 +5,13 @@ import {
   IonSearchbar,
   IonCard, IonCardContent, IonCardHeader, IonCardTitle,
   IonIcon, IonSpinner, IonLabel, IonItem, IonThumbnail,
-  NavController
+  NavController, IonContent
 } from '@ionic/angular/standalone';
 import { RouterModule } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { PageFooterComponent } from '../../../../shared/components/page-footer/page-footer.component';
 import {
   personAddOutline, searchOutline, shieldOutline,
   eyeOutline, closeCircleOutline, chevronBackOutline,
@@ -31,7 +33,7 @@ import { AuthService } from '../../../../core/services/auth/auth.service';
     CommonModule, FormsModule, RouterModule,
     IonSearchbar, IonCard, IonCardContent, IonCardHeader, IonCardTitle,
     IonIcon, IonSpinner, IonLabel, IonItem, IonThumbnail,
-    PaginationComponent
+    PaginationComponent, PageHeaderComponent, PageFooterComponent, IonContent
   ]
 })
 export class PlayersPublicPage implements OnInit {
@@ -93,18 +95,14 @@ export class PlayersPublicPage implements OnInit {
     });
   }
 
+  pageTitle = 'Nuestros jugadores';
+  pageSubtitle = 'Descubre el talento de nuestra base de datos pública';
+  breadcrumbs = [
+    { label: '', url: '/auth/login', icon: 'log-in-outline' },
+    { label: 'Jugadores', url: '' }
+  ];
+
   ngOnInit() {
-    this.layoutService.setHeader({
-      title: 'Nuestros jugadores',
-      subtitle: 'Descubre el talento de nuestra base de datos pública',
-      showHero: true
-    });
-
-    this.layoutService.setBreadcrumbs([
-      { label: '', url: '/login', icon: 'log-in-outline' },
-      { label: 'Jugadores', url: '' }
-    ]);
-
     this.loadPlayers();
   }
 
@@ -139,5 +137,9 @@ export class PlayersPublicPage implements OnInit {
 
   goToPage(page: number) {
     this.currentPage.set(page);
+  }
+
+  goTo(url: string) {
+    this.navCtrl.navigateRoot(url, { animated: false });
   }
 }

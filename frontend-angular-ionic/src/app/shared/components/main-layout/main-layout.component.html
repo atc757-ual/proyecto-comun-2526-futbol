@@ -1,220 +1,143 @@
-<!-- GLOBAL AI THINKING OVERLAY -->
-<div *ngIf="layoutService.aiLoading()" class="ai-thinking-overlay animate-fade-in">
-  <div class="ai-core-container">
-    <div class="ai-core-orb"></div>
-    <div class="ai-core-ring"></div>
-    <div class="ai-core-ring delay-1"></div>
-    <div class="ai-core-ring delay-2"></div>
-  </div>
-  <h2 class="ai-thinking-text">{{ layoutService.aiThinkingText() }}</h2>
-  <p class="ai-thinking-subtext">Procesando tus datos en servidores neurales</p>
-</div>
+<!-- === 1. SI ES APP MÓVIL: Usa el nuevo diseño nativo === -->
+<div *ngIf="platformService.isMobileApp" class="mobile-wrapper" id="mobile-main-content">
 
-<ion-menu *ngIf="!platformService.isMobileApp" contentId="main-content" class="mobile-only-menu" side="start"
-  mode="ios">
-  <ion-content class="ion-no-padding" scroll-y="false">
-    <div class="menu-wrapper">
-      <div class="menu-header d-flex ai-center jc-between px-base">
-
-        <div class="logo-container">
-          <span class="logo-text">Fútbol Club</span>
-          <div class="logo-circle-wrapper">
-            <ion-icon name="football" class="logo-icon"></ion-icon>
-          </div>
-        </div>
-        <ion-menu-toggle>
-          <ion-button fill="none" class="close-menu-btn">
-            <ion-icon slot="icon-only" size="large" name="close-outline"></ion-icon>
-          </ion-button>
-        </ion-menu-toggle>
-      </div>
-      <div class="separator my-s"></div>
-      <div class="menu-options-container">
-        <!-- SECCIÓN SUPERIOR: NAVEGACIÓN -->
-        <div class="menu-items-top">
-          <ng-container *ngFor="let p of appPages">
-            <ion-menu-toggle auto-hide="false">
-              <ion-item lines="none" class="nav-item pointer" [routerLink]="p.url"
-                [class.active-item]="isTabActive(p.url)">
-                <ion-icon slot="start" [name]="p.icon"></ion-icon>
-                <ion-label>{{ p.title }}</ion-label>
-              </ion-item>
-            </ion-menu-toggle>
-          </ng-container>
-        </div>
-      </div>
-      <!-- ESPACIADOR (Empuja lo de abajo hacia el final) -->
-      <div class="menu-spacer"></div>
-      <div class="separator my-s"></div>
-      <!-- SECCIÓN INFERIOR: CUENTA -->
-      <div class="menu-items-bottom">
-        <ion-menu-toggle auto-hide="false">
-          <ion-item lines="none" class="nav-item profile-item pointer " routerLink="/profile"
-            routerLinkActive="active-item">
-            <ion-icon color="primary" slot="start" name="person-outline"></ion-icon>
-            <ion-label class="text-primary">Mi Perfil</ion-label>
-          </ion-item>
-        </ion-menu-toggle>
-        <ion-menu-toggle auto-hide="false">
-          <ion-item lines="none" class="nav-item logout-item pointer" (click)="logout()">
-            <ion-icon slot="start" name="log-out-outline"></ion-icon>
-            <ion-label>Cerrar Sesión</ion-label>
-          </ion-item>
-        </ion-menu-toggle>
-      </div>
-
-    </div>
-  </ion-content>
-</ion-menu>
-
-<div class="main-wrapper" id="main-content">
-  <!-- HEADER PREMIUM (DOS FILAS) -->
-  <header class="main-header" [class.no-border]="layoutService.showHero()">
-    <!-- FILA 1: Top Branding & Actions -->
-    <div class="top-header-row">
-      <div class="main-content header">
-        <div class="header-left">
-          <!-- Botón Menú (Hamburguesa) - FUERA del logo para que no navegue solo -->
-          <ion-menu-toggle *ngIf="platformService.isWebMobile">
-            <ion-icon name="menu-outline" class="burger-icon hide-on-desktop clickable mr-s"></ion-icon>
+  <!-- NATIVE-LIKE MOBILE HEADER -->
+  <ion-header mode="md" class="mobile-header ion-no-border">
+    <ion-toolbar class="mobile-toolbar content-container">
+      <ion-buttons slot="start">
+        <ng-container *ngIf="isCurrentHome(); else showBack">
+          <ion-menu-toggle>
+            <ion-button class="menu-btn-minimal">
+              <ion-icon slot="icon-only" name="menu-outline"></ion-icon>
+            </ion-button>
           </ion-menu-toggle>
+        </ng-container>
+        <ng-template #showBack>
+          <button (click)="goBack()" class="back-btn-minimal" aria-label="Volver atrás">
+            <ion-icon name="arrow-back"></ion-icon>
+          </button>
+        </ng-template>
+      </ion-buttons>
 
-          <!---puedes poner aqui back button-->
-          <!-- Botón de atrás personalizado -->
-          <ion-back-button *ngIf="platformService.isMobileApp && !layoutService.isHome()" defaultHref="/home" text=""
-            icon="arrow-back" class="back-link-minimal hide-on-desktop">
-          </ion-back-button>
-
-          <div *ngIf="platformService.isDesktop  || (platformService.isMobileApp && layoutService.isHome())"
-            class="logo-box clickable" routerLink="/home">
-            <div class="d-flex gap-s ai-center">
-              <span class="logo-ball-blue">
-                <ion-icon name="football"></ion-icon>
-              </span>
-              <span class="main-logo-text">Fútbol Club</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Balón Azul Centrado -->
-        <div *ngIf="platformService.isWebMobile || (!layoutService.isHome() && platformService.isMobileApp)"
-          class="header-center-icon hide-on-desktop">
-          <div routerLink="/home" class="central-ball-wrapper">
+      <ion-title class="mobile-title">
+        <div class="logo-box clickable" [class.centered]="!isCurrentHome()">
+          <div class="logo-ball-blue">
             <ion-icon name="football"></ion-icon>
           </div>
-          <ion-label class="central-text-wrapper">Fútbol Club</ion-label>
+          <span class="main-logo-text">Fútbol Club</span>
         </div>
+      </ion-title>
 
-        <div class="header-right">
-          <div *ngIf="!platformService.isWebMobile" class="auth-actions">
-            <a class="auth-btn clickable" routerLink="/profile">
-              <ion-icon name="person-circle-outline"></ion-icon>
-              <span class="hide-on-phone">Mi Perfil</span>
-            </a>
-            <a class="auth-btn logout clickable" (click)="logout()">
-              <ion-icon name="log-out-outline"></ion-icon>
-              <span class="hide-on-phone">Cerrar Sesión</span>
-            </a>
-          </div>
-        </div>
-      </div>
+      <ion-buttons class="auth-actions" slot="end">
+        <a routerLink="/profile" class="auth-btn clickable">
+          <ion-icon name="person-circle-outline" color="primary"></ion-icon>
+        </a>
+        <a (click)="logout()" class="auth-btn clickable">
+          <ion-icon name="log-out-outline" color="primary"></ion-icon>
+        </a>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <!-- CONTENT -->
+  <div class="layout-router-container pb-xl">
+    <ion-router-outlet [animated]="false"></ion-router-outlet>
+  </div>
+
+  <!-- PESTAÑAS MÓVILES -->
+  <app-layout-tabs [appPages]="appPages"></app-layout-tabs>
+</div>
+
+<!-- === 2. SI ES WEB O ESCRITORIO: Usa tu diseño actual === -->
+<ng-container *ngIf="!platformService.isMobileApp">
+  <!-- MENU LATERAL (Renderiza el menú en escritorio) -->
+  <app-layout-navigation [appPages]="appPages" (logoutAction)="logout()"></app-layout-navigation>
+
+  <!-- GLOBAL AI THINKING OVERLAY -->
+  <div *ngIf="layoutService.aiLoading()" class="ai-thinking-overlay animate-fade-in">
+    <div class="ai-core-container">
+      <div class="ai-core-orb"></div>
+      <div class="ai-core-ring"></div>
+      <div class="ai-core-ring delay-1"></div>
+      <div class="ai-core-ring delay-2"></div>
     </div>
+    <h2 class="ai-thinking-text">{{ layoutService.aiThinkingText() }}</h2>
+    <p class="ai-thinking-subtext">Procesando tus datos en servidores neurales</p>
+  </div>
 
-    <!-- FILA 2: Navegación Central (Solo en Desktop) -->
-    <nav *ngIf="platformService.isDesktop" class="nav-header-row">
-      <div class="main-content content">
-        <ul class="nav-links-centered">
-          <ng-container *ngFor="let p of appPages">
-            <li
-              [routerLink]="p.url" [class.active]="isTabActive(p.url)" [class.nav-item-ai]="p.title === 'Fútbol AI'">
-              <ion-icon *ngIf="p.icon !== 'home' && p.icon !== 'people' && p.icon !== 'cart' && p.icon !== 'newspaper'"
-                [name]="p.icon" class="nav-icon-mini"></ion-icon>
-              {{ p.title }}
-            </li>
-          </ng-container>
-        </ul>
-      </div>
-    </nav>
-  </header>
+  <div class="main-wrapper" id="main-content">
 
-  <!-- MAIN CONTENT -->
-  <ion-content class="main-main-bg" [scrollY]="true">
+    <!-- DESKTOP TOP HEADER -->
+    <header class="main-header" [class.no-border]="layoutService.showHero()">
+      <!-- FILA 1: Top Branding & Actions -->
+      <div class="top-header-row">
+        <div class="main-content header">
+          <div class="header-left">
+            <!-- Botón Menú (Hamburguesa) -->
+            <ion-menu-toggle *ngIf="platformService.isWebMobile">
+              <ion-icon name="menu-outline"
+                class="burger-icon hide-on-desktop clickable mr-s menu-btn-minimal"></ion-icon>
+            </ion-menu-toggle>
 
-    <!-- SECCIÓN HERO FULL WIDTH (Dinámica con Signals) -->
-    <section>
-      <div>
-        <div *ngIf="layoutService.showHero()" class="layout-hero-banner">
-          <div class="main-content">
-            <h1 class="hero-title">{{ layoutService.title() }}</h1>
-            <p class="hero-subtitle" *ngIf="layoutService.subtitle()">{{ layoutService.subtitle() }}</p>
+            <div *ngIf="platformService.isDesktop  || (platformService.isMobileApp && layoutService.isHome())"
+              class="logo-box clickable" routerLink="/home">
+              <div class="d-flex gap-s ai-center">
+                <span class="logo-ball-blue">
+                  <ion-icon name="football"></ion-icon>
+                </span>
+                <span class="main-logo-text">Fútbol Club</span>
+              </div>
+            </div>
           </div>
-        </div> <!-- BREADCRUMBS CENTRALIZADOS -->
-        <div *ngIf="!platformService.isMobileApp && layoutService.breadcrumbs().length > 0"
-          class="layout-hero-breadcrumbs">
-          <div class="main-content">
-            <ion-breadcrumbs>
-              <ion-breadcrumb *ngFor="let item of layoutService.breadcrumbs(); let last = last"
-                [routerLink]="(item.url === '/login' || (item.url === '/home' && !authService.currentUser())) ? null : (item.url || null)" 
-                [routerDirection]="item.url === '/login' ? 'root' : 'back'" 
-                (click)="onBreadcrumbClick($event, item)"
-                [class.active-breadcrumb]="last" [class.has-url]="!!item.url">
-                <ion-icon *ngIf="item.icon" slot="start" [name]="item.icon"></ion-icon>
-                {{ item.label }}
-                <span slot="separator" class="fs-14 text-neutral-4">/</span>
-              </ion-breadcrumb>
-            </ion-breadcrumbs>
-          </div>
-        </div>
-      </div>
-    </section>
-    <div class="main-content content">
-      <router-outlet></router-outlet>
-    </div>
 
-    <!-- DESKTOP FOOTER (Se ve en Web, incluso móvil) -->
-    <footer *ngIf="!platformService.isMobileApp" class="main-footer-gray">
-      <div class="main-content footer">
-        <div class="footer-slim-content">
-          <div class="footer-left">
-            <span class="copyright-text fs-14 text-neutral-7">© 2026 Fútbol Club. By Alex Taquila.</span>
+          <div class="header-center">
+            <!-- Balón Azul Centrado -->
+            <div *ngIf="platformService.isWebMobile || (!layoutService.isHome() && platformService.isMobileApp)"
+              class="header-center-icon hide-on-desktop">
+              <div routerLink="/home" class="central-ball-wrapper">
+                <ion-icon name="football"></ion-icon>
+              </div>
+              <ion-label class="central-text-wrapper">Fútbol Club</ion-label>
+            </div>
           </div>
-          <div class="footer-right">
-            <div class="footer-socials">
-              <span class="fs-14 text-neutral-7 hide-on-phone">Sígueme en:</span>
-              <a href="https://www.linkedin.com/in/alextaquilacamasca" target="_blank" class="social-icon">
-                <ion-icon name="logo-linkedin"></ion-icon>
+
+          <div class="header-right" slot="end">
+            <div class="auth-actions">
+              <a class="auth-btn clickable" routerLink="/profile">
+                <ion-icon name="person-circle-outline"></ion-icon>
+                <span class="ml-xs hide-on-phone">Mi Perfil</span>
               </a>
-              <a href="https://github.com/atc757-ual" target="_blank" class="social-icon">
-                <ion-icon name="logo-github"></ion-icon>
+              <a class="auth-btn logout clickable" (click)="logout()">
+                <ion-icon name="log-out-outline"></ion-icon>
+                <span class="ml-xs hide-on-phone">Cerrar Sesión</span>
               </a>
             </div>
           </div>
+
         </div>
       </div>
-    </footer>
-  </ion-content>
 
-  <!-- MOBILE BOTTOM BAR (Solo se ve en App Móvil) -->
-  <ion-footer *ngIf="platformService.isMobileApp" class="hide-on-desktop main-app-footer ion-no-border">
-    <ion-tab-bar slot="bottom" class="tab-bar-clean">
+      <!-- FILA 2: Navegación Central (Solo en Desktop) -->
+      <nav *ngIf="platformService.isDesktop" class="nav-header-row">
+        <div class="main-content content">
+          <ul class="nav-links-centered">
+            <ng-container *ngFor="let p of appPages">
+              <li [routerLink]="p.url" [class.active]="isTabActive(p.url)"
+                [class.nav-item-ai]="p.title === 'Fútbol AI'">
+                <ion-icon
+                  *ngIf="p.icon !== 'home' && p.icon !== 'people' && p.icon !== 'cart' && p.icon !== 'newspaper'"
+                  [name]="p.icon" class="nav-icon-mini"></ion-icon>
+                {{ p.title }}
+              </li>
+            </ng-container>
+          </ul>
+        </div>
+      </nav>
+    </header>
 
-      <ng-container *ngFor="let p of appPages; let i = index">
-        <ion-tab-button
-          [tab]="p.title" [routerLink]="p.url" [class.tab-selected]="isTabActive(p.url)"
-          [class.ai-tab-special]="i === 2">
-
-          <!-- Icono normal para todos menos el tercero -->
-          <ion-icon *ngIf="i !== 2" [name]="p.icon"></ion-icon>
-
-          <!-- Estructura especial para el botón central de IA -->
-          <div *ngIf="i === 2" class="ai-icon-circle">
-            <ion-icon [name]="p.icon"></ion-icon>
-          </div>
-
-          <ion-label>{{ p.title }}</ion-label>
-        </ion-tab-button>
-      </ng-container>
-
-    </ion-tab-bar>
-  </ion-footer>
-</div>
+    <!-- MAIN CONTENT -->
+    <div class="layout-router-container pb-xl">
+      <ion-router-outlet [animated]="false"></ion-router-outlet>
+    </div>
+  </div>
+</ng-container>

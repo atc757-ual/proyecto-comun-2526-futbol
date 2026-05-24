@@ -93,9 +93,7 @@ const searchTSDBLeagues = async (req, res) => {
 
 const getTSDBLiveScores = async (req, res) => {
     try {
-        console.log('[BACKEND-DEBUG] Petición Livescore recibida');
         const results = await tsdbService.getLiveScores('soccer');
-        console.log(`[BACKEND-DEBUG] Livescore Results: ${results?.length || 0} encontrados`);
         return sendApiResult(res, 200, "Live scores recuperados", results);
     } catch (error) {
         return sendApiResult(res, 500, "Error TSDB: " + error.message);
@@ -145,7 +143,6 @@ const getTSDBPlayerMilestones = async (req, res) => {
 const getTSDBTVByCountry = async (req, res) => {
     try {
         const { country } = req.params;
-        console.log(`[BACKEND-DEBUG] Petición TV por País: ${country}`);
         const results = await tsdbService.getTVByCountry(country || 'Spain');
         return sendApiResult(res, 200, "Eventos de TV por país recuperados", results);
     } catch (error) {

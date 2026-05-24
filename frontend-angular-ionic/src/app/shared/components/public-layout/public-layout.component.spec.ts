@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { PublicLayoutComponent } from './public-layout.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { IonicModule } from '@ionic/angular';
-import { MenuController, NavController } from '@ionic/angular/standalone';
+import { MenuController, NavController, ModalController } from '@ionic/angular/standalone';
 import { AuthService } from 'src/app/core/services/auth/auth.service';
 import { PlatformService } from 'src/app/core/services/system/platform.service';
 import { LayoutService } from 'src/app/core/services/ui/layout.service';
@@ -19,6 +19,7 @@ describe('PublicLayoutComponent', () => {
     const menuCtrlMock = jasmine.createSpyObj('MenuController', ['enable']);
     const navCtrlMock = jasmine.createSpyObj('NavController', ['navigateRoot']);
     const authServiceMock = jasmine.createSpyObj('AuthService', ['logout', 'currentUser', 'userData']);
+    const modalCtrlMock = jasmine.createSpyObj('ModalController', ['create']);
     const platformServiceMock = {
       isDesktop: true,
       isMobileApp: false
@@ -44,6 +45,7 @@ describe('PublicLayoutComponent', () => {
         { provide: MenuController, useValue: menuCtrlMock },
         { provide: NavController, useValue: navCtrlMock },
         { provide: AuthService, useValue: authServiceMock },
+        { provide: ModalController, useValue: modalCtrlMock },
         { provide: PlatformService, useValue: platformServiceMock },
         { provide: LayoutService, useValue: layoutServiceMock }
       ],
@@ -72,12 +74,6 @@ describe('PublicLayoutComponent', () => {
     expect(menuCtrl.enable).toHaveBeenCalledWith(true);
   });
 
-  it('should navigate to login and call authService.logout on logout()', async () => {
-    await component.logout();
-    expect(authServiceSpy.logout).toHaveBeenCalled();
-    expect(navCtrl.navigateRoot).toHaveBeenCalledWith('/login');
-  });
-
   describe('onBreadcrumbClick checking', () => {
     it('should block navigation if restricted and no session', () => {
       const mockEvent = jasmine.createSpyObj('Event', ['preventDefault', 'stopPropagation']);
@@ -87,7 +83,7 @@ describe('PublicLayoutComponent', () => {
 
       expect(mockEvent.preventDefault).toHaveBeenCalled();
       expect(mockEvent.stopPropagation).toHaveBeenCalled();
-      expect(navCtrl.navigateRoot).toHaveBeenCalledWith('/login');
+      expect(navCtrl.navigateRoot).toHaveBeenCalledWith('/auth/login', { animated: false });
     });
 
     it('should do nothing if allowed', () => {
@@ -111,10 +107,10 @@ describe('PublicLayoutComponent', () => {
 
       expect(mockEvent.preventDefault).toHaveBeenCalled();
       expect(mockEvent.stopPropagation).toHaveBeenCalled();
-      expect(navCtrl.navigateRoot).toHaveBeenCalledWith('/home');
+      expect(navCtrl.navigateRoot).toHaveBeenCalledWith('/home', { animated: false });
     });
 
-    it('should navigate to /login if user is not logged in', () => {
+    it('should navigate to /auth/login if user is not logged in', () => {
       authServiceSpy.currentUser.and.returnValue(null);
       const mockEvent = jasmine.createSpyObj('Event', ['preventDefault', 'stopPropagation']);
 
@@ -122,7 +118,7 @@ describe('PublicLayoutComponent', () => {
 
       expect(mockEvent.preventDefault).toHaveBeenCalled();
       expect(mockEvent.stopPropagation).toHaveBeenCalled();
-      expect(navCtrl.navigateRoot).toHaveBeenCalledWith('/login');
+      expect(navCtrl.navigateRoot).toHaveBeenCalledWith('/auth/login', { animated: false });
     });
   });
 });

@@ -2,7 +2,7 @@
 
 .status-container {
   border: 1px solid var(--ion-color-step-100);
-  border-radius: 12px;
+  border-radius: var(--border-radius-soft);
   padding: 4px 8px;
   background: rgba(var(--ion-color-primary-rgb), 0.05);
 }
@@ -20,7 +20,7 @@ ion-textarea[name="content"] {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
-  border-radius: 16px;
+  border-radius: var(--border-radius-soft);
   overflow: hidden;
   box-shadow: var(--shadow-md);
   background: var(--color-neutral-1);
@@ -72,9 +72,9 @@ ion-textarea[name="content"] {
 
 .image-upload-area {
   width: 100%;
-  border: 2px dashed var(--color-neutral-3);
-  border-radius: 16px;
-  padding: 16px;
+  border: 1px solid var(--color-neutral-2);
+  border-radius: var(--border-radius-soft);
+  padding: var(--space-base);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -208,7 +208,7 @@ ion-textarea[name="content"] {
     font-size: var(--fs-13, 13px);
     padding: 2px var(--space-s, 8px);
     border: 1px solid var(--color-primary);
-    border-radius: var(--border-radius-base, 8px);
+    border-radius: var(--border-radius-soft, 8px);
     transition: all var(--transition-smooth);
 
     &:hover {

@@ -11,7 +11,7 @@ import {
   IonCardHeader, IonAvatar,
   IonSpinner, NavController, LoadingController,
   IonSegment, IonSegmentButton, AlertController, IonSearchbar,
-  IonCheckbox, IonList, IonBadge, IonImg, IonTextarea, ModalController, IonModal
+  IonCheckbox, IonList, IonBadge, IonImg, IonTextarea, ModalController, IonModal, IonContent
 } from '@ionic/angular/standalone';
 import { ToastService } from '@core/services/ui/toast.service';
 import { addIcons } from 'ionicons';
@@ -44,6 +44,8 @@ import { ConfettiService } from '@core/services/ui/confetti.service';
 import { AuthService } from '@core/services/auth/auth.service';
 import { PermissionModalComponent } from 'src/app/shared/components/permission-modal/permission-modal.component';
 import { GpsPermissionCardComponent } from 'src/app/shared/components/gps-permission-card/gps-permission-card.component';
+import { PageHeaderComponent } from 'src/app/shared/components/page-header/page-header.component';
+import { PageFooterComponent } from 'src/app/shared/components/page-footer/page-footer.component';
 
 @Component({
   selector: 'app-add-edit-player',
@@ -55,8 +57,8 @@ import { GpsPermissionCardComponent } from 'src/app/shared/components/gps-permis
     IonItem, IonLabel, IonInput, IonSelect, IonSelectOption, IonButton, IonIcon,
     IonCard, IonCardContent, IonCardHeader, IonAvatar, IonSpinner,
     IonSegment, IonSegmentButton, IonSearchbar, IonCheckbox,
-    IonList, IonBadge, IonImg, IonTextarea, IonModal,
-    GpsPermissionCardComponent
+    IonList, IonBadge, IonImg, IonTextarea, IonModal, IonContent,
+    GpsPermissionCardComponent, PageHeaderComponent, PageFooterComponent
   ]
 })
 export class AddEditPlayerPage implements OnInit, OnDestroy {
@@ -77,7 +79,10 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private modalCtrl = inject(ModalController);
   private sanitizer = inject(DomSanitizer);
-  private activePermissionModal: any = null;
+  public activePermissionModal: any = null;
+  public pageTitle: string = '';
+  public pageSubtitle: string = '';
+  public breadcrumbs: any[] = [];
 
   getSafeUrl(url: string | null | undefined): any {
     if (!url) return '';
@@ -346,31 +351,25 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     this.playerId = this.route.snapshot.paramMap.get('id');
     if (this.playerId) {
       this.isEditMode = true;
-      this.layoutService.setHeader({
-        title: 'Editar jugador',
-        subtitle: 'Edita la informaciÃƒÆ’Ã‚Â³n de tu jugador',
-        showHero: true
-      });
+      this.pageTitle = 'Editar jugador';
+      this.pageSubtitle = 'Edita la información de tu jugador';
       this.loadPlayer(this.playerId);
-      this.entryMode = 'manual'; // En ediciÃƒÆ’Ã‚Â³n siempre manual
+      this.entryMode = 'manual'; // En edicion siempre manual
     } else {
-      this.layoutService.setHeader({
-        title: 'Nuevo jugador',
-        subtitle: 'AÃƒÆ’Ã‚Â±ade un nuevo jugador a tu base de datos',
-        showHero: true
-      });
+      this.pageTitle = 'Nuevo jugador';
+      this.pageSubtitle = 'Añade un nuevo jugador a tu base de datos';
     }
 
-    this.layoutService.setBreadcrumbs([
+    this.breadcrumbs = [
       { label: '', url: '/home', icon: 'home-outline' },
       { label: 'Jugadores', url: '/players' },
       { label: this.playerId ? 'Editar Jugador' : 'Nuevo Jugador', url: '' }
-    ]);
+    ];
 
     // Inicializar previsualizaciones si ya hay datos
     this.syncPreviews();
 
-    // Si ya tenemos permisos, capturamos ubicaciÃƒÆ’Ã‚Â³n automÃƒÆ’Ã‚Â¡ticamente. Si no, abrimos el onboarding explicativo.
+    // Si ya tenemos permisos, capturamos ubicación automáticamente. Si no, abrimos el onboarding explicativo.
     Promise.all([
       this.checkGeoPermission(),
       this.checkCameraPermission()
@@ -444,7 +443,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   loadLocalPlayers() {
     this.playerService.getPlayers().subscribe({
       next: (data) => this.localPlayers = data,
-      error: () => console.warn('No se pudieron cargar los jugadores locales para comparaciÃƒÆ’Ã‚Â³n')
+      error: () => console.warn('No se pudieron cargar los jugadores locales para comparación')
     });
   }
 
@@ -544,7 +543,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     try {
       this.hasCameraPermission = await this.cameraPlugin.isCameraPermissionGranted();
     } catch (e) {
-      
+
     }
   }
 
@@ -582,10 +581,10 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
           this.ngZone.run(async () => {
             this.hasGeoPermission = finalStatus.state === 'granted';
             this.isCapturingLocation = false;
-              if (this.hasGeoPermission) {
-                this.showToast('Ãƒâ€šÃ‚Â¡Permisos de ubicaciÃƒÆ’Ã‚Â³n activos!', 'success');
-                await this.captureLocation();
-              }
+            if (this.hasGeoPermission) {
+              this.showToast('¡Permisos de ubicación activos!', 'success');
+              await this.captureLocation();
+            }
             this.cdr.detectChanges();
           });
           return;
@@ -601,7 +600,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
           this.ngZone.run(async () => {
             this.hasGeoPermission = true;
             this.isCapturingLocation = false;
-            this.showToast('Ãƒâ€šÃ‚Â¡Permisos de ubicaciÃƒÆ’Ã‚Â³n activos!', 'success');
+            this.showToast('Permisos de ubicación activos!', 'success');
             await this.captureLocation();
             this.cdr.detectChanges();
           });
@@ -736,23 +735,23 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
 
   async toggleApiSelection(apiPlayer: any) {
     if (!this.isSelected(apiPlayer) && this.selectedApiPlayers.length >= 11) {
-      this.showToast('Has alcanzado el lÃƒÆ’Ã‚Â­mite de 11 cracks', 'warning');
+      this.showToast('Has alcanzado el limite de 11 jugadores', 'warning');
       return;
     }
 
     const isAlreadySelected = this.isSelected(apiPlayer);
 
     if (isAlreadySelected) {
-      // Quitar de la selecciÃƒÆ’Ã‚Â³n filtrando por ID
+      // Quitar de la selección filtrando por ID
       this.selectedApiPlayers = this.selectedApiPlayers.filter(p => p.externalId !== apiPlayer.externalId);
     } else {
-      // LÃƒÆ’Ã‚ÂMITE DE 11 JUGADORES
+      // LIMITE DE 11 JUGADORES
       if (this.selectedApiPlayers.length >= 11) {
-        this.showToast('Solo puedes aÃƒÆ’Ã‚Â±adir hasta 11 cracks a la vez', 'warning');
+        this.showToast('Solo puedes añadir hasta 11 jugadores a la vez', 'warning');
         return;
       }
 
-      // AÃƒÆ’Ã‚Â±adir a la selecciÃƒÆ’Ã‚Â³n
+      // Añadir a la selección
       this.selectedApiPlayers = [...this.selectedApiPlayers, apiPlayer];
 
       // Si no tiene los detalles aÃƒÆ’Ã‚Âºn, los cargamos en segundo plano
@@ -816,8 +815,8 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         const count = playersToImport.length;
         this.showToast(
           count === 1
-            ? 'Se ha registrado el jugador con ÃƒÆ’Ã‚Â©xito'
-            : `Se han registrado ${count} jugadores con ÃƒÆ’Ã‚Â©xito`,
+            ? 'Se ha registrado el jugador con éxito'
+            : `Se han registrado ${count} jugadores con éxito`,
           'success'
         );
         setTimeout(() => this.navCtrl.back(), 750);
@@ -844,7 +843,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       const pos = await this.locationPlugin.getCurrentPosition({ useCache: false, enableHighAccuracy: false });
 
       if (!pos) {
-        throw new Error('No se obtuvo posiciÃƒÆ’Ã‚Â³n');
+        throw new Error('No se obtuvo posición');
       }
 
       this.player.location = {
@@ -876,7 +875,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
 
     // Inicializar el mapa
     const mapObj = await this.mapPlugin.initMap('player-map', lat, lng, 15);
-    const marker = this.mapPlugin.addMarker(lat, lng, 'UbicaciÃƒÆ’Ã‚Â³n del Scouting', true);
+    const marker = this.mapPlugin.addMarker(lat, lng, 'Ubicación del jugador', true);
 
     // Truco Leaflet: Forzar redibujo para evitar zonas grises
     setTimeout(() => {
@@ -908,7 +907,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
           this.cdr.detectChanges();
         },
         error: () => {
-          this.currentAddress = 'UbicaciÃƒÆ’Ã‚Â³n seleccionada';
+          this.currentAddress = 'Ubicación seleccionada';
           this.isRevGeocoding = false;
           this.cdr.detectChanges();
         }
@@ -940,7 +939,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   clearSelection() {
     this.selectedApiPlayers = [];
     this.cdr.detectChanges();
-    this.showToast('SelecciÃƒÆ’Ã‚Â³n limpiada', 'success');
+    this.showToast('Selección limpiada', 'success');
   }
 
   updatePlayerImage(key: string, value: string) {
@@ -1033,7 +1032,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         this.isPublishing = false;
         this.confettiService.celebrate();
         if (res && (res._id || res.id)) {
-          this.showToast(`Jugador ${this.isEditMode ? 'actualizado' : 'creado'} con ÃƒÆ’Ã‚Â©xito`, 'success');
+          this.showToast(`Jugador ${this.isEditMode ? 'actualizado' : 'creado'} con éxito`, 'success');
           setTimeout(() => this.router.navigate(['/players']), 750);
         }
       },

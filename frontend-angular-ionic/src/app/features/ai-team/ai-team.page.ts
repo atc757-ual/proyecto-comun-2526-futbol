@@ -5,12 +5,13 @@ import {
   IonButton,
   IonIcon, IonCard, IonCardContent, IonCardHeader, IonCardTitle,
   IonSpinner, IonBadge, IonList, IonItem, IonLabel,
-  IonAvatar
+  IonAvatar,
+  IonContent
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
   sparklesOutline, footballOutline, alertCircleOutline, chatbubbleEllipsesOutline,
-  personAddOutline, peopleOutline, chevronForwardOutline, personCircleOutline, star
+  personAddOutline, peopleOutline, chevronForwardOutline, personCircleOutline, star, calendarOutline
 } from 'ionicons/icons';
 import { PLAYER_SERVICE_TOKEN } from '../../core/services/players/player.service.token';
 import { LayoutService } from '../../core/services/ui/layout.service';
@@ -19,6 +20,8 @@ import { Player } from '../../core/models/player.model';
 import { AI_SERVICE_TOKEN } from '../../core/services/ai/ai.service.token';
 import { ToastService } from '../../core/services/ui/toast.service';
 import { AIAnalysisResponse } from '../../core/services/ai/ai.service.interface';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { PageFooterComponent } from '../../shared/components/page-footer/page-footer.component';
 
 @Component({
   selector: 'app-ai-team',
@@ -27,6 +30,10 @@ import { AIAnalysisResponse } from '../../core/services/ai/ai.service.interface'
   standalone: true,
   imports: [
     CommonModule, FormsModule, RouterModule,
+    IonContent, // added for ion-content usage
+    // Shared layout components
+    PageHeaderComponent,
+    PageFooterComponent,
     IonButton, IonIcon, IonCard, IonCardContent, IonCardHeader, IonCardTitle,
     IonSpinner, IonBadge, IonList, IonItem, IonLabel, IonAvatar
   ]
@@ -42,6 +49,14 @@ export class AiTeamPage implements OnInit {
   public hasPlayers = false;
   public localPlayers: Player[] = []; // Guardamos los jugadores reales para el matching
   public isLoading = true;
+  // Header bindings for app-page-header
+  public pageTitle: string = 'Fútbol AI';
+  public pageSubtitle: string = 'Deja que la inteligencia artificial analice tu plantilla';
+  public breadcrumbs = [
+    { label: '', url: '/home', icon: 'home-outline' },
+    { label: 'Fútbol AI', url: '' }
+  ];
+
 
   constructor() {
     addIcons({
@@ -53,20 +68,12 @@ export class AiTeamPage implements OnInit {
       peopleOutline,
       chevronForwardOutline,
       personCircleOutline,
-      star
+      star,
+      calendarOutline
     });
   }
 
   ngOnInit() {
-    this.layoutService.setHeader({
-      title: 'Fútbol AI',
-      subtitle: 'Deja que la inteligencia artificial analice tu plantilla',
-      showHero: true
-    });
-    this.layoutService.setBreadcrumbs([
-      { label: '', url: '/home', icon: 'home-outline' },
-      { label: 'Fútbol AI', url: '' }
-    ]);
     this.checkPlayers();
   }
 

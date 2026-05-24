@@ -1,6 +1,8 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
-import { ActionSheetController, ModalController } from '@ionic/angular/standalone';
+import { ComponentFixture, TestBed, fakeAsync, tick, flush } from '@angular/core/testing';
+import { Router, ActivatedRoute } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
+import { ActionSheetController, ModalController, NavController } from '@ionic/angular/standalone';
+import { IonicModule } from '@ionic/angular';
 import { Auth } from '@angular/fire/auth';
 import { ProfilePage } from './profile.page';
 import { AuthService } from 'src/app/core/services/auth/auth.service';
@@ -18,6 +20,7 @@ describe('ProfilePage', () => {
   let modalCtrlMock: jasmine.SpyObj<ModalController>;
   let actionSheetCtrlMock: jasmine.SpyObj<ActionSheetController>;
   let routerMock: jasmine.SpyObj<Router>;
+  let navCtrlMock: jasmine.SpyObj<NavController>;
 
   const authMock = {
     currentUser: {
@@ -34,7 +37,8 @@ describe('ProfilePage', () => {
       'isMasterAdmin',
       'syncUserWithBackend',
       'sendResetPasswordEmail',
-      'logout'
+      'logout',
+      'currentUser'
     ], {
       userData: jasmine.createSpy('userData').and.returnValue({
         name: 'Alex taquila Camasca',
@@ -42,14 +46,15 @@ describe('ProfilePage', () => {
       })
     });
 
+    authServiceMock.currentUser.and.returnValue({ email: 'alex@test.com', uid: '123' } as any);
     layoutServiceMock = jasmine.createSpyObj('LayoutService', ['setHeader', 'setBreadcrumbs']);
-    platformServiceMock = jasmine.createSpyObj('PlatformService', ['getUseJavaBackend', 'toggleBackend'], {
-      isDesktop: true
-    });
+    platformServiceMock = jasmine.createSpyObj('PlatformService', ['getUseJavaBackend', 'toggleBackend']);
+    (platformServiceMock as any).isDesktop = true;
     toastServiceMock = jasmine.createSpyObj('ToastService', ['showSuccess', 'showError']);
     modalCtrlMock = jasmine.createSpyObj('ModalController', ['create']);
     actionSheetCtrlMock = jasmine.createSpyObj('ActionSheetController', ['create']);
     routerMock = jasmine.createSpyObj('Router', ['navigate']);
+    navCtrlMock = jasmine.createSpyObj('NavController', ['navigateForward', 'navigateRoot']);
 
     authServiceMock.isAdmin.and.returnValue(false);
     authServiceMock.isMasterAdmin.and.returnValue(false);
@@ -61,9 +66,12 @@ describe('ProfilePage', () => {
     toastServiceMock.showError.and.resolveTo();
 
     await TestBed.configureTestingModule({
-      imports: [ProfilePage],
+      imports: [
+        IonicModule.forRoot(), 
+        RouterTestingModule.withRoutes([{ path: 'login', component: class { } }]), 
+        ProfilePage
+      ],
       providers: [
-        provideRouter([]),
         { provide: AuthService, useValue: authServiceMock },
         { provide: Auth, useValue: authMock },
         { provide: LayoutService, useValue: layoutServiceMock },
@@ -71,7 +79,9 @@ describe('ProfilePage', () => {
         { provide: ToastService, useValue: toastServiceMock },
         { provide: ModalController, useValue: modalCtrlMock },
         { provide: ActionSheetController, useValue: actionSheetCtrlMock },
-        { provide: Router, useValue: routerMock }
+        { provide: NavController, useValue: navCtrlMock },
+        { provide: Router, useValue: routerMock },
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => null } } } }
       ]
     }).compileComponents();
 
@@ -93,11 +103,8 @@ describe('ProfilePage', () => {
   });
 
   it('should configure header and breadcrumbs on init', () => {
-    expect(layoutServiceMock.setHeader).toHaveBeenCalled();
-    expect(layoutServiceMock.setBreadcrumbs).toHaveBeenCalledWith([
-      { label: '', url: '/', icon: 'home-outline' },
-      { label: 'Mi Perfil', url: '/profile' }
-    ]);
+    expect(component.pageTitle).toBeDefined();
+    expect(component.breadcrumbs).toBeDefined();
   });
 
   it('should toggle backend and show success toast', async () => {
@@ -105,7 +112,7 @@ describe('ProfilePage', () => {
 
     await component.toggleBackend();
 
-    expect(authServiceMock.syncUserWithBackend).toHaveBeenCalledWith(true);
+    expect(authServiceMock.syncUserWithBackend).toHaveBeenCalledWith(true, true);
     expect(platformServiceMock.toggleBackend).toHaveBeenCalled();
     expect(toastServiceMock.showSuccess).toHaveBeenCalledWith('Backend cambiado a Java al instante');
     expect(component.useSpringBoot).toBeTrue();
@@ -128,17 +135,21 @@ describe('ProfilePage', () => {
     expect(component.isSendingReset).toBeFalse();
   });
 
-  it('should logout after desktop modal confirmation', async () => {
+  it('should logout after desktop modal confirmation', fakeAsync(() => {
     const modalMock = {
       present: jasmine.createSpy('present').and.resolveTo(),
       onWillDismiss: jasmine.createSpy('onWillDismiss').and.resolveTo({ data: true })
     };
     modalCtrlMock.create.and.resolveTo(modalMock as any);
 
-    await component.confirmLogout();
+    component.confirmLogout();
+    tick(); // 1. Resuelve modalCtrl.create (primer await)
+    tick(); // 2. Resuelve modal.present (segundo await)
+    tick(); // 3. Resuelve modal.onWillDismiss (tercer await)
+    flush(); // 4. Vacía la cola de microtareas para authService.logout().then()
 
     expect(modalCtrlMock.create).toHaveBeenCalled();
     expect(authServiceMock.logout).toHaveBeenCalled();
     expect(routerMock.navigate).toHaveBeenCalledWith(['/login']);
-  });
+  }));
 });

@@ -63,6 +63,7 @@ describe("CRUD de Comentarios", () => {
 
         const response = await request(app)
             .get(`/api/players/${playerId}/comments/${commentId}`)
+            .set('Authorization', `Bearer ${adminToken}`)
             .expect(200);
             
         expect(response.body.data.content).toBe(reqAddComment.content);

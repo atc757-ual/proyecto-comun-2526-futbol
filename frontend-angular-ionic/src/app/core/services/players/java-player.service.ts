@@ -81,7 +81,7 @@ export class JavaPlayerService implements IPlayerService {
     return this.http.get<{ data: Player }>(`${this.apiUrl}/public/${id}`).pipe(
       map(res => this.mapPlayer(res.data)),
       switchMap(player => {
-        return this.http.get<{ data: any[] }>(`${environment.javaApiUrl}/comments/player/${id}`).pipe(
+        return this.http.get<{ data: any[] }>(`${environment.javaApiUrl}/comments/public/player/${id}`).pipe(
           map(commRes => {
             player.comments = commRes.data || [];
             return player;
@@ -430,7 +430,7 @@ export class JavaPlayerService implements IPlayerService {
 
   addPublicComment(playerId: string, comment: any): Observable<any> {
     const payload = { ...comment, playerId, isPublic: true };
-    return this.http.post<any>(`${environment.javaApiUrl}/comments`, payload).pipe(
+    return this.http.post<any>(`${environment.javaApiUrl}/comments/public`, payload).pipe(
       map(res => res.data)
     );
   }

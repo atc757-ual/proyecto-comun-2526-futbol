@@ -26,7 +26,7 @@ describe('BusquedaListPage Component', () => {
             getPlayers: () => of([])
           }
         },
-        { provide: AuthService, useValue: { isAdmin: () => false } },
+        { provide: AuthService, useValue: { isAdmin: () => false, currentUser: () => null, userData: () => null, firstName: () => '' } },
         { provide: LayoutService, useValue: { setHeader: () => {}, setBreadcrumbs: () => {} } },
         { provide: ToastService, useValue: { showError: () => {}, showSuccess: () => {} } },
         { provide: ConfettiService, useValue: { celebrate: () => {} } },

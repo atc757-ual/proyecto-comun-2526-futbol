@@ -12,6 +12,7 @@ export interface Player {
   position: string;
   side?: string; // Pie hábil
   image_url?: string;
+  photo?: string; // Para backend de Java
   team: string;
   secondary_team?: string;
   league?: string;

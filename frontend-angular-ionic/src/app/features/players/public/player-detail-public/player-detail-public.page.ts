@@ -5,7 +5,7 @@ import {
   IonIcon, IonCard, IonCardContent,
   IonButton, IonAvatar,
   IonSpinner, NavController, ModalController,
-  IonInput, IonTextarea
+  IonInput, IonTextarea, IonContent
 } from '@ionic/angular/standalone';
 import { RouterModule } from '@angular/router';
 import { ConfirmModalComponent } from 'src/app/shared/components/confirm-modal/confirm-modal.component';
@@ -34,6 +34,8 @@ import { PermissionModalComponent } from 'src/app/shared/components/permission-m
 import { LocationPlugin } from 'src/app/core/plugins/location-plugin';
 import { Geolocation } from '@capacitor/geolocation';
 import { register } from 'swiper/element/bundle';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { PageFooterComponent } from '../../../../shared/components/page-footer/page-footer.component';
 
 @Component({
   selector: 'app-player-detail-public',
@@ -43,7 +45,7 @@ import { register } from 'swiper/element/bundle';
   imports: [
     CommonModule, FormsModule, RouterModule,
     IonIcon, IonCard, IonCardContent, IonButton, IonAvatar,
-    IonSpinner, IonInput, IonTextarea
+    IonSpinner, IonInput, IonTextarea, PageHeaderComponent, PageFooterComponent, IonContent
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
@@ -81,7 +83,6 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
   public teamDetails: any[] = [];
   public teamInfo1: any = null;
   public teamInfo2: any = null;
-  activeSegment = 'history'; // Variable para controlar las pestañas
 
   get isOwner(): boolean {
     if (!this.player || !this.player.user_id) return false;
@@ -108,22 +109,13 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
   toggleCardView() {
     this.showCutout = !this.showCutout;
   }
+  
   public anonymousName = '';
 
-  /**
-   * Formatea el nombre del usuario (o Invitado) como: Nombre I.
-   */
-  getFormattedUserName(): string {
-    const user = this.authService.currentUser();
-    const name = user?.displayName || this.anonymousName || 'Invitado';
-    const parts = name.split(' ');
-    if (parts.length > 1) {
-      return `${parts[0]} ${parts[parts.length - 1].charAt(0)}.`;
-    }
-    return name;
+  toggleSummary() {
+    this.isSummaryExpanded = !this.isSummaryExpanded;
   }
-
-  // Estados de foco para inputs (Estilo Login)
+  
   nameFocused: boolean = false;
   commentFocused: boolean = false;
 
@@ -160,23 +152,17 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
   }
 
 
+  pageTitle = 'Detalle de Jugador';
+  pageSubtitle = 'Información básica del jugador';
+  breadcrumbs = [
+    { label: '', url: '/auth/login', icon: 'log-in-outline' },
+    { label: 'Jugadores', url: '/players-public', icon: '' },
+    { label: 'Detalle', url: '' }
+  ];
+
   async ngOnInit() {
-
-    this.layoutService.setHeader({
-      title: 'Detalle de Jugador',
-      subtitle: 'Información básica del jugador',
-      showHero: true
-    });
-
-    this.layoutService.setBreadcrumbs([
-      { label: '', url: '/login', icon: 'log-in-outline' },
-      { label: 'Jugadores', url: '/players-public', icon: '' },
-      { label: 'Detalle', url: '' }
-    ]);
-
     // Iniciar Autoplay de Stats
     this.startStatsAutoplay();
-
     // Verificar permisos de geolocalización iniciales
     this.checkGeoPermission();
   }
@@ -352,123 +338,7 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
     }
   }
 
-  // Lógica de límites dinámicos
-  get itemsLimit(): number {
-    return window.innerWidth < 768 ? 2 : 8;
-  }
 
-  async toggleFavorite(event?: MouseEvent) {
-    if (!this.player?._id) return;
-    const newStatus = !this.player.isFavorite;
-
-    // UI Optimista
-    this.player.isFavorite = newStatus;
-
-    // Si se activa, disparamos confeti dorado del servicio
-    if (newStatus) {
-      this.confettiService.goldCelebrate();
-    }
-
-    this.playerService.toggleFavorite(this.player._id, newStatus).subscribe({
-      next: () => {
-        const msg = newStatus ? 'Añadido a tus favoritos' : 'Eliminado de favoritos';
-        this.toastService.showSuccess(msg);
-      },
-      error: () => {
-        if (this.player) this.player.isFavorite = !newStatus;
-        this.toastService.showError('Error al actualizar favorito');
-      }
-    });
-  }
-
-
-  async deletePlayer() {
-    if (!this.player?._id) return;
-
-    const modal = await this.modalCtrl.create({
-      component: ConfirmModalComponent,
-      componentProps: {
-        title: '¿Eliminar de la plantilla?',
-        message: `Esta acción borrará definitivamente a ${this.player.name}.`,
-        confirmText: 'Confirmar Baja',
-        cancelText: 'Cancelar',
-        type: 'delete'
-      },
-      cssClass: 'premium-modal'
-    });
-
-    await modal.present();
-
-    const { data } = await modal.onWillDismiss();
-    if (data === true) {
-      this.playerService.deletePlayer(this.player._id!).subscribe({
-        next: () => {
-          this.toastService.showSuccess('Ficha eliminada con éxito');
-          this.navCtrl.navigateRoot('/players-public');
-        },
-        error: () => this.toastService.showError('Error al procesar la baja')
-      });
-    }
-  }
-
-  // --- CENTRO DE COMENTARIOS V2 ---
-
-  startEditing(comment: any) {
-    this.editingCommentId = comment.id || comment._id;
-    this.editingContent = comment.content;
-    this.editingRating = comment.rating;
-  }
-
-  cancelEditing() {
-    this.editingCommentId = null;
-    this.editingContent = '';
-  }
-
-  async saveCommentEdit() {
-    if (!this.player?._id || !this.editingCommentId || !this.editingContent.trim()) return;
-
-    const commentId = this.editingCommentId;
-    this.playerService.updateComment(this.player._id, commentId, {
-      content: this.editingContent,
-      rating: this.editingRating
-    }).subscribe({
-      next: () => {
-        this.toastService.showSuccess('Comentario actualizado');
-        this.editingCommentId = null;
-        this.loadPlayer(this.player!._id!);
-      },
-      error: () => this.toastService.showError('Error al actualizar')
-    });
-  }
-
-  async deleteComment(commentId: string) {
-    if (!this.player?._id) return;
-
-    const modal = await this.modalCtrl.create({
-      component: ConfirmModalComponent,
-      componentProps: {
-        title: '¿Eliminar comentario?',
-        message: 'Esta opinión se borrará permanentemente.',
-        confirmText: 'Borrar',
-        cancelText: 'Cancelar',
-        type: 'delete'
-      },
-      cssClass: 'premium-modal'
-    });
-
-    await modal.present();
-
-    const { data } = await modal.onWillDismiss();
-    if (data === true) {
-      this.playerService.deleteComment(this.player._id!, commentId).subscribe({
-        next: () => {
-          this.toastService.showSuccess('Comentario eliminado');
-          this.loadPlayer(this.player!._id!);
-        },
-        error: () => this.toastService.showError('Error al borrar')
-      });
-    }
-  }
 
   setRating(rating: number, isEditing: boolean = false) {
     if (isEditing) {
@@ -536,9 +406,6 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
     });
   }
 
-  toggleSummary() {
-    this.isSummaryExpanded = !this.isSummaryExpanded;
-  }
 
   // --- LÓGICA DE PAGINACIÓN (Estilo Players) ---
   totalPages(): number {
@@ -619,9 +486,7 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
     el.scrollLeft = this.scrollLeftStart - walk;
   }
 
-  canDeleteComment(comment: any): boolean {
-    return false; // No se permite borrar en la vista pública
-  }
+
 
   getRatingStars(rating: number = 0) {
     const stars = [];

@@ -1,0 +1,166 @@
+// MOBILE BOTTOM BAR
+.mobile-tab-footer {
+  background: transparent;
+
+  .mobile-tab-bar {
+    --background: var(--color-neutral-0);
+    --border: none;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+    height: 65px;
+    padding-bottom: env(safe-area-inset-bottom);
+
+    ion-tab-button {
+      --color: var(--color-neutral-6);
+      --color-selected: var(--color-primary);
+      font-weight: 600;
+      font-size: 0.75rem;
+      position: relative;
+
+      ion-icon {
+        font-size: var(--fs-20);
+        transition: all var(--transition-fast);
+        z-index: 1;
+      }
+
+      &.tab-selected {
+        animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: 6px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 34px;
+          height: 34px;
+          background: var(--color-tab-active-bubble);
+          border-radius: 50%;
+          z-index: 0;
+        }
+
+        &::after {
+          content: '';
+          position: absolute;
+          top: 4px;
+          left: calc(50% - 18px);
+          width: 6px;
+          height: 6px;
+          background: var(--color-tab-active-bubble-solid, #2fcbf1);
+          border-radius: 50%;
+          z-index: 0;
+        }
+
+        ion-icon {
+          color: var(--color-primary);
+          transform: translateY(-1.5px) scale(1.1);
+        }
+
+        ion-label {
+          color: var(--color-primary);
+          font-weight: var(--fw-bold);
+          z-index: 1;
+        }
+      }
+
+      ion-label {
+        margin-top: 2px;
+        z-index: 1;
+      }
+
+      &.ai-tab-special {
+        overflow: visible;
+
+        .ai-icon-circle {
+          width: 46px;
+          height: 46px;
+          background: var(--color-neutral-0);
+          border: 2px solid var(--color-primary);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          box-shadow: 0 2px 6px rgba(var(--color-primary-rgb), 0.15);
+          transition: all 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          animation: ai-pulse-glow 2.5s infinite alternate;
+
+          ion-icon {
+            color: var(--color-primary);
+            font-size: 24px;
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            transform: none;
+            z-index: 1;
+            animation: ai-sparkle 3s infinite ease-in-out;
+          }
+        }
+
+        &.tab-selected {
+          animation: none; // Sin scaleIn: el AI no rebota
+
+          &::before,
+          &::after {
+            display: none; // Sin burbuja de fondo ni punto de notificaciÃ³n
+          }
+
+          .ai-icon-circle {
+            background: linear-gradient(306deg, var(--blue-primary-100) 0%, var(--color-primary) 100%);
+            border: 2px solid transparent;
+            box-shadow:
+              0 2px 7px rgba(var(--color-primary-rgb), 0.45),
+              0 0 11px rgba(var(--color-primary-rgb), 0.3);
+            animation: ai-active-glow 2s infinite alternate;
+
+            ion-icon {
+              color: var(--color-white);
+              filter: drop-shadow(0 0 4px rgba(var(--color-primary-rgb), 0.4));
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@keyframes scaleIn {
+  0% {
+    transform: scale(0.9);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes ai-pulse-glow {
+  0% {
+    box-shadow: 0 2px 6px rgba(var(--color-primary-rgb), 0.2), 0 0 2px rgba(var(--color-primary-rgb), 0.3);
+  }
+
+  100% {
+    box-shadow: 0 2px 6px rgba(var(--color-primary-rgb), 0.3), 0 0 8px rgba(var(--color-primary-rgb), 0.6);
+  }
+}
+
+@keyframes ai-active-glow {
+  0% {
+    box-shadow: 0 3px 7px rgba(var(--color-primary-rgb), 0.3), 0 0 5px rgba(var(--color-primary-rgb), 0.2);
+  }
+
+  100% {
+    box-shadow: 0 3px 10px rgba(var(--color-primary-rgb), 0.6), 0 0 15px rgba(var(--color-primary-rgb), 0.45);
+  }
+}
+
+@keyframes ai-sparkle {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.15) rotate(5deg);
+  }
+}

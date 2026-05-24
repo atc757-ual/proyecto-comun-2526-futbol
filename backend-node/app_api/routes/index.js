@@ -351,8 +351,6 @@ router.post('/auth/remove-admin', authorizeRequest, isMaster, ctrlAuth.removeAdm
  */
 router.post('/auth/toggle-status', authorizeRequest, isMaster, ctrlAuth.toggleUserStatus);
 
-// --- SERVICIO DE CARGA (Desactivado temporalmente) ---
-// router.get('/db-load', ctrlOthers.dbLoad);
 
 /**
  * @openapi

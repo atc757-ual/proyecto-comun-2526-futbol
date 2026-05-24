@@ -23,16 +23,12 @@
 .players-grid {
   display: grid !important;
   grid-template-columns: repeat(4, 1fr) !important;
-  gap: var(--space-xs) !important;
+  gap: var(--space-s) !important;
   margin-top: var(--space-base);
   width: 100%;
 
-  @media (max-width: 1300px) {
+  @media (max-width: 1024px) {
     grid-template-columns: repeat(3, 1fr) !important;
-  }
-
-  @media (max-width: 1000px) {
-    grid-template-columns: repeat(2, 1fr) !important;
   }
 
   @media (max-width: 767px) {

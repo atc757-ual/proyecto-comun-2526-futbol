@@ -1,5 +1,5 @@
 <ion-app>
-  <ion-router-outlet></ion-router-outlet>
+  <ion-router-outlet [animated]="false"></ion-router-outlet>
 
   <!-- Splash Overlay: encima del router, se desvanece al terminar -->
   <div class="splash-overlay" [class.hidden]="!showSplash" *ngIf="showSplash">

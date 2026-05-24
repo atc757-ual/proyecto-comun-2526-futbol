@@ -1,144 +1,152 @@
-<div class="row mt-base">
-  <!-- COLUMNA 8: DETALLE -->
-  <div class="col-8 col-sm-12 pr-base px-0-sm mb-base">
-    <ion-card class="main-article" *ngIf="isLoading && !selectedNew">
-      <!-- SKELETON DETALLE -->
-      <ion-skeleton-text animated class="sk-banner"></ion-skeleton-text>
-      <div class="m-base">
-        <ion-skeleton-text animated class="sk-tag"></ion-skeleton-text>
-        <ion-skeleton-text animated class="sk-title mt-base"></ion-skeleton-text>
-        <div class="m-x-base mt-base">
-          <ion-skeleton-text animated class="sk-line"></ion-skeleton-text>
-          <ion-skeleton-text animated class="sk-line"></ion-skeleton-text>
-          <ion-skeleton-text animated class="sk-line"></ion-skeleton-text>
-          <ion-skeleton-text animated class="sk-line"></ion-skeleton-text>
-          <ion-skeleton-text animated class="sk-line short"></ion-skeleton-text>
-        </div>
-      </div>
-    </ion-card>
-    <!-- DETALLE REAL -->
+<ion-content class="flex-content">
+  <app-page-header [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle" [breadcrumbs]="breadcrumbs"></app-page-header>
+  <div class="content-container">
+    <div class="row">
+      <!-- COLUMNA 8: DETALLE -->
+      <div class="col-8 col-sm-12 pr-base pr-sm-0">
+        <ion-card class="main-article" *ngIf="isLoading && !selectedNew">
+          <!-- SKELETON DETALLE -->
+          <ion-skeleton-text animated class="sk-banner"></ion-skeleton-text>
+          <div class="m-base">
+            <ion-skeleton-text animated class="sk-tag"></ion-skeleton-text>
+            <ion-skeleton-text animated class="sk-title mt-base"></ion-skeleton-text>
+            <div class="m-x-base mt-base">
+              <ion-skeleton-text animated class="sk-line"></ion-skeleton-text>
+              <ion-skeleton-text animated class="sk-line"></ion-skeleton-text>
+              <ion-skeleton-text animated class="sk-line"></ion-skeleton-text>
+              <ion-skeleton-text animated class="sk-line"></ion-skeleton-text>
+              <ion-skeleton-text animated class="sk-line short"></ion-skeleton-text>
+            </div>
+          </div>
+        </ion-card>
+        <!-- DETALLE REAL -->
 
-    <ion-card class="main-article" *ngIf="selectedNew">
-      <div class="article-image-container">
-        <img [src]="selectedNew.imageUrl || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiB2aWV3Qm94PSIwIDAgODAwIDgwMCI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI4MDAiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgZm9udC1mYW1pbHk9InN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtc2l6ZT0iODAiIGZpbGw9IiM0NzU1NjkiPjQwNDwvdGV4dD48L3N2Zz4='"
-          onerror="this.onerror=null;this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiB2aWV3Qm94PSIwIDAgODAwIDgwMCI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI4MDAiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgZm9udC1mYW1pbHk9InN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtc2l6ZT0iODAiIGZpbGw9IiM0NzU1NjkiPjQwNDwvdGV4dD48L3N2Zz4='">
-        <div class="article-badge" [style.background]="getCategoryColor(selectedNew.category)">
-          {{ selectedNew.category }}
-        </div>
-      </div>
-
-      <ion-card-content>
-        <div class="article-content">
-          <!-- CABECERA EDITORIAL -->
-          <div *ngIf="selectedNew.tags.length > 0">
-            <span class="news-tag" *ngFor="let tag of selectedNew.tags">#{{ tag }}</span>
+        <ion-card class="main-article" *ngIf="selectedNew">
+          <div class="article-image-container">
+            <img
+              [src]="selectedNew.imageUrl || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiB2aWV3Qm94PSIwIDAgODAwIDgwMCI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI4MDAiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgZm9udC1mYW1pbHk9InN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtc2l6ZT0iODAiIGZpbGw9IiM0NzU1NjkiPjQwNDwvdGV4dD48L3N2Zz4='"
+              onerror="this.onerror=null;this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiB2aWV3Qm94PSIwIDAgODAwIDgwMCI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI4MDAiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgZm9udC1mYW1pbHk9InN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtc2l6ZT0iODAiIGZpbGw9IiM0NzU1NjkiPjQwNDwvdGV4dD48L3N2Zz4='">
+            <div class="article-badge" [style.background]="getCategoryColor(selectedNew.category)">
+              {{ selectedNew.category }}
+            </div>
           </div>
 
-          <h1 class="article-title">{{ selectedNew.title }}</h1>
+          <ion-card-content>
+            <div class="article-content">
+              <!-- CABECERA EDITORIAL -->
+              <div *ngIf="selectedNew.tags.length > 0">
+                <span class="news-tag" *ngFor="let tag of selectedNew.tags">#{{ tag }}</span>
+              </div>
 
-          <!-- METADATOS: Justo bajo el título -->
-          <div class="article-meta">
-            <ion-icon name="person-circle-outline" class="mr-xs text-primary fs-18"></ion-icon>
-            <span class="article-author">{{ selectedNew.author }}</span>
-            <span class="article-dot">•</span>
-            <ion-icon name="calendar-outline" class="mr-xs text-neutral-5 fs-16"></ion-icon>
-            <span class="article-date">{{ selectedNew.date | date:'dd/MM/yyyy' }}</span>
+              <h1 class="article-title">{{ selectedNew.title }}</h1>
+
+              <!-- METADATOS: Justo bajo el título -->
+              <div class="article-meta">
+                <ion-icon name="person-circle-outline" class="mr-xs text-primary fs-18"></ion-icon>
+                <span class="article-author">{{ selectedNew.author }}</span>
+                <span class="article-dot">•</span>
+                <ion-icon name="calendar-outline" class="mr-xs text-neutral-5 fs-16"></ion-icon>
+                <span class="article-date">{{ selectedNew.date | date:'dd/MM/yyyy' }}</span>
+              </div>
+
+              <!-- EXTRACTO (Lid) -->
+              <p class="article-excerpt" *ngIf="selectedNew.summary">
+                {{ selectedNew.summary }}
+              </p>
+
+              <!-- CUERPO DE LA NOTICIA -->
+              <div class="article-full-text">
+                {{ selectedNew.content }}
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- ERROR 404 (Independiente) -->
+        <ion-card class=" main-article empty-container" *ngIf="!isLoading && !selectedNew">
+          <div class=" d-flex ai-center jc-center fl-column gap-s text-center">
+            <h1 class="f-bold text-neutral-3 fs-40 fs-sm-36">404</h1>
+            <h2 class="f-semibold text-neutral-8 fs-22 fs-sm-18">No se ha encontrado la noticia</h2>
+            <p class="text-neutral-6 fs-16 fs-sm-14">La noticia que buscas no existe o ha sido eliminada.</p>
           </div>
-
-          <!-- EXTRACTO (Lid) -->
-          <p class="article-excerpt" *ngIf="selectedNew.summary">
-            {{ selectedNew.summary }}
-          </p>
-
-          <!-- CUERPO DE LA NOTICIA -->
-          <div class="article-full-text">
-            {{ selectedNew.content }}
-          </div>
-        </div>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- ERROR 404 (Independiente) -->
-    <ion-card class=" main-article empty-container" *ngIf="!isLoading && !selectedNew">
-      <div class=" d-flex ai-center jc-center fl-column gap-s text-center">
-        <h1 class="f-bold text-neutral-3 fs-40 fs-sm-36">404</h1>
-        <h2 class="f-semibold text-neutral-8 fs-22 fs-sm-18">No se ha encontrado la noticia</h2>
-        <p class="text-neutral-6 fs-16 fs-sm-14">La noticia que buscas no existe o ha sido eliminada.</p>
+        </ion-card>
       </div>
-    </ion-card>
+
+      <!-- COLUMNA 4: LATERAL -->
+      <div class="col-4 col-sm-12">
+        <ion-list *ngIf="isLoading">
+          <div *ngFor="let i of [1,2]" class="d-flex gap-base h-100px">
+            <ion-skeleton-text animated class="sk-thumb"></ion-skeleton-text>
+            <div class="flex-1 py-s">
+              <ion-skeleton-text animated style="width: 85%; height: 16px; margin-bottom: 8px;"></ion-skeleton-text>
+              <ion-skeleton-text animated style="width: 70%; height: 14px;"></ion-skeleton-text>
+            </div>
+          </div>
+        </ion-list>
+
+        <!-- ADMIN CARD -->
+        <ion-card *ngIf="isAdmin" class="mb-base">
+          <ion-card-header>
+            <ion-card-title class="fs-18 f-bold">Control de Publicación</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <!-- Widget de Estado -->
+            <div class="status-widget mb-base" [class.is-published]="selectedNew?.isActive">
+              <div class="status-header">
+                <span class="status-tag">
+                  <ion-icon [name]="selectedNew?.isActive ? 'eye-outline' : 'eye-off-outline'"></ion-icon>
+                  {{ selectedNew?.isActive ? 'PUBLICADO' : 'BORRADOR' }}
+                </span>
+                <ion-toggle mode="ios" [checked]="selectedNew?.isActive" (ionChange)="toggleVisibility()"
+                  [disabled]="isUpdatingStatus">
+                </ion-toggle>
+              </div>
+              <p class="status-desc">
+                {{ selectedNew?.isActive ? 'Noticia visible para todos los usuarios.' : 'La noticia no es visible para
+                el
+                público.' }}
+              </p>
+            </div>
+
+            <div class="separator my-s"></div>
+
+            <ion-item [button]="true" lines="none" detail="true" class="action-item is-blue" routerLink="/add-news">
+              <ion-icon slot="start" aria-hidden="true" name="add-circle-outline"></ion-icon>
+              <ion-label>Nueva noticia</ion-label>
+            </ion-item>
+
+            <ion-item *ngIf="selectedNew" [button]="true" lines="none" detail="true" class="action-item is-green"
+              (click)="editNews()">
+              <ion-icon slot="start" aria-hidden="true" name="create-outline"></ion-icon>
+              <ion-label>Editar contenido</ion-label>
+            </ion-item>
+
+            <ion-item *ngIf="selectedNew" [button]="true" lines="none" detail="true" class="action-item is-red"
+              (click)="confirmDelete()">
+              <ion-icon slot="start" aria-hidden="true" name="trash-outline"></ion-icon>
+              <ion-label>Eliminar permanente</ion-label>
+            </ion-item>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- LISTA REAL -->
+        <ion-list class="side-news-list" *ngIf="!isLoading && newsList.length > 0" lines="none">
+          <ion-list-header>
+            <ion-label class="f-bold mb-base fs-18 text-neutral-8">Noticias Destacadas</ion-label>
+          </ion-list-header>
+          <ng-container *ngFor="let news of newsList; let i = index">
+            <ion-item button detail="false" class="side-news-item" [class.active]="news.id === selectedNew?.id"
+              (click)="selectNews(news)">
+              <div class="side-news-rank" slot="start">{{ i + 1 }}</div>
+              <ion-label>
+                <h2 class="side-news-title">{{ news.title }}</h2>
+              </ion-label>
+            </ion-item>
+            <div *ngIf="i < newsList.length - 1" class="separator my-s"></div>
+          </ng-container>
+        </ion-list>
+      </div>
+    </div>
   </div>
-
-  <!-- COLUMNA 4: LATERAL -->
-  <div class="col-4 col-sm-12 pl-base px-0-sm mb-base">
-    <ion-list *ngIf="isLoading">
-      <div *ngFor="let i of [1,2]" class="d-flex gap-base h-100px">
-        <ion-skeleton-text animated class="sk-thumb"></ion-skeleton-text>
-        <div class="flex-1 py-s">
-          <ion-skeleton-text animated style="width: 85%; height: 16px; margin-bottom: 8px;"></ion-skeleton-text>
-          <ion-skeleton-text animated style="width: 70%; height: 14px;"></ion-skeleton-text>
-        </div>
-      </div>
-    </ion-list>
-
-    <!-- ADMIN CARD -->
-    <ion-card *ngIf="isAdmin" class="mb-base">
-      <ion-card-header>
-        <ion-card-title class="fs-18 f-bold">Control de Publicación</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <!-- Widget de Estado -->
-        <div class="status-widget mb-base" [class.is-published]="selectedNew?.isActive">
-          <div class="status-header">
-            <span class="status-tag">
-              <ion-icon [name]="selectedNew?.isActive ? 'eye-outline' : 'eye-off-outline'"></ion-icon>
-              {{ selectedNew?.isActive ? 'PUBLICADO' : 'BORRADOR' }}
-            </span>
-            <ion-toggle mode="ios" [checked]="selectedNew?.isActive" (ionChange)="toggleVisibility()"
-              [disabled]="isUpdatingStatus">
-            </ion-toggle>
-          </div>
-          <p class="status-desc">
-            {{ selectedNew?.isActive ? 'Noticia visible para todos los usuarios.' : 'La noticia no es visible para el
-            público.' }}
-          </p>
-        </div>
-
-        <div class="separator my-s"></div>
-
-        <ion-item [button]="true" lines="none" detail="true" class="action-item is-blue" routerLink="/add-news">
-          <ion-icon slot="start" aria-hidden="true" name="add-circle-outline"></ion-icon>
-          <ion-label>Nueva noticia</ion-label>
-        </ion-item>
-
-        <ion-item *ngIf="selectedNew" [button]="true" lines="none" detail="true" class="action-item is-green"
-          (click)="editNews()">
-          <ion-icon slot="start" aria-hidden="true" name="create-outline"></ion-icon>
-          <ion-label>Editar contenido</ion-label>
-        </ion-item>
-
-        <ion-item *ngIf="selectedNew" [button]="true" lines="none" detail="true" class="action-item is-red"
-          (click)="confirmDelete()">
-          <ion-icon slot="start" aria-hidden="true" name="trash-outline"></ion-icon>
-          <ion-label>Eliminar permanente</ion-label>
-        </ion-item>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- LISTA REAL -->
-    <ion-list class="side-news-list" *ngIf="!isLoading && newsList.length > 0" lines="none">
-      <ion-list-header>
-        <ion-label class="f-bold mb-base fs-18 text-neutral-8">Noticias Destacadas</ion-label>
-      </ion-list-header>
-      <ng-container *ngFor="let news of newsList; let i = index">
-        <ion-item button detail="false" class="side-news-item" [class.active]="news.id === selectedNew?.id"
-          (click)="selectNews(news)">
-          <div class="side-news-rank" slot="start">{{ i + 1 }}</div>
-          <ion-label>
-            <h2 class="side-news-title">{{ news.title }}</h2>
-          </ion-label>
-        </ion-item>
-        <div *ngIf="i < newsList.length - 1" class="separator my-s"></div>
-      </ng-container>
-    </ion-list>
-  </div>
-</div>
+  <app-page-footer></app-page-footer>
+</ion-content>

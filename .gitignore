@@ -41,6 +41,7 @@ data/
 
 # IDEs and OS
 .vscode/
+.claude/
 .idea/
 .settings/
 .project
@@ -49,6 +50,10 @@ data/
 *.swo
 .DS_Store
 Thumbs.db
+
+# Coverage (generado automáticamente por Jest/Istanbul)
+coverage/
+**/coverage/
 
 # Logs
 *.log

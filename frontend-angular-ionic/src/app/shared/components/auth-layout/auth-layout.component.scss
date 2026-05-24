@@ -141,6 +141,7 @@ ion-content {
     }
 
     form {
+
       .mb-m,
       .mt-m,
       .mt-base {
@@ -201,7 +202,8 @@ ion-content {
   margin-top: auto;
   padding: var(--space-base) 0 0 0;
   background: transparent !important;
-  border-top: 1px dashed var(--color-neutral-2);
+  font-size: var(--fs-14);
+  text-align: center;
 
   .icon-footer {
     color: var(--color-neutral-6);

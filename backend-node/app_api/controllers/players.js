@@ -5,8 +5,9 @@ const { sendApiResult } = require('./apiResult');
 // GET /api/players/public
 const playersPublicList = async (req, res) => {
     try {
-        // Devolvemos los campos necesarios para la vista pública premium
-        const players = await Player.find({}, 'name image_url nationality team league created_at position age').exec();
+        const players = await Player.find({}, 'name image_url nationality team league created_at position age')
+            .limit(100)
+            .exec();
         sendApiResult(res, 200, "Procesamiento concluído exitosamente", players);
     } catch (err) {
         sendApiResult(res, 500, "Error en vista pública: " + err.message);
@@ -49,7 +50,6 @@ const playersList = async (req, res) => {
 // POST /api/players
 const playersCreate = async (req, res) => {
     try {
-        console.log('[BACKEND] Creando jugador con datos:', JSON.stringify(req.body.location));
         // Inyectamos el ID de usuario desde el objeto req.user inyectado por el middleware
         const playerData = {
             ...req.body,
@@ -66,7 +66,10 @@ const playersCreate = async (req, res) => {
 // GET /api/players/all - Traer todos los jugadores (Sin excluir propios)
 const playersListAll = async (req, res) => {
     try {
-        const players = await Player.find({}).exec();
+        const limit = Math.min(parseInt(req.query.limit) || 200, 500);
+        const page = Math.max(parseInt(req.query.page) || 1, 1);
+        const skip = (page - 1) * limit;
+        const players = await Player.find({}).skip(skip).limit(limit).exec();
         sendApiResult(res, 200, "Procesamiento concluído exitosamente", players);
     } catch (err) {
         sendApiResult(res, 500, "Error al recuperar todos los jugadores: " + err.message);
@@ -103,10 +106,19 @@ const playersUpdateOne = async (req, res) => {
             return sendApiResult(res, 403, "Acceso denegado: No tienes permiso para editar este jugador");
         }
 
-        console.log('[BACKEND] Actualizando jugador con location:', JSON.stringify(req.body.location));
-
-        // Actualizamos los campos
-        Object.assign(player, req.body);
+        // Actualizamos solo campos permitidos (evita mass assignment)
+        const ALLOWED_FIELDS = [
+            'name', 'fullname', 'team', 'secondary_team', 'league', 'age',
+            'birth_date', 'birth_place', 'birth_country', 'nationality',
+            'height', 'weight', 'number', 'position', 'side', 'image_url',
+            'external_id', 'location', 'summary', 'social_media', 'images',
+            'tsdb_ids', 'is_manual', 'isFavorite', 'isFeatured'
+        ];
+        const updates = {};
+        for (const field of ALLOWED_FIELDS) {
+            if (req.body[field] !== undefined) updates[field] = req.body[field];
+        }
+        Object.assign(player, updates);
         const updatedPlayer = await player.save();
 
         sendApiResult(res, 200, "Procesamiento concluído exitosamente", updatedPlayer);

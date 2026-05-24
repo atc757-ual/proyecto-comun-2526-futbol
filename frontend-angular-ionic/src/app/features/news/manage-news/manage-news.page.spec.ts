@@ -4,6 +4,7 @@ import { NEWS_SERVICE_TOKEN } from '../../../core/services/news/news.service.tok
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { NavController } from '@ionic/angular/standalone';
+import { Auth } from '@angular/fire/auth';
 import { ModalController } from '@ionic/angular/standalone';
 import { ToastService } from 'src/app/core/services/ui/toast.service';
 import { ActivatedRoute } from '@angular/router';
@@ -23,7 +24,9 @@ const mockNewsService = {
 };
 
 const mockAuthService = {
-  isAdmin: jasmine.createSpy('isAdmin').and.returnValue(true)
+  isAdmin: jasmine.createSpy('isAdmin').and.returnValue(true),
+  currentUser: jasmine.createSpy('currentUser').and.returnValue({ email: 'admin@test.com' }),
+  userData: jasmine.createSpy('userData').and.returnValue({ name: 'Admin User' })
 };
 
 const mockLayoutService = {
@@ -66,7 +69,8 @@ describe('ManageNewsPage', () => {
         { provide: ToastService, useValue: mockToastService },
         { provide: NavController, useValue: mockNavCtrl },
         { provide: ModalController, useValue: mockModalCtrl },
-        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => null } } } }
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => null } } } },
+        { provide: Auth, useValue: {} }
       ]
     }).compileComponents();
 

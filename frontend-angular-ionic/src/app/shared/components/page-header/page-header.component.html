@@ -1,0 +1,24 @@
+<section>
+  <div *ngIf="pageTitle || pageSubtitle" class="layout-hero-banner">
+    <div class="main-content fl-column">
+      <h1 *ngIf="pageTitle" class="hero-title">{{ pageTitle }}</h1>
+      <p *ngIf="pageSubtitle" class="hero-subtitle">{{ pageSubtitle }}</p>
+    </div>
+  </div>
+
+  <!-- BREADCRUMBS CENTRALIZADOS -->
+  <div *ngIf="!platformService.isMobileApp && breadcrumbs.length > 0" class="layout-hero-breadcrumbs">
+    <div class="main-content">
+      <ion-breadcrumbs>
+        <ion-breadcrumb *ngFor="let item of breadcrumbs; let last = last"
+          [routerLink]="(item.url === '/login' || (item.url === '/home' && !authService.currentUser())) ? null : (item.url || null)"
+          [routerDirection]="item.url === '/login' ? 'root' : 'back'" (click)="onBreadcrumbClick($event, item)"
+          [class.active-breadcrumb]="last" [class.has-url]="!!item.url">
+          <ion-icon *ngIf="item.icon" slot="start" [name]="item.icon"></ion-icon>
+          {{ item.label }}
+          <span slot="separator" class="fs-14 text-neutral-4">/</span>
+        </ion-breadcrumb>
+      </ion-breadcrumbs>
+    </div>
+  </div>
+</section>

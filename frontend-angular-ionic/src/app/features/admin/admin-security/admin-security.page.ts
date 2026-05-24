@@ -4,8 +4,10 @@ import { FormsModule } from '@angular/forms';
 import {
   IonCard, IonCardHeader, IonCardTitle,
   IonCardContent, IonItem, IonLabel, IonIcon, IonBadge,
-  IonButton, IonSpinner, IonList, IonInput, ToastController
+  IonButton, IonSpinner, IonList, IonInput, ToastController, IonContent
 } from '@ionic/angular/standalone';
+import { PageHeaderComponent } from 'src/app/shared/components/page-header/page-header.component';
+import { PageFooterComponent } from 'src/app/shared/components/page-footer/page-footer.component';
 import { addIcons } from 'ionicons';
 import {
   shieldCheckmarkOutline, shieldOutline, keyOutline,
@@ -26,7 +28,8 @@ import { Auth } from '@angular/fire/auth';
     CommonModule, FormsModule,
     IonCard, IonCardHeader, IonCardTitle,
     IonCardContent, IonItem, IonLabel, IonIcon, IonBadge,
-    IonButton, IonList, IonInput, IonSpinner
+    IonButton, IonList, IonInput, IonSpinner, IonContent,
+    PageHeaderComponent, PageFooterComponent
   ]
 })
 export class AdminSecurityPage implements OnInit {
@@ -45,6 +48,10 @@ export class AdminSecurityPage implements OnInit {
   public emailFocused = false;
   public suggestedUsers = signal<any[]>([]);
   public selectedUser = signal<any | null>(null);
+  public breadcrumbs = [
+    { label: '', url: '/home', icon: 'home-outline' },
+    { label: 'Seguridad' }
+  ];
 
   constructor() {
     // Añado reactividad: si el usuario cambia, refresco el estado de seguridad
@@ -66,15 +73,6 @@ export class AdminSecurityPage implements OnInit {
 
   ngOnInit() {
     this.checkSecurityStatus();
-    this.layoutService.setHeader({
-      title: 'Gestión de seguridad',
-      subtitle: '¡Gestiona accesos de administrador aquí!',
-      showHero: true
-    });
-    this.layoutService.setBreadcrumbs([
-      { label: '', url: '/home', icon: 'home-outline' },
-      { label: 'Seguridad' }
-    ]);
   }
 
   async checkSecurityStatus() {
@@ -214,18 +212,18 @@ export class AdminSecurityPage implements OnInit {
 
   private getFriendlyErrorMessage(error: any): string {
     const detail = error.error?.result?.descriptionDetail || error.message || '';
-    
+
     // Mapeo de errores conocidos y técnicos
     if (detail.includes('no user record corresponding')) {
       return 'El usuario no tiene una cuenta de autenticación activa.';
     }
-    
+
     // Remuevo prefijos repetitivos del backend
     let cleanDetail = detail;
     if (cleanDetail.startsWith('Error al procesar la solicitud:')) {
       cleanDetail = cleanDetail.replace('Error al procesar la solicitud:', '').trim();
     }
-    
+
     return cleanDetail || 'Ocurrió un error inesperado al procesar la solicitud.';
   }
 }

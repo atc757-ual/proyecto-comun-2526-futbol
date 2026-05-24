@@ -3,12 +3,16 @@ package com.futbol.gateway.config;
 import com.futbol.gateway.services.PlayerAIService;
 import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
 import dev.langchain4j.service.AiServices;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class AIConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(AIConfig.class);
 
     @Value("${google.api.key}")
     private String apiKey;
@@ -35,7 +39,7 @@ public class AIConfig {
                                     value = value.substring(1, value.length() - 1);
                                 }
                                 if (!value.isEmpty()) {
-                                    System.out.println("[AI-DEBUG-JAVA] API Key de Gemini cargada desde .env: " + envFile.getAbsolutePath());
+                                    logger.debug("API Key de Gemini cargada desde .env: {}", envFile.getAbsolutePath());
                                     return value;
                                 }
                             }
@@ -57,7 +61,7 @@ public class AIConfig {
                                     value = value.substring(1, value.length() - 1);
                                 }
                                 if (!value.isEmpty()) {
-                                    System.out.println("[AI-DEBUG-JAVA] API Key de Gemini cargada desde backend-node/.env: " + nodeEnv.getAbsolutePath());
+                                    logger.debug("API Key de Gemini cargada desde backend-node/.env: {}", nodeEnv.getAbsolutePath());
                                     return value;
                                 }
                             }
@@ -67,7 +71,7 @@ public class AIConfig {
                 dir = dir.getParentFile();
             }
         } catch (Exception e) {
-            System.err.println("[AI-DEBUG-JAVA] Error buscando .env: " + e.getMessage());
+            logger.warn("Error buscando .env para cargar GOOGLE_API_KEY: {}", e.getMessage());
         }
         return fallbackKey;
     }
@@ -75,7 +79,8 @@ public class AIConfig {
     @Bean
     public GoogleAiGeminiChatModel geminiModel() {
         String resolvedKey = resolveApiKey(apiKey);
-        System.out.println("[AI-DEBUG-JAVA] Configurando Gemini (gateway) - Modelo: gemini-flash-latest, API Key: " + (resolvedKey != null && !resolvedKey.isEmpty() ? resolvedKey.substring(0, 4) + "..." : "MISSING"));
+        logger.info("Configurando Gemini (gateway) - Modelo: gemini-flash-latest, API Key: {}",
+                resolvedKey != null && !resolvedKey.isEmpty() ? resolvedKey.substring(0, 4) + "..." : "MISSING");
         return GoogleAiGeminiChatModel.builder()
                 .apiKey(resolvedKey)
                 .modelName("gemini-flash-latest")

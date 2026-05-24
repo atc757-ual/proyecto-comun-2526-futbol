@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { IonicModule, NavController } from '@ionic/angular';
+import { IonContent } from '@ionic/angular/standalone';
+import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
+import { PageFooterComponent } from '../../../shared/components/page-footer/page-footer.component';
 import { addIcons } from 'ionicons';
 import {
   cloudUploadOutline, sendOutline, arrowBackOutline,
@@ -23,11 +26,11 @@ import { ToastService } from 'src/app/core/services/ui/toast.service';
   templateUrl: './add-edit-news.page.html',
   styleUrls: ['./add-edit-news.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterModule]
+  imports: [IonicModule, CommonModule, FormsModule, RouterModule, PageHeaderComponent, PageFooterComponent]
 })
 export class AddEditNewsPage implements OnInit {
   private newsService = inject(NEWS_SERVICE_TOKEN);
-  private authService = inject(AuthService);
+  public authService = inject(AuthService);
   private toastService = inject(ToastService);
   private navCtrl = inject(NavController);
   private layoutService = inject(LayoutService);
@@ -44,6 +47,10 @@ export class AddEditNewsPage implements OnInit {
   newsId: string | null = null;
   isLoading = false;
   selectedFile: File | null = null;
+
+  public pageTitle = 'Crear noticia';
+  public pageSubtitle = '¡Carga Noticias desde aquí, para la comunidad futbolística!';
+  public breadcrumbs: any[] = [];
 
   // Para detección de cambios reales
   private initialDataJson = '';
@@ -174,17 +181,13 @@ export class AddEditNewsPage implements OnInit {
     this.newsId = this.route.snapshot.paramMap.get('id');
     this.isEditMode = !!this.newsId;
 
-    this.layoutService.setHeader({
-      title: this.isEditMode ? 'Editar noticia' : 'Crear noticia',
-      subtitle: this.isEditMode ? 'Actualiza la información de la noticia seleccionada' : '¡Carga Noticias desde aquí, para la comunidad futbolística!',
-      showHero: true
-    });
-
-    this.layoutService.setBreadcrumbs([
+    this.pageTitle = this.isEditMode ? 'Editar noticia' : 'Crear noticia';
+    this.pageSubtitle = this.isEditMode ? 'Actualiza la información de la noticia seleccionada' : '¡Carga Noticias desde aquí, para la comunidad futbolística!';
+    this.breadcrumbs = [
       { label: '', url: '/home', icon: 'home-outline' },
       { label: 'Noticias', url: '/news' },
       { label: this.isEditMode ? 'Editar noticia' : 'Crear noticia' }
-    ]);
+    ];
 
     if (this.isEditMode && this.newsId) {
       this.loadNews();

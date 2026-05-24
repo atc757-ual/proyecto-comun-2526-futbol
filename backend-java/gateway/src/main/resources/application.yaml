@@ -12,7 +12,7 @@ spring:
           '[/**]':
             allowedOrigins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost,http://localhost:4200,http://localhost:8100,http://35.255.218.37}
             allowedMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-            allowedHeaders: "*"
+            allowedHeaders: ["Authorization", "Content-Type", "X-User-Role", "X-Transaction-Id", "Accept"]
       routes:
         # Java Player Microservice
         - id: player-client-route

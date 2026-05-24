@@ -4,7 +4,8 @@ import com.futbol.userclient.models.User;
 import com.futbol.userclient.repositories.UserRepository;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.UserRecord;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -15,8 +16,13 @@ import java.util.Map;
 @Service
 public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+
+    private final UserRepository userRepository;
+
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     /**
      * Sincroniza usuario de Firebase con BD local.
@@ -80,8 +86,7 @@ public class UserService {
             customClaims.put("admin", true);
             FirebaseAuth.getInstance().setCustomUserClaims(userFirebase.getUid(), customClaims);
         } catch (Exception e) {
-            // Log pero no falla si Firebase no está disponible
-            System.err.println("[UserService] Error sincronizando admin claim con Firebase: " + e.getMessage());
+            logger.warn("Error sincronizando admin claim con Firebase para {}: {}", email, e.getMessage());
         }
 
         userRepository.save(user);
@@ -103,7 +108,7 @@ public class UserService {
             customClaims.put("admin", false);
             FirebaseAuth.getInstance().setCustomUserClaims(userFirebase.getUid(), customClaims);
         } catch (Exception e) {
-            System.err.println("[UserService] Error removiendo admin claim en Firebase: " + e.getMessage());
+            logger.warn("Error removiendo admin claim en Firebase para {}: {}", email, e.getMessage());
         }
 
         userRepository.save(user);
@@ -125,7 +130,7 @@ public class UserService {
                     .setDisabled(disabled);
             FirebaseAuth.getInstance().updateUser(request);
         } catch (Exception e) {
-            System.err.println("[UserService] Error actualizando estado en Firebase: " + e.getMessage());
+            logger.warn("Error actualizando estado en Firebase para {}: {}", email, e.getMessage());
         }
 
         userRepository.save(user);

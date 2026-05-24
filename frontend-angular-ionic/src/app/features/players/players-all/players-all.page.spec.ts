@@ -87,10 +87,8 @@ describe('PlayersAllPage', () => {
   });
 
   it('should configure header and breadcrumbs on init', () => {
-    expect(mockLayoutService.setHeader).toHaveBeenCalledWith(jasmine.objectContaining({
-      title: 'Universo de Jugadores'
-    }));
-    expect(mockLayoutService.setBreadcrumbs).toHaveBeenCalled();
+    expect(component.pageTitle).toBe('Universo de Jugadores');
+    expect(component.breadcrumbs).toBeDefined();
   });
 
   it('should filter players by name', () => {

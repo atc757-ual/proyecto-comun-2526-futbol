@@ -9,26 +9,13 @@
    4. Grid Dinámico de 12 Columnas Móvil (.col-sm-1 a .col-sm-12)
    5. Clases de Ocultación Responsiva (.hide-on-*)
    ========================================================================== */
-/* Contenedor Principal */
-.container {
-  padding-left: var(--container-padding-mobile);
-  padding-right: var(--container-padding-mobile);
-  margin: 0 auto;
-  width: 100%;
-  max-width: var(--container-max-width);
-  box-sizing: border-box;
-
-  @media (min-width: 768px) {
-    padding-left: var(--container-padding-desktop);
-    padding-right: var(--container-padding-desktop);
-  }
-}
 
 /* Fila (Wrapper de Columnas) */
 .row {
   display: flex;
   flex-wrap: wrap;
   width: 100%;
+  gap: var(--space-base);
 
   &.reverse {
     flex-direction: row-reverse;
@@ -73,4 +60,656 @@
   .hide-on-phone {
     display: none !important;
   }
+}
+
+
+/*CONTENT CONTAINER*/
+.content-container {
+  padding: var(--space-base);
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
+
+  @media (min-width: 768px) {
+    flex: 1 0 auto;
+    padding: var(--space-base) var(--container-padding-desktop) 0 var(--container-padding-desktop);
+    max-width: var(--container-max-width);
+    margin: 0 auto;
+  }
+}
+
+/* CONTENEDOR ESPECÍFICO PARA EL ROUTER-OUTLET EN LOS LAYOUTS */
+.layout-router-container {
+  flex: 1;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--color-neutral-0);
+  display: flex;
+}
+
+.main-content {
+  width: 100%;
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  flex: 1 0 auto;
+  animation: none;
+  box-sizing: border-box;
+}
+
+.mobile-wrapper {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.mobile-bg {
+  --background: var(--bg-main-layout);
+}
+
+
+
+
+.mobile-header {
+  --background: var(--color-neutral-0, #ffffff);
+
+  .mobile-toolbar {
+    --background: var(--color-neutral-0);
+    --min-height: 56px;
+    padding-bottom: 0;
+
+    @media (min-width: 768px) {
+      //--padding-end: 64px;
+      //--padding-start: 48px;
+    }
+
+    .auth-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-base);
+
+      .auth-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        border-radius: var(--border-radius-medium);
+        transition: all var(--transition-fast);
+
+        &:hover {
+          background-color: var(--blue-primary-010);
+          transform: translateY(-1px);
+        }
+
+        ion-icon {
+          font-size: 24px;
+        }
+
+        .hide-on-phone {
+          display: none;
+        }
+      }
+    }
+  }
+
+  .menu-btn-minimal {
+    --color: var(--color-primary);
+  }
+
+  .back-btn-minimal {
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start !important;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    transition: transform 0.1s ease, opacity 0.1s ease, background-color 0.2s ease;
+    color: var(--color-primary);
+
+    &:hover {
+      background-color: transparent;
+    }
+
+    &:active {
+      transform: scale(0.9);
+      opacity: 0.7;
+    }
+
+    ion-icon {
+      color: var(--color-primary) !important;
+      font-size: 28px;
+      margin-left: -4px;
+    }
+  }
+
+  .mobile-title {
+    font-size: var(--fs-18);
+    font-weight: var(--fw-bold);
+    color: var(--color-neutral-9);
+
+    .logo-box {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+
+      &.centered {
+        justify-content: center;
+      }
+
+      .main-logo-text {
+        font-size: var(--fs-18);
+        font-weight: var(--fw-bold);
+        color: var(--color-primary);
+      }
+
+      .logo-ball-blue {
+        width: 34px;
+        height: 34px;
+        background: var(--blue-primary-010);
+        border-radius: var(--border-radius-circle);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        ion-icon {
+          font-size: var(--fs-30);
+          color: var(--color-primary);
+        }
+      }
+    }
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+
+
+
+// MOBILE BOTTOM BAR (Shared globally)
+.mobile-tab-footer {
+  background: transparent;
+
+  .mobile-tab-bar {
+    --background: var(--color-neutral-0);
+    --border: none;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+    height: 65px;
+    padding-bottom: env(safe-area-inset-bottom);
+
+    ion-tab-button {
+      --color: var(--color-neutral-6);
+      --color-selected: var(--color-primary);
+      font-weight: 600;
+      font-size: 0.75rem;
+      position: relative;
+
+      ion-icon {
+        font-size: var(--fs-20);
+        transition: all var(--transition-fast);
+        z-index: 1;
+      }
+
+      &.tab-selected {
+        animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: 6px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 34px;
+          height: 34px;
+          background: var(--color-tab-active-bubble);
+          border-radius: 50%;
+          z-index: 0;
+        }
+
+        &::after {
+          content: '';
+          position: absolute;
+          top: 4px;
+          left: calc(50% - 18px);
+          width: 6px;
+          height: 6px;
+          background: var(--color-tab-active-bubble-solid, #2fcbf1);
+          border-radius: 50%;
+          z-index: 0;
+        }
+
+        ion-icon {
+          color: var(--color-primary);
+          transform: translateY(-1.5px) scale(1.1);
+        }
+
+        ion-label {
+          color: var(--color-primary);
+          font-weight: var(--fw-bold);
+          z-index: 1;
+        }
+      }
+
+      ion-label {
+        margin-top: 2px;
+        z-index: 1;
+      }
+
+      &.ai-tab-special {
+        overflow: visible;
+
+        .ai-icon-circle {
+          width: 46px;
+          height: 46px;
+          background: var(--color-neutral-0);
+          border: 2px solid var(--color-primary);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          box-shadow: 0 2px 6px rgba(var(--color-primary-rgb), 0.15);
+          transition: all 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          animation: ai-pulse-glow 2.5s infinite alternate;
+
+          ion-icon {
+            color: var(--color-primary);
+            font-size: 24px;
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            transform: none;
+            z-index: 1;
+            animation: ai-sparkle 3s infinite ease-in-out;
+          }
+        }
+
+        &.tab-selected {
+          animation: none; // Sin scaleIn: el AI no rebota
+
+          &::before,
+          &::after {
+            display: none; // Sin burbuja de fondo ni punto de notificación
+          }
+
+          .ai-icon-circle {
+            background: linear-gradient(306deg, var(--blue-primary-100) 0%, var(--color-primary) 100%);
+            border: 2px solid transparent;
+            box-shadow:
+              0 2px 7px rgba(var(--color-primary-rgb), 0.45),
+              0 0 11px rgba(var(--color-primary-rgb), 0.3);
+            animation: ai-active-glow 2s infinite alternate;
+
+            ion-icon {
+              color: var(--color-white);
+              filter: drop-shadow(0 0 4px rgba(var(--color-primary-rgb), 0.4));
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@keyframes scaleIn {
+  0% {
+    transform: scale(0.9);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes ai-pulse-glow {
+  0% {
+    box-shadow: 0 2px 6px rgba(var(--color-primary-rgb), 0.2), 0 0 2px rgba(var(--color-primary-rgb), 0.3);
+  }
+
+  100% {
+    box-shadow: 0 2px 6px rgba(var(--color-primary-rgb), 0.3), 0 0 8px rgba(var(--color-primary-rgb), 0.6);
+  }
+}
+
+@keyframes ai-active-glow {
+  0% {
+    box-shadow: 0 3px 7px rgba(var(--color-primary-rgb), 0.3), 0 0 5px rgba(var(--color-primary-rgb), 0.2);
+  }
+
+  100% {
+    box-shadow: 0 3px 10px rgba(var(--color-primary-rgb), 0.6), 0 0 15px rgba(var(--color-primary-rgb), 0.45);
+  }
+}
+
+@keyframes ai-sparkle {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.15) rotate(5deg);
+  }
+}
+
+/* Layout publico y main*/
+.main-header {
+  background: var(--color-white);
+  z-index: var(--z-index-sticky);
+  transition: all 0.1s ease;
+
+  // ELIMINAR LÍNEA CUANDO HAY HERO (Continuidad total)
+  &.no-border {
+    border-bottom: none !important;
+    box-shadow: none !important;
+  }
+
+  // FILA 1: Branding y Perfil
+  .top-header-row {
+    height: var(--header-height); // 72px Web
+    display: flex;
+    align-items: center;
+
+    @media (max-width: 767px) {
+      height: var(--header-mobile-height); // 56px Móvil
+    }
+
+    .main-content.header {
+      padding-left: var(--container-padding-desktop);
+      padding-right: var(--container-padding-desktop);
+      display: flex;
+
+      @media (max-width: 767px) {
+        padding-left: var(--container-padding-mobile);
+        padding-right: var(--container-padding-mobile);
+      }
+    }
+
+    .logo-box {
+      display: flex;
+      align-items: center;
+      gap: var(--space-s);
+
+      .main-logo-text {
+        font-size: var(--fs-22);
+        font-weight: var(--fw-bold);
+        color: var(--color-primary);
+
+        @media (max-width: 768px) {
+          font-size: var(--fs-18);
+        }
+      }
+
+      .logo-ball-blue {
+        width: 40px;
+        height: 40px;
+        background: var(--blue-primary-010);
+        border-radius: var(--border-radius-circle);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        ion-icon {
+          font-size: var(--fs-36);
+          color: var(--color-primary);
+        }
+
+        @media (max-width: 768px) {
+          width: 34px;
+          height: 34px;
+
+          ion-icon {
+            font-size: var(--fs-30);
+          }
+        }
+      }
+    }
+
+    .burger-icon {
+      font-size: var(--fs-28);
+      color: var(--color-primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .header-left {
+      flex: 1;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+
+
+    }
+
+    .header-center {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .header-center-icon {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all var(--transition-fast);
+      text-align: center;
+      z-index: 10;
+
+
+      .central-ball-wrapper {
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px;
+        min-height: 32px;
+        background: rgba(var(--ion-color-primary-rgb), 0.08);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        margin: 0 auto;
+        overflow: hidden;
+
+        ion-icon {
+          font-size: 24px;
+          color: var(--color-primary);
+          margin: 0;
+          display: block;
+        }
+      }
+
+      .central-text-wrapper {
+        font-weight: var(--fw-semibold);
+        font-size: var(--fs-12);
+        color: var(--color-primary);
+        margin: 2px 0 0 0;
+        text-align: center;
+        display: block;
+        width: 100%;
+        white-space: nowrap;
+      }
+    }
+
+    .header-right {
+      flex: 1;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    .auth-actions {
+      display: flex;
+      gap: var(--space-s);
+
+      @media (min-width: 768px) {
+        gap: var(--space-base);
+      }
+
+      .auth-btn {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        color: var(--color-primary);
+        font-weight: var(--fw-medium);
+        font-size: var(--fs-14);
+        transition: all var(--transition-fast);
+        border-radius: var(--border-radius-medium);
+
+        &:hover {
+          background-color: var(--blue-primary-010);
+          transform: translateY(-1px);
+        }
+
+        ion-icon {
+          font-size: var(--fs-28);
+        }
+      }
+    }
+  }
+
+  .nav-header-row {
+    display: none;
+
+    @media (min-width: 768px) {
+      display: flex;
+      height: var(--nav-height);
+      align-items: center;
+
+      .nav-links-centered {
+        list-style: none;
+        padding: 0;
+        margin: 0 auto;
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: 1fr;
+        justify-content: center;
+        width: fit-content;
+        gap: 0;
+
+        li {
+          font-size: var(--fs-14);
+          font-weight: var(--fw-medium);
+          color: var(--color-neutral-6);
+          cursor: pointer;
+          position: relative;
+          padding: var(--space-12) var(--space-m);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: var(--space-xs);
+          transition: color var(--transition-fast);
+          text-align: center;
+          white-space: nowrap;
+
+          // Borde inferior base (no seleccionado)
+          &::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px; // Un poco más fino para los inactivos
+            background: var(--color-neutral-1);
+            transition: all var(--transition-fast);
+          }
+
+          .nav-icon-mini {
+            font-size: var(--fs-16);
+          }
+
+          &:hover {
+            color: var(--color-primary);
+
+            &::after {
+              background: var(--color-neutral-2);
+            }
+          }
+
+          &.active {
+            color: var(--color-primary);
+            font-weight: var(--fw-bold);
+
+            &::after {
+              height: 3px;
+              background: var(--color-primary);
+              border-radius: 4px 4px 0 0;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// MAIN CONTENT
+.main-main-bg {
+  --background: var(--bg-main-layout);
+  --overflow: auto;
+  flex: 1;
+  height: 100%;
+
+  &::part(scroll) {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+  }
+
+  .main-content.content {
+    flex: 1 0 auto;
+    padding: var(--space-base) var(--container-padding-desktop) 0 var(--container-padding-desktop);
+    overflow: clip;
+
+    @media (max-width: 767px) {
+      padding: var(--space-base) var(--container-padding-mobile) 0 var(--container-padding-mobile);
+    }
+  }
+}
+
+// REFINAMIENTO DE LA BARRA LATERAL (Sidebar)
+.main-split-pane {
+  --side-width: 280px;
+  --border: none;
 }

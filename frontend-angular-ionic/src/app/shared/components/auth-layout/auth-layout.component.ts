@@ -6,13 +6,13 @@ import { addIcons } from 'ionicons';
 import { arrowBack, logoLinkedin, logoGithub } from 'ionicons/icons';
 import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { PlatformService } from 'src/app/core/services/system/platform.service';
-
+import { PageFooterComponent } from '../page-footer/page-footer.component';
 @Component({
   selector: 'app-auth-layout',
   templateUrl: './auth-layout.component.html',
   styleUrls: ['./auth-layout.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule]
+  imports: [CommonModule, IonicModule, RouterModule, PageFooterComponent]
 })
 export class AuthLayoutComponent {
   public layoutService = inject(LayoutService);

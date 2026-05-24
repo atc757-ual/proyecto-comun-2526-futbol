@@ -37,6 +37,9 @@ import { LocationPlugin } from '../../../core/plugins/location-plugin';
 import { MapPlugin } from '../../../core/plugins/maps-plugin';
 import { ShareCardPlugin } from '../../../core/plugins/share-card-plugin';
 import { HapticsPlugin } from '../../../core/plugins/haptics-plugin';
+import { PageHeaderComponent } from 'src/app/shared/components/page-header/page-header.component';
+import { PageFooterComponent } from 'src/app/shared/components/page-footer/page-footer.component';
+import { IonContent } from '@ionic/angular/standalone';
 
 import { register } from 'swiper/element/bundle';
 
@@ -48,7 +51,8 @@ import { register } from 'swiper/element/bundle';
   imports: [
     CommonModule, FormsModule, RouterModule,
     IonIcon, IonCard, IonCardContent, IonButton, IonAvatar,
-    IonSegment, IonSegmentButton, IonLabel, IonSpinner, IonTextarea
+    IonSegment, IonSegmentButton, IonLabel, IonSpinner, IonTextarea,
+    PageHeaderComponent, PageFooterComponent, IonContent
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
@@ -62,17 +66,17 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
 
       const from = this.route.snapshot.queryParams['from'];
       if (from === 'universe') {
-        this.layoutService.setBreadcrumbs([
+        this.breadcrumbs = [
           { label: '', url: '/home', icon: 'home-outline' },
           { label: 'Universo de jugadores', url: '/players-all' },
           { label: 'Detalle', url: '' }
-        ]);
+        ];
       } else {
-        this.layoutService.setBreadcrumbs([
+        this.breadcrumbs = [
           { label: '', url: '/home', icon: 'home-outline' },
           { label: 'Mi plantilla', url: '/players' },
           { label: 'Detalle', url: '' }
-        ]);
+        ];
       }
       this.captureUserLocation();
     }
@@ -112,6 +116,9 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
   public isRequestingPermission = false;
   public isAdmin = false;
   public descriptiveLocation: string = '';
+  public pageTitle: string = 'Detalle de jugador';
+  public pageSubtitle: string = 'Perfil detallado del jugador seleccionado';
+  public breadcrumbs: any[] = [];
 
   // Lógica de "Ver más"
   public isSummaryExpanded = false;
@@ -203,11 +210,6 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    this.layoutService.setHeader({
-      title: 'Detalle de jugador',
-      subtitle: 'Perfil detallado del jugador seleccionado',
-      showHero: true
-    });
     this.isAdmin = this.authService.isAdmin();
 
     // Iniciar Autoplay de Stats

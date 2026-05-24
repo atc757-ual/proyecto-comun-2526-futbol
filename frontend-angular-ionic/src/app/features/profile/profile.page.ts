@@ -1,5 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { environment } from 'src/environments/environment';
 import { addIcons } from 'ionicons';
 import {
   personOutline, timeOutline, keyOutline,
@@ -18,6 +19,9 @@ import { PlatformService } from 'src/app/core/services/system/platform.service';
 import { ToastService } from 'src/app/core/services/ui/toast.service';
 import { Auth } from '@angular/fire/auth';
 import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
+import { PageHeaderComponent } from 'src/app/shared/components/page-header/page-header.component';
+import { PageFooterComponent } from 'src/app/shared/components/page-footer/page-footer.component';
+import { IonContent } from '@ionic/angular/standalone';
 
 type ProfileUserInfo = {
   name: string;
@@ -35,7 +39,8 @@ type ProfileUserInfo = {
   imports: [
     CommonModule, RouterModule,
     IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonItem, IonIcon,
-    IonLabel, IonSpinner, IonBadge, IonButton, IonToggle
+    IonLabel, IonSpinner, IonBadge, IonButton, IonToggle,
+    PageHeaderComponent, PageFooterComponent, IonContent
   ]
 })
 export class ProfilePage implements OnInit {
@@ -61,17 +66,14 @@ export class ProfilePage implements OnInit {
     });
   }
 
-  ngOnInit() {
-    this.layoutService.setHeader({
-      title: 'Mi Perfil',
-      subtitle: 'Configuración y seguridad de cuenta',
-      showHero: true
-    });
-    this.layoutService.setBreadcrumbs([
-      { label: '', url: '/', icon: 'home-outline' },
-      { label: 'Mi Perfil', url: '/profile' }
-    ]);
+  public pageTitle: string = 'Mi Perfil';
+  public pageSubtitle: string = 'Configuración y seguridad de cuenta';
+  public breadcrumbs: any[] = [
+    { label: '', url: '/', icon: 'home-outline' },
+    { label: 'Mi Perfil', url: '/profile' }
+  ];
 
+  ngOnInit() {
     this.checkResetCooldown();
     this.useSpringBoot = this.platformService.getUseJavaBackend();
   }
@@ -203,7 +205,8 @@ export class ProfilePage implements OnInit {
   }
 
   openNodeStatusDashboard() {
-    window.open('/status', '_blank', 'noopener,noreferrer');
+    const baseUrl = environment.nodeApiUrl.replace('/api', '');
+    window.open(`${baseUrl}/status`, '_blank', 'noopener,noreferrer');
   }
 
   handleAvatarError(event: any) {

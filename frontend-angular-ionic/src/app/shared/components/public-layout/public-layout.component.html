@@ -1,111 +1,113 @@
-<div class="main-wrapper" id="public-content">
-  <!-- HEADER PREMIUM (CLON DE MAIN) -->
-  <header class="main-header" [class.no-border]="layoutService.showHero()">
-    <!-- FILA 1: Branding y Perfil -->
-    <div class="top-header-row">
-      <div class="main-content header">
-        <div class="header-left">
-          <!-- Botón de atrás (Solo App Móvil Nativa) -->
-          <ion-back-button *ngIf="platformService.isMobileApp" defaultHref="/login" text="" icon="arrow-back"
-            class="back-link-minimal">
-          </ion-back-button>
+<!-- === 1. SI ES APP MÓVIL: Usa el nuevo diseño nativo === -->
+<div *ngIf="platformService.isMobileApp" class="mobile-wrapper" id="mobile-public-content">
+  <!-- NATIVE-LIKE MOBILE HEADER -->
+  <ion-header mode="md" class="mobile-header ion-no-border">
+    <ion-toolbar class="mobile-toolbar content-container">
+      <ion-buttons slot="start">
+        <button (click)="goBack()" class="back-btn-minimal" aria-label="Volver atrás">
+          <ion-icon name="arrow-back"></ion-icon>
+        </button>
+      </ion-buttons>
 
-          <!-- Logo a la Izquierda -->
-          <div class="logo-box clickable" (click)="onLogoClick($event)">
-            <div class="logo-ball-blue">
-              <ion-icon name="football"></ion-icon>
-            </div>
-            <span class="main-logo-text">Fútbol Club</span>
+      <ion-title class="mobile-title">
+        <div class="logo-box centered clickable">
+          <div class="logo-ball-blue">
+            <ion-icon name="football"></ion-icon>
           </div>
+          <span class="main-logo-text">Fútbol Club</span>
         </div>
+      </ion-title>
 
-        <div class="header-right">
-          <div class="auth-actions">
-            <!-- Caso: Usuario NO está logueado -->
-            <ng-container *ngIf="!authService.userData()">
-              <a routerLink="/login" routerDirection="root" class="auth-btn">
-                <ion-icon name="log-in-outline" color="primary"></ion-icon>
-                <span class="hide-on-phone">Iniciar Sesión</span>
-              </a>
-              <a routerLink="/register" routerDirection="root" class="auth-btn">
-                <ion-icon name="person-add-outline" color="primary"></ion-icon>
-                <span class="hide-on-phone">¡Regístrate!</span>
-              </a>
-            </ng-container>
+      <ion-buttons class="auth-actions" slot="end">
+        <ng-container *ngIf="!authService.userData()">
+          <a (click)="goTo('/auth/login')" class="auth-btn clickable">
+            <ion-icon name="log-in-outline" color="primary"></ion-icon>
+            <span class="hide-on-phone">Iniciar Sesión</span>
+          </a>
+          <a (click)="goTo('/auth/register')" class="auth-btn clickable">
+            <ion-icon name="person-add-outline" color="primary"></ion-icon>
+            <span class="hide-on-phone">¡Regístrate!</span>
+          </a>
+        </ng-container>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+  <!-- CONTENT -->
+  <div class="layout-router-container pb-xl">
+    <ion-router-outlet [animated]="false"></ion-router-outlet>
+  </div>
+  <!-- MOBILE BOTTOM BAR -->
+  <ion-footer class="mobile-tab-footer ion-no-border">
+    <ion-tab-bar slot="bottom" class="mobile-tab-bar">
+      <ng-container *ngFor="let p of appPages; let i = index">
+        <ion-tab-button [tab]="p.title" [class.tab-selected]="isTabActive(p.url)" [class.ai-tab-special]="i === 2"
+          (click)="onTabClick($event, p, i)">
 
-            <!-- Caso: Usuario YA está logueado (ej: Patrick navegando por el público) -->
-            <ng-container *ngIf="authService.userData()">
-              <a routerLink="/profile" class="auth-btn">
-                <ion-icon name="person-circle-outline" color="primary"></ion-icon>
-                <span class="hide-on-phone">Mi Perfil</span>
-              </a>
-              <a (click)="logout()" class="auth-btn logout clickable">
-                <ion-icon name="log-out-outline"></ion-icon>
-                <span class="hide-on-phone">Cerrar Sesión</span>
-              </a>
-            </ng-container>
+          <ion-icon *ngIf="i !== 2" [name]="p.icon"></ion-icon>
+
+          <div *ngIf="i === 2" class="ai-icon-circle">
+            <ion-icon [name]="p.icon"></ion-icon>
           </div>
-        </div>
-      </div>
-    </div>
-  </header>
 
-  <!-- MAIN CONTENT -->
-  <ion-content class="main-main-bg" [scrollY]="true">
-
-    <!-- SECCIÓN HERO (Igual que Main) -->
-    <section>
-      <div>
-        <div *ngIf="layoutService.showHero()" class="layout-hero-banner">
-          <div class="main-content">
-            <h1 class="hero-title">{{ layoutService.title() }}</h1>
-            <p class="hero-subtitle" *ngIf="layoutService.subtitle()">{{ layoutService.subtitle() }}</p>
-          </div>
-        </div>
-
-        <!-- BREADCRUMBS CENTRALIZADOS -->
-        <div *ngIf="!platformService.isMobileApp && layoutService.breadcrumbs().length > 0"
-          class="layout-hero-breadcrumbs">
-          <div class="main-content">
-            <ion-breadcrumbs>
-              <ion-breadcrumb *ngFor="let item of layoutService.breadcrumbs(); let last = last"
-                [routerLink]="(item.url === '/login' || (item.url === '/home' && !authService.currentUser())) ? null : (item.url || null)" 
-                [routerDirection]="item.url === '/login' ? 'root' : 'back'" 
-                (click)="onBreadcrumbClick($event, item)"
-                [class.active-breadcrumb]="last" [class.has-url]="!!item.url">
-                <ion-icon *ngIf="item.icon" slot="start" [name]="item.icon"></ion-icon>
-                {{ item.label }}
-                <span slot="separator" class="fs-14 text-neutral-4">/</span>
-              </ion-breadcrumb>
-            </ion-breadcrumbs>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <div class="main-content content">
-      <router-outlet></router-outlet>
-    </div>
-
-    <!-- FOOTER (Igual que Main) -->
-    <footer class="main-footer-gray">
-      <div class="main-content footer">
-        <div class="footer-slim-content">
-          <div class="footer-left">
-            <span class="copyright-text fs-14 text-neutral-7">© 2026 Fútbol Club. By Alex Taquila.</span>
-          </div>
-          <div class="footer-right">
-            <div class="footer-socials">
-              <a href="https://www.linkedin.com/in/alextaquilacamasca" target="_blank" class="social-icon">
-                <ion-icon name="logo-linkedin"></ion-icon>
-              </a>
-              <a href="https://github.com/atc757-ual" target="_blank" class="social-icon">
-                <ion-icon name="logo-github"></ion-icon>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </footer>
-  </ion-content>
+          <ion-label *ngIf="i !== 2">{{ p.title }}</ion-label>
+        </ion-tab-button>
+      </ng-container>
+    </ion-tab-bar>
+  </ion-footer>
 </div>
+
+
+<!-- === 2. SI ES WEB O ESCRITORIO: Usa tu diseño actual === -->
+<ng-container *ngIf="!platformService.isMobileApp">
+  <div class="main-wrapper overflow-y-auto" id="public-content">
+    <!-- HEADER PREMIUM (CLON DE MAIN) -->
+    <header class="main-header" [class.no-border]="layoutService.showHero()">
+      <!-- FILA 1: Branding y Perfil -->
+      <div class="top-header-row">
+        <div class="main-content header">
+          <div class="header-left">
+            <ion-button *ngIf="platformService.isMobileApp" (click)="goBack()" class="back-link-minimal"
+              aria-label="Volver atrás">
+              <ion-icon name="arrow-back"></ion-icon>
+            </ion-button>
+
+            <!-- Logo a la Izquierda -->
+            <div class="logo-box clickable" (click)="onLogoClick($event)">
+              <div class="logo-ball-blue">
+                <ion-icon name="football"></ion-icon>
+              </div>
+              <span class="main-logo-text">Fútbol Club</span>
+            </div>
+          </div>
+
+          <div class="header-right">
+            <div class="auth-actions">
+              <!-- Caso: Usuario NO está logueado -->
+              <ng-container *ngIf="!authService.userData()">
+                <a (click)="goTo('/auth/login')" class="auth-btn clickable">
+                  <ion-icon name="log-in-outline" color="primary"></ion-icon>
+                  <span class="hide-on-phone">Iniciar Sesión</span>
+                </a>
+                <a (click)="goTo('/register')" class="auth-btn clickable">
+                  <ion-icon name="person-add-outline" color="primary"></ion-icon>
+                  <span class="hide-on-phone">¡Regístrate!</span>
+                </a>
+              </ng-container>
+
+              <ng-container *ngIf="authService.userData()">
+                <a (click)="goTo('/profile')" class="auth-btn clickable">
+                  <ion-icon name="person-circle-outline" color="primary"></ion-icon>
+                  <span class="hide-on-phone">Mi Perfil</span>
+                </a>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+    <!-- MAIN CONTENT -->
+    <div class="layout-router-container pb-xl">
+      <ion-router-outlet [animated]="false"></ion-router-outlet>
+    </div>
+  </div>
+</ng-container>

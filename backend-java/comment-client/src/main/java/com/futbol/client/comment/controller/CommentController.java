@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,8 +20,11 @@ import java.util.List;
 @RequestMapping("/api/comments")
 public class CommentController {
 
-    @Autowired
-    private CommentRepository commentRepository;
+    private final CommentRepository commentRepository;
+
+    public CommentController(CommentRepository commentRepository) {
+        this.commentRepository = commentRepository;
+    }
 
     @Operation(summary = "Obtener todos los comentarios", description = "Devuelve una lista con todos los comentarios registrados")
     @GetMapping
@@ -43,6 +45,13 @@ public class CommentController {
         return ResponseEntity.ok(ApiResult.success("Procesamiento concluído exitosamente", comments));
     }
 
+    @Operation(summary = "Obtener comentarios por jugador (Público)", description = "Busca todos los comentarios asociados a un ID de jugador sin token")
+    @GetMapping("/public/player/{playerId}")
+    public ResponseEntity<ApiResult<List<Comment>>> getCommentsByPlayerPublic(@PathVariable Long playerId) {
+        List<Comment> comments = commentRepository.findByPlayerId(playerId);
+        return ResponseEntity.ok(ApiResult.success("Procesamiento público concluído exitosamente", comments));
+    }
+
     @Operation(summary = "Añadir un comentario", description = "Guarda un nuevo comentario en el sistema")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Comentario creado con éxito"),
@@ -53,6 +62,15 @@ public class CommentController {
         Comment savedComment = commentRepository.save(comment);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResult.success("Procesamiento concluído exitosamente", savedComment));
+    }
+
+    @Operation(summary = "Añadir un comentario público", description = "Guarda un nuevo comentario de forma pública sin requerir token")
+    @PostMapping("/public")
+    public ResponseEntity<ApiResult<Comment>> createPublicComment(@Valid @RequestBody Comment comment) {
+        // Al ser público, podemos forzar userId "invitado" o similar si fuese necesario
+        Comment savedComment = commentRepository.save(comment);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResult.success("Comentario público procesado exitosamente", savedComment));
     }
 
     @Operation(summary = "Eliminar un comentario", description = "Borra permanentemente un comentario por su ID")

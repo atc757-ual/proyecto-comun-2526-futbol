@@ -1,6 +1,6 @@
 import { PublicLayoutComponent } from './public-layout.component';
 import { IonicModule } from '@ionic/angular';
-import { MenuController, NavController } from '@ionic/angular/standalone';
+import { MenuController, ModalController, NavController } from '@ionic/angular/standalone';
 import { RouterTestingModule } from '@angular/router/testing';
 import { APP_BASE_HREF } from '@angular/common';
 import { AuthService } from 'src/app/core/services/auth/auth.service';
@@ -43,6 +43,13 @@ describe('PublicLayoutComponent Component Cypress Tests', () => {
   });
 
   function mountComponent() {
+    const modalCtrlMock = {
+      create: cy.stub().resolves({
+        present: cy.stub().resolves(),
+        onWillDismiss: cy.stub().resolves({ data: null })
+      })
+    };
+
     cy.mount(PublicLayoutComponent, {
       imports: [IonicModule.forRoot(), RouterTestingModule],
       providers: [
@@ -51,17 +58,18 @@ describe('PublicLayoutComponent Component Cypress Tests', () => {
         { provide: LayoutService, useValue: layoutServiceMock },
         { provide: PlatformService, useValue: platformServiceMock },
         { provide: MenuController, useValue: menuCtrlMock },
-        { provide: NavController, useValue: navCtrlMock }
+        { provide: NavController, useValue: navCtrlMock },
+        { provide: ModalController, useValue: modalCtrlMock }
       ]
     });
   }
 
-  it('should mount successfully and render public breadcrumbs', () => {
+  it('should mount successfully and render public layout', () => {
     mountComponent();
 
-    cy.get('ion-content').should('exist');
-    cy.get('ion-breadcrumbs').should('exist');
-    cy.contains('ion-breadcrumb', 'Fichajes Publicos').should('exist');
+    cy.get('.main-wrapper').should('exist');
+    cy.get('.main-header').should('exist');
+    cy.get('.logo-box').should('exist');
   });
 
   it('should redirect to login if header logo is clicked without session', () => {

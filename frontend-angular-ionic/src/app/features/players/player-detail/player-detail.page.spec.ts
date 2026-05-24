@@ -203,7 +203,7 @@ describe('PlayerDetailPage', () => {
 
   it('ngOnInit should configure header and check permissions', async () => {
     await component.ngOnInit();
-    expect(layoutServiceMock.setHeader).toHaveBeenCalled();
+    expect(component.pageTitle).toBeDefined();
     expect(component.isAdmin).toBeFalse();
   });
 });

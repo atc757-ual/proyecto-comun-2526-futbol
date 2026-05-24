@@ -5,8 +5,10 @@ import {
   IonItem, IonLabel, IonThumbnail,
   IonIcon, IonButton, IonSkeletonText, IonSearchbar, IonSpinner,
   IonCard, IonCardContent, IonCardHeader, IonCardTitle,
-  NavController, ModalController
+  NavController, ModalController, IonContent
 } from '@ionic/angular/standalone';
+import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
+import { PageFooterComponent } from '../../../shared/components/page-footer/page-footer.component';
 import { addIcons } from 'ionicons';
 import {
   createOutline, trashOutline, eyeOutline,
@@ -34,13 +36,14 @@ import { ToastService } from 'src/app/core/services/ui/toast.service';
     CommonModule, FormsModule, RouterModule,
     IonItem, IonLabel, IonThumbnail,
     IonIcon, IonButton, IonSkeletonText, IonSearchbar, IonSpinner,
-    IonCard, IonCardContent, IonCardHeader, IonCardTitle
+    IonCard, IonCardContent, IonCardHeader, IonCardTitle,
+    IonContent, PageHeaderComponent, PageFooterComponent
   ]
 })
 export class ManageNewsPage implements OnInit {
   private newsService = inject(NEWS_SERVICE_TOKEN);
   private storageService = inject(StorageService);
-  private authService = inject(AuthService);
+  public authService = inject(AuthService);
   private layoutService = inject(LayoutService);
   private modalCtrl = inject(ModalController);
   private toastService = inject(ToastService);
@@ -75,19 +78,16 @@ export class ManageNewsPage implements OnInit {
     this.isAdmin = this.authService.isAdmin();
   }
 
+  public pageTitle = 'Gestión de noticias';
+  public pageSubtitle = '¡Gestiona las noticias desde aquí, visualiza, edita y elimina!';
+  public breadcrumbs = [
+    { label: '', url: '', icon: 'home-outline' },
+    { label: 'Noticias', url: '/news' },
+    { label: 'Gestión de noticias' }
+  ];
+
   ngOnInit() {
     this.loadNews();
-    this.layoutService.setHeader({
-      title: 'Gestión de noticias',
-      subtitle: '¡Gestiona las noticias desde aquí, visualiza, edita y elimina!',
-      showHero: true
-    });
-    this.layoutService.setBreadcrumbs([
-      { label: '', url: '', icon: 'home-outline' },
-      { label: 'Noticias', url: '/news' },
-      { label: 'Gestión de noticias' }
-    ]);
-
   }
 
   loadNews(event?: any) {
@@ -285,5 +285,3 @@ export class ManageNewsPage implements OnInit {
     }
   }
 }
-
-

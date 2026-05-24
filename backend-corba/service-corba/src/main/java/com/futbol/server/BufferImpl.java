@@ -3,6 +3,8 @@ package com.futbol.server;
 import java.util.ArrayList;
 import java.util.List;
 import BufferApp.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementación del Gestor de Noticias (SOLO MEMORIA).
@@ -10,20 +12,19 @@ import BufferApp.*;
  */
 public class BufferImpl extends _NewsServiceImplBase {
 
+    private static final Logger logger = LoggerFactory.getLogger(BufferImpl.class);
+
     private List<NewsItem> noticias;
 
     public BufferImpl() {
-        // Iniciamos totalmente vacío, sin archivos ni semillas
         noticias = new ArrayList<>();
-        System.out.println("\n=== GESTOR DE NOTICIAS CORBA (IN-MEMORY) ===");
-        System.out.println("=== Esperando carga de datos desde el cliente ===");
-        System.out.println("============================================\n");
+        logger.info("=== GESTOR DE NOTICIAS CORBA (IN-MEMORY) iniciado. Esperando carga de datos. ===");
     }
 
     @Override
     public synchronized void addNews(NewsItem noticia) {
         noticias.add(noticia);
-        System.out.println("[CREATE] Noticia recibida: " + noticia.title);
+        logger.info("[CREATE] Noticia recibida: {}", noticia.title);
     }
 
     @Override
@@ -32,7 +33,7 @@ public class BufferImpl extends _NewsServiceImplBase {
             for (NewsItem n : nuevasNoticias) {
                 noticias.add(n);
             }
-            System.out.println("[BULK] Se han cargado " + nuevasNoticias.length + " noticias masivamente.");
+            logger.info("[BULK] {} noticias cargadas masivamente.", nuevasNoticias.length);
         }
     }
 
@@ -41,7 +42,7 @@ public class BufferImpl extends _NewsServiceImplBase {
         for (int i = 0; i < noticias.size(); i++) {
             if (noticias.get(i).id.equals(noticiaModificada.id)) {
                 noticias.set(i, noticiaModificada);
-                System.out.println("[UPDATE] Noticia actualizada: " + noticiaModificada.title);
+                logger.info("[UPDATE] Noticia actualizada: {}", noticiaModificada.title);
                 return true;
             }
         }
@@ -52,7 +53,7 @@ public class BufferImpl extends _NewsServiceImplBase {
     public synchronized boolean deleteNews(String id) {
         boolean eliminado = noticias.removeIf(n -> n.id.equals(id));
         if (eliminado) {
-            System.out.println("[DELETE] ID eliminado: " + id);
+            logger.info("[DELETE] ID eliminado: {}", id);
         }
         return eliminado;
     }
@@ -97,6 +98,6 @@ public class BufferImpl extends _NewsServiceImplBase {
 
     @Override
     public void shutdown() {
-        System.out.println("Cerrando gestor (Datos volátiles eliminados)...");
+        logger.info("Cerrando gestor CORBA. Datos volátiles eliminados.");
     }
 }

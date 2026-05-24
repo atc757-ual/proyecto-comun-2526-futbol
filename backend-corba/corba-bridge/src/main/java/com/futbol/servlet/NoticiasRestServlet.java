@@ -2,12 +2,16 @@ package com.futbol.servlet;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.UUID;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import org.omg.CORBA.*;
 import org.omg.CosNaming.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,12 +20,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import BufferApp.*;
 import com.futbol.utils.*;
 
-/**
- * Servlet RESTful para gestionar noticias con Logs de Depuración y Conexión Persistente.
- */
 public class NoticiasRestServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger logger = LoggerFactory.getLogger(NoticiasRestServlet.class);
+
     private final ObjectMapper mapper = new ObjectMapper();
     private NewsService newsService;
 
@@ -32,112 +35,129 @@ public class NoticiasRestServlet extends HttpServlet {
 
     private void conectarCorba() {
         try {
-            System.out.println("[BRIDGE-INIT] Intentando conectar con servidor CORBA...");
+            logger.info("[BRIDGE-INIT] Conectando con servidor CORBA...");
             this.newsService = getCorbaService();
-            System.out.println("[BRIDGE-INIT] !!! CONEXION ESTABLECIDA CON ÉXITO !!!");
+            logger.info("[BRIDGE-INIT] Conexión CORBA establecida correctamente.");
         } catch (Exception e) {
-            System.err.println("[BRIDGE-INIT] ERROR CRÍTICO AL CONECTAR: " + e.getMessage());
+            logger.error("[BRIDGE-INIT] ERROR CRÍTICO al conectar con CORBA: {}", e.getMessage());
         }
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        System.out.println("[BRIDGE-GET] Nueva peticion recibida: " + request.getPathInfo());
-        
+
+        logger.debug("[BRIDGE-GET] Nueva peticion recibida: {}", request.getPathInfo());
+
         if (!validarAutorizacion(request, response)) return;
 
         response.setContentType("application/json;charset=UTF-8");
-        String pathInfo = request.getPathInfo(); 
-        
+        String pathInfo = request.getPathInfo();
+
+        int page = parseIntParam(request.getParameter("page"), 0);
+        int limit = parseIntParam(request.getParameter("limit"), 0);
+
         try {
             if (this.newsService == null) {
-                System.out.println("[BRIDGE-GET] Re-intentando conexion CORBA perdida...");
+                logger.warn("[BRIDGE-GET] Re-intentando conexión CORBA perdida...");
                 conectarCorba();
             }
-            
+
             String xsdPath = getXsdPath();
-            System.out.println("[BRIDGE-GET] Usando XSD: " + xsdPath);
 
             if (pathInfo == null || pathInfo.equals("/") || pathInfo.isEmpty()) {
                 if (!validarRolAdmin(request, response)) return;
-                System.out.println("[BRIDGE-GET] Llamando a CORBA: getAllNews()...");
-                procesarLista(this.newsService.getAllNews(), response, xsdPath, "Procesamiento concluído exitosamente");
+                procesarLista(this.newsService.getAllNews(), response, xsdPath,
+                        "Procesamiento concluído exitosamente", page, limit);
             } else if (pathInfo.startsWith("/feed")) {
-                System.out.println("[BRIDGE-GET] Llamando a CORBA: getVisibleNews()...");
-                procesarLista(this.newsService.getVisibleNews(), response, xsdPath, "Procesamiento concluído exitosamente");
+                procesarLista(this.newsService.getVisibleNews(), response, xsdPath,
+                        "Procesamiento concluído exitosamente", page, limit);
             } else if (pathInfo.startsWith("/featured")) {
-                System.out.println("[BRIDGE-GET] Llamando a CORBA: getFeaturedNews()...");
-                procesarLista(this.newsService.getFeaturedNews(), response, xsdPath, "Procesamiento concluído exitosamente");
+                procesarLista(this.newsService.getFeaturedNews(), response, xsdPath,
+                        "Procesamiento concluído exitosamente", page, limit);
             } else if (pathInfo.startsWith("/recent")) {
-                System.out.println("[BRIDGE-GET] Llamando a CORBA: getRecentNews()...");
-                procesarLista(this.newsService.getRecentNews(), response, xsdPath, "Procesamiento concluído exitosamente");
+                procesarLista(this.newsService.getRecentNews(), response, xsdPath,
+                        "Procesamiento concluído exitosamente", page, limit);
             } else {
                 String id = pathInfo.substring(1);
-                System.out.println("[BRIDGE-GET] Llamando a CORBA: getNewsById(" + id + ")...");
                 try {
                     NewsItem noticia = this.newsService.getNewsById(id);
                     if (noticia == null || noticia.id == null || noticia.id.isEmpty()) {
-                        System.out.println("[BRIDGE-GET] Noticia " + id + " no encontrada (null).");
-                        enviarRespuesta(response, HttpServletResponse.SC_NOT_FOUND, false, "Noticia no encontrada en CORBA", null);
+                        enviarRespuesta(response, HttpServletResponse.SC_NOT_FOUND, false,
+                                "Noticia no encontrada en CORBA", null);
                     } else {
-                        System.out.println("[BRIDGE-GET] Noticia " + id + " encontrada. Validando XML...");
                         try {
-                            enviarRespuesta(response, HttpServletResponse.SC_OK, true, "Procesamiento concluído exitosamente", validarYLimpiar(noticia, xsdPath));
+                            enviarRespuesta(response, HttpServletResponse.SC_OK, true,
+                                    "Procesamiento concluído exitosamente", validarYLimpiar(noticia, xsdPath));
                         } catch (Exception valEx) {
-                            System.err.println("[BRIDGE-VALID] Error validando noticia existente: " + valEx.getMessage());
-                            // Si falla la validación pero la noticia existe, la enviamos igual pero con aviso o limpia
-                            enviarRespuesta(response, HttpServletResponse.SC_OK, true, "Procesamiento concluído exitosamente", noticia);
+                            logger.warn("[BRIDGE-VALID] Error validando noticia {}: {}", id, valEx.getMessage());
+                            enviarRespuesta(response, HttpServletResponse.SC_OK, true,
+                                    "Procesamiento concluído exitosamente", noticia);
                         }
                     }
                 } catch (org.omg.CORBA.OBJECT_NOT_EXIST | org.omg.CORBA.BAD_PARAM ex) {
-                    System.out.println("[BRIDGE-GET] Excepción CORBA: Noticia " + id + " no existe.");
-                    enviarRespuesta(response, HttpServletResponse.SC_NOT_FOUND, false, "Noticia no encontrada en CORBA", null);
+                    enviarRespuesta(response, HttpServletResponse.SC_NOT_FOUND, false,
+                            "Noticia no encontrada en CORBA", null);
                 }
             }
         } catch (Exception e) {
-            System.err.println("[BRIDGE-ERROR] Fallo crítico en el flujo: " + e.getMessage());
-            e.printStackTrace();
-            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, "Error Crítico Bridge: " + e.getMessage(), null);
+            logger.error("[BRIDGE-ERROR] Fallo crítico en el flujo: {}", e.getMessage(), e);
+            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false,
+                    "Error Crítico Bridge: " + e.getMessage(), null);
         }
     }
 
-    private void procesarLista(NewsItem[] noticias, HttpServletResponse response, String xsdPath, String msg) throws Exception {
-        System.out.println("[BRIDGE-LIST] Procesando lista de " + (noticias != null ? noticias.length : 0) + " items...");
+    private void procesarLista(NewsItem[] noticias, HttpServletResponse response, String xsdPath,
+                                String msg, int page, int limit) throws Exception {
+        logger.debug("[BRIDGE-LIST] Procesando lista de {} items, page={}, limit={}",
+                noticias != null ? noticias.length : 0, page, limit);
+
         List<NewsItem> lista = new ArrayList<>();
         if (noticias != null) {
             for (NewsItem n : noticias) {
                 try {
                     lista.add(validarYLimpiar(n, xsdPath));
                 } catch (Exception e) {
-                    System.err.println("[BRIDGE-LIST] Saltando noticia " + n.id + " por error de validación: " + e.getMessage());
-                    // Opcionalmente podrías añadir la noticia sin validar si quieres que se vea igual
-                    // lista.add(n); 
+                    logger.warn("[BRIDGE-LIST] Saltando noticia {} por error de validación: {}", n.id, e.getMessage());
                 }
             }
         }
-        
-        // Ordenar la lista por fecha descendente (más reciente primero)
-        // El formato es DD/MM/YYYY, lo comparamos como YYYYMMDD
+
         lista.sort((n1, n2) -> {
             try {
                 String[] d1 = n1.date.split("/");
                 String[] d2 = n2.date.split("/");
-                String iso1 = d1[2] + d1[1] + d1[0]; // YYYYMMDD
+                String iso1 = d1[2] + d1[1] + d1[0];
                 String iso2 = d2[2] + d2[1] + d2[0];
-                return iso2.compareTo(iso1); // Descendente
+                return iso2.compareTo(iso1);
             } catch (Exception e) {
                 return 0;
             }
         });
 
-        System.out.println("[BRIDGE-LIST] Lista procesada y ordenada. Enviando respuesta JSON...");
-        enviarRespuesta(response, HttpServletResponse.SC_OK, true, msg, lista);
+        int total = lista.size();
+        Map<String, java.lang.Object> pagination = null;
+
+        List<NewsItem> paginada;
+        if (page > 0 && limit > 0) {
+            int totalPages = (int) Math.ceil((double) total / limit);
+            int fromIndex = (page - 1) * limit;
+            int toIndex = Math.min(fromIndex + limit, total);
+            paginada = (fromIndex < total) ? new ArrayList<>(lista.subList(fromIndex, toIndex)) : new ArrayList<>();
+
+            pagination = new LinkedHashMap<>();
+            pagination.put("page", page);
+            pagination.put("limit", limit);
+            pagination.put("total", total);
+            pagination.put("totalPages", totalPages);
+        } else {
+            paginada = lista;
+        }
+
+        enviarRespuestaConPaginacion(response, HttpServletResponse.SC_OK, true, msg, paginada, pagination);
     }
 
     private NewsItem validarYLimpiar(NewsItem n, String xsdPath) throws Exception {
-        // System.out.println("[BRIDGE-VALID] Pipeline XML para: " + n.title);
         String xml = XMLCoder.toXML(n);
         XMLValidator.validar(xml, xsdPath);
         return XMLDecoder.decode(xml);
@@ -161,12 +181,11 @@ public class NoticiasRestServlet extends HttpServlet {
         if (!validarRolAdmin(request, response)) return;
 
         try {
-            System.out.println("[BRIDGE-BULK] Iniciando carga masiva...");
+            logger.info("[BRIDGE-BULK] Iniciando carga masiva...");
             NewsItem[] noticias = leerNoticiasDesdeRequest(request);
             List<NewsItem> validadas = new ArrayList<>();
 
             for (NewsItem n : noticias) {
-// Blindaje anti-nulos para CORBA (mantener valores por defecto)
                 if (n.title == null) n.title = "";
                 if (n.author == null) n.author = "";
                 if (n.summary == null) n.summary = "";
@@ -179,10 +198,7 @@ public class NoticiasRestServlet extends HttpServlet {
                 if (n.updatedBy == null) n.updatedBy = "Admin";
                 if (n.createdAt == null) n.createdAt = "";
                 if (n.updatedAt == null) n.updatedAt = "";
-                // Generar siempre un ID nuevo (ignora el que pueda venir)
                 n.id = generateId();
-
-                System.out.println("[BRIDGE-BULK] Procesando noticia ID: " + n.id + " | Titulo: " + n.title);
 
                 String xmlData = XMLCoder.toXML(n);
                 XMLValidator.validar(xmlData, getXsdPath());
@@ -192,11 +208,13 @@ public class NoticiasRestServlet extends HttpServlet {
             if (this.newsService == null) conectarCorba();
             this.newsService.bulkAddNews(validadas.toArray(new NewsItem[0]));
 
-            System.out.println("[BRIDGE-BULK] Exito: " + validadas.size() + " noticias cargadas.");
-            enviarRespuesta(response, HttpServletResponse.SC_CREATED, true, "Carga masiva completada en CORBA", validadas);
+            logger.info("[BRIDGE-BULK] Éxito: {} noticias cargadas.", validadas.size());
+            enviarRespuesta(response, HttpServletResponse.SC_CREATED, true,
+                    "Carga masiva completada en CORBA", validadas);
         } catch (Exception e) {
-            System.err.println("[BRIDGE-BULK] ERROR: " + e.getMessage());
-            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, "Error en carga masiva: " + e.getMessage(), null);
+            logger.error("[BRIDGE-BULK] ERROR: {}", e.getMessage());
+            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false,
+                    "Error en carga masiva: " + e.getMessage(), null);
         }
     }
 
@@ -219,36 +237,32 @@ public class NoticiasRestServlet extends HttpServlet {
         if (!validarRolAdmin(request, response)) return;
 
         try {
-            System.out.println("[BRIDGE-POST] Iniciando publicacion...");
-            // 1. Leer una sola vez el JSON del request
+            logger.info("[BRIDGE-POST] Iniciando publicación...");
             NewsItem noticiaRecibida = leerNoticiaDesdeRequest(request);
-            // 2. Generar ID si falta (o sobrescribir para asegurar que el bridge lo crea)
             if (noticiaRecibida.id == null || noticiaRecibida.id.isEmpty()) {
                 noticiaRecibida.id = generateId();
             }
-            // 3. Validar contra XSD antes de guardar (Pipeline de limpieza)
             String xsdPath = getXsdPath();
             NewsItem noticiaLimpia;
             try {
                 noticiaLimpia = validarYLimpiar(noticiaRecibida, xsdPath);
             } catch (Exception e) {
-                System.err.println("[BRIDGE-POST] Error de validación XSD: " + e.getMessage());
-                enviarRespuesta(response, HttpServletResponse.SC_BAD_REQUEST, false, "Error de validación XSD: " + e.getMessage(), null);
+                logger.warn("[BRIDGE-POST] Error de validación XSD: {}", e.getMessage());
+                enviarRespuesta(response, HttpServletResponse.SC_BAD_REQUEST, false,
+                        "Error de validación XSD: " + e.getMessage(), null);
                 return;
             }
 
             if (this.newsService == null) conectarCorba();
-            
-            // 3. Validación de tamaño de imagen en Backend
             validarTamanoImagen(noticiaLimpia.imageUrl);
-
-            // 4. Guardar en CORBA
             this.newsService.addNews(noticiaLimpia);
-            System.out.println("[BRIDGE-POST] Noticia creada con éxito: " + noticiaLimpia.id);
-            enviarRespuesta(response, HttpServletResponse.SC_CREATED, true, "Noticia creada en CORBA", noticiaLimpia);
+            logger.info("[BRIDGE-POST] Noticia creada con éxito: {}", noticiaLimpia.id);
+            enviarRespuesta(response, HttpServletResponse.SC_CREATED, true,
+                    "Noticia creada en CORBA", noticiaLimpia);
         } catch (Exception e) {
-            System.err.println("[BRIDGE-POST] ERROR: " + e.getMessage());
-            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, "Error de validación: " + e.getMessage(), null);
+            logger.error("[BRIDGE-POST] ERROR: {}", e.getMessage());
+            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false,
+                    "Error de validación: " + e.getMessage(), null);
         }
     }
 
@@ -259,39 +273,34 @@ public class NoticiasRestServlet extends HttpServlet {
         if (!validarRolAdmin(request, response)) return;
 
         try {
-            System.out.println("[BRIDGE-PUT] Iniciando actualizacion...");
-            // 1. Leer JSON una sola vez
+            logger.info("[BRIDGE-PUT] Iniciando actualización...");
             NewsItem noticiaRecibida = leerNoticiaDesdeRequest(request);
-            
-            // 2. Validar contra XSD (Pipeline de limpieza)
             String xsdPath = getXsdPath();
             NewsItem noticiaLimpia;
             try {
                 noticiaLimpia = validarYLimpiar(noticiaRecibida, xsdPath);
             } catch (Exception e) {
-                System.err.println("[BRIDGE-PUT] Error de validación XSD: " + e.getMessage());
-                enviarRespuesta(response, HttpServletResponse.SC_BAD_REQUEST, false, "Error de validación XSD: " + e.getMessage(), null);
+                logger.warn("[BRIDGE-PUT] Error de validación XSD: {}", e.getMessage());
+                enviarRespuesta(response, HttpServletResponse.SC_BAD_REQUEST, false,
+                        "Error de validación XSD: " + e.getMessage(), null);
                 return;
             }
 
             if (this.newsService == null) conectarCorba();
-            
-            // 3. Validación de tamaño de imagen en Backend
             validarTamanoImagen(noticiaLimpia.imageUrl);
-
-            // 4. Actualizar en CORBA
             boolean success = this.newsService.updateNews(noticiaLimpia);
 
             if (success) {
-                System.out.println("[BRIDGE-PUT] Exito actualizando en CORBA.");
-                enviarRespuesta(response, HttpServletResponse.SC_OK, true, "Procesamiento concluído exitosamente", noticiaLimpia);
+                enviarRespuesta(response, HttpServletResponse.SC_OK, true,
+                        "Procesamiento concluído exitosamente", noticiaLimpia);
             } else {
-                System.out.println("[BRIDGE-PUT] CORBA devolvio false (no encontrado?).");
-                enviarRespuesta(response, HttpServletResponse.SC_NOT_FOUND, false, "No se pudo actualizar la noticia", null);
+                enviarRespuesta(response, HttpServletResponse.SC_NOT_FOUND, false,
+                        "No se pudo actualizar la noticia", null);
             }
         } catch (Exception e) {
-            System.err.println("[BRIDGE-PUT] ERROR: " + e.getMessage());
-            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, "Error al actualizar: " + e.getMessage(), null);
+            logger.error("[BRIDGE-PUT] ERROR: {}", e.getMessage());
+            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false,
+                    "Error al actualizar: " + e.getMessage(), null);
         }
     }
 
@@ -303,58 +312,55 @@ public class NoticiasRestServlet extends HttpServlet {
 
         String pathInfo = request.getPathInfo();
         if (pathInfo == null || pathInfo.equals("/") || pathInfo.isEmpty()) {
-            enviarRespuesta(response, HttpServletResponse.SC_BAD_REQUEST, false, "ID de noticia requerido", null);
+            enviarRespuesta(response, HttpServletResponse.SC_BAD_REQUEST, false,
+                    "ID de noticia requerido", null);
             return;
         }
 
         try {
             String id = pathInfo.substring(1);
-            System.out.println("[BRIDGE-DELETE] Iniciando eliminacion de ID: " + id);
+            logger.info("[BRIDGE-DELETE] Eliminando ID: {}", id);
 
             if (this.newsService == null) conectarCorba();
             boolean success = this.newsService.deleteNews(id);
 
             if (success) {
-                System.out.println("[BRIDGE-DELETE] Exito eliminando en CORBA.");
-                enviarRespuesta(response, HttpServletResponse.SC_OK, true, "Procesamiento concluído exitosamente", null);
+                enviarRespuesta(response, HttpServletResponse.SC_OK, true,
+                        "Procesamiento concluído exitosamente", null);
             } else {
-                System.out.println("[BRIDGE-DELETE] Noticia no encontrada en CORBA.");
-                enviarRespuesta(response, HttpServletResponse.SC_NOT_FOUND, false, "Noticia no encontrada", null);
+                enviarRespuesta(response, HttpServletResponse.SC_NOT_FOUND, false,
+                        "Noticia no encontrada", null);
             }
         } catch (Exception e) {
-            System.err.println("[BRIDGE-DELETE] ERROR: " + e.getMessage());
-            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false, e.getMessage(), null);
+            logger.error("[BRIDGE-DELETE] ERROR: {}", e.getMessage());
+            enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false,
+                    e.getMessage(), null);
         }
     }
 
     private void validarTamanoImagen(String imageUrl) throws Exception {
         if (imageUrl == null || imageUrl.isEmpty() || !imageUrl.startsWith("http")) return;
-        
-        System.out.println("[BRIDGE-VALID] Verificando tamaño de imagen: " + imageUrl);
         try {
             java.net.URL url = new java.net.URL(imageUrl);
             java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
             conn.setRequestMethod("HEAD");
-            conn.setConnectTimeout(2000); // 2 segundos máximo
+            conn.setConnectTimeout(2000);
             conn.setReadTimeout(2000);
-            
             long size = conn.getContentLengthLong();
             if (size > 100 * 1024) {
-                System.err.println("[BRIDGE-VALID] IMAGEN RECHAZADA: " + (size/1024) + "KB");
-                throw new Exception("La imagen es demasiado pesada (" + (size/1024) + "KB). El máximo permitido es 100KB.");
+                throw new Exception("La imagen es demasiado pesada (" + (size / 1024) + "KB). El máximo permitido es 100KB.");
             }
-            System.out.println("[BRIDGE-VALID] Imagen OK: " + (size/1024) + "KB");
         } catch (IOException e) {
-            System.err.println("[BRIDGE-VALID] No se pudo verificar el tamaño (Ignorado): " + e.getMessage());
-            // Si falla la conexión, dejamos pasar para no bloquear la publicación por un error de red temporal
+            logger.warn("[BRIDGE-VALID] No se pudo verificar el tamaño de imagen (ignorado): {}", e.getMessage());
         }
     }
 
     private boolean validarAutorizacion(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            System.err.println("[BRIDGE-AUTH] Denegado: Sin Token");
-            enviarRespuesta(response, HttpServletResponse.SC_UNAUTHORIZED, false, "Autenticacion requerida", null);
+            logger.warn("[BRIDGE-AUTH] Denegado: Sin Token");
+            enviarRespuesta(response, HttpServletResponse.SC_UNAUTHORIZED, false,
+                    "Autenticacion requerida", null);
             return false;
         }
         return true;
@@ -363,21 +369,29 @@ public class NoticiasRestServlet extends HttpServlet {
     private boolean validarRolAdmin(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String userRole = request.getHeader("X-User-Role");
         if (userRole == null || !userRole.equalsIgnoreCase("ADMIN")) {
-            System.err.println("[BRIDGE-AUTH] Denegado: Requiere ADMIN y es " + userRole);
-            enviarRespuesta(response, HttpServletResponse.SC_FORBIDDEN, false, "Permisos insuficientes", null);
+            logger.warn("[BRIDGE-AUTH] Denegado: Requiere ADMIN, recibido={}", userRole);
+            enviarRespuesta(response, HttpServletResponse.SC_FORBIDDEN, false,
+                    "Permisos insuficientes", null);
             return false;
         }
         return true;
     }
 
-    private void enviarRespuesta(HttpServletResponse response, int statusCode, boolean success, String mensaje, java.lang.Object data) throws IOException {
+    private void enviarRespuesta(HttpServletResponse response, int statusCode, boolean success,
+                                  String mensaje, java.lang.Object data) throws IOException {
+        enviarRespuestaConPaginacion(response, statusCode, success, mensaje, data, null);
+    }
+
+    private void enviarRespuestaConPaginacion(HttpServletResponse response, int statusCode, boolean success,
+                                               String mensaje, java.lang.Object data,
+                                               Map<String, java.lang.Object> pagination) throws IOException {
         response.setStatus(statusCode);
-        java.util.Map<String, java.lang.Object> fullResponse = new java.util.LinkedHashMap<>();
-        java.util.Map<String, java.lang.Object> result = new java.util.LinkedHashMap<>();
-        
-        result.put("transactionId", java.util.UUID.randomUUID().toString());
+        Map<String, java.lang.Object> fullResponse = new LinkedHashMap<>();
+        Map<String, java.lang.Object> result = new LinkedHashMap<>();
+
+        result.put("transactionId", UUID.randomUUID().toString());
         result.put("code", String.valueOf(statusCode));
-        
+
         String desc = "OK";
         if (statusCode == 201) desc = "Created";
         else if (statusCode == 400) desc = "Bad Request";
@@ -386,13 +400,16 @@ public class NoticiasRestServlet extends HttpServlet {
         else if (statusCode == 404) desc = "Not Found";
         else if (statusCode >= 500) desc = "Internal Server Error";
         result.put("description", desc);
-        
+
         String finalMensaje = (statusCode == 200) ? "Procesamiento concluído exitosamente" : mensaje;
         result.put("descriptionDetail", finalMensaje);
         result.put("responseTimestamp", java.time.Instant.now().toString());
-        
+
         fullResponse.put("result", result);
-        fullResponse.put("data", data != null ? data : new java.util.ArrayList<>());
+        fullResponse.put("data", data != null ? data : new ArrayList<>());
+        if (pagination != null) {
+            fullResponse.put("pagination", pagination);
+        }
         response.getWriter().println(mapper.writeValueAsString(fullResponse));
     }
 
@@ -429,12 +446,10 @@ public class NoticiasRestServlet extends HttpServlet {
         if (node.hasNonNull("date")) {
             return;
         }
-
         if (node.hasNonNull("publishedDate")) {
             node.set("date", node.get("publishedDate"));
             return;
         }
-
         if (node.hasNonNull("publishdate")) {
             node.set("date", node.get("publishdate"));
         }
@@ -444,38 +459,31 @@ public class NoticiasRestServlet extends HttpServlet {
         if (node.has("isActive")) {
             return;
         }
-
         JsonNode statusNode = node.get("status");
         if (statusNode == null || statusNode.isNull()) {
             return;
         }
-
         if (statusNode.isBoolean()) {
             node.set("isActive", statusNode);
             return;
         }
-
         if (statusNode.isInt() || statusNode.isLong()) {
             node.put("isActive", statusNode.asInt() != 0);
             return;
         }
-
         if (!statusNode.isTextual()) {
             return;
         }
-
         String normalizedStatus = statusNode.asText("").trim().toLowerCase();
         if (normalizedStatus.isEmpty()) {
             return;
         }
-
         boolean isActive = normalizedStatus.equals("active")
                 || normalizedStatus.equals("published")
                 || normalizedStatus.equals("public")
                 || normalizedStatus.equals("visible")
                 || normalizedStatus.equals("true")
                 || normalizedStatus.equals("1");
-
         node.put("isActive", isActive);
     }
 
@@ -496,11 +504,16 @@ public class NoticiasRestServlet extends HttpServlet {
         return xsdPath;
     }
 
-    /**
-     * Genera un ID que cumple con el patrón XSD '[a-zA-Z0-9\-_]+'
-     * Utiliza UUID sin guiones para obtener sólo caracteres alfanuméricos.
-     */
     private String generateId() {
         return UUID.randomUUID().toString().replaceAll("-", "");
+    }
+
+    private int parseIntParam(String param, int defaultValue) {
+        if (param == null || param.isEmpty()) return defaultValue;
+        try {
+            return Integer.parseInt(param);
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
     }
 }

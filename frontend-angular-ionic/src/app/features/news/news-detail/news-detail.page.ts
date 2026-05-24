@@ -13,13 +13,15 @@ import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { StorageService } from 'src/app/core/services/system/storage.service';
 import { NEWS_SERVICE_TOKEN } from '../../../core/services/news/news.service.token';
 import { ToastService } from 'src/app/core/services/ui/toast.service';
+import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
+import { PageFooterComponent } from '../../../shared/components/page-footer/page-footer.component';
 
 @Component({
   selector: 'app-news-detail',
   templateUrl: './news-detail.page.html',
   styleUrls: ['./news-detail.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterModule],
+  imports: [IonicModule, CommonModule, FormsModule, RouterModule, PageHeaderComponent, PageFooterComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class NewsDetailPage {
@@ -38,6 +40,10 @@ export class NewsDetailPage {
   newsList: NewsItem[] = [];
   isLoading = true;
   isAdmin = false;
+
+  public pageTitle = 'Detalle de la noticia';
+  public pageSubtitle = 'Aquí podrás leer la noticia completa.';
+  public breadcrumbs: any[] = [];
 
   @Input() set id(value: string) {
     if (value) {
@@ -70,17 +76,13 @@ export class NewsDetailPage {
         this.selectedNew = data;
 
         // ACTUALIZAR TÍTULO DE CABECERA
-        this.layoutService.setHeader({
-          title: 'Detalle de la noticia',
-          subtitle: 'Aquí podrás leer la noticia completa.',
-          showHero: true
-        });
-
-        this.layoutService.setBreadcrumbs([
+        this.pageTitle = 'Detalle de la noticia';
+        this.pageSubtitle = 'Aquí podrás leer la noticia completa.';
+        this.breadcrumbs = [
           { label: '', url: '/home', icon: 'home-outline' },
           { label: 'Noticias', url: '/news' },
           { label: "Detalle" }
-        ]);
+        ];
 
         // Si no tenemos la lista lateral cargada, la pedimos
         if (this.newsList.length === 0) {

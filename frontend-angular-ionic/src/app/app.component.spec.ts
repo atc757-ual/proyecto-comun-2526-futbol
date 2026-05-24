@@ -6,6 +6,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { AuthService } from './core/services/auth/auth.service';
 import { NetworkPlugin } from './core/plugins/network-plugin';
 import { of } from 'rxjs';
+import { Auth } from '@angular/fire/auth';
 
 describe('AppComponent', () => {
 
@@ -13,6 +14,7 @@ describe('AppComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AppComponent, RouterTestingModule.withRoutes([])],
       providers: [
+        { provide: Auth, useValue: {} },
         { provide: AuthService, useValue: { user$: of(null), getUID: () => null, isAuthenticated: () => false } },
         { provide: NetworkPlugin, useValue: { getStatus: () => Promise.resolve({ connected: true }), onStatusChange: () => {} } }
       ],

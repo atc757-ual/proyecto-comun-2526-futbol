@@ -24,11 +24,10 @@ const publicCommentsCreate = async (req, res) => {
         const savedPlayer = await player.save();
         const lastComment = savedPlayer.comments[savedPlayer.comments.length - 1];
 
-        sendApiResult(res, 201, "Opinión publicada con éxito", lastComment);
+        return sendApiResult(res, 201, "Opinión publicada con éxito", lastComment);
 
     } catch (err) {
-        console.error('[BACKEND-PUBLIC] Error en publicCommentsCreate:', err);
-        sendApiResult(res, 400, "Error al publicar en la comunidad: " + err.message);
+        return sendApiResult(res, 400, "Error al publicar en la comunidad: " + err.message);
     }
 };
 

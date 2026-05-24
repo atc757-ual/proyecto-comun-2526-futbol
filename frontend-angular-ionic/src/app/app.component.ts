@@ -29,6 +29,8 @@ export class AppComponent implements OnInit {
     this.initDeepLinks();
   }
 
+  private user$ = user(this.auth);
+
   ngOnInit() {
     // 1. Monitorear estado de red inicial y cambios
     this.initNetworkMonitoring();
@@ -38,7 +40,7 @@ export class AppComponent implements OnInit {
 
     // Consultar el estado nativo de Firebase aquí evita arrastrar AuthService al bundle inicial.
     const authCheck = new Promise<string>(resolve => {
-      user(this.auth).pipe(take(1)).subscribe(currentUser => {
+      this.user$.pipe(take(1)).subscribe(currentUser => {
         resolve(currentUser || localStorage.getItem('jwt_token') ? '/home' : '/auth/login');
       });
     });

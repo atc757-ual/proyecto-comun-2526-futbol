@@ -1,10 +1,22 @@
+const crypto = require('crypto');
 const newsService = require('../services/news.service');
 const { sendApiResult } = require('./apiResult');
 
 const getNews = async (req, res) => {
     try {
-        const data = await newsService.findAll(req);
-        sendApiResult(res, 200, "Procesamiento concluído exitosamente", data);
+        const { data, pagination } = await newsService.findAll(req);
+        const body = {
+            result: {
+                transactionId: crypto.randomUUID(),
+                code: '200',
+                description: 'OK',
+                descriptionDetail: 'Procesamiento concluído exitosamente',
+                responseTimestamp: new Date().toISOString()
+            },
+            data
+        };
+        if (pagination) body.pagination = pagination;
+        res.status(200).json(body);
     } catch (error) {
         sendApiResult(res, 500, "Error en Bridge CORBA: " + error.message);
     }

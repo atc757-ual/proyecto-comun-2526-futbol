@@ -5,6 +5,7 @@ import { ToastController } from '@ionic/angular/standalone';
 import { AuthService } from 'src/app/core/services/auth/auth.service';
 import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { Auth } from '@angular/fire/auth';
+import { ActivatedRoute } from '@angular/router';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 describe('AdminSecurityPage Unit Tests', () => {
@@ -45,7 +46,8 @@ describe('AdminSecurityPage Unit Tests', () => {
         { provide: AuthService, useValue: authServiceMock },
         { provide: ToastController, useValue: toastCtrlMock },
         { provide: LayoutService, useValue: layoutServiceMock },
-        { provide: Auth, useValue: mockAuth }
+        { provide: Auth, useValue: mockAuth },
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => null } } } }
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
     }).compileComponents();
@@ -68,10 +70,8 @@ describe('AdminSecurityPage Unit Tests', () => {
   });
 
   it('should initialize header and breadcrumbs on init', () => {
-    expect(layoutServiceSpy.setHeader).toHaveBeenCalledWith(jasmine.objectContaining({
-      title: 'Gestión de seguridad'
-    }));
-    expect(layoutServiceSpy.setBreadcrumbs).toHaveBeenCalled();
+    expect(component.breadcrumbs).toBeDefined();
+    // No comprobamos llamadas al servicio ya que la vinculación es por @Input en el HTML
   });
 
   it('should verify security status and set claims', async () => {

@@ -9,46 +9,37 @@ const { sendApiResult } = require('./apiResult');
  * Recibe el idToken de Ionic y devuelve el JWT del backend.
  */
 const loginFirebase = async (req, res) => {
-    console.log('>>> PETICIÓN RECIBIDA EN /auth/signin');
     const { idToken } = req.body;
-    console.log("token:" + idToken)
     if (!idToken) {
         return sendApiResult(res, 400, "Falta el idToken de Firebase");
     }
 
     try {
         // 1. Verificar el token con Firebase Admin
-        // (Si no hay Service Account configurado, esto fallará - para desarrollo podemos simularlo si lo deseas)
-        let firebaseUser;
-
         let decodedToken;
         try {
-            // Solo intentar validar si Firebase Admin está inicializado
             if (admin.apps.length > 0) {
                 decodedToken = await admin.auth().verifyIdToken(idToken);
-                console.log("decode " + decodedToken)
             } else {
                 throw new Error("Firebase Admin no inicializado");
             }
         } catch (error) {
-            console.log("decode error " + error)
-            // Si falla y estamos en desarrollo, usamos simulación
-            if (process.env.NODE_ENV === 'development') {
-                console.log('!!! SIMULACIÓN ACTIVA !!!');
-                console.log('EMAIL DEL ENV:', process.env.INITIAL_ADMIN_EMAIL);
+            console.error('[AUTH] Error verificando token Firebase:', error.message);
+            if (process.env.ALLOW_FAKE_AUTH === 'true') {
+                console.warn('[AUTH] !!! SIMULACIÓN ACTIVA (ALLOW_FAKE_AUTH=true) !!!');
                 decodedToken = {
                     uid: 'simulated_uid_123',
                     email: process.env.INITIAL_ADMIN_EMAIL,
                     name: 'Admin Simulado'
                 };
             } else {
-                throw error;
+                return sendApiResult(res, 401, "Error de autenticación con Firebase: " + error.message);
             }
         }
 
         const isInitialAdmin = decodedToken.email === process.env.INITIAL_ADMIN_EMAIL;
 
-        firebaseUser = {
+        const firebaseUser = {
             uid: decodedToken.uid,
             email: decodedToken.email,
             name: decodedToken.name || decodedToken.email.split('@')[0],
@@ -61,12 +52,10 @@ const loginFirebase = async (req, res) => {
         
         // Si no existe por UID, buscamos por Email (por si es una cuenta antigua sin vincular)
         if (!user) {
-            console.log(`[AUTH] No encontrado por UID, buscando por email: ${firebaseUser.email}`);
             user = await User.findOne({ email: firebaseUser.email });
         }
 
         if (!user) {
-            console.log(`[AUTH] Usuario nuevo. Intentando crear...`);
             try {
                 user = await User.create({
                     firebaseUid: firebaseUser.uid,
@@ -76,7 +65,6 @@ const loginFirebase = async (req, res) => {
                 });
             } catch (err) {
                 if (err.code === 11000) {
-                    console.log(`[AUTH] Conflicto de duplicado detectado en Create. Re-intentando búsqueda...`);
                     user = await User.findOne({ email: firebaseUser.email });
                 } else {
                     throw err;
@@ -90,7 +78,6 @@ const loginFirebase = async (req, res) => {
             user.name = firebaseUser.name;
             user.role = firebaseUser.isAdmin ? 'admin' : 'user';
             await user.save();
-            console.log(`[AUTH] Usuario sincronizado: ${user.email} (Rol: ${user.role})`);
         } else {
             throw new Error("No se pudo crear ni encontrar al usuario tras varios intentos.");
         }
@@ -144,8 +131,6 @@ const setAdminRole = async (req, res) => {
             { new: true }
         );
 
-        console.log(`[AUTH] Usuario ${email} promovido a ADMIN por el Master`);
-        
         return sendApiResult(res, 200, `Usuario ${email} ahora es Administrador. Debe re-loguearse para aplicar cambios.`);
 
     } catch (error) {
@@ -179,8 +164,6 @@ const removeAdminRole = async (req, res) => {
             { new: true }
         );
 
-        console.log(`[AUTH] Usuario ${email} degradado a USER por el Master`);
-        
         return sendApiResult(res, 200, `Usuario ${email} ya no es Administrador.`);
 
     } catch (error) {
@@ -232,8 +215,6 @@ const toggleUserStatus = async (req, res) => {
         );
 
         const statusLabel = disabled ? 'INHABILITADO' : 'HABILITADO';
-        console.log(`[AUTH] Usuario ${email} ha sido ${statusLabel} por el Master`);
-        
         return sendApiResult(res, 200, `Usuario ${statusLabel} correctamente`, updatedUser);
 
     } catch (error) {

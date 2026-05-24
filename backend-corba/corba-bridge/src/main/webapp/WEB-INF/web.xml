@@ -21,11 +21,6 @@
     <filter>
         <filter-name>JWTFilter</filter-name>
         <filter-class>com.futbol.security.JWTFilter</filter-class>
-        <!-- Clave secreta para firmar/verificar tokens -->
-        <init-param>
-            <param-name>secret</param-name>
-            <param-value>mi-clave-secreta-futbol-2026</param-value>
-        </init-param>
     </filter>
 
     <!-- Aplicar JWT a todas las rutas protegidas -->

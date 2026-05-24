@@ -5,6 +5,7 @@ import { AuthService } from '../../../core/services/auth/auth.service';
 import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { PlatformService } from 'src/app/core/services/system/platform.service';
 import { NavController } from '@ionic/angular/standalone';
+import { Auth } from '@angular/fire/auth';
 import { ToastService } from 'src/app/core/services/ui/toast.service';
 import { ActivatedRoute } from '@angular/router';
 import { of, throwError } from 'rxjs';
@@ -20,7 +21,10 @@ const mockNewsService = {
 };
 
 const mockAuthService = {
-  getUserData: jasmine.createSpy('getUserData').and.returnValue({ name: 'Admin Name', email: 'admin@test.com' })
+  getUserData: jasmine.createSpy('getUserData').and.returnValue({ name: 'Admin Name', email: 'admin@test.com' }),
+  currentUser: jasmine.createSpy('currentUser').and.returnValue({ email: 'admin@test.com', displayName: 'Admin' } as any),
+  userData: jasmine.createSpy('userData').and.returnValue({ name: 'Admin Name' }),
+  isAdmin: jasmine.createSpy('isAdmin').and.returnValue(true)
 };
 
 const mockLayoutService = {
@@ -58,7 +62,8 @@ describe('AddEditNewsPage', () => {
         { provide: PlatformService, useValue: mockPlatformService },
         { provide: ToastService, useValue: mockToastService },
         { provide: NavController, useValue: mockNavCtrl },
-        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => '1' } } } }
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => '1' } } } },
+        { provide: Auth, useValue: {} }
       ]
     }).compileComponents();
 

@@ -5,6 +5,7 @@ import { AuthService } from '../../../core/services/auth/auth.service';
 import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { PlatformService } from 'src/app/core/services/system/platform.service';
 import { ToastService } from 'src/app/core/services/ui/toast.service';
+import { Auth } from '@angular/fire/auth';
 import { ActivatedRoute } from '@angular/router';
 import { NavController, LoadingController } from '@ionic/angular/standalone';
 import { of } from 'rxjs';
@@ -21,7 +22,9 @@ const mockNewsService = {
 };
 
 const mockAuthService = {
-  isAdmin: jasmine.createSpy('isAdmin').and.returnValue(true)
+  isAdmin: jasmine.createSpy('isAdmin').and.returnValue(true),
+  currentUser: jasmine.createSpy('currentUser').and.returnValue({ email: 'admin@test.com' }),
+  userData: jasmine.createSpy('userData').and.returnValue({ name: 'Admin' })
 };
 
 const mockLayoutService = {
@@ -64,7 +67,8 @@ describe('NewsPage', () => {
         { provide: ToastService, useValue: mockToastService },
         { provide: NavController, useValue: mockNavCtrl },
         { provide: LoadingController, useValue: mockLoadingCtrl },
-        { provide: ActivatedRoute, useValue: { snapshot: { queryParams: {} } } }
+        { provide: ActivatedRoute, useValue: { snapshot: { queryParams: {} } } },
+        { provide: Auth, useValue: {} }
       ]
     }).compileComponents();
 

@@ -55,7 +55,6 @@ import { chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
     }
     .page-btn.active {
       transform: scale(1.05);
-      box-shadow: 0 4px 10px rgba(var(--ion-color-primary-rgb, 56,128,255), 0.3);
     }
     .nav-btn {
       font-weight: 600;

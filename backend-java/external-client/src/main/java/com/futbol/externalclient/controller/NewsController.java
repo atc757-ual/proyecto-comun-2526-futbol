@@ -25,23 +25,27 @@ public class NewsController {
     }
 
     @GetMapping
-    @Operation(summary = "Obtener todas las noticias")
+    @Operation(summary = "Obtener noticias (feed público o todas si admin)")
     public ApiResult<List<NewsDTO>> getNews(
             @RequestHeader(value = "Authorization", required = false) String auth,
             @RequestHeader(value = "X-User-Role", defaultValue = "USER") String role,
-            @RequestParam(required = false, defaultValue = "false") Boolean all) {
-        // Si all=true y el rol es ADMIN, pedimos todas al Bridge; de lo contrario, retornamos el feed público
+            @RequestParam(required = false, defaultValue = "false") Boolean all,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer limit) {
         if (Boolean.TRUE.equals(all) && "ADMIN".equalsIgnoreCase(role)) {
-            return newsClient.findAll(auth, role);
+            return newsClient.findAll(auth, role, page, limit);
         } else {
-            return newsClient.getFeed(auth);
+            return newsClient.getFeed(auth, page, limit);
         }
     }
 
     @GetMapping("/feed")
     @Operation(summary = "Obtener feed de noticias activas")
-    public ApiResult<List<NewsDTO>> getFeed(@RequestHeader(value = "Authorization", required = false) String auth) {
-        return newsClient.getFeed(auth);
+    public ApiResult<List<NewsDTO>> getFeed(
+            @RequestHeader(value = "Authorization", required = false) String auth,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer limit) {
+        return newsClient.getFeed(auth, page, limit);
     }
 
     @GetMapping("/{id}")
@@ -98,16 +102,13 @@ public class NewsController {
         if (news == null || news.getDate() == null) {
             return;
         }
-
         String rawDate = news.getDate().trim();
         if (rawDate.isEmpty()) {
             return;
         }
-
         if (CORBA_DATE_PATTERN.matcher(rawDate).matches()) {
             return;
         }
-
         String dateOnly = rawDate.contains("T") ? rawDate.split("T")[0] : rawDate;
         if (ISO_DATE_PATTERN.matcher(dateOnly).matches()) {
             String[] parts = dateOnly.split("-");

@@ -1,525 +1,538 @@
-<div class="page-loader-container d-flex fl-direction-column ai-center jc-center animate-fade-in" *ngIf="isDataLoading">
-  <ion-spinner name="crescent" color="primary" class="loader-spinner"></ion-spinner>
-  <p class="text-neutral-6 f-semibold fs-16 mt-base">Obteniendo perfil del crack...</p>
-</div>
+<ion-content class="flex-content">
+  <app-page-header [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle" [breadcrumbs]="breadcrumbs"></app-page-header>
+  <div class="content-container">
 
-<div class="row animate-fade-in" *ngIf="!isDataLoading">
-  <!-- COLUMNA PRINCIPAL (8): Gestión de Entradas y Búsqueda -->
-  <div class="col-8 col-sm-12 px-0-sm pr-base">
+    <div class="row animate-fade-in" *ngIf="!isDataLoading">
+      <!-- COLUMNA PRINCIPAL (8): Gestión de Entradas y Búsqueda -->
+      <div class="col-8 col-sm-12 pr-base pr-sm-0">
 
-    <!-- Segmento de selección de modo (solo en creación) -->
-    <ion-card class="premium-card mb-base">
-      <ion-card-header class="pb-0" *ngIf="!isEditMode">
-        <ion-segment [(ngModel)]="entryMode" mode="ios" (ionChange)="segmentChanged($event)">
-          <ion-segment-button value="import" layout="icon-start">
-            <ion-icon name="cloud-download-outline"></ion-icon>
-            <div class="d-flex fl-direction-column ai-center">
-              <ion-label class="f-semibold">Buscar Jugador</ion-label>
-            </div>
-          </ion-segment-button>
-          <ion-segment-button value="manual" layout="icon-start">
-            <ion-icon name="create-outline"></ion-icon>
-            <ion-label class="f-semibold">Registro Manual</ion-label>
-          </ion-segment-button>
-        </ion-segment>
-      </ion-card-header>
-
-      <ion-card-content>
-        <!-- MODO IMPORTACIÓN: Buscador e Inteligencia -->
-        <div class="animate-fade-in" *ngIf="isImportMode()">
-          <div class="custom-searchbar mb-base">
-            <ion-searchbar mode="ios" placeholder="Escribe el nombre del crack a buscar..." [(ngModel)]="apiSearchQuery"
-              (ionInput)="onApiSearch($event)" (ionClear)="clearSearch()" class="custom-searchbar"
-              show-cancel-button="never" clear-icon="close-circle-outline" [debounce]="600">
-            </ion-searchbar>
-          </div>
-
-          <!-- Loader de Búsqueda -->
-          <div class="loader-container text-center py-base" *ngIf="isSearchingApi">
-            <ion-spinner name="crescent" color="primary"></ion-spinner>
-            <p class="text-neutral-5 fs-14 mt-s">Escaneando mercado global...</p>
-          </div>
-
-          <!-- Lista de Resultados Minimalista -->
-          <div class="api-results-list animate-fade-in" *ngIf="!isSearchingApi && apiResults.length > 0">
-            <div class="d-flex jc-between ai-center mb-s px-xs">
-              <h3 class="f-bold fs-14 text-neutral-8 m-0">{{ apiResults.length }} encontrados</h3>
-              <ion-button fill="clear" size="small" (click)="selectAll11()" class="f-semibold fs-12 p-0 m-0"
-                *ngIf="apiResults.length > 0">
-                Seleccionar 11
-              </ion-button>
-            </div>
-
-            <div class="minimal-list-container">
-              <div *ngFor="let res of pagedResults" class="minimal-result-item" [class.selected]="isSelected(res)"
-                [class.disabled-item]="!isSelected(res) && selectedApiPlayers.length >= 11"
-                [class.already-in-staff]="isInStaff(res.externalId)"
-                (click)="(!isInStaff(res.externalId) && (isSelected(res) || selectedApiPlayers.length < 11)) && toggleApiSelection(res)">
-
-                <div class="item-content-wrapper">
-                  <ion-avatar class="mini-avatar">
-                    <ion-icon name="person-outline"></ion-icon>
-                    <img [src]="res.image_url" (error)="handleImageError($event)" />
-                  </ion-avatar>
-
-                  <div class="player-info-main">
-                    <h4 class="f-bold fs-16 text-neutral-9 mb-0 text-ellipsis">{{ res.name }}</h4>
-                    <p class="fs-12 text-neutral-5 m-0 text-ellipsis">
-                      {{ res.team }}
-                      <span class="text-neutral-3" *ngIf="res.team && res.country">|</span>
-                      {{ res.country }}
-                    </p>
-                  </div>
-
-                  <div class="item-check-container">
-                    <div *ngIf="isInStaff(res.externalId)" class="staff-alert-wrapper">
-                      <ion-badge color="danger" mode="ios" class="fs-9">YA EN STAFF</ion-badge>
-                    </div>
-                    <ion-checkbox *ngIf="!isInStaff(res.externalId)" [checked]="isSelected(res)" mode="md"
-                      [disabled]="!isSelected(res) && selectedApiPlayers.length >= 11"
-                      class="no-pointer"></ion-checkbox>
-                  </div>
+        <!-- Segmento de selección de modo (solo en creación) -->
+        <ion-card class="premium-card">
+          <ion-card-header class="pb-0" *ngIf="!isEditMode">
+            <ion-segment [(ngModel)]="entryMode" mode="ios" (ionChange)="segmentChanged($event)">
+              <ion-segment-button value="import" layout="icon-start">
+                <ion-icon name="cloud-download-outline"></ion-icon>
+                <div class="d-flex fl-direction-column ai-center">
+                  <ion-label class="f-semibold">Buscar Jugador</ion-label>
                 </div>
+              </ion-segment-button>
+              <ion-segment-button value="manual" layout="icon-start">
+                <ion-icon name="create-outline"></ion-icon>
+                <ion-label class="f-semibold">Registro Manual</ion-label>
+              </ion-segment-button>
+            </ion-segment>
+          </ion-card-header>
+
+          <ion-card-content>
+            <!-- MODO IMPORTACIÓN: Buscador e Inteligencia -->
+            <div class="animate-fade-in" *ngIf="isImportMode()">
+              <div class="custom-searchbar mb-base">
+                <ion-searchbar mode="ios" placeholder="Escribe el nombre del crack a buscar..."
+                  [(ngModel)]="apiSearchQuery" (ionInput)="onApiSearch($event)" (ionClear)="clearSearch()"
+                  class="custom-searchbar" show-cancel-button="never" clear-icon="close-circle-outline"
+                  [debounce]="600">
+                </ion-searchbar>
               </div>
-            </div>
 
-            <!-- Paginación -->
-            <div class="news-pagination-container animate-fade-in mt-base" *ngIf="totalPages > 1">
-              <ion-button mode="ios" fill="clear" color="primary" (click)="prevPage()" [disabled]="currentPage === 1"
-                class="nav-btn">
-                <ion-icon name="chevron-back-outline" slot="start"></ion-icon>
-                <span>Anterior</span>
-              </ion-button>
-              <div class="page-indicators">
-                <ion-button mode="ios" *ngFor="let page of getPages()" [fill]="currentPage === page ? 'solid' : 'clear'"
-                  [color]="currentPage === page ? 'primary' : 'dark'" class="page-btn"
-                  [class.active]="currentPage === page" (click)="goToPage(page)">
-                  {{ page }}
-                </ion-button>
+              <!-- Loader de Búsqueda -->
+              <div class="loader-container text-center py-base" *ngIf="isSearchingApi">
+                <ion-spinner name="crescent" color="primary"></ion-spinner>
+                <p class="text-neutral-5 fs-14 mt-s">Escaneando mercado global...</p>
               </div>
-              <ion-button mode="ios" fill="clear" color="primary" (click)="nextPage()"
-                [disabled]="currentPage === totalPages" class="nav-btn">
-                <span>Siguiente</span>
-                <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
-              </ion-button>
-            </div>
-          </div>
 
-          <!-- No hay resultados -->
-          <div class="text-center py-base animate-fade-in"
-            *ngIf="!isSearchingApi && hasSearchedApi && apiResults.length === 0">
-            <ion-icon name="football-outline" class="text-neutral-3 fs-36 mb-s"></ion-icon>
-            <h2 class="text-neutral-9 f-semibold fs-18">Sin coincidencias</h2>
-            <p class="text-neutral-7 fs-14 px-base">No hemos encontrado cracks que coincidan con "<strong>{{
-                apiSearchQuery }}</strong>".</p>
-          </div>
-
-          <!-- Estado Inicial (Antes de buscar) -->
-          <div class="text-center py-base animate-fade-in" *ngIf="!isSearchingApi && !hasSearchedApi">
-            <ion-icon name="search-outline" class="text-neutral-3 fs-36 mb-s"></ion-icon>
-            <h2 class="text-neutral-9 f-semibold fs-18">Búsqueda Global</h2>
-            <p class="text-neutral-7 fs-14 px-base">Escribe un nombre arriba para ver los resultados aquí
-              abajo.</p>
-          </div>
-        </div>
-
-        <!-- MODO MANUAL O EDICIÓN: Formulario -->
-        <div class="animate-fade-in" *ngIf="entryMode === 'manual' || isEditMode">
-          <h2 class="f-semibold text-neutral-9 mb-s fs-18 fs-sm-16 margin-none">Información Personal</h2>
-          <div class="separator mb-base"></div>
-
-          <div class="row gap-base gap-0-sm">
-            <div class="form-item col-6 col-sm-12">
-              <ion-input #nameModel="ngModel" mode="md" fill="outline" label="Nombre Artístico / Corto"
-                labelPlacement="stacked" [(ngModel)]="player.name" name="name" required class="futbol-input"
-                placeholder="Ej: Neymar" (ionFocus)="setFocus('name')" (ionBlur)="setFocus(null)"
-                [class.is-focused]="focusedField === 'name'"
-                [class.input-error]="nameModel.invalid && nameModel.touched" helperText="Nombre por el que se le conoce"
-                errorText="El nombre es obligatorio">
-                <ion-icon slot="start" name="person-outline" class="fs-20 mr-s"
-                  [color]="focusedField === 'name' ? 'primary' : (nameModel.invalid && nameModel.touched ? 'danger' : 'medium')"></ion-icon>
-              </ion-input>
-            </div>
-            <div class="form-item col-6 col-sm-12">
-              <ion-input #natModel="ngModel" mode="md" fill="outline" label="Nacionalidad" labelPlacement="stacked"
-                [(ngModel)]="player.nationality" name="nationality" required class="futbol-input"
-                placeholder="Ej: España" (ionFocus)="setFocus('nationality')" (ionBlur)="setFocus(null)"
-                [class.is-focused]="focusedField === 'nationality'">
-                <ion-icon slot="start" name="flag-outline" class="fs-20 mr-s"
-                  [color]="focusedField === 'nationality' ? 'primary' : 'medium'"></ion-icon>
-              </ion-input>
-            </div>
-            <div class="form-item col-12">
-              <ion-input #fullNameModel="ngModel" mode="md" fill="outline" label="Nombre Completo (Oficial)"
-                labelPlacement="stacked" [(ngModel)]="player.fullname" name="fullname" class="futbol-input"
-                placeholder="Ej: Neymar da Silva Santos Júnior" (ionFocus)="setFocus('fullname')"
-                (ionBlur)="setFocus(null)">
-              </ion-input>
-            </div>
-          </div>
-
-          <h2 class="f-semibold text-neutral-9 mb-s fs-18 fs-sm-16 margin-none ">Nacimiento y Origen</h2>
-          <div class="separator mb-base"></div>
-          <div class="row gap-base gap-0-sm">
-            <div class="form-item col-6 col-sm-12">
-              <ion-input type="date" mode="md" fill="outline" label="Fecha de Nacimiento" labelPlacement="stacked"
-                [(ngModel)]="player.birth_date" name="birth_date" class="futbol-input" (ionChange)="calculateAge()">
-              </ion-input>
-            </div>
-            <div class="form-item col-6 col-sm-12">
-              <ion-input mode="md" fill="outline" label="Lugar (Ciudad)" labelPlacement="stacked"
-                [(ngModel)]="player.birth_place" name="birth_place" class="futbol-input" placeholder="Maputo">
-              </ion-input>
-            </div>
-            <div class="form-item col-6 col-sm-12">
-              <ion-input mode="md" fill="outline" label="País de Nacimiento" labelPlacement="stacked"
-                [(ngModel)]="player.birth_country" name="birth_country" class="futbol-input"
-                placeholder="Ej: Mozambique">
-              </ion-input>
-            </div>
-          </div>
-
-          <h2 class="f-semibold text-neutral-9 mb-s fs-18 fs-sm-16 margin-none ">Información Técnica</h2>
-          <div class=" separator mb-base">
-          </div>
-          <div class="row gap-base gap-0-sm">
-            <div class="form-item col-6 col-sm-12">
-              <ion-input #teamModel="ngModel" mode="md" fill="outline" label="Equipo Actual" labelPlacement="stacked"
-                [(ngModel)]="player.team" name="team" required class="futbol-input" placeholder="Ej: Real Madrid"
-                [class.input-error]="teamModel.invalid && teamModel.touched">
-                <ion-icon slot="start" name="shield-outline" class="fs-20 mr-s"></ion-icon>
-              </ion-input>
-            </div>
-            <div class="form-item col-6 col-sm-12">
-              <ion-input mode="md" fill="outline" label="Equipo Secundario / Anterior" labelPlacement="stacked"
-                [(ngModel)]="player.secondary_team" name="secondary_team" class="futbol-input"
-                placeholder="Ej: FC Porto">
-                <ion-icon slot="start" name="shield-outline" class="fs-20 mr-s"></ion-icon>
-              </ion-input>
-            </div>
-          </div>
-          <div class="row gap-base gap-0-sm mt-base">
-            <div class="form-item col-12">
-              <ion-input #leagueModel="ngModel" mode="md" fill="outline" label="Liga / Competición"
-                labelPlacement="stacked" [(ngModel)]="player.league" name="league" required class="futbol-input"
-                placeholder="Ej: La Liga">
-                <ion-icon slot="start" name="football-outline" class="fs-20 mr-s"></ion-icon>
-              </ion-input>
-            </div>
-          </div>
-
-          <div class="row gap-base gap-0-sm mt-base">
-            <div class="form-item col-4 col-sm-12">
-              <ion-input mode="md" fill="outline" label="Altura (cm)" labelPlacement="stacked"
-                [(ngModel)]="player.height" name="height" class="futbol-input" placeholder="Ej: 185">
-                <ion-icon slot="start" name="resize-outline" class="fs-20 mr-s"></ion-icon>
-              </ion-input>
-            </div>
-            <div class="form-item col-4 col-sm-12">
-              <ion-input mode="md" fill="outline" label="Peso (kg/lbs)" labelPlacement="stacked"
-                [(ngModel)]="player.weight" name="weight" class="futbol-input" placeholder="Ej: 78 kg / 172 lbs">
-                <ion-icon slot="start" name="stats-chart-outline" class="fs-20 mr-s"></ion-icon>
-              </ion-input>
-            </div>
-            <div class="form-item col-4 col-sm-12">
-              <ion-input type="number" mode="md" fill="outline" label="Dorsal" labelPlacement="stacked"
-                [(ngModel)]="player.number" name="number" class="futbol-input" placeholder="Ej: 10">
-                <ion-icon slot="start" name="shirt-outline" class="fs-20 mr-s"></ion-icon>
-              </ion-input>
-            </div>
-          </div>
-
-          <div class="row gap-base gap-0-sm mt-base">
-            <div class="form-item col-6 col-sm-12">
-              <ion-select mode="md" fill="outline" label="Posición" labelPlacement="stacked"
-                [(ngModel)]="player.position" name="position" class="futbol-input" interface="popover">
-                <ion-icon slot="start" name="stats-chart-outline" class="fs-20 mr-s"></ion-icon>
-                <ion-select-option *ngFor="let pos of positions" [value]="pos.value">{{ pos.label }}</ion-select-option>
-              </ion-select>
-            </div>
-            <div class="form-item col-6 col-sm-12">
-              <ion-select mode="md" fill="outline" label="Pie Hábil" labelPlacement="stacked" [(ngModel)]="player.side"
-                name="side" class="futbol-input" interface="popover">
-                <ion-icon slot="start" name="football-outline" class="fs-20 mr-s"></ion-icon>
-                <ion-select-option *ngFor="let f of feet" [value]="f">{{ f }}</ion-select-option>
-              </ion-select>
-            </div>
-          </div>
-
-          <h2 class="f-semibold text-neutral-9 mb-s fs-18 fs-sm-16 margin-none">Biografía</h2>
-          <div class="separator mb-base"></div>
-          <ion-textarea mode="md" fill="outline" label="Resumen" labelPlacement="stacked" [(ngModel)]="player.summary"
-            name="summary" class="futbol-input" placeholder="Escribe una breve biografía..." auto-grow="true" rows="4">
-          </ion-textarea>
-
-          <h2 class="f-semibold text-neutral-9 mb-s fs-18 fs-sm-16 margin-none mt-base">Redes Sociales</h2>
-          <div class="separator mb-base"></div>
-          <div class="row gap-base gap-0-sm" *ngIf="player.social_media">
-            <div class="form-item col-6 col-sm-12">
-              <ion-input mode="md" fill="outline" label="Instagram" labelPlacement="stacked"
-                [(ngModel)]="player.social_media.instagram" name="instagram" class="futbol-input"
-                placeholder="@usuario">
-                <ion-icon slot="start" name="logo-instagram" class="fs-20 mr-s"></ion-icon>
-              </ion-input>
-            </div>
-            <div class="form-item col-6 col-sm-12">
-              <ion-input mode="md" fill="outline" label="Twitter (X)" labelPlacement="stacked"
-                [(ngModel)]="player.social_media.twitter" name="twitter" class="futbol-input" placeholder="@usuario">
-                <ion-icon slot="start" name="logo-twitter" class="fs-20 mr-s"></ion-icon>
-              </ion-input>
-            </div>
-            <div class="form-item col-6 col-sm-12">
-              <ion-input mode="md" fill="outline" label="Facebook" labelPlacement="stacked"
-                [(ngModel)]="player.social_media.facebook" name="facebook" class="futbol-input"
-                placeholder="Link perfil">
-                <ion-icon slot="start" name="logo-facebook" class="fs-20 mr-s"></ion-icon>
-              </ion-input>
-            </div>
-            <div class="form-item col-6 col-sm-12">
-              <ion-input mode="md" fill="outline" label="Sitio Web" labelPlacement="stacked"
-                [(ngModel)]="player.social_media.website" name="website" class="futbol-input" placeholder="https://...">
-                <ion-icon slot="start" name="globe-outline" class="fs-20 mr-s"></ion-icon>
-              </ion-input>
-            </div>
-          </div>
-        </div>
-      </ion-card-content>
-    </ion-card>
-  </div>
-
-  <!-- COLUMNA LATERAL (4): Acciones y Media -->
-  <div class="col-4 col-sm-12 pl-base px-0-sm">
-
-    <!-- MODO IMPORTACIÓN: Resumen de Selección -->
-    <ion-card class="animate-fade-in margin-none mb-base">
-      <ion-card-content class="pt-base">
-        <!-- TARJETA GPS: Componente reutilizable -->
-        <app-gps-permission-card [isChecking]="isCheckingGeo" [hasPermission]="hasGeoPermission"
-          [isCapturing]="isCapturingLocation" titleClass="fs-16" subtitleClass="fs-14"
-          (requestPermission)="handlePermissionToggle()">
-        </app-gps-permission-card>
-        <!-- Alerta de Límite Máximo (Banner Style) -->
-        <div *ngIf="selectedApiPlayers.length >= 11 && isImportMode()" class="limit-tag animate-fade-in">
-          <ion-icon name="information-circle-outline" class="mr-xs"></ion-icon>
-          <span>Límite de 11 cracks alcanzado</span>
-        </div>
-
-        <div class="overflow-hidden" *ngIf="isImportMode()">
-          <div class="d-flex fl-aling-center" *ngIf="selectedApiPlayers.length > 0">
-            <span class="f-bold fs-16 text-neutral-8">Jugadores seleccionados ({{ selectedApiPlayers.length }})</span>
-            <ion-button fill="outline" size="small" mode="ios" class="fs-12 f-semibold text-primary ml-auto  pr-none"
-              (click)="clearSelection()">
-              Limpiar
-            </ion-button>
-          </div>
-
-          <!-- Lista de seleccionados -->
-          <div *ngIf="selectedApiPlayers.length > 0">
-            <ion-list lines="none">
-              <ng-container *ngFor="let p of getSelectedPlayersArray(); let last = last">
-                <ion-item class="selected-queue-item">
-                  <div class="api-thumbnail-container">
-                    <ion-icon name="person"></ion-icon>
-                    <ion-img class="api-thumbnail" [src]="p.image_url" (ionError)="handleImageError($event)"></ion-img>
-                  </div>
-                  <ion-label>
-                    <h3 class="f-semibold fs-14">{{ p.name }}</h3>
-                    <p class="fs-12">{{ p.team }}</p>
-                  </ion-label>
-                  <ion-button fill="clear" color="danger" slot="end" (click)="toggleApiSelection(p)">
-                    <ion-icon name="trash-outline" slot="icon-only" class="fs-18"></ion-icon>
+              <!-- Lista de Resultados Minimalista -->
+              <div class="api-results-list animate-fade-in" *ngIf="!isSearchingApi && apiResults.length > 0">
+                <div class="d-flex jc-between ai-center mb-s px-xs">
+                  <h3 class="f-bold fs-14 text-neutral-8 m-0">{{ apiResults.length }} encontrados</h3>
+                  <ion-button fill="clear" size="small" (click)="selectAll11()" class="f-semibold fs-12 p-0 m-0"
+                    *ngIf="apiResults.length > 0">
+                    {{ apiResults.length < 11 ? 'Seleccionar todos' : 'Seleccionar 11' }}
                   </ion-button>
-                </ion-item>
-                <div class="separator my-s" *ngIf="!last"></div>
-              </ng-container>
-            </ion-list>
-          </div>
-
-          <!-- Estado vacío de la cola -->
-          <div class="text-center py-base" *ngIf="selectedApiPlayers.length === 0 &&  isImportMode()">
-            <p class="text-neutral-5 fs-14 m-0">No hay jugadores seleccionados para importar.</p>
-          </div>
-        </div>
-
-
-
-        <!-- SECCIÓN GPS Y MAPA: Siempre visible o relevante -->
-        <div class="animate-fade-in margin-none">
-          <div class="separator my-s" *ngIf="isImportMode()"></div>
-          <div class="gps-section">
-
-            <!-- Mapa de Ubicación -->
-            <div class="map-container-wrapper animate-fade-in mb-base" *ngIf="hasLocation">
-              <div id="player-map" class="mini-scouting-map"></div>
-              <div class="map-info-footer d-flex ai-center jc-between px-s py-xs">
-                <div class="d-flex ai-center gap-xs overflow-hidden map-address-container">
-                  <ion-icon name="location-outline" class="text-primary fs-14 map-location-icon"></ion-icon>
-                  <span class="fs-10 text-neutral-7 f-regular text-ellipsis" *ngIf="!isRevGeocoding">{{ currentAddress
-                    }}</span>
-                  <ion-spinner name="dots" *ngIf="isRevGeocoding" class="rev-geocoding-spinner"></ion-spinner>
                 </div>
-                <!-- Coordenadas GPS -->
-                <div class="d-flex ai-center gap-xs ml-auto pl-s" *ngIf="player.location?.coordinates">
-                  <span class="fs-10 f-semibold text-neutral-8 px-xs py-xxs border-radius-soft coord-span">
-                    {{ $any(player.location?.coordinates)[1] | number:'1.4-4' }}, {{
-                    $any(player.location?.coordinates)[0] | number:'1.4-4' }}
-                  </span>
+
+                <div class="minimal-list-container">
+                  <div *ngFor="let res of pagedResults" class="minimal-result-item" [class.selected]="isSelected(res)"
+                    [class.disabled-item]="!isSelected(res) && selectedApiPlayers.length >= 11"
+                    [class.already-in-staff]="isInStaff(res.externalId)"
+                    (click)="(!isInStaff(res.externalId) && (isSelected(res) || selectedApiPlayers.length < 11)) && toggleApiSelection(res)">
+
+                    <div class="item-content-wrapper">
+                      <ion-avatar class="mini-avatar">
+                        <ion-icon name="person-outline"></ion-icon>
+                        <img [src]="res.image_url" (error)="handleImageError($event)" />
+                      </ion-avatar>
+
+                      <div class="player-info-main">
+                        <h4 class="f-bold fs-16 text-neutral-9 mb-0 text-ellipsis">{{ res.name }}</h4>
+                        <p class="fs-12 text-neutral-5 m-0 text-ellipsis">
+                          {{ res.team }}
+                          <span class="text-neutral-3" *ngIf="res.team && res.country">|</span>
+                          {{ res.country }}
+                        </p>
+                      </div>
+
+                      <div class="item-check-container">
+                        <div *ngIf="isInStaff(res.externalId)" class="staff-alert-wrapper">
+                          <ion-badge color="danger" mode="ios" class="fs-9">YA EN STAFF</ion-badge>
+                        </div>
+                        <ion-checkbox *ngIf="!isInStaff(res.externalId)" [checked]="isSelected(res)" mode="md"
+                          [disabled]="!isSelected(res) && selectedApiPlayers.length >= 11"
+                          class="no-pointer"></ion-checkbox>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+
+                <!-- Paginación -->
+                <div class="news-pagination-container animate-fade-in mt-base" *ngIf="totalPages > 1">
+                  <ion-button mode="ios" fill="clear" color="primary" (click)="prevPage()"
+                    [disabled]="currentPage === 1" class="nav-btn">
+                    <ion-icon name="chevron-back-outline" slot="start"></ion-icon>
+                    <span>Anterior</span>
+                  </ion-button>
+                  <div class="page-indicators">
+                    <ion-button mode="ios" *ngFor="let page of getPages()"
+                      [fill]="currentPage === page ? 'solid' : 'clear'"
+                      [color]="currentPage === page ? 'primary' : 'dark'" class="page-btn"
+                      [class.active]="currentPage === page" (click)="goToPage(page)">
+                      {{ page }}
+                    </ion-button>
+                  </div>
+                  <ion-button mode="ios" fill="clear" color="primary" (click)="nextPage()"
+                    [disabled]="currentPage === totalPages" class="nav-btn">
+                    <span>Siguiente</span>
+                    <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+                  </ion-button>
+                </div>
+              </div>
+
+              <!-- No hay resultados -->
+              <div class="text-center py-base animate-fade-in"
+                *ngIf="!isSearchingApi && hasSearchedApi && apiResults.length === 0">
+                <ion-icon name="football-outline" class="text-neutral-3 fs-36 mb-s"></ion-icon>
+                <h2 class="text-neutral-9 f-semibold fs-18">Sin coincidencias</h2>
+                <p class="text-neutral-7 fs-14 px-base">No hemos encontrado cracks que coincidan con "<strong>{{
+                    apiSearchQuery }}</strong>".</p>
+              </div>
+
+              <!-- Estado Inicial (Antes de buscar) -->
+              <div class="text-center py-base animate-fade-in" *ngIf="!isSearchingApi && !hasSearchedApi">
+                <ion-icon name="search-outline" class="text-neutral-3 fs-36 mb-s"></ion-icon>
+                <h2 class="text-neutral-9 f-semibold fs-18">Búsqueda Global</h2>
+                <p class="text-neutral-7 fs-14 px-base">Escribe un nombre arriba para ver los resultados aquí
+                  abajo.</p>
               </div>
             </div>
 
-            <!-- Loading del Mapa -->
-            <div class="map-loading-placeholder text-center p-base mb-base animate-fade-in"
-              *ngIf="isCapturingLocation && !hasLocation">
-              <ion-spinner name="crescent" color="primary" class="mb-s"></ion-spinner>
-              <span class="fs-12 text-neutral-6 f-medium">Capturando posición...</span>
-            </div>
+            <!-- MODO MANUAL O EDICIÓN: Formulario -->
+            <div class="animate-fade-in" *ngIf="entryMode === 'manual' || isEditMode">
+              <h2 class="f-semibold text-neutral-9 mb-s fs-18 fs-sm-16 margin-none">Información Personal</h2>
+              <div class="separator mb-base"></div>
 
-            <!-- Botón de Importación (Solo en modo import) -->
-            <div *ngIf="isImportMode()">
-              <!-- Aviso si falta ubicación -->
-              <ion-button expand="block" mode="ios" shape="round" color="primary" class="f-bold"
-                (click)="importSelectedPlayers()"
-                [disabled]="isImporting || selectedApiPlayers.length === 0 || !hasLocation">
-                <ion-spinner name="crescent" color="light" *ngIf="isImporting" class="mr-s"></ion-spinner>
-                <ion-icon name="cloud-done-outline" slot="start" *ngIf="!isImporting"></ion-icon>
-                <ion-label class="ml-s" *ngIf="!isImporting">
-                  {{ selectedApiPlayers.length <= 1 ? 'Guardar jugador' : 'Guardar jugadores' }} </ion-label>
-              </ion-button>
-            </div>
-          </div>
-        </div>
-
-        <div class="animate-fade-in" *ngIf="isManualMode()">
-          <div class="margin-none mb-base">
-            <div class="d-flex jc-between ai-center mb-s mt-base">
-              <h2 class="f-semibold text-neutral-9 fs-18 fs-sm-16 margin-none">Multimedia del Jugador</h2>
-
-              <div class="d-flex ai-center gap-s">
-                <!-- Botón Limpiar condicional -->
-                <ion-button *ngIf="hasAnyImage()" fill="clear" size="small" mode="ios"
-                  class="fs-12 f-semibold text-primary margin-none" (click)="clearAllImages()">
-                  Limpiar
-                </ion-button>
-
-                <!-- Switch Global Único -->
-                <div class="media-mode-toggle">
-                  <button [class.active]="globalMediaMode === 'upload'" (click)="setGlobalMediaMode('upload')"
-                    title="Modo Subida (Cámara/Galería)">
-                    <ion-icon name="cloud-upload-outline"></ion-icon>
-                  </button>
-                  <button [class.active]="globalMediaMode === 'url'" (click)="setGlobalMediaMode('url')"
-                    title="Modo URL Externa">
-                    <ion-icon name="link-outline"></ion-icon>
-                  </button>
+              <div class="row gap-base gap-0-sm">
+                <div class="form-item col-6 col-sm-12">
+                  <ion-input #nameModel="ngModel" mode="md" fill="outline" label="Nombre Artístico / Corto"
+                    labelPlacement="stacked" [(ngModel)]="player.name" name="name" required class="futbol-input"
+                    placeholder="Ej: Neymar" (ionFocus)="setFocus('name')" (ionBlur)="setFocus(null)"
+                    [class.is-focused]="focusedField === 'name'"
+                    [class.input-error]="nameModel.invalid && nameModel.touched"
+                    helperText="Nombre por el que se le conoce" errorText="El nombre es obligatorio">
+                    <ion-icon slot="start" name="person-outline" class="fs-20 mr-s"
+                      [color]="focusedField === 'name' ? 'primary' : (nameModel.invalid && nameModel.touched ? 'danger' : 'medium')"></ion-icon>
+                  </ion-input>
                 </div>
-              </div>
-            </div>
-            <div class="separator mb-base"></div>
-
-            <!-- TARJETA CÁMARA: Solo visible en modo subida -->
-            <div class="permission-item-row camera mb-base animate-fade-in" *ngIf="globalMediaMode === 'upload'"
-              [class.bg-permission-info]="hasCameraPermission" [class.bg-permission-denied]="!hasCameraPermission">
-              <ion-icon name="camera-outline" slot="start" class="fs-30"></ion-icon>
-              <ion-label>
-                <h3 class="f-bold fs-14">{{ hasCameraPermission ? 'Cámara Activa' : 'Permisos de Cámara' }}</h3>
-                <p class="fs-12 text-neutral-7">{{ hasCameraPermission ? 'Permisos concedidos.' : 'Necesario para usar
-                  la cámara.' }}</p>
-              </ion-label>
-              <div slot="end" class="d-flex ai-center ml-auto">
-                <ion-button *ngIf="!hasCameraPermission" mode="ios" size="small" fill="solid" shape="round"
-                  class="btn-white-error" [disabled]="hasCameraPermission" (click)="requestCameraPermission()">
-                  <span *ngIf="!hasCameraPermission">Permitir</span>
-                </ion-button>
-                <ion-icon *ngIf="hasCameraPermission" name="checkmark-circle-outline"
-                  class="fs-28 text-primary"></ion-icon>
-              </div>
-            </div>
-
-            <div class="multimedia-compact-list">
-              <!-- MODO URL: Formato de col 8 (3 columnas en desktop, 1 en móvil) -->
-              <div class="row w-100 margin-none" *ngIf="globalMediaMode === 'url'">
-                <div class="form-item col-12 animate-fade-in url-input-item" *ngFor="let type of imageTypes">
-                  <ion-input mode="md" fill="outline" [label]="type.label" labelPlacement="stacked"
-                    [ngModel]="getPlayerImage(type.key)"
-                    (ionInput)="updatePlayerImage(type.key, $any($event.target).value); previews[type.key] = $any($event.target).value"
-                    class="futbol-input" [placeholder]="type.helper" (ionFocus)="setFocus(type.key)"
-                    (ionBlur)="setFocus(null)" [class.is-focused]="focusedField === type.key">
-                    <ion-icon slot="start" [name]="type.icon" class="fs-20 mr-s"
-                      [color]="focusedField === type.key ? 'primary' : 'medium'"></ion-icon>
+                <div class="form-item col-6 col-sm-12">
+                  <ion-input #natModel="ngModel" mode="md" fill="outline" label="Nacionalidad" labelPlacement="stacked"
+                    [(ngModel)]="player.nationality" name="nationality" required class="futbol-input"
+                    placeholder="Ej: España" (ionFocus)="setFocus('nationality')" (ionBlur)="setFocus(null)"
+                    [class.is-focused]="focusedField === 'nationality'">
+                    <ion-icon slot="start" name="flag-outline" class="fs-20 mr-s"
+                      [color]="focusedField === 'nationality' ? 'primary' : 'medium'"></ion-icon>
+                  </ion-input>
+                </div>
+                <div class="form-item col-12">
+                  <ion-input #fullNameModel="ngModel" mode="md" fill="outline" label="Nombre Completo (Oficial)"
+                    labelPlacement="stacked" [(ngModel)]="player.fullname" name="fullname" class="futbol-input"
+                    placeholder="Ej: Neymar da Silva Santos Júnior" (ionFocus)="setFocus('fullname')"
+                    (ionBlur)="setFocus(null)">
                   </ion-input>
                 </div>
               </div>
 
-              <!-- MODO UPLOAD: Subida de archivos con cámara/galería en formato ion-item limpio con separadores -->
-              <ng-container *ngIf="globalMediaMode === 'upload'">
-                <ng-container *ngFor="let type of imageTypes; let last = last">
-                  <ion-item class="animate-fade-in upload-media-item" mode="md" lines="none">
-                    <ion-icon slot="start" [name]="type.icon" color="primary"
-                      class="fs-22 upload-media-icon"></ion-icon>
-                    <ion-label>
-                      <h3 class="f-semibold fs-14 text-neutral-9 upload-media-title">{{ type.label }}</h3>
-                      <p class="fs-12 text-neutral-5 upload-media-subtitle">{{ type.helper }}</p>
-                    </ion-label>
+              <h2 class="f-semibold text-neutral-9 mb-s fs-18 fs-sm-16 margin-none ">Nacimiento y Origen</h2>
+              <div class="separator mb-base"></div>
+              <div class="row gap-base gap-0-sm">
+                <div class="form-item col-6 col-sm-12">
+                  <ion-input type="date" mode="md" fill="outline" label="Fecha de Nacimiento" labelPlacement="stacked"
+                    [(ngModel)]="player.birth_date" name="birth_date" class="futbol-input" (ionChange)="calculateAge()">
+                  </ion-input>
+                </div>
+                <div class="form-item col-6 col-sm-12">
+                  <ion-input mode="md" fill="outline" label="Lugar (Ciudad)" labelPlacement="stacked"
+                    [(ngModel)]="player.birth_place" name="birth_place" class="futbol-input" placeholder="Maputo">
+                  </ion-input>
+                </div>
+                <div class="form-item col-6 col-sm-12">
+                  <ion-input mode="md" fill="outline" label="País de Nacimiento" labelPlacement="stacked"
+                    [(ngModel)]="player.birth_country" name="birth_country" class="futbol-input"
+                    placeholder="Ej: Mozambique">
+                  </ion-input>
+                </div>
+              </div>
 
-                    <div slot="end" class="d-flex ai-center gap-xs upload-media-actions">
-                      <!-- Si existe previsualización -->
-                      <ng-container *ngIf="previews[type.key]">
-                        <div class="mini-preview-circle" (click)="openImageViewer(previews[type.key]!, type.label)">
-                          <img [src]="getSafeUrl(previews[type.key])" (error)="handleImageError($event, type.key)"
-                            referrerpolicy="no-referrer">
-                        </div>
-                        <ion-button fill="clear" size="small" class="margin-none animate-fade-in"
-                          (click)="removeImage(type.key)">
-                          <ion-icon slot="icon-only" name="trash-outline" class="fs-22 text-danger"></ion-icon>
-                        </ion-button>
-                      </ng-container>
+              <h2 class="f-semibold text-neutral-9 mb-s fs-18 fs-sm-16 margin-none ">Información Técnica</h2>
+              <div class=" separator mb-base">
+              </div>
+              <div class="row gap-base gap-0-sm">
+                <div class="form-item col-6 col-sm-12">
+                  <ion-input #teamModel="ngModel" mode="md" fill="outline" label="Equipo Actual"
+                    labelPlacement="stacked" [(ngModel)]="player.team" name="team" required class="futbol-input"
+                    placeholder="Ej: Real Madrid" [class.input-error]="teamModel.invalid && teamModel.touched">
+                    <ion-icon slot="start" name="shield-outline" class="fs-20 mr-s"></ion-icon>
+                  </ion-input>
+                </div>
+                <div class="form-item col-6 col-sm-12">
+                  <ion-input mode="md" fill="outline" label="Equipo Secundario / Anterior" labelPlacement="stacked"
+                    [(ngModel)]="player.secondary_team" name="secondary_team" class="futbol-input"
+                    placeholder="Ej: FC Porto">
+                    <ion-icon slot="start" name="shield-outline" class="fs-20 mr-s"></ion-icon>
+                  </ion-input>
+                </div>
+              </div>
+              <div class="row gap-base gap-0-sm mt-base">
+                <div class="form-item col-12">
+                  <ion-input #leagueModel="ngModel" mode="md" fill="outline" label="Liga / Competición"
+                    labelPlacement="stacked" [(ngModel)]="player.league" name="league" required class="futbol-input"
+                    placeholder="Ej: La Liga">
+                    <ion-icon slot="start" name="football-outline" class="fs-20 mr-s"></ion-icon>
+                  </ion-input>
+                </div>
+              </div>
 
-                      <!-- Si NO existe previsualización -->
-                      <ng-container *ngIf="!previews[type.key]">
-                        <ion-button fill="clear" size="small" class="margin-none" (click)="fileInputGeneric.click()">
-                          <ion-icon slot="icon-only" name="image-outline" class="fs-22 text-primary"></ion-icon>
-                        </ion-button>
-                        <ion-button fill="clear" size="small" class="margin-none" (click)="takePhoto(type.key)"
-                          [disabled]="!hasCameraPermission">
-                          <ion-icon slot="icon-only" name="camera-outline" class="fs-22 text-primary"></ion-icon>
-                        </ion-button>
-                      </ng-container>
+              <div class="row gap-base gap-0-sm mt-base">
+                <div class="form-item col-4 col-sm-12">
+                  <ion-input mode="md" fill="outline" label="Altura (cm)" labelPlacement="stacked"
+                    [(ngModel)]="player.height" name="height" class="futbol-input" placeholder="Ej: 185">
+                    <ion-icon slot="start" name="resize-outline" class="fs-20 mr-s"></ion-icon>
+                  </ion-input>
+                </div>
+                <div class="form-item col-4 col-sm-12">
+                  <ion-input mode="md" fill="outline" label="Peso (kg/lbs)" labelPlacement="stacked"
+                    [(ngModel)]="player.weight" name="weight" class="futbol-input" placeholder="Ej: 78 kg / 172 lbs">
+                    <ion-icon slot="start" name="stats-chart-outline" class="fs-20 mr-s"></ion-icon>
+                  </ion-input>
+                </div>
+                <div class="form-item col-4 col-sm-12">
+                  <ion-input type="number" mode="md" fill="outline" label="Dorsal" labelPlacement="stacked"
+                    [(ngModel)]="player.number" name="number" class="futbol-input" placeholder="Ej: 10">
+                    <ion-icon slot="start" name="shirt-outline" class="fs-20 mr-s"></ion-icon>
+                  </ion-input>
+                </div>
+              </div>
 
-                      <input type="file" #fileInputGeneric (change)="onFileSelected($event, type.key)" accept="image/*"
-                        class="hidden-input">
-                    </div>
-                  </ion-item>
-                  <div class="separator my-s" *ngIf="!last"></div>
-                </ng-container>
-              </ng-container>
+              <div class="row gap-base gap-0-sm mt-base">
+                <div class="form-item col-6 col-sm-12">
+                  <ion-select mode="md" fill="outline" label="Posición" labelPlacement="stacked"
+                    [(ngModel)]="player.position" name="position" class="futbol-input" interface="popover">
+                    <ion-icon slot="start" name="stats-chart-outline" class="fs-20 mr-s"></ion-icon>
+                    <ion-select-option *ngFor="let pos of positions" [value]="pos.value">{{ pos.label
+                      }}</ion-select-option>
+                  </ion-select>
+                </div>
+                <div class="form-item col-6 col-sm-12">
+                  <ion-select mode="md" fill="outline" label="Pie Hábil" labelPlacement="stacked"
+                    [(ngModel)]="player.side" name="side" class="futbol-input" interface="popover">
+                    <ion-icon slot="start" name="football-outline" class="fs-20 mr-s"></ion-icon>
+                    <ion-select-option *ngFor="let f of feet" [value]="f">{{ f }}</ion-select-option>
+                  </ion-select>
+                </div>
+              </div>
+
+              <h2 class="f-semibold text-neutral-9 mb-s fs-18 fs-sm-16 margin-none">Biografía</h2>
+              <div class="separator mb-base"></div>
+              <ion-textarea mode="md" fill="outline" label="Resumen" labelPlacement="stacked"
+                [(ngModel)]="player.summary" name="summary" class="futbol-input"
+                placeholder="Escribe una breve biografía..." auto-grow="true" rows="4">
+              </ion-textarea>
+
+              <h2 class="f-semibold text-neutral-9 mb-s fs-18 fs-sm-16 margin-none mt-base">Redes Sociales</h2>
+              <div class="separator mb-base"></div>
+              <div class="row gap-base gap-0-sm" *ngIf="player.social_media">
+                <div class="form-item col-6 col-sm-12">
+                  <ion-input mode="md" fill="outline" label="Instagram" labelPlacement="stacked"
+                    [(ngModel)]="player.social_media.instagram" name="instagram" class="futbol-input"
+                    placeholder="@usuario">
+                    <ion-icon slot="start" name="logo-instagram" class="fs-20 mr-s"></ion-icon>
+                  </ion-input>
+                </div>
+                <div class="form-item col-6 col-sm-12">
+                  <ion-input mode="md" fill="outline" label="Twitter (X)" labelPlacement="stacked"
+                    [(ngModel)]="player.social_media.twitter" name="twitter" class="futbol-input"
+                    placeholder="@usuario">
+                    <ion-icon slot="start" name="logo-twitter" class="fs-20 mr-s"></ion-icon>
+                  </ion-input>
+                </div>
+                <div class="form-item col-6 col-sm-12">
+                  <ion-input mode="md" fill="outline" label="Facebook" labelPlacement="stacked"
+                    [(ngModel)]="player.social_media.facebook" name="facebook" class="futbol-input"
+                    placeholder="Link perfil">
+                    <ion-icon slot="start" name="logo-facebook" class="fs-20 mr-s"></ion-icon>
+                  </ion-input>
+                </div>
+                <div class="form-item col-6 col-sm-12">
+                  <ion-input mode="md" fill="outline" label="Sitio Web" labelPlacement="stacked"
+                    [(ngModel)]="player.social_media.website" name="website" class="futbol-input"
+                    placeholder="https://...">
+                    <ion-icon slot="start" name="globe-outline" class="fs-20 mr-s"></ion-icon>
+                  </ion-input>
+                </div>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <!-- COLUMNA LATERAL (4): Acciones y Media -->
+      <div class="col-4 col-sm-12">
+
+        <!-- MODO IMPORTACIÓN: Resumen de Selección -->
+        <ion-card class="animate-fade-in margin-none">
+          <ion-card-content class="pt-base">
+            <!-- TARJETA GPS: Componente reutilizable -->
+            <app-gps-permission-card [isChecking]="isCheckingGeo" [hasPermission]="hasGeoPermission"
+              [isCapturing]="isCapturingLocation" titleClass="fs-16" subtitleClass="fs-14"
+              (requestPermission)="handlePermissionToggle()">
+            </app-gps-permission-card>
+            <!-- Alerta de Límite Máximo (Banner Style) -->
+            <div *ngIf="selectedApiPlayers.length >= 11 && isImportMode()" class="limit-tag animate-fade-in">
+              <ion-icon name="information-circle-outline" class="mr-xs"></ion-icon>
+              <span>Límite de 11 cracks alcanzado</span>
             </div>
 
-            <!-- Botón Guardar Principal (Manual/Edit) -->
-            <ion-button expand="block" mode="ios" shape="round" color="primary" class="mt-base" (click)="onSave()"
-              [disabled]="isPublishing || !player.name || !player.team">
-              <ion-spinner name="crescent" color="light" *ngIf="isPublishing" class="mr-s"></ion-spinner>
-              <ion-icon name="save-outline" slot="start" *ngIf="!isPublishing"></ion-icon>
-              <span class="ml-s" *ngIf="!isPublishing">Guardar jugador</span>
-            </ion-button>
-          </div>
-        </div>
-      </ion-card-content>
-    </ion-card>
-  </div>
+            <div class="overflow-hidden" *ngIf="isImportMode()">
+              <div class="d-flex fl-aling-center" *ngIf="selectedApiPlayers.length > 0">
+                <span class="f-bold fs-16 text-neutral-8">Jugadores seleccionados ({{ selectedApiPlayers.length
+                  }})</span>
+                <ion-button fill="outline" size="small" mode="ios"
+                  class="fs-12 f-semibold text-primary ml-auto  pr-none" (click)="clearSelection()">
+                  Limpiar
+                </ion-button>
+              </div>
 
-  <!-- Fullscreen Image Preview Overlay inside root-mounted ion-modal to overlap headers/tabs completely -->
-  <ion-modal [isOpen]="activeViewerImage !== null" (willDismiss)="closeImageViewer()" class="image-viewer-modal">
-    <ng-template>
-      <div class="image-viewer-overlay active" (click)="closeImageViewer()">
-        <div class="viewer-content" (click)="$event.stopPropagation()">
-          <button class="viewer-close-btn" (click)="closeImageViewer()">
-            <ion-icon name="close-circle-outline"></ion-icon>
-          </button>
-          <img [src]="getSafeUrl(activeViewerImage) || ''" referrerpolicy="no-referrer" alt="Vista previa ampliada">
-          <div class="viewer-caption" *ngIf="activeViewerTitle">{{ activeViewerTitle }}</div>
-        </div>
+              <!-- Lista de seleccionados -->
+              <div *ngIf="selectedApiPlayers.length > 0">
+                <ion-list lines="none">
+                  <ng-container *ngFor="let p of getSelectedPlayersArray(); let last = last">
+                    <ion-item class="selected-queue-item">
+                      <div class="api-thumbnail-container">
+                        <ion-icon name="person"></ion-icon>
+                        <ion-img class="api-thumbnail" [src]="p.image_url"
+                          (ionError)="handleImageError($event)"></ion-img>
+                      </div>
+                      <ion-label>
+                        <h3 class="f-semibold fs-14">{{ p.name }}</h3>
+                        <p class="fs-12">{{ p.team }}</p>
+                      </ion-label>
+                      <ion-button fill="clear" color="danger" slot="end" (click)="toggleApiSelection(p)">
+                        <ion-icon name="trash-outline" slot="icon-only" class="fs-18"></ion-icon>
+                      </ion-button>
+                    </ion-item>
+                    <div class="separator my-s" *ngIf="!last"></div>
+                  </ng-container>
+                </ion-list>
+              </div>
+
+              <!-- Estado vacío de la cola -->
+              <div class="text-center py-base" *ngIf="selectedApiPlayers.length === 0 &&  isImportMode()">
+                <p class="text-neutral-5 fs-14 m-0">No hay jugadores seleccionados para importar.</p>
+              </div>
+            </div>
+
+
+
+            <!-- SECCIÓN GPS Y MAPA: Siempre visible o relevante -->
+            <div class="animate-fade-in margin-none">
+              <div class="separator my-s" *ngIf="isImportMode()"></div>
+              <div class="gps-section">
+
+                <!-- Mapa de Ubicación -->
+                <div class="map-container-wrapper animate-fade-in mb-base" *ngIf="hasLocation">
+                  <div id="player-map" class="mini-scouting-map"></div>
+                  <div class="map-info-footer d-flex ai-center jc-between px-s py-xs">
+                    <div class="d-flex ai-center gap-xs overflow-hidden map-address-container">
+                      <ion-icon name="location-outline" class="text-primary fs-14 map-location-icon"></ion-icon>
+                      <span class="fs-10 text-neutral-7 f-regular text-ellipsis" *ngIf="!isRevGeocoding">{{
+                        currentAddress
+                        }}</span>
+                      <ion-spinner name="dots" *ngIf="isRevGeocoding" class="rev-geocoding-spinner"></ion-spinner>
+                    </div>
+                    <!-- Coordenadas GPS -->
+                    <div class="d-flex ai-center gap-xs ml-auto pl-s" *ngIf="player.location?.coordinates">
+                      <span class="fs-10 f-semibold text-neutral-8 px-xs py-xxs border-radius-soft coord-span">
+                        {{ $any(player.location?.coordinates)[1] | number:'1.4-4' }}, {{
+                        $any(player.location?.coordinates)[0] | number:'1.4-4' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Loading del Mapa -->
+                <div class="map-loading-placeholder text-center p-base mb-base animate-fade-in"
+                  *ngIf="isCapturingLocation && !hasLocation">
+                  <ion-spinner name="crescent" color="primary" class="mb-s"></ion-spinner>
+                  <span class="fs-12 text-neutral-6 f-medium">Capturando posición...</span>
+                </div>
+
+                <!-- Botón de Importación (Solo en modo import) -->
+                <div *ngIf="isImportMode()">
+                  <!-- Aviso si falta ubicación -->
+                  <ion-button expand="block" mode="ios" shape="round" color="primary" class="f-bold"
+                    (click)="importSelectedPlayers()"
+                    [disabled]="isImporting || selectedApiPlayers.length === 0 || !hasLocation">
+                    <ion-spinner name="crescent" color="light" *ngIf="isImporting" class="mr-s"></ion-spinner>
+                    <ion-icon name="cloud-done-outline" slot="start" *ngIf="!isImporting"></ion-icon>
+                    <ion-label class="ml-s" *ngIf="!isImporting">
+                      {{ selectedApiPlayers.length <= 1 ? 'Guardar jugador' : 'Guardar jugadores' }} </ion-label>
+                  </ion-button>
+                </div>
+              </div>
+            </div>
+
+            <div class="animate-fade-in" *ngIf="isManualMode()">
+              <div class="margin-none mb-base">
+                <div class="d-flex jc-between ai-center mb-s mt-base">
+                  <h2 class="f-semibold text-neutral-9 fs-18 fs-sm-16 margin-none">Multimedia del Jugador</h2>
+
+                  <div class="d-flex ai-center gap-s">
+                    <!-- Botón Limpiar condicional -->
+                    <ion-button *ngIf="hasAnyImage()" fill="clear" size="small" mode="ios"
+                      class="fs-12 f-semibold text-primary margin-none" (click)="clearAllImages()">
+                      Limpiar
+                    </ion-button>
+
+                    <!-- Switch Global Único -->
+                    <div class="media-mode-toggle">
+                      <button [class.active]="globalMediaMode === 'upload'" (click)="setGlobalMediaMode('upload')"
+                        title="Modo Subida (Cámara/Galería)">
+                        <ion-icon name="cloud-upload-outline"></ion-icon>
+                      </button>
+                      <button [class.active]="globalMediaMode === 'url'" (click)="setGlobalMediaMode('url')"
+                        title="Modo URL Externa">
+                        <ion-icon name="link-outline"></ion-icon>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="separator mb-base"></div>
+
+                <!-- TARJETA CÁMARA: Solo visible en modo subida -->
+                <div class="permission-item-row camera mb-base animate-fade-in" *ngIf="globalMediaMode === 'upload'"
+                  [class.bg-permission-info]="hasCameraPermission" [class.bg-permission-denied]="!hasCameraPermission">
+                  <ion-icon name="camera-outline" slot="start" class="fs-30"></ion-icon>
+                  <ion-label>
+                    <h3 class="f-bold fs-14">{{ hasCameraPermission ? 'Cámara Activa' : 'Permisos de Cámara' }}</h3>
+                    <p class="fs-12 text-neutral-7">{{ hasCameraPermission ? 'Permisos concedidos.' : 'Necesario para
+                      usar
+                      la cámara.' }}</p>
+                  </ion-label>
+                  <div slot="end" class="d-flex ai-center ml-auto">
+                    <ion-button *ngIf="!hasCameraPermission" mode="ios" size="small" fill="solid" shape="round"
+                      class="btn-white-error" [disabled]="hasCameraPermission" (click)="requestCameraPermission()">
+                      <span *ngIf="!hasCameraPermission">Permitir</span>
+                    </ion-button>
+                    <ion-icon *ngIf="hasCameraPermission" name="checkmark-circle-outline"
+                      class="fs-28 text-primary"></ion-icon>
+                  </div>
+                </div>
+
+                <div class="multimedia-compact-list">
+                  <!-- MODO URL: Formato de col 8 (3 columnas en desktop, 1 en móvil) -->
+                  <div class="row w-100 margin-none" *ngIf="globalMediaMode === 'url'">
+                    <div class="form-item col-12 animate-fade-in url-input-item" *ngFor="let type of imageTypes">
+                      <ion-input mode="md" fill="outline" [label]="type.label" labelPlacement="stacked"
+                        [ngModel]="getPlayerImage(type.key)"
+                        (ionInput)="updatePlayerImage(type.key, $any($event.target).value); previews[type.key] = $any($event.target).value"
+                        class="futbol-input" [placeholder]="type.helper" (ionFocus)="setFocus(type.key)"
+                        (ionBlur)="setFocus(null)" [class.is-focused]="focusedField === type.key">
+                        <ion-icon slot="start" [name]="type.icon" class="fs-20 mr-s"
+                          [color]="focusedField === type.key ? 'primary' : 'medium'"></ion-icon>
+                      </ion-input>
+                    </div>
+                  </div>
+
+                  <!-- MODO UPLOAD: Subida de archivos con cámara/galería en formato ion-item limpio con separadores -->
+                  <ng-container *ngIf="globalMediaMode === 'upload'">
+                    <ng-container *ngFor="let type of imageTypes; let last = last">
+                      <ion-item class="animate-fade-in upload-media-item" mode="md" lines="none">
+                        <ion-icon slot="start" [name]="type.icon" color="primary"
+                          class="fs-22 upload-media-icon"></ion-icon>
+                        <ion-label>
+                          <h3 class="f-semibold fs-14 text-neutral-9 upload-media-title">{{ type.label }}</h3>
+                          <p class="fs-12 text-neutral-5 upload-media-subtitle">{{ type.helper }}</p>
+                        </ion-label>
+
+                        <div slot="end" class="d-flex ai-center gap-xs upload-media-actions">
+                          <!-- Si existe previsualización -->
+                          <ng-container *ngIf="previews[type.key]">
+                            <div class="mini-preview-circle" (click)="openImageViewer(previews[type.key]!, type.label)">
+                              <img [src]="getSafeUrl(previews[type.key])" (error)="handleImageError($event, type.key)"
+                                referrerpolicy="no-referrer">
+                            </div>
+                            <ion-button fill="clear" size="small" class="margin-none animate-fade-in"
+                              (click)="removeImage(type.key)">
+                              <ion-icon slot="icon-only" name="trash-outline" class="fs-22 text-danger"></ion-icon>
+                            </ion-button>
+                          </ng-container>
+
+                          <!-- Si NO existe previsualización -->
+                          <ng-container *ngIf="!previews[type.key]">
+                            <ion-button fill="clear" size="small" class="margin-none"
+                              (click)="fileInputGeneric.click()">
+                              <ion-icon slot="icon-only" name="image-outline" class="fs-22 text-primary"></ion-icon>
+                            </ion-button>
+                            <ion-button fill="clear" size="small" class="margin-none" (click)="takePhoto(type.key)"
+                              [disabled]="!hasCameraPermission">
+                              <ion-icon slot="icon-only" name="camera-outline" class="fs-22 text-primary"></ion-icon>
+                            </ion-button>
+                          </ng-container>
+
+                          <input type="file" #fileInputGeneric (change)="onFileSelected($event, type.key)"
+                            accept="image/*" class="hidden-input">
+                        </div>
+                      </ion-item>
+                      <div class="separator my-s" *ngIf="!last"></div>
+                    </ng-container>
+                  </ng-container>
+                </div>
+
+                <!-- Botón Guardar Principal (Manual/Edit) -->
+                <ion-button expand="block" mode="ios" shape="round" color="primary" class="mt-base" (click)="onSave()"
+                  [disabled]="isPublishing || !player.name || !player.team">
+                  <ion-spinner name="crescent" color="light" *ngIf="isPublishing" class="mr-s"></ion-spinner>
+                  <ion-icon name="save-outline" slot="start" *ngIf="!isPublishing"></ion-icon>
+                  <span class="ml-s" *ngIf="!isPublishing">Guardar jugador</span>
+                </ion-button>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
       </div>
-    </ng-template>
-  </ion-modal>
-</div>
+
+      <!-- Fullscreen Image Preview Overlay inside root-mounted ion-modal to overlap headers/tabs completely -->
+      <ion-modal [isOpen]="activeViewerImage !== null" (willDismiss)="closeImageViewer()" class="image-viewer-modal">
+        <ng-template>
+          <div class="image-viewer-overlay active" (click)="closeImageViewer()">
+            <div class="viewer-content" (click)="$event.stopPropagation()">
+              <button class="viewer-close-btn" (click)="closeImageViewer()">
+                <ion-icon name="close-circle-outline"></ion-icon>
+              </button>
+              <img [src]="getSafeUrl(activeViewerImage) || ''" referrerpolicy="no-referrer" alt="Vista previa ampliada">
+              <div class="viewer-caption" *ngIf="activeViewerTitle">{{ activeViewerTitle }}</div>
+            </div>
+          </div>
+        </ng-template>
+      </ion-modal>
+    </div>
+  </div>
+  <app-page-footer></app-page-footer>
+</ion-content>

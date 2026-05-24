@@ -173,8 +173,9 @@ describe('PlayersPublicPage', () => {
       mockPlayerService.getPublicPlayers.calls.reset();
       const f2 = TestBed.createComponent(PlayersPublicPage);
       f2.detectChanges();
-      expect(layoutServiceMock2.setHeader).toHaveBeenCalled();
-      expect(layoutServiceMock2.setBreadcrumbs).toHaveBeenCalled();
+      // Verificamos que el título coincida exactamente con lo definido en el componente
+      expect(f2.componentInstance.pageTitle).toBe('Nuestros jugadores');
+      expect(mockPlayerService.getPublicPlayers).toHaveBeenCalled();
     });
   });
 });

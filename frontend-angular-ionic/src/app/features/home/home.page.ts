@@ -17,6 +17,8 @@ import { AuthService } from 'src/app/core/services/auth/auth.service';
 import { Auth } from '@angular/fire/auth';
 import { Subscription, timer } from 'rxjs';
 import { PermissionModalComponent } from 'src/app/shared/components/permission-modal/permission-modal.component';
+import { PageHeaderComponent } from 'src/app/shared/components/page-header/page-header.component';
+import { PageFooterComponent } from 'src/app/shared/components/page-footer/page-footer.component';
 import { ModalController } from '@ionic/angular';
 import { PLAYER_SERVICE_TOKEN } from 'src/app/core/services/players/player.service.token';
 import { NEWS_SERVICE_TOKEN } from 'src/app/core/services/news/news.service.token';
@@ -26,7 +28,7 @@ import { NEWS_SERVICE_TOKEN } from 'src/app/core/services/news/news.service.toke
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterModule],
+  imports: [IonicModule, CommonModule, FormsModule, RouterModule, PageHeaderComponent, PageFooterComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class HomePage implements OnInit, OnDestroy {
@@ -42,6 +44,8 @@ export class HomePage implements OnInit, OnDestroy {
   private auth = inject(Auth);
   private refreshSub?: Subscription;
   // Propiedades públicas de estado
+  pageTitle = 'Inicio';
+  pageSubtitle = '';
   featuredNews: any[] = [];
   liveScores: any[] = [];
   liveScorePages: any[][] = [];
@@ -69,10 +73,9 @@ export class HomePage implements OnInit, OnDestroy {
     // Sincronizo de forma reactiva el nombre del usuario en la cabecera
     effect(() => {
       const name = this.authService.firstName();
-      this.layoutService.setHeader({
-        title: `¡Hola, ${name || 'Usuario'}!`
-      });
+      this.pageTitle = `¡Hola, ${name || 'Usuario'}!`;
     });
+    this.pageSubtitle = 'Toda la emoción del fútbol en tu mano';
   }
 
   // === CICLOS DE VIDA ===
@@ -92,13 +95,6 @@ export class HomePage implements OnInit, OnDestroy {
       this.loadLiveScores(true);
     });
 
-    // Configuro los parámetros del layout para el Home
-    this.layoutService.setHeader({
-      subtitle: 'Toda la emoción del fútbol en tu mano',
-      showHero: true,
-      isHome: true
-    });
-    this.layoutService.setBreadcrumbs([]);
   }
 
   ngOnDestroy() {

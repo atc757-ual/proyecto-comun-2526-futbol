@@ -21,6 +21,9 @@ import { AuthService } from '../../../core/services/auth/auth.service';
 import { LayoutService } from '../../../core/services/ui/layout.service';
 import { ToastService } from '../../../core/services/ui/toast.service';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
+import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
+import { PageFooterComponent } from '../../../shared/components/page-footer/page-footer.component';
+import { IonContent } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-players',
@@ -31,7 +34,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
     CommonModule, FormsModule, RouterModule,
     IonButton, IonIcon, IonSearchbar, IonSpinner,
     IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonItem, IonLabel,
-    IonThumbnail
+    IonThumbnail, PageHeaderComponent, PageFooterComponent, IonContent
   ]
 })
 export class PlayersPage implements OnInit {
@@ -124,17 +127,14 @@ export class PlayersPage implements OnInit {
     });
   }
 
-  ngOnInit() {
-    this.layoutService.setHeader({
-      title: 'Jugadores',
-      subtitle: 'Gestiona y explora tu base de datos de futbolistas',
-      showHero: true
-    });
-    this.layoutService.setBreadcrumbs([
-      { label: '', url: '/home', icon: 'home-outline' },
-      { label: 'Mi plantilla' },
-    ]);
+  pageTitle = 'Jugadores';
+  pageSubtitle = 'Gestiona y explora tu base de datos de futbolistas';
+  breadcrumbs = [
+    { label: '', url: '/home', icon: 'home-outline' },
+    { label: 'Mi plantilla' },
+  ];
 
+  ngOnInit() {
     this.isAdmin = this.authService.isAdmin();
     this.loadPlayers();
   }

@@ -15,6 +15,7 @@ env:
 permissions:
   contents: read
   packages: write
+  pull-requests: read
 
 jobs:
   # --- FRONTEND JOB (Angular/Ionic) ---
@@ -32,7 +33,27 @@ jobs:
         run: |
           cd frontend-angular-ionic
           npm install --no-package-lock
-          
+
+      - name: Run Angular unit tests
+        run: |
+          cd frontend-angular-ionic
+          npx ng test --watch=false --browsers=ChromeHeadlessNoSandbox --code-coverage
+
+      - name: Upload frontend coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: frontend-angular-ionic/coverage/
+          if-no-files-found: warn
+
+      - name: SonarCloud Scan (Frontend)
+        uses: sonarsource/sonarqube-scan-action@v5
+        continue-on-error: true
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: frontend-angular-ionic
+
       - name: Log in to Registry
         uses: docker/login-action@v3
         with:
@@ -57,6 +78,11 @@ jobs:
         image: mongo:latest
         ports:
           - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand({ping:1})' --quiet"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       
@@ -77,7 +103,22 @@ jobs:
           openssl genrsa -out private_key.pem 2048
           openssl rsa -in private_key.pem -pubout -out public_key.pem
           npm test
-          
+
+      - name: Upload Node coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-coverage
+          path: backend-node/coverage/
+          if-no-files-found: warn
+
+      - name: SonarCloud Scan (Node.js)
+        uses: sonarsource/sonarqube-scan-action@v5
+        continue-on-error: true
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: backend-node
+
       - name: Log in to Registry
         uses: docker/login-action@v3
         with:
@@ -129,7 +170,22 @@ jobs:
           cd backend-java
           # Saltamos tests en el build para asegurar éxito en el pipeline de empaquetado
           mvn clean install -DskipTests
-          
+
+      - name: SonarCloud Scan (Java)
+        continue-on-error: true
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/football
+          SPRING_DATASOURCE_USERNAME: user
+          SPRING_DATASOURCE_PASSWORD: password
+        run: |
+          cd backend-java
+          mvn sonar:sonar \
+            -Dsonar.projectKey=football-java \
+            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }} \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -DskipTests
+
       - name: Log in to Registry
         uses: docker/login-action@v3
         with:
@@ -166,7 +222,18 @@ jobs:
           if [ -d "service-corba" ]; then
             cd service-corba && mvn clean install -DskipTests
           fi
-          
+
+      - name: SonarCloud Scan (CORBA)
+        uses: sonarsource/sonarqube-scan-action@v5
+        continue-on-error: true
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: backend-corba
+          args: >
+            -Dsonar.projectKey=football-corba
+            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
+
       - name: Log in to Registry
         uses: docker/login-action@v3
         with:

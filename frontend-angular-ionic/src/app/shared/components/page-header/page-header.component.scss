@@ -1,0 +1,109 @@
+// SECCIÓN HERO (Full Content Gestionado por el Layout)
+
+.fixed-header-container {
+    flex: 0 0 auto;
+    display: block;
+    position: relative;
+    width: 100%;
+    z-index: 9;
+    margin: auto;
+}
+
+.layout-hero-banner {
+    background: var(--bg-hero);
+    width: 100%;
+
+    .main-content {
+        padding: var(--space-base) var(--container-padding-desktop) var(--space-base) var(--container-padding-desktop);
+
+        @media (max-width: 767px) {
+            padding: var(--space-base) var(--container-padding-mobile) var(--space-base) var(--container-padding-mobile);
+        }
+    }
+
+    .hero-title {
+        font-size: var(--fs-28);
+        font-weight: var(--fw-bold);
+        color: var(--color-neutral-9);
+        margin: 0;
+        letter-spacing: -0.5px;
+
+        @media (max-width: 767px) {
+            font-size: var(--fs-20);
+        }
+    }
+
+    .hero-subtitle {
+        font-size: var(--fs-18);
+        color: var(--color-neutral-6);
+        margin: var(--space-xs) 0 0 0;
+
+        @media (max-width: 767px) {
+            font-size: var(--fs-16);
+        }
+    }
+}
+
+.layout-hero-breadcrumbs {
+    background: var(--bg-breadcrumbs);
+    width: 100%;
+
+    .main-content {
+        padding: var(--space-s) var(--container-padding-desktop);
+
+        @media (max-width: 767px) {
+            padding: var(--space-s) var(--container-padding-mobile);
+        }
+    }
+
+    ion-breadcrumb {
+        color: var(--color-neutral-7);
+
+        &.active-breadcrumb {
+            color: var(--color-primary) !important;
+            font-weight: var(--fw-semibold) !important;
+        }
+
+        &.has-url {
+            &::part(native) {
+                cursor: pointer !important;
+            }
+
+            &:hover {
+                color: var(--color-primary);
+            }
+        }
+
+        &:not(.has-url) {
+            &::part(native) {
+                cursor: default !important;
+                pointer-events: none !important;
+            }
+        }
+
+        &::part(native) {
+            padding-inline: var(--breadcrumb-gap);
+        }
+
+        &::part(separator) {
+            margin-inline: var(--breadcrumb-gap);
+        }
+
+        ion-icon {
+            color: var(--color-neutral-7) !important;
+        }
+
+        @media (max-width: 767px) {
+            &::part(native) {
+                padding-inline: var(--breadcrumb-gap-mobile) !important;
+            }
+
+            &::part(separator) {
+                margin-inline: var(--breadcrumb-gap-mobile) !important;
+            }
+        }
+
+
+    }
+
+}

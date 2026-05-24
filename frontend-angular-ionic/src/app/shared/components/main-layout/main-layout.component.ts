@@ -1,12 +1,11 @@
 import { Component, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Location } from '@angular/common';
+import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import {
-  IonIcon, ActionSheetController, ModalController,
-  IonMenu, IonContent, IonMenuToggle, IonButton, IonItem, IonLabel,
-  IonBackButton, IonBreadcrumbs, IonBreadcrumb, IonTabBar,
-  IonHeader, IonToolbar, IonTabs, IonRouterOutlet, IonButtons,
-  IonTabButton, IonFooter, MenuController, NavController
+  ActionSheetController, ModalController,
+  IonRouterOutlet, MenuController, NavController,
+  IonHeader, IonToolbar, IonButtons, IonMenuToggle, IonButton, IonIcon, IonTitle, IonLabel
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -18,6 +17,8 @@ import { AuthService } from 'src/app/core/services/auth/auth.service';
 import { PlatformService } from 'src/app/core/services/system/platform.service';
 import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
+import { LayoutNavigationComponent } from '../layout-navigation/layout-navigation.component';
+import { LayoutTabsComponent } from '../layout-tabs/layout-tabs.component';
 
 @Component({
   selector: 'app-main-layout',
@@ -26,11 +27,9 @@ import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component'
   standalone: true,
   imports: [
     CommonModule,
-    RouterModule,
-    IonHeader, IonToolbar, IonTabs, IonRouterOutlet, IonButtons,
-    IonMenu, IonContent, IonIcon, IonMenuToggle, IonButton,
-    IonItem, IonLabel, IonBackButton, IonBreadcrumbs,
-    IonBreadcrumb, IonTabBar, IonTabButton, IonFooter
+    RouterModule, IonRouterOutlet,
+    LayoutNavigationComponent, LayoutTabsComponent,
+    IonHeader, IonToolbar, IonButtons, IonMenuToggle, IonButton, IonIcon, IonTitle, IonLabel
   ]
 })
 export class MainLayoutComponent implements OnDestroy {
@@ -40,6 +39,7 @@ export class MainLayoutComponent implements OnDestroy {
   public layoutService = inject(LayoutService);
   private menuCtrl = inject(MenuController);
   private navCtrl = inject(NavController);
+  private location = inject(Location);
 
   public appPages = [
     { tab: 'home', title: 'Inicio', url: '/home', icon: 'home-outline' },
@@ -55,6 +55,18 @@ export class MainLayoutComponent implements OnDestroy {
       personOutline, logOutOutline, sparklesOutline, logoLinkedin, logoGithub, closeOutline, arrowBack,
       chevronBack, chevronForwardOutline, football, searchOutline
     });
+
+    // Reset de scroll al cambiar de ruta
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        const ionContent = document.querySelector('#mobile-main-content ion-content, .main-main-bg') as any;
+        if (ionContent && typeof ionContent.scrollToTop === 'function') {
+          ionContent.scrollToTop(300);
+        } else {
+          window.scrollTo(0, 0);
+        }
+      }
+    });
   }
 
   ngOnDestroy() {
@@ -69,58 +81,34 @@ export class MainLayoutComponent implements OnDestroy {
     return currentUrl === '/home';
   }
 
-  /**
-   * Lógica de navegación inteligente para marcar secciones activas
-   */
+
+  goBack(): void {
+    // Evitar que el botón retenga el foco al navegar
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    if (window.history.length > 1) {
+      this.location.back();
+    } else {
+      this.router.navigate(['/home']);
+    }
+  }
+
   isTabActive(tabUrl: string): boolean {
     const currentUrl = (this.router.url || '').toLowerCase();
     const targetUrl = (tabUrl || '').toLowerCase();
 
-    if (!targetUrl) {
-      return false;
-    }
-
-    // 1. HOME: Solo si es exactamente /home
-    if (targetUrl === '/home') {
-      return currentUrl === '/home';
-    }
-
-    // 2. JUGADORES: Si incluye 'player' pero NO 'public'
-    if (targetUrl === '/players') {
-      return currentUrl.includes('player') && !currentUrl.includes('public');
-    }
-
-    // 3. NOTICIAS: Si incluye 'new' (news, add-news, manage-news)
-    if (targetUrl === '/news') {
-      return currentUrl.includes('new');
-    }
-
-    // 4. IA: Si incluye 'ai', 'ia' o 'analysis'
-    if (targetUrl === '/ai-team') {
-      return currentUrl.includes('ai-team');
-    }
-
-    // 5. BÚSQUEDA: Si incluye 'busqueda' o 'search'
-    if (targetUrl === '/busqueda') {
-      return currentUrl.includes('busqueda');
-    }
-
-    // Por defecto, coincidencia simple
+    if (!targetUrl) { return false; }
+    if (targetUrl === '/home') { return currentUrl === '/home'; }
+    if (targetUrl === '/players') { return currentUrl.includes('player') && !currentUrl.includes('public'); }
+    if (targetUrl === '/news') { return currentUrl.includes('new'); }
+    if (targetUrl === '/ai-team') { return currentUrl.includes('ai-team'); }
+    if (targetUrl === '/busqueda') { return currentUrl.includes('busqueda'); }
     return currentUrl.includes(targetUrl);
   }
 
-
   private actionSheetCtrl = inject(ActionSheetController);
   private modalCtrl = inject(ModalController);
-
-  onBreadcrumbClick(event: Event, item: any) {
-    if (item.url === '/login' || (item.url === '/home' && !this.authService.currentUser())) {
-      event.preventDefault();
-      event.stopPropagation();
-      this.navCtrl.navigateRoot('/login', { animated: true, animationDirection: 'back' });
-    }
-  }
-
   async logout() {
     if (this.platformService.isDesktop) {
       // MODAL PREMIUM PARA DESKTOP

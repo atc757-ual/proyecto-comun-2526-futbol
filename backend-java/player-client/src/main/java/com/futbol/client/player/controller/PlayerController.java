@@ -12,15 +12,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.stream.Collectors;
 
 @Tag(name = "Jugadores", description = "Gestión de jugadores del sistema")
@@ -30,27 +27,29 @@ public class PlayerController {
 
     private static final Logger log = LoggerFactory.getLogger(PlayerController.class);
 
-    @Autowired
-    private PlayerRepository playerRepository;
+    private final PlayerRepository playerRepository;
+    private final CommentClient commentClient;
 
-    @Autowired
-    private CommentClient commentClient;
+    public PlayerController(PlayerRepository playerRepository, CommentClient commentClient) {
+        this.playerRepository = playerRepository;
+        this.commentClient = commentClient;
+    }
 
     @Operation(summary = "Listar jugadores (Vista Pública)", description = "Obtiene 10 jugadores aleatorios con información mínima (Nombre, Foto) sin necesidad de token")
     @GetMapping("/public")
     public ResponseEntity<ApiResult<List<PlayerPublicDTO>>> getAllPlayersPublic() {
-        List<Player> allPlayers = new ArrayList<>(playerRepository.findAll());
-        Collections.shuffle(allPlayers);
-
-        List<PlayerPublicDTO> publicPlayers = allPlayers.stream()
-                .limit(10)
+        List<PlayerPublicDTO> publicPlayers = playerRepository.findRandomPlayers(10).stream()
                 .map(p -> PlayerPublicDTO.builder()
                         .id(p.getId())
                         .name(p.getName())
-                        .photo(p.getImageUrl())
+                        .imageUrl(p.getImageUrl())
+                        .team(p.getTeam())
+                        .age(p.getAge())
+                        .nationality(p.getNationality())
+                        .position(p.getPosition())
+                        .createdAt(p.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());
-
         return ResponseEntity.ok(ApiResult.success("Vista pública aleatoria recuperada", publicPlayers));
     }
 
@@ -176,23 +175,4 @@ public class PlayerController {
         return ResponseEntity.ok(ApiResult.success("Jugador eliminado exitosamente (incluyendo comentarios)", null));
     }
 
-    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResult<Object>> handleValidationExceptions(
-            org.springframework.web.bind.MethodArgumentNotValidException ex) {
-        java.util.Map<String, String> errors = new java.util.HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((org.springframework.validation.FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        log.error("[PLAYER-CLIENT] Error de validación al procesar jugador: {}", errors);
-        return ResponseEntity.badRequest().body(ApiResult.error("400", "Error de validación: " + errors));
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResult<Object>> handleGenericExceptions(Exception ex) {
-        log.error("[PLAYER-CLIENT] Excepción inesperada en el controlador de jugadores: ", ex);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResult.error("500", "Error interno en servicio Java: " + ex.getMessage()));
-    }
 }

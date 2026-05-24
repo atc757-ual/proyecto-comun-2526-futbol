@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:latest
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand({ping:1})' --quiet"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    defaults:
+      run:
+        working-directory: backend-node
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Generate RSA keys for JWT tests
+        run: |
+          openssl genrsa -out private_key.pem 2048
+          openssl rsa -in private_key.pem -pubout -out public_key.pem
+      - name: Run tests with coverage
+        env:
+          MONGO_URL: mongodb://localhost:27017/football
+          NODE_ENV: test
+          JWT_SECRET: test-secret
+        run: npm test -- --runInBand --coverage
+      - name: Upload Jest report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jest-report
+          path: backend-node/coverage/
+          if-no-files-found: warn

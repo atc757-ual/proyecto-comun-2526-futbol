@@ -9,7 +9,6 @@ let privateKey;
 try {
     if (fs.existsSync(privateKeyPath)) {
         privateKey = fs.readFileSync(privateKeyPath, 'utf8');
-        console.log('✅ Llave privada RS256 cargada correctamente desde:', privateKeyPath);
     } else {
         throw new Error('El archivo no existe en: ' + privateKeyPath);
     }

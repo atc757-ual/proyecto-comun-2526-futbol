@@ -2,6 +2,9 @@ import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, LoadingController, NavController } from '@ionic/angular';
+import { IonContent } from '@ionic/angular/standalone';
+import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
+import { PageFooterComponent } from '../../../shared/components/page-footer/page-footer.component';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { NewsItem } from '../../../core/models/news.model';
 import { NEWS_SERVICE_TOKEN } from '../../../core/services/news/news.service.token';
@@ -17,11 +20,11 @@ import { addCircleOutline, newspaperOutline, homeOutline, settingsOutline, chevr
   templateUrl: './news.page.html',
   styleUrls: ['./news.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, FormsModule]
+  imports: [CommonModule, IonicModule, RouterModule, FormsModule, PageHeaderComponent, PageFooterComponent]
 })
 export class NewsPage implements OnInit, OnDestroy {
   private newsService = inject(NEWS_SERVICE_TOKEN);
-  private authService = inject(AuthService); // Inyectado correctamente aquí
+  public authService = inject(AuthService); // Inyectado correctamente aquí
   private route = inject(ActivatedRoute);
   private loadingCtrl = inject(LoadingController);
   public platformService = inject(PlatformService);
@@ -48,19 +51,14 @@ export class NewsPage implements OnInit, OnDestroy {
     addIcons({ addCircleOutline, newspaperOutline, homeOutline, settingsOutline, chevronBackOutline, chevronForwardOutline });
   }
 
-  async ngOnInit() {
-    // Configurar Layout
-    this.layoutService.setHeader({
-      title: 'Noticias de Fútbol',
-      subtitle: 'Mantente al día con la actualidad deportiva',
-      showHero: true,
-      isHome: false
-    });
+  public pageTitle = 'Noticias de Fútbol';
+  public pageSubtitle = 'Mantente al día con la actualidad deportiva';
+  public breadcrumbs = [
+    { label: '', url: '/home', icon: 'home-outline' },
+    { label: 'Noticias' }
+  ];
 
-    this.layoutService.setBreadcrumbs([
-      { label: '', url: '/home', icon: 'home-outline' },
-      { label: 'Noticias' }
-    ]);
+  async ngOnInit() {
 
     this.isAdmin = this.authService.isAdmin(); // Usamos la instancia inyectada
     this.loadNews();

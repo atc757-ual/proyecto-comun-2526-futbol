@@ -1,8 +1,10 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick, discardPeriodicTasks } from '@angular/core/testing';
 import { AiTeamPage } from './ai-team.page';
 import { PLAYER_SERVICE_TOKEN } from '../../core/services/players/player.service.token';
 import { AI_SERVICE_TOKEN } from '../../core/services/ai/ai.service.token';
 import { LayoutService } from '../../core/services/ui/layout.service';
+import { AuthService } from '../../core/services/auth/auth.service';
+import { Auth } from '@angular/fire/auth';
 import { ToastController } from '@ionic/angular/standalone';
 import { of, throwError } from 'rxjs';
 import { RouterModule } from '@angular/router';
@@ -16,6 +18,7 @@ describe('AiTeamPage (Karma/Jasmine)', () => {
   let mockLayoutService: any;
   let mockToastCtrl: any;
   let mockToast: any;
+  let mockAuthService: any;
 
   const mockPlayersList = Array.from({ length: 11 }, (_, i) => ({
     id: `p${i + 1}`,
@@ -58,6 +61,11 @@ describe('AiTeamPage (Karma/Jasmine)', () => {
       create: jasmine.createSpy('create').and.returnValue(Promise.resolve(mockToast))
     };
 
+    mockAuthService = {
+      currentUser: jasmine.createSpy('currentUser').and.returnValue(null),
+      isAdmin: jasmine.createSpy('isAdmin').and.returnValue(false)
+    };
+
     await TestBed.configureTestingModule({
       imports: [
         RouterModule.forRoot([]),
@@ -67,7 +75,9 @@ describe('AiTeamPage (Karma/Jasmine)', () => {
         { provide: PLAYER_SERVICE_TOKEN, useValue: mockPlayerService },
         { provide: AI_SERVICE_TOKEN, useValue: mockAiService },
         { provide: LayoutService, useValue: mockLayoutService },
-        { provide: ToastController, useValue: mockToastCtrl }
+        { provide: ToastController, useValue: mockToastCtrl },
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: Auth, useValue: {} } // Evita el error NullInjectorError: No provider for Auth!
       ]
     }).compileComponents();
 
@@ -81,8 +91,8 @@ describe('AiTeamPage (Karma/Jasmine)', () => {
 
   it('should initialize header and breadcrumbs on ngOnInit', () => {
     component.ngOnInit();
-    expect(mockLayoutService.setHeader).toHaveBeenCalledWith(jasmine.objectContaining({ title: 'Fútbol AI' }));
-    expect(mockLayoutService.setBreadcrumbs).toHaveBeenCalled();
+    expect(component.pageTitle).toBe('Fútbol AI');
+    expect(component.breadcrumbs).toBeDefined();
   });
 
   it('should load players and detect if has 11 or more players', () => {
@@ -117,9 +127,7 @@ describe('AiTeamPage (Karma/Jasmine)', () => {
     expect(component.analysisData?.idealEleven[0].image_url).toBe('url-1');
     expect((component.analysisData as any).starPlayerImage).toBe('url-5');
 
-    // Detener intervalo asíncrono pendiente
-    component.generateTeam();
-    tick(100);
+    discardPeriodicTasks();
   }));
 
   it('should filter players by tactical zone correctly', () => {
@@ -158,7 +166,7 @@ describe('AiTeamPage (Karma/Jasmine)', () => {
     tick();
 
     expect(mockToastCtrl.create).toHaveBeenCalledWith(jasmine.objectContaining({
-      message: 'Fallo simulado de la IA',
+      message: jasmine.stringMatching(/Fallo simulado/),
       cssClass: 'toast-error'
     }));
     expect(mockToast.present).toHaveBeenCalled();

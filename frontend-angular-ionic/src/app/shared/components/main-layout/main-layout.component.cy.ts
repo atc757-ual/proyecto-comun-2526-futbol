@@ -79,13 +79,12 @@ describe('MainLayoutComponent Component Cypress Tests', () => {
     });
   }
 
-  it('should mount successfully with breadcrumbs in desktop mode', () => {
+  it('should mount successfully in desktop mode', () => {
     mountComponent();
 
     cy.get('ion-menu').should('exist');
-    cy.get('ion-breadcrumbs').should('exist');
-    cy.contains('ion-breadcrumb', 'Inicio').should('exist');
     cy.get('.main-header').should('exist');
+    cy.get('.main-wrapper').should('exist');
   });
 
   it('should display desktop navigation items', () => {

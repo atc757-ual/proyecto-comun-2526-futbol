@@ -1,4 +1,4 @@
-import { inject, signal, computed, Signal } from '@angular/core';
+import { inject, signal, computed } from '@angular/core';
 import { ModalController } from '@ionic/angular/standalone';
 import { PLAYER_SERVICE_TOKEN } from '../../core/services/players/player.service.token';
 import { Player } from '../../core/models/player.model';
@@ -23,7 +23,30 @@ export abstract class PlayerListBase {
   protected itemsPerPage = signal<number>(8);
   protected totalPlayersCount = signal<number>(0);
 
-  protected abstract filteredPlayers: Signal<Player[]>;
+  protected filteredPlayers = computed(() => {
+    const term = this.searchTerm().toLowerCase().trim();
+    const players = this._allPlayers();
+
+    if (!term) return players;
+
+    return players.filter(p => {
+      const nameMatch = p.name?.toLowerCase().includes(term);
+      const teamMatch = p.team?.toLowerCase().includes(term);
+      const leagueMatch = p.league?.toLowerCase().includes(term);
+      const countryMatch = p.nationality?.toLowerCase().includes(term);
+
+      let dateMatch = false;
+      if (p.created_at) {
+        const date = new Date(p.created_at);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        dateMatch = `${day}/${month}/${year}`.includes(term);
+      }
+
+      return nameMatch || teamMatch || leagueMatch || countryMatch || dateMatch;
+    });
+  });
 
   protected totalPages = computed(() =>
     Math.ceil(this.filteredPlayers().length / this.itemsPerPage())

@@ -1,11 +1,10 @@
-import { Component, OnInit, computed, Signal } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
-  IonButton, IonIcon, IonSearchbar,
-  IonSpinner,
+  IonButton, IonIcon, IonSearchbar, IonSpinner,
   IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonItem, IonLabel,
-  IonThumbnail, ModalController, IonContent
+  IonThumbnail, IonContent
 } from '@ionic/angular/standalone';
 import { RouterModule } from '@angular/router';
 import { addIcons } from 'ionicons';
@@ -15,7 +14,6 @@ import {
   personAddOutline, optionsOutline, flagOutline, chevronForwardOutline, calendarOutline, settingsOutline,
   closeCircleOutline, chevronBackOutline, eyeOutline, peopleOutline, homeOutline
 } from 'ionicons/icons';
-import { Player } from '../../../core/models/player.model';
 import { PlayerListBase } from '../player-list-base';
 import { PageFullContentComponent } from '../../../shared/components/layout/layout-elements/page-full-content/page-full-content.component';
 import { PageFooterComponent } from '../../../shared/components/layout/layout-elements/page-footer/page-footer.component';
@@ -33,31 +31,6 @@ import { PageFooterComponent } from '../../../shared/components/layout/layout-el
   ]
 })
 export class PlayersPage extends PlayerListBase implements OnInit {
-
-  protected filteredPlayers: Signal<Player[]> = computed(() => {
-    const term = this.searchTerm().toLowerCase().trim();
-    const players = this._allPlayers();
-
-    if (!term) return players;
-
-    return players.filter(p => {
-      const nameMatch = p.name?.toLowerCase().includes(term);
-      const teamMatch = p.team?.toLowerCase().includes(term);
-      const leagueMatch = p.league?.toLowerCase().includes(term);
-      const countryMatch = p.nationality?.toLowerCase().includes(term);
-
-      let dateMatch = false;
-      if (p.created_at) {
-        const date = new Date(p.created_at);
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        dateMatch = `${day}/${month}/${year}`.includes(term);
-      }
-
-      return nameMatch || teamMatch || leagueMatch || countryMatch || dateMatch;
-    });
-  });
 
   constructor() {
     super();

@@ -1,0 +1,5 @@
+services:
+  frontend:
+    ports: []
+    expose:
+      - "80"

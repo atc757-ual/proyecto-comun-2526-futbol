@@ -180,7 +180,7 @@ const getUsers = async (req, res) => {
     const { email } = req.query;
     
     try {
-        const safeEmail = email ? String(email).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') : null;
+        const safeEmail = email ? String(email).replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`) : null;
         const query = safeEmail ? { email: { $regex: safeEmail, $options: 'i' } } : {};
         const users = await User.find(query).limit(10).select('name email role is_active');
         

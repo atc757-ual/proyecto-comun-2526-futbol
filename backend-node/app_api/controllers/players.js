@@ -31,7 +31,7 @@ const playersList = async (req, res) => {
         // Filtro obligatorio: solo vemos lo NUESTRO
         let query = { user_id: userIdFromToken };
 
-        const escapeRegex = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const escapeRegex = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
         if (name) {
             query.name = { $regex: escapeRegex(name), $options: 'i' };
         } else if (team) {

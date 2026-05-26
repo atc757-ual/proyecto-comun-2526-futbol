@@ -6,7 +6,7 @@ import { AuthService } from '../../core/services/auth/auth.service';
 import { LayoutService } from '../../core/services/ui/layout.service';
 import { ToastService } from '../../core/services/ui/toast.service';
 import { ConfirmModalComponent } from '../../shared/components/modals/confirm-modal/confirm-modal.component';
-import { buildPageNumbers } from '../../shared/utils/pagination.util';
+import { buildPageNumbers, filterPlayersByTerm } from '../../shared/utils/pagination.util';
 
 export abstract class PlayerListBase {
   protected readonly playerService = inject(PLAYER_SERVICE_TOKEN);
@@ -24,30 +24,9 @@ export abstract class PlayerListBase {
   protected itemsPerPage = signal<number>(8);
   protected totalPlayersCount = signal<number>(0);
 
-  protected filteredPlayers = computed(() => {
-    const term = this.searchTerm().toLowerCase().trim();
-    const players = this._allPlayers();
-
-    if (!term) return players;
-
-    return players.filter(p => {
-      const nameMatch = p.name?.toLowerCase().includes(term);
-      const teamMatch = p.team?.toLowerCase().includes(term);
-      const leagueMatch = p.league?.toLowerCase().includes(term);
-      const countryMatch = p.nationality?.toLowerCase().includes(term);
-
-      let dateMatch = false;
-      if (p.created_at) {
-        const date = new Date(p.created_at);
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        dateMatch = `${day}/${month}/${year}`.includes(term);
-      }
-
-      return nameMatch || teamMatch || leagueMatch || countryMatch || dateMatch;
-    });
-  });
+  protected filteredPlayers = computed(() =>
+    filterPlayersByTerm(this._allPlayers(), this.searchTerm())
+  );
 
   protected totalPages = computed(() =>
     Math.ceil(this.filteredPlayers().length / this.itemsPerPage())

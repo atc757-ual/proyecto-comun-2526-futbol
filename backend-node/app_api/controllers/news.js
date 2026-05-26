@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+const crypto = require('node:crypto');
 const newsService = require('../services/news.service');
 const { sendApiResult } = require('./apiResult');
 

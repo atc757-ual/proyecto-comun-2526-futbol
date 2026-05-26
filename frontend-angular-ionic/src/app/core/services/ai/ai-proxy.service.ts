@@ -7,9 +7,9 @@ import { PlatformService } from '../system/platform.service';
 
 @Injectable({ providedIn: 'root' })
 export class AIProxyService implements IAIService {
-  private nodeService = inject(NodeAIService);
-  private javaService = inject(JavaAIService);
-  private platformService = inject(PlatformService);
+  private readonly nodeService = inject(NodeAIService);
+  private readonly javaService = inject(JavaAIService);
+  private readonly platformService = inject(PlatformService);
 
   private get activeService(): IAIService {
     return this.platformService.getUseJavaBackend() ? this.javaService : this.nodeService;

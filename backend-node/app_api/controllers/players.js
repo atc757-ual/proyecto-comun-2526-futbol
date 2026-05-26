@@ -31,10 +31,11 @@ const playersList = async (req, res) => {
         // Filtro obligatorio: solo vemos lo NUESTRO
         let query = { user_id: userIdFromToken };
 
+        const escapeRegex = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
         if (name) {
-            query.name = { $regex: name, $options: 'i' };
+            query.name = { $regex: escapeRegex(name), $options: 'i' };
         } else if (team) {
-            query.team = { $regex: team, $options: 'i' };
+            query.team = { $regex: escapeRegex(team), $options: 'i' };
         }
 
         const players = await Player.find(query).exec();
@@ -51,10 +52,14 @@ const playersList = async (req, res) => {
 const playersCreate = async (req, res) => {
     try {
         // Inyectamos el ID de usuario desde el objeto req.user inyectado por el middleware
-        const playerData = {
-            ...req.body,
-            user_id: req.user.firebaseUid
-        };
+        const allowed = ['name','fullname','team','secondary_team','league','age','birth_date',
+            'birth_place','birth_country','nationality','height','weight','number','position',
+            'side','image_url','external_id','location','summary','social_media','images',
+            'tsdb_ids','is_manual','isFavorite','isFeatured'];
+        const playerData = { user_id: req.user.firebaseUid };
+        for (const field of allowed) {
+            if (req.body[field] !== undefined) playerData[field] = req.body[field];
+        }
         const newPlayer = await Player.create(playerData);
         sendApiResult(res, 201, "Procesamiento concluído exitosamente", newPlayer);
     } catch (err) {
@@ -66,8 +71,8 @@ const playersCreate = async (req, res) => {
 // GET /api/players/all - Traer todos los jugadores (Sin excluir propios)
 const playersListAll = async (req, res) => {
     try {
-        const limit = Math.min(parseInt(req.query.limit) || 200, 500);
-        const page = Math.max(parseInt(req.query.page) || 1, 1);
+        const limit = Math.min(Number.parseInt(req.query.limit) || 200, 500);
+        const page = Math.max(Number.parseInt(req.query.page) || 1, 1);
         const skip = (page - 1) * limit;
         const players = await Player.find({}).skip(skip).limit(limit).exec();
         sendApiResult(res, 200, "Procesamiento concluído exitosamente", players);

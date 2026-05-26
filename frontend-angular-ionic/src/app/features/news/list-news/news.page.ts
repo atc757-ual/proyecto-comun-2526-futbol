@@ -24,14 +24,14 @@ import { addCircleOutline, newspaperOutline, homeOutline, settingsOutline, chevr
   imports: [CommonModule, IonicModule, RouterModule, FormsModule, PageFullContentComponent, PageFooterComponent]
 })
 export class NewsPage implements OnInit, OnDestroy {
-  private newsService = inject(NEWS_SERVICE_TOKEN);
+  private readonly newsService = inject(NEWS_SERVICE_TOKEN);
   public authService = inject(AuthService); // Inyectado correctamente aquí
-  private route = inject(ActivatedRoute);
-  private loadingCtrl = inject(LoadingController);
+  private readonly route = inject(ActivatedRoute);
+  private readonly loadingCtrl = inject(LoadingController);
   public platformService = inject(PlatformService);
   public layoutService = inject(LayoutService);
-  private navCtrl = inject(NavController);
-  private toastService = inject(ToastService);
+  private readonly navCtrl = inject(NavController);
+  private readonly toastService = inject(ToastService);
 
   newsList: NewsItem[] = [];
   featuredNews: NewsItem[] = []; // Nueva lista para el sidebar

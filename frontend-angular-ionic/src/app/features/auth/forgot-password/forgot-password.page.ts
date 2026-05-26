@@ -62,9 +62,9 @@ export class ForgotPasswordPage implements OnInit {
   confirmFocused: boolean = false;
 
   // Inyecto los servicios globales necesarios en primera persona
-  private authService = inject(AuthService);
-  private layoutService = inject(LayoutService);
-  private toastService = inject(ToastService);
+  private readonly authService = inject(AuthService);
+  private readonly layoutService = inject(LayoutService);
+  private readonly toastService = inject(ToastService);
 
   // === CONSTRUCTOR Y CICLO DE VIDA ===
 

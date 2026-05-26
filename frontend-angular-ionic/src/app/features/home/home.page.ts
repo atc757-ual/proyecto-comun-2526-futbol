@@ -37,17 +37,17 @@ import { TourService } from 'src/app/core/services/ui/tour.service';
 })
 export class HomePage implements OnInit, OnDestroy {
   // Inyecto los tokens de servicios y controladores en primera persona
-  private newsService = inject(NEWS_SERVICE_TOKEN);
-  private playerService = inject(PLAYER_SERVICE_TOKEN);
-  private router = inject(Router);
-  private layoutService = inject(LayoutService);
-  private platform = inject(Platform);
-  private authService = inject(AuthService);
-  private alertCtrl = inject(AlertController);
-  private modalCtrl = inject(ModalController);
-  private auth = inject(Auth);
-  private locationPlugin = inject(LocationPlugin);
-  private tourService = inject(TourService);
+  private readonly newsService = inject(NEWS_SERVICE_TOKEN);
+  private readonly playerService = inject(PLAYER_SERVICE_TOKEN);
+  private readonly router = inject(Router);
+  private readonly layoutService = inject(LayoutService);
+  private readonly platform = inject(Platform);
+  private readonly authService = inject(AuthService);
+  private readonly alertCtrl = inject(AlertController);
+  private readonly modalCtrl = inject(ModalController);
+  private readonly auth = inject(Auth);
+  private readonly locationPlugin = inject(LocationPlugin);
+  private readonly tourService = inject(TourService);
   private refreshSub?: Subscription;
   private readonly destroy$ = new Subject<void>();
   // Propiedades públicas de estado

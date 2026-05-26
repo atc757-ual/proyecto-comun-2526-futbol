@@ -8,6 +8,7 @@ import {
   NavController, IonContent
 } from '@ionic/angular/standalone';
 import { RouterModule } from '@angular/router';
+import { filterPlayersByTerm } from '../../../../shared/utils/pagination.util';
 import { addIcons } from 'ionicons';
 import { PaginationComponent } from '../../../../shared/components/ui/pagination/pagination.component';
 import { PageFullContentComponent } from '../../../../shared/components/layout/layout-elements/page-full-content/page-full-content.component';
@@ -37,11 +38,11 @@ import { AuthService } from '../../../../core/services/auth/auth.service';
   ]
 })
 export class PlayersPublicPage implements OnInit {
-  private playerService = inject(PLAYER_SERVICE_TOKEN);
-  private layoutService = inject(LayoutService);
+  private readonly playerService = inject(PLAYER_SERVICE_TOKEN);
+  private readonly layoutService = inject(LayoutService);
   public platformService = inject(PlatformService);
-  private authService = inject(AuthService);
-  private navCtrl = inject(NavController);
+  private readonly authService = inject(AuthService);
+  private readonly navCtrl = inject(NavController);
 
   // Signals
   public _allPlayers = signal<Player[]>([]);
@@ -51,31 +52,9 @@ export class PlayersPublicPage implements OnInit {
   public itemsPerPage = 8;
 
   // Filtrado reactivo
-  public filteredPlayers = computed(() => {
-    const term = this.searchTerm().toLowerCase().trim();
-    const players = this._allPlayers();
-
-    if (!term) return players;
-
-    return players.filter(p => {
-      const nameMatch = p.name?.toLowerCase().includes(term);
-      const teamMatch = p.team?.toLowerCase().includes(term);
-      const leagueMatch = p.league?.toLowerCase().includes(term);
-      const countryMatch = p.nationality?.toLowerCase().includes(term);
-
-      let dateMatch = false;
-      if (p.created_at) {
-        const date = new Date(p.created_at);
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        const formattedDate = `${day}/${month}/${year}`;
-        dateMatch = formattedDate.includes(term);
-      }
-
-      return nameMatch || teamMatch || leagueMatch || countryMatch || dateMatch;
-    });
-  });
+  public filteredPlayers = computed(() =>
+    filterPlayersByTerm(this._allPlayers(), this.searchTerm())
+  );
 
   // Paginación reactiva
   public totalPages = computed(() => Math.ceil(this.filteredPlayers().length / this.itemsPerPage));

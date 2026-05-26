@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 // Leer la llave privada para RS256
 const privateKeyPath = path.join(__dirname, '../../private_key.pem');

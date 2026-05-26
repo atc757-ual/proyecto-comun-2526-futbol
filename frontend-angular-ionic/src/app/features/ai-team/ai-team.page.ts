@@ -39,10 +39,10 @@ import { PageFooterComponent } from '../../shared/components/layout/layout-eleme
   ]
 })
 export class AiTeamPage implements OnInit {
-  private playerService = inject(PLAYER_SERVICE_TOKEN);
-  private layoutService = inject(LayoutService);
-  private aiService = inject(AI_SERVICE_TOKEN);
-  private toastService = inject(ToastService);
+  private readonly playerService = inject(PLAYER_SERVICE_TOKEN);
+  private readonly layoutService = inject(LayoutService);
+  private readonly aiService = inject(AI_SERVICE_TOKEN);
+  private readonly toastService = inject(ToastService);
 
   public isGenerating = false;
   public analysisData: AIAnalysisResponse | null = null;

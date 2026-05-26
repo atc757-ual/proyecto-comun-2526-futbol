@@ -14,6 +14,7 @@ import {
   IonCheckbox, IonList, IonBadge, IonImg, IonTextarea, ModalController, IonModal, IonContent
 } from '@ionic/angular/standalone';
 import { ToastService } from '@core/services/ui/toast.service';
+import { buildPageNumbers } from '../../../shared/utils/pagination.util';
 import { addIcons } from 'ionicons';
 import {
   cameraOutline, searchOutline, saveOutline,
@@ -62,23 +63,23 @@ import { PageFooterComponent } from 'src/app/shared/components/layout/layout-ele
   ]
 })
 export class AddEditPlayerPage implements OnInit, OnDestroy {
-  private playerService = inject(PLAYER_SERVICE_TOKEN);
-  private cdr = inject(ChangeDetectorRef);
-  private ngZone = inject(NgZone);
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private navCtrl = inject(NavController);
-  private toastService = inject(ToastService);
-  private loadingCtrl = inject(LoadingController);
-  private layoutService = inject(LayoutService);
-  private cameraPlugin = inject(CameraPlugin) as CameraPlugin;
-  private locationPlugin = inject(LocationPlugin) as LocationPlugin;
-  private mapPlugin = inject(MapPlugin) as MapPlugin;
-  private confettiService = inject(ConfettiService);
-  private http = inject(HttpClient);
-  private authService = inject(AuthService);
-  private modalCtrl = inject(ModalController);
-  private sanitizer = inject(DomSanitizer);
+  private readonly playerService = inject(PLAYER_SERVICE_TOKEN);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly navCtrl = inject(NavController);
+  private readonly toastService = inject(ToastService);
+  private readonly loadingCtrl = inject(LoadingController);
+  private readonly layoutService = inject(LayoutService);
+  private readonly cameraPlugin = inject(CameraPlugin) as CameraPlugin;
+  private readonly locationPlugin = inject(LocationPlugin) as LocationPlugin;
+  private readonly mapPlugin = inject(MapPlugin) as MapPlugin;
+  private readonly confettiService = inject(ConfettiService);
+  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
+  private readonly modalCtrl = inject(ModalController);
+  private readonly sanitizer = inject(DomSanitizer);
   public activePermissionModal: HTMLIonModalElement | null = null;
   public pageTitle: string = '';
   public pageSubtitle: string = '';
@@ -86,7 +87,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
 
   getSafeUrl(url: string | null | undefined): SafeResourceUrl | string {
     if (!url) return '';
-    if (url.startsWith('data:') || url.startsWith('blob:')) {
+    if (url.startsWith('data:image/') || url.startsWith('blob:')) {
       return this.sanitizer.bypassSecurityTrustResourceUrl(url);
     }
     return url;
@@ -152,20 +153,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   }
 
   getPages(): number[] {
-    const total = this.totalPages;
-    const current = this.currentPage;
-    const pages: number[] = [];
-    const maxVisible = 5;
-
-    if (total <= maxVisible) {
-      for (let i = 1; i <= total; i++) pages.push(i);
-    } else {
-      let start = Math.max(current - 2, 1);
-      let end = Math.min(start + maxVisible - 1, total);
-      if (end === total) start = Math.max(end - maxVisible + 1, 1);
-      for (let i = start; i <= end; i++) pages.push(i);
-    }
-    return pages;
+    return buildPageNumbers(this.totalPages, this.currentPage);
   }
 
   prevPage() {

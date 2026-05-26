@@ -77,10 +77,10 @@ export class RegisterPage implements OnInit {
 
   // Inyecto los servicios globales necesarios en primera persona
   public platformService = inject(PlatformService);
-  private authService = inject(AuthService);
-  private layoutService = inject(LayoutService);
-  private toastService = inject(ToastService);
-  private modalCtrl = inject(ModalController);
+  private readonly authService = inject(AuthService);
+  private readonly layoutService = inject(LayoutService);
+  private readonly toastService = inject(ToastService);
+  private readonly modalCtrl = inject(ModalController);
 
   // === CONSTRUCTOR Y CICLO DE VIDA ===
 

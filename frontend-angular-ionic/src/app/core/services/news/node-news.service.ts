@@ -18,7 +18,7 @@ export { NewsItem };
 export class NodeNewsService implements INewsService {
   private http        = inject(HttpClient);
   private auth        = inject(Auth);
-  private authService = inject(AuthService);
+  private readonly authService = inject(AuthService);
   private logger      = inject(LoggerService);
   private apiUrl = environment.nodeApiUrl + '/news';
   private feedUrl = environment.nodeApiUrl + '/news'; 
@@ -140,7 +140,7 @@ export class NodeNewsService implements INewsService {
     );
   }
 
-  private storageService = inject(StorageService);
+  private readonly storageService = inject(StorageService);
 
   /**
    * ORQUESTADOR CENTRAL: Guarda o actualiza una noticia manejando imágenes y CORBA

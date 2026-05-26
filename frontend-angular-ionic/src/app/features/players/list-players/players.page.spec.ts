@@ -63,6 +63,7 @@ function buildProviders(options: { players?: Player[]; isAdmin?: boolean; loadEr
 
 describe('PlayersPage', () => {
   let component: PlayersPage;
+  let c: any;
   let fixture: ComponentFixture<PlayersPage>;
 
   function setup(options: Parameters<typeof buildProviders>[0] = {}) {
@@ -74,6 +75,7 @@ describe('PlayersPage', () => {
 
     fixture = TestBed.createComponent(PlayersPage);
     component = fixture.componentInstance;
+    c = component;
     fixture.detectChanges();
   }
 
@@ -91,11 +93,11 @@ describe('PlayersPage', () => {
     });
 
     it('should set isAdmin to false for non-admin user', () => {
-      expect(component.isAdmin).toBeFalse();
+      expect(c.isAdmin).toBeFalse();
     });
 
     it('should have isLoading false after players are loaded', () => {
-      expect(component.isLoading()).toBeFalse();
+      expect(c.isLoading()).toBeFalse();
     });
   });
 
@@ -103,59 +105,59 @@ describe('PlayersPage', () => {
     beforeEach(waitForAsync(() => setup()));
 
     it('should return all 10 players when searchTerm is empty', () => {
-      expect(component.filteredPlayers().length).toBe(10);
+      expect(c.filteredPlayers().length).toBe(10);
     });
 
     it('should filter by player name (case-insensitive)', () => {
-      component.searchTerm.set('messi');
-      const result = component.filteredPlayers();
+      c.searchTerm.set('messi');
+      const result = c.filteredPlayers();
       expect(result.length).toBe(1);
       expect(result[0].name).toBe('Leo Messi');
     });
 
     it('should filter by team name', () => {
-      component.searchTerm.set('barcelona');
-      const result = component.filteredPlayers();
+      c.searchTerm.set('barcelona');
+      const result = c.filteredPlayers();
       expect(result.length).toBe(3); // Pedri, Lamine, ter Stegen
-      result.forEach(p => expect(p.team.toLowerCase()).toContain('barcelona'));
+      result.forEach((p: Player) => expect(p.team.toLowerCase()).toContain('barcelona'));
     });
 
     it('should filter by nationality', () => {
-      component.searchTerm.set('españa');
-      const result = component.filteredPlayers();
+      c.searchTerm.set('españa');
+      const result = c.filteredPlayers();
       expect(result.length).toBe(3); // Pedri, Lamine, Rodri
-      result.forEach(p => expect(p.nationality?.toLowerCase()).toContain('españa'));
+      result.forEach((p: Player) => expect(p.nationality?.toLowerCase()).toContain('españa'));
     });
 
     it('should filter by league', () => {
-      component.searchTerm.set('premier');
-      const result = component.filteredPlayers();
+      c.searchTerm.set('premier');
+      const result = c.filteredPlayers();
       expect(result.length).toBe(3); // Haaland, Rodri, Saka
     });
 
     it('should return empty array when no match', () => {
-      component.searchTerm.set('xyz_no_match_12345');
-      expect(component.filteredPlayers().length).toBe(0);
+      c.searchTerm.set('xyz_no_match_12345');
+      expect(c.filteredPlayers().length).toBe(0);
     });
 
     it('onSearchChange should update searchTerm', () => {
       component.onSearchChange({ detail: { value: 'Real Madrid' } } as any);
-      const result = component.filteredPlayers();
+      const result = c.filteredPlayers();
       expect(result.length).toBe(2); // Vinicius, Mbappé
     });
 
     it('onSearchChange should reset to page 1', () => {
-      component.currentPage.set(2);
+      c.currentPage.set(2);
       component.onSearchChange({ detail: { value: 'messi' } } as any);
-      expect(component.currentPage()).toBe(1);
+      expect(c.currentPage()).toBe(1);
     });
 
     it('onClear should reset searchTerm and page', () => {
-      component.searchTerm.set('messi');
-      component.currentPage.set(2);
+      c.searchTerm.set('messi');
+      c.currentPage.set(2);
       component.onClear();
-      expect(component.searchTerm()).toBe('');
-      expect(component.currentPage()).toBe(1);
+      expect(c.searchTerm()).toBe('');
+      expect(c.currentPage()).toBe(1);
     });
   });
 
@@ -163,57 +165,57 @@ describe('PlayersPage', () => {
     beforeEach(waitForAsync(() => setup()));
 
     it('totalPages should be 2 for 10 players at 8 per page', () => {
-      expect(component.totalPages()).toBe(2);
+      expect(c.totalPages()).toBe(2);
     });
 
     it('pagedPlayers should return 8 items on page 1', () => {
-      expect(component.pagedPlayers().length).toBe(8);
+      expect(c.pagedPlayers().length).toBe(8);
     });
 
     it('pagedPlayers should return 2 items on page 2', () => {
-      component.currentPage.set(2);
-      expect(component.pagedPlayers().length).toBe(2);
+      c.currentPage.set(2);
+      expect(c.pagedPlayers().length).toBe(2);
     });
 
     it('prevPage should decrement current page', () => {
-      component.currentPage.set(2);
+      c.currentPage.set(2);
       component.prevPage();
-      expect(component.currentPage()).toBe(1);
+      expect(c.currentPage()).toBe(1);
     });
 
     it('prevPage should NOT go below page 1', () => {
-      component.currentPage.set(1);
+      c.currentPage.set(1);
       component.prevPage();
-      expect(component.currentPage()).toBe(1);
+      expect(c.currentPage()).toBe(1);
     });
 
     it('nextPage should increment current page', () => {
-      component.currentPage.set(1);
+      c.currentPage.set(1);
       component.nextPage();
-      expect(component.currentPage()).toBe(2);
+      expect(c.currentPage()).toBe(2);
     });
 
     it('nextPage should NOT exceed totalPages', () => {
-      component.currentPage.set(2);
+      c.currentPage.set(2);
       component.nextPage();
-      expect(component.currentPage()).toBe(2);
+      expect(c.currentPage()).toBe(2);
     });
 
     it('goToPage should set the page to the given value', () => {
       component.goToPage(2);
-      expect(component.currentPage()).toBe(2);
+      expect(c.currentPage()).toBe(2);
     });
 
     it('goToPage should NOT accept a page below 1', () => {
-      component.currentPage.set(1);
+      c.currentPage.set(1);
       component.goToPage(0);
-      expect(component.currentPage()).toBe(1);
+      expect(c.currentPage()).toBe(1);
     });
 
     it('goToPage should NOT accept a page above totalPages', () => {
-      component.currentPage.set(1);
+      c.currentPage.set(1);
       component.goToPage(99);
-      expect(component.currentPage()).toBe(1);
+      expect(c.currentPage()).toBe(1);
     });
   });
 
@@ -225,13 +227,13 @@ describe('PlayersPage', () => {
     });
 
     it('should cap the window at 5 pages when there are many pages', () => {
-      component.itemsPerPage.set(1); // 1 player per page → 10 pages
+      c.itemsPerPage.set(1); // 1 player per page → 10 pages
       expect(component.getPages().length).toBe(5);
     });
 
     it('window should be centered around current page', () => {
-      component.itemsPerPage.set(1); // 10 pages
-      component.currentPage.set(5);
+      c.itemsPerPage.set(1); // 10 pages
+      c.currentPage.set(5);
       const pages = component.getPages();
       expect(pages).toContain(5);
       expect(pages[0]).toBeLessThanOrEqual(5);
@@ -257,7 +259,7 @@ describe('PlayersPage', () => {
     beforeEach(waitForAsync(() => setup({ isAdmin: true })));
 
     it('should set isAdmin to true for admin user', () => {
-      expect(component.isAdmin).toBeTrue();
+      expect(c.isAdmin).toBeTrue();
     });
   });
 
@@ -265,7 +267,7 @@ describe('PlayersPage', () => {
     beforeEach(waitForAsync(() => setup({ loadError: true })));
 
     it('should set isLoading to false on load error', () => {
-      expect(component.isLoading()).toBeFalse();
+      expect(c.isLoading()).toBeFalse();
     });
   });
 
@@ -273,7 +275,7 @@ describe('PlayersPage', () => {
     beforeEach(waitForAsync(() => setup({ players: mockPlayers.slice(0, 4) })));
 
     it('should return all pages when total <= 5', () => {
-      component.itemsPerPage.set(1); // 1 per page → 4 pages
+      c.itemsPerPage.set(1); // 1 per page → 4 pages
       expect(component.getPages().length).toBe(4);
     });
   });

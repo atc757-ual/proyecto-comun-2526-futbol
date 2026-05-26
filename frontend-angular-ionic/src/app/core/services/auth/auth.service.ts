@@ -36,7 +36,7 @@ interface AuthSyncResponse {
 export class AuthService {
   private auth              = inject(Auth);
   private http              = inject(HttpClient);
-  private preferencesPlugin = inject(PreferencesPlugin);
+  private readonly preferencesPlugin = inject(PreferencesPlugin);
   private logger            = inject(LoggerService);
 
   // --- SIGNALS DE ESTADO ---
@@ -152,7 +152,7 @@ export class AuthService {
     return userCredential;
   }
 
-  private platformService = inject(PlatformService);
+  private readonly platformService = inject(PlatformService);
 
   private syncPromise: Promise<void> | null = null;
 

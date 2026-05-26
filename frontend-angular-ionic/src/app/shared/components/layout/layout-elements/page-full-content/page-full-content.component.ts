@@ -21,7 +21,7 @@ export class PageFullContentComponent {
 
   public platformService = inject(PlatformService);
   public authService = inject(AuthService);
-  private navCtrl = inject(NavController);
+  private readonly navCtrl = inject(NavController);
 
   onBreadcrumbClick(event: Event, item: any) {
     // Evitar que el breadcrumb retenga el foco al cambiar de página

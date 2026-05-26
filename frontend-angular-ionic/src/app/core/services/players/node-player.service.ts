@@ -18,7 +18,7 @@ export { Player };
   providedIn: 'root'
 })
 export class NodePlayerService implements IPlayerService {
-  private storageService = inject(StorageService);
+  private readonly storageService = inject(StorageService);
   private authService   = inject(AuthService);
   private http          = inject(HttpClient);
   private logger        = inject(LoggerService);

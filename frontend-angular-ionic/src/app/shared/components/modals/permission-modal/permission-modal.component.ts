@@ -19,12 +19,12 @@ export type PermissionMode = 'players' | 'commenting';
   imports: [CommonModule, IonIcon, IonButton, IonSpinner]
 })
 export class PermissionModalComponent implements OnInit {
-  private modalCtrl = inject(ModalController);
+  private readonly modalCtrl = inject(ModalController);
   public authService = inject(AuthService);
-  private toastService = inject(ToastService);
-  private cdr = inject(ChangeDetectorRef);
-  private ngZone = inject(NgZone);
-  private locationPlugin = inject(LocationPlugin);
+  private readonly toastService = inject(ToastService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
+  private readonly locationPlugin = inject(LocationPlugin);
 
   @Input() mode: PermissionMode = 'commenting';
 

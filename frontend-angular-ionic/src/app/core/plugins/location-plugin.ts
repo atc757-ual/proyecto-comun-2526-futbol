@@ -6,7 +6,7 @@ import { Capacitor } from '@capacitor/core';
   providedIn: 'root',
 })
 export class LocationPlugin {
-  private ngZone = inject(NgZone);
+  private readonly ngZone = inject(NgZone);
 
   // Sistema de Caché de Ubicación
   private lastPosition: Position | null = null;

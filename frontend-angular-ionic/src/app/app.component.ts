@@ -20,9 +20,9 @@ export class AppComponent implements OnInit {
   showSplash = true;
   isOffline = false;
 
-  private router = inject(Router);
-  private auth = inject(Auth);
-  private networkService = inject(NetworkPlugin);
+  private readonly router = inject(Router);
+  private readonly auth = inject(Auth);
+  private readonly networkService = inject(NetworkPlugin);
 
   constructor() {
     addIcons({ footballOutline, wifiOutline });

@@ -306,3 +306,26 @@ jobs:
         run: |
           docker build -f backend-corba/Dockerfile.corba -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PREFIX }}-corba:latest ./backend-corba
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PREFIX }}-corba:latest
+
+  # --- DEPLOY JOB (only on push to main) ---
+  deploy:
+    needs: [frontend, backend-node, backend-java, service-corba]
+    runs-on: ubuntu-24.04
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Deploy to VM via SSH
+        uses: appleboy/ssh-action@v1
+        env:
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REGISTRY_USER: ${{ github.actor }}
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USERNAME }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          envs: REGISTRY_TOKEN,REGISTRY_USER
+          script: |
+            cd $HOME/proyecto-comun-2526-futbol
+            echo "$REGISTRY_TOKEN" | docker login ghcr.io -u "$REGISTRY_USER" --password-stdin
+            docker compose pull
+            docker compose up -d --remove-orphans
+            docker image prune -f

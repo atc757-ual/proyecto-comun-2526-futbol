@@ -53,6 +53,12 @@ jobs:
           path: frontend-angular-ionic/coverage/
           if-no-files-found: warn
 
+      - name: Install http-server and Firefox
+        run: |
+          npm install -g http-server
+          sudo apt-get update
+          sudo apt-get install -y firefox
+
       - name: Cypress E2E - Chrome
         uses: cypress-io/github-action@v6
         continue-on-error: true
@@ -60,14 +66,9 @@ jobs:
           working-directory: frontend-angular-ionic
           browser: chrome
           build: npx ng build --configuration=production
-          start: npx http-server dist/frontend-angular-ionic/browser -p 4200 --silent
+          start: http-server dist/frontend-angular-ionic/browser -p 4200 --silent
           wait-on: 'http://localhost:4200'
-          wait-on-timeout: 60
-
-      - name: Install Firefox
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y firefox
+          wait-on-timeout: 120
 
       - name: Cypress E2E - Firefox
         uses: cypress-io/github-action@v6
@@ -76,9 +77,9 @@ jobs:
           working-directory: frontend-angular-ionic
           browser: firefox
           install: false
-          start: npx http-server dist/frontend-angular-ionic/browser -p 4200 --silent
+          start: http-server dist/frontend-angular-ionic/browser -p 4200 --silent
           wait-on: 'http://localhost:4200'
-          wait-on-timeout: 60
+          wait-on-timeout: 120
 
       - name: Upload Cypress results
         uses: actions/upload-artifact@v4

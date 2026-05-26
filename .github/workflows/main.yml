@@ -47,14 +47,6 @@ jobs:
           path: frontend-angular-ionic/coverage/
           if-no-files-found: warn
 
-      - name: SonarCloud Scan (Frontend)
-        uses: sonarsource/sonarqube-scan-action@v4
-        continue-on-error: true
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          projectBaseDir: frontend-angular-ionic
-
       - name: Cypress E2E - Chrome
         uses: cypress-io/github-action@v6
         continue-on-error: true
@@ -143,14 +135,6 @@ jobs:
           name: node-coverage
           path: backend-node/coverage/
           if-no-files-found: warn
-
-      - name: SonarCloud Scan (Node.js)
-        uses: sonarsource/sonarqube-scan-action@v4
-        continue-on-error: true
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          projectBaseDir: backend-node
 
       - name: Log in to Registry
         uses: docker/login-action@v3
@@ -284,17 +268,6 @@ jobs:
           if [ -d "service-corba" ]; then
             cd service-corba && mvn clean install -DskipTests
           fi
-
-      - name: SonarCloud Scan (CORBA)
-        uses: sonarsource/sonarqube-scan-action@v4
-        continue-on-error: true
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          projectBaseDir: backend-corba
-          args: >
-            -Dsonar.projectKey=football-corba
-            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
 
       - name: Log in to Registry
         uses: docker/login-action@v3

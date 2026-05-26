@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { createPagedPlayers } from '../player-pagination.util';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -47,25 +48,25 @@ export class PlayersPage implements OnInit {
   // --- SIGNALS DE ESTADO ---
   // ... (rest of signals stay the same)
   private _allPlayers = signal<Player[]>([]);
-  public searchTerm = signal<string>('');
-  public isLoading = signal<boolean>(false);
-  public isAdmin = false;
+  protected searchTerm = signal<string>('');
+  protected isLoading = signal<boolean>(false);
+  protected isAdmin = false;
 
   // Paginación con Signals
-  public currentPage = signal<number>(1);
-  public itemsPerPage = signal<number>(8); // 8 por página para que la cuadrícula se vea bien
+  protected currentPage = signal<number>(1);
+  protected itemsPerPage = signal<number>(8);
 
   // Signal Computado para el total (Readonly)
-  public totalPlayersCount = signal<number>(0); // Se actualizará al cargar
+  protected totalPlayersCount = signal<number>(0);
 
   // Signal Computado para el total de páginas
-  public totalPages = computed(() => {
+  protected totalPages = computed(() => {
     const total = this.filteredPlayers().length;
     return Math.ceil(total / this.itemsPerPage());
   });
 
   // Signal Computado (Readonly) que expone la lista filtrada por múltiples campos
-  public filteredPlayers = computed(() => {
+  protected filteredPlayers = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
     const players = this._allPlayers();
 
@@ -94,12 +95,7 @@ export class PlayersPage implements OnInit {
     });
   });
 
-  // Signal Computado que entrega solo los jugadores de la página actual
-  public pagedPlayers = computed(() => {
-    const startIndex = (this.currentPage() - 1) * this.itemsPerPage();
-    const endIndex = startIndex + this.itemsPerPage();
-    return this.filteredPlayers().slice(startIndex, endIndex);
-  });
+  protected pagedPlayers = createPagedPlayers(this.filteredPlayers, this.currentPage, this.itemsPerPage);
 
 
   constructor() {

@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { createPagedPlayers } from '../player-pagination.util';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -46,25 +47,25 @@ export class PlayersAllPage implements OnInit {
 
   // --- SIGNALS DE ESTADO ---
   private _allPlayers = signal<Player[]>([]);
-  public searchTerm = signal<string>('');
-  public isLoading = signal<boolean>(false);
-  public isAdmin = false;
+  protected searchTerm = signal<string>('');
+  protected isLoading = signal<boolean>(false);
+  protected isAdmin = false;
 
   // Paginación con Signals
-  public currentPage = signal<number>(1);
-  public itemsPerPage = signal<number>(8);
+  protected currentPage = signal<number>(1);
+  protected itemsPerPage = signal<number>(8);
 
   // Signal Computado para el total
-  public totalPlayersCount = signal<number>(0);
+  protected totalPlayersCount = signal<number>(0);
 
   // Signal Computado para el total de páginas
-  public totalPages = computed(() => {
+  protected totalPages = computed(() => {
     const total = this.filteredPlayers().length;
     return Math.ceil(total / this.itemsPerPage());
   });
 
   // Signal Computado para la lista filtrada
-  public filteredPlayers = computed(() => {
+  protected filteredPlayers = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
 
     // USAMOS SIGNALS para que sea reactivo
@@ -99,12 +100,7 @@ export class PlayersAllPage implements OnInit {
     });
   });
 
-  // Signal Computado para jugadores paginados
-  public pagedPlayers = computed(() => {
-    const startIndex = (this.currentPage() - 1) * this.itemsPerPage();
-    const endIndex = startIndex + this.itemsPerPage();
-    return this.filteredPlayers().slice(startIndex, endIndex);
-  });
+  protected pagedPlayers = createPagedPlayers(this.filteredPlayers, this.currentPage, this.itemsPerPage);
 
   constructor() {
     addIcons({

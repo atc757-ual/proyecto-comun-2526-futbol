@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { createPagedPlayers } from '../player-pagination.util';
+import { createPagedPlayers, createTotalPages } from '../player-pagination.util';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -58,11 +58,7 @@ export class PlayersAllPage implements OnInit {
   // Signal Computado para el total
   protected totalPlayersCount = signal<number>(0);
 
-  // Signal Computado para el total de páginas
-  protected totalPages = computed(() => {
-    const total = this.filteredPlayers().length;
-    return Math.ceil(total / this.itemsPerPage());
-  });
+  protected totalPages = createTotalPages(this.filteredPlayers, this.itemsPerPage);
 
   // Signal Computado para la lista filtrada
   protected filteredPlayers = computed(() => {

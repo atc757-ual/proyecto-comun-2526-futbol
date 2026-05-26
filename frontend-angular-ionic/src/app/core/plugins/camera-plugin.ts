@@ -12,12 +12,12 @@ export class CameraPlugin {
   async takePhoto(): Promise<CameraPhoto | null> {
     try {
       const image = await Camera.getPhoto({
-        quality: 90,
+        quality: 80,
         allowEditing: false,
-        resultType: CameraResultType.Uri,
+        resultType: CameraResultType.Base64,
         source: CameraSource.Prompt // Permite elegir entre Cámara o Galería
       });
-      return image.webPath ? image : null;
+      return image.base64String ? image : null;
     } catch (error: any) {
       // Ignorar advertencias si el usuario simplemente canceló la selección
       if (error?.message?.includes('cancel') || error?.message?.includes('Cancel')) {

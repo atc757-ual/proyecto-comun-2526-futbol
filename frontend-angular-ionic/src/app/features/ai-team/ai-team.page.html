@@ -75,9 +75,9 @@
             <div class="star-player-card animate-pulse-slow">
               <div class="star-badge">
                 <ion-icon name="star" color="warning"></ion-icon>
-                <span>JUGADOR ESTRELLA</span>
+                <span>Jugador Estrella</span>
               </div>
-              <div class="star-content p-base bg-primary text-white border-radius-medium shadow-m d-flex ai-center gap-base">
+              <div class="star-content px-base pb-base pt-m bg-primary text-white border-radius-medium shadow-m d-flex ai-center gap-base">
                 <ion-avatar class="star-avatar">
                   <img [src]="analysisData.starPlayerImage || 'https://ui-avatars.com/api/?name=' + analysisData.starPlayer + '&background=ffffff&color=3880ff'"
                     [alt]="analysisData.starPlayer" />
@@ -138,17 +138,16 @@
                 <div class="col-5 col-sm-12">
                   <!-- Once Ideal (Lista Detallada) -->
                   <h3 class="f-bold fs-18 mb-base text-neutral-9 ">Once Ideal Sugerido</h3>
-                  <ng-container *ngFor="let p of analysisData.idealEleven; trackBy: trackByAIPlayerName">
-                    <ion-item class="ai-player-item py-xs">
+                  <ng-container *ngFor="let p of analysisData.idealEleven; trackBy: trackByAIPlayerName; last as isLast">
+                    <ion-item class="ai-player-item py-xs" [lines]="isLast ? 'none' : 'full'">
                       <ion-avatar slot="start" class="mr-s">
-                        <img [src]="p.image_url || 'https://ui-avatars.com/api/?name=' + p.name + '&background=random'"
-                          [alt]="p.name" />
+                        <img [src]="(p.image_url ? p.image_url : ('https://ui-avatars.com/api/?name=' + (p.name || 'Jugador') + '&background=random'))"
+                          [alt]="p.name || 'Jugador'" />
                       </ion-avatar>
                       <ion-label>
                         <h3 class="f-bold fs-16">{{ p.name }}</h3>
-                        <p class="fs-12 text-neutral-6">{{ p.role }}</p>
                       </ion-label>
-                      <ion-badge slot="end" class="bg-primary px-s py-xs f-medium" mode="ios">{{ getPositionLabel(p.position) }}</ion-badge>
+                      <ion-badge slot="end" class="fs-12 bg-primary px-s py-xs f-medium" mode="ios">{{ getPositionLabel(p.position) }}</ion-badge>
                     </ion-item>
                   </ng-container>
                 </div>

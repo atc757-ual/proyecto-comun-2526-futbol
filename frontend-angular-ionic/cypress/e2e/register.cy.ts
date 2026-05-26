@@ -1,4 +1,4 @@
-describe('Register Page E2E Flow - Casos Reales', () => {
+describe('Register Page E2E Flow – Real Cases', () => {
   const fillRegisterForm = (email: string, password = '1q2w3e4r') => {
     cy.typeIntoIonInput('fullName', 'Alex Test');
     cy.typeIntoIonInput('email', email);
@@ -20,7 +20,7 @@ describe('Register Page E2E Flow - Casos Reales', () => {
     cy.visit('/auth/register');
   });
 
-  it('muestra error si se intenta registrar un email ya existente', () => {
+  it('shows error when trying to register an already existing email', () => {
     fillRegisterForm('atc757@inlumine.ual.es');
     acceptTerms();
     cy.get('ion-button[type="submit"]').click();
@@ -30,7 +30,7 @@ describe('Register Page E2E Flow - Casos Reales', () => {
     cy.url().should('include', '/auth/register');
   });
 
-  it('intenta registrar un email autogenerado y valida resultado del flujo', () => {
+  it('registers an auto-generated email and validates the flow result', () => {
     const uniqueEmail = `testuser_${Date.now()}@test.com`;
     const password = '1q2w3e4r';
 

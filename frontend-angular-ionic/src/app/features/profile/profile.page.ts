@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { environment } from 'src/environments/environment';
 import { addIcons } from 'ionicons';
@@ -51,6 +51,7 @@ export class ProfilePage implements OnInit {
   private readonly toastService = inject(ToastService);
   private readonly actionSheetCtrl = inject(ActionSheetController);
   private readonly modalCtrl = inject(ModalController);
+  private readonly cdr = inject(ChangeDetectorRef);
   public platformService = inject(PlatformService);
 
   private readonly fallbackAvatar = 'https://ui-avatars.com/api/?name=User&background=e2e8f0&color=0f172a&bold=true';
@@ -86,6 +87,10 @@ export class ProfilePage implements OnInit {
     return this.authService.isAdmin() || this.authService.isMasterAdmin();
   }
 
+  get isMasterAdmin(): boolean {
+    return this.authService.isMasterAdmin();
+  }
+
   get currentUserInfo(): ProfileUserInfo {
     const fireUser = this.auth.currentUser;
     const dbUser = this.authService.userData();
@@ -108,6 +113,9 @@ export class ProfilePage implements OnInit {
       await this.authService.syncUserWithBackend(targetVal, true);
     } catch (err) {
       console.error('[PROFILE] Error de sincronización al cambiar backend:', err);
+      // Revertir el toggle visualmente: restaurar el valor anterior y forzar detección de cambios
+      this.useSpringBoot = this.platformService.getUseJavaBackend();
+      this.cdr.detectChanges();
       await this.toastService.showError(`No se pudo cambiar al backend ${targetVal ? 'Java' : 'Node'}.`, 3500);
       return;
     }

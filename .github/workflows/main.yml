@@ -30,6 +30,12 @@ jobs:
         with:
           node-version: '24'
           
+      - name: Build Stencil Library
+        run: |
+          cd stencil-library
+          npm install --no-package-lock
+          npm run build
+
       - name: Install
         run: |
           cd frontend-angular-ionic
@@ -47,6 +53,12 @@ jobs:
           path: frontend-angular-ionic/coverage/
           if-no-files-found: warn
 
+      - name: Install http-server and Firefox
+        run: |
+          npm install -g http-server
+          sudo apt-get update
+          sudo apt-get install -y firefox
+
       - name: Cypress E2E - Chrome
         uses: cypress-io/github-action@v6
         continue-on-error: true
@@ -54,9 +66,9 @@ jobs:
           working-directory: frontend-angular-ionic
           browser: chrome
           build: npx ng build --configuration=production
-          start: npx http-server dist/frontend-angular-ionic/browser -p 4200 --silent
+          start: http-server dist/frontend-angular-ionic/browser -p 4200 --silent
           wait-on: 'http://localhost:4200'
-          wait-on-timeout: 60
+          wait-on-timeout: 120
 
       - name: Cypress E2E - Firefox
         uses: cypress-io/github-action@v6
@@ -65,9 +77,9 @@ jobs:
           working-directory: frontend-angular-ionic
           browser: firefox
           install: false
-          start: npx http-server dist/frontend-angular-ionic/browser -p 4200 --silent
+          start: http-server dist/frontend-angular-ionic/browser -p 4200 --silent
           wait-on: 'http://localhost:4200'
-          wait-on-timeout: 60
+          wait-on-timeout: 120
 
       - name: Upload Cypress results
         uses: actions/upload-artifact@v4
@@ -186,14 +198,18 @@ jobs:
           SPRING_DATASOURCE_PASSWORD: password
         run: |
           cd backend-java
-          mvn test -pl player-client
+          mvn test -pl player-client,comment-client -am
 
       - name: Upload Java coverage
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: java-coverage
-          path: backend-java/player-client/target/site/jacoco/
+          path: |
+            backend-java/player-client/target/site/jacoco/
+            backend-java/player-client/target/surefire-reports/
+            backend-java/comment-client/target/site/jacoco/
+            backend-java/comment-client/target/surefire-reports/
           if-no-files-found: warn
 
       - name: Build (package)
@@ -260,13 +276,23 @@ jobs:
             cd backend-corba/service-corba && mvn test
           fi
 
+      - name: Upload CORBA test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: corba-test-results
+          path: |
+            backend-corba/corba-bridge/target/surefire-reports/
+            backend-corba/service-corba/target/surefire-reports/
+          if-no-files-found: warn
+
       - name: Build Corba components
         run: |
           if [ -d "backend-corba/corba-bridge" ]; then
             cd backend-corba/corba-bridge && mvn clean install -DskipTests
           fi
-          if [ -d "service-corba" ]; then
-            cd service-corba && mvn clean install -DskipTests
+          if [ -d "backend-corba/service-corba" ]; then
+            cd backend-corba/service-corba && mvn clean install -DskipTests
           fi
 
       - name: Log in to Registry

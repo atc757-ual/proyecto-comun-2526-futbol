@@ -72,12 +72,8 @@ export class LocationPlugin {
       }
       return position;
     } catch (error) {
-      console.warn('[GPS] Error obteniendo ubicación real. Usando fallback de Madrid:', error);
-      // Retornar fallback para evitar que rompa el mapa
-      return {
-        coords: { latitude: 40.4168, longitude: -3.7038, accuracy: 100 } as any,
-        timestamp: Date.now()
-      } as Position;
+      console.warn('[GPS] Error obteniendo ubicación real:', error);
+      return null;
     }
   }
 

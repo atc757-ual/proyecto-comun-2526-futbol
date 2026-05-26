@@ -29,7 +29,7 @@ export class NavigationService {
     const targetUrl  = (tabUrl || '').toLowerCase();
     if (!targetUrl)               return false;
     if (targetUrl === '/home')    return currentUrl === '/home';
-    if (targetUrl === '/players') return currentUrl.includes('player') && !currentUrl.includes('public');
+    if (targetUrl === '/players') return currentUrl.startsWith('/players');
     if (targetUrl === '/news')    return currentUrl.includes('new');
     if (targetUrl === '/ai-team') return currentUrl.includes('ai-team');
     if (targetUrl === '/busqueda')return currentUrl.includes('busqueda');

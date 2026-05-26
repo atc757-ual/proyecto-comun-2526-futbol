@@ -21,8 +21,8 @@
 
               <div class="separator my-s"></div>
 
-              <!-- SEGURIDAD DE RED (Solo Admins) -->
-              <ion-item lines="none" class="action-item is-blue" *ngIf="isMaster" detail="true"
+              <!-- SEGURIDAD DE RED (Solo Master Admin) -->
+              <ion-item lines="none" class="action-item is-blue" *ngIf="isMasterAdmin" detail="true" button
                 routerLink="/admin-security">
                 <ion-icon slot="start" name="shield-checkmark-outline"></ion-icon>
                 <ion-label>
@@ -31,7 +31,7 @@
                 </ion-label>
               </ion-item>
 
-              <div class="separator my-s" *ngIf="isMaster"></div>
+              <div class="separator my-s" *ngIf="isMasterAdmin"></div>
 
               <!-- CAMBIAR CLAVE -->
               <ion-item lines="none" class="action-item" [class.is-yellow]="resetCooldown"

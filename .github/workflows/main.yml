@@ -48,7 +48,7 @@ jobs:
           if-no-files-found: warn
 
       - name: SonarCloud Scan (Frontend)
-        uses: sonarsource/sonarqube-scan-action@v5
+        uses: sonarsource/sonarqube-scan-action@v4
         continue-on-error: true
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -145,7 +145,7 @@ jobs:
           if-no-files-found: warn
 
       - name: SonarCloud Scan (Node.js)
-        uses: sonarsource/sonarqube-scan-action@v5
+        uses: sonarsource/sonarqube-scan-action@v4
         continue-on-error: true
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -286,7 +286,7 @@ jobs:
           fi
 
       - name: SonarCloud Scan (CORBA)
-        uses: sonarsource/sonarqube-scan-action@v5
+        uses: sonarsource/sonarqube-scan-action@v4
         continue-on-error: true
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

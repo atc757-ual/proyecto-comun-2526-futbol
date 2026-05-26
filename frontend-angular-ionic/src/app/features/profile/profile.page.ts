@@ -44,13 +44,13 @@ type ProfileUserInfo = {
   ]
 })
 export class ProfilePage implements OnInit {
-  private authService = inject(AuthService);
-  private auth = inject(Auth);
-  private layoutService = inject(LayoutService);
-  private router = inject(Router);
-  private toastService = inject(ToastService);
-  private actionSheetCtrl = inject(ActionSheetController);
-  private modalCtrl = inject(ModalController);
+  private readonly authService = inject(AuthService);
+  private readonly auth = inject(Auth);
+  private readonly layoutService = inject(LayoutService);
+  private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
+  private readonly actionSheetCtrl = inject(ActionSheetController);
+  private readonly modalCtrl = inject(ModalController);
   public platformService = inject(PlatformService);
 
   private readonly fallbackAvatar = 'https://ui-avatars.com/api/?name=User&background=e2e8f0&color=0f172a&bold=true';

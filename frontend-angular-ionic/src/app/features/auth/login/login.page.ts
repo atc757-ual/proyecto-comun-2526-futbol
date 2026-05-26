@@ -32,10 +32,10 @@ export class LoginPage implements OnInit {
   isLoading = false;
 
   // Inyecto los servicios para la autenticación, navegación, avisos y layouts
-  private authService = inject(AuthService);
-  private navCtrl = inject(NavController);
-  private toastService = inject(ToastService);
-  private layoutService = inject(LayoutService);
+  private readonly authService = inject(AuthService);
+  private readonly navCtrl = inject(NavController);
+  private readonly toastService = inject(ToastService);
+  private readonly layoutService = inject(LayoutService);
   public platformService = inject(PlatformService);
 
   // === CONSTRUCTOR Y CICLO DE VIDA ===

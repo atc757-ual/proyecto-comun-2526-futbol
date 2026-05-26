@@ -15,7 +15,7 @@ import {
   imports: [CommonModule, IonIcon, IonButton]
 })
 export class ConfirmModalComponent {
-  private modalCtrl = inject(ModalController);
+  private readonly modalCtrl = inject(ModalController);
 
   @Input() title: string = 'Confirmar Acción';
   @Input() message: string = '¿Estás seguro de que deseas realizar esta acción?';

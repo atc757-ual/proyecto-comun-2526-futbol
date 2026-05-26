@@ -59,7 +59,7 @@ import { register } from 'swiper/element/bundle';
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class PlayerDetailPage implements OnInit, OnDestroy {
-  private route = inject(ActivatedRoute);
+  private readonly route = inject(ActivatedRoute);
 
   @Input() set id(playerId: string) {
     if (playerId) {
@@ -84,21 +84,21 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
     }
   }
 
-  private playerService = inject(PLAYER_SERVICE_TOKEN);
+  private readonly playerService = inject(PLAYER_SERVICE_TOKEN);
   public authService = inject(AuthService);
-  private loadingCtrl = inject(LoadingController);
-  private navCtrl = inject(NavController);
-  private layoutService = inject(LayoutService);
-  private alertCtrl = inject(AlertController);
-  private toastService = inject(ToastService);
-  private modalCtrl = inject(ModalController);
+  private readonly loadingCtrl = inject(LoadingController);
+  private readonly navCtrl = inject(NavController);
+  private readonly layoutService = inject(LayoutService);
+  private readonly alertCtrl = inject(AlertController);
+  private readonly toastService = inject(ToastService);
+  private readonly modalCtrl = inject(ModalController);
   private activePermissionModal: HTMLIonModalElement | null = null;
-  private confettiService = inject(ConfettiService);
-  private locationService = inject(LocationPlugin);
-  private mapPlugin = inject(MapPlugin);
-  private shareCardPlugin = inject(ShareCardPlugin);
-  private hapticsService = inject(HapticsPlugin);
-  private cdr = inject(ChangeDetectorRef);
+  private readonly confettiService = inject(ConfettiService);
+  private readonly locationService = inject(LocationPlugin);
+  private readonly mapPlugin = inject(MapPlugin);
+  private readonly shareCardPlugin = inject(ShareCardPlugin);
+  private readonly hapticsService = inject(HapticsPlugin);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   public player: Player | null = null;
   public honours: TsdbHonour[] = [];
@@ -731,7 +731,7 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
     });
   }
 
-  private zone = inject(NgZone);
+  private readonly zone = inject(NgZone);
 
   private initDetailMap(lat: number, lng: number, retryCount = 0) {
     if (!this.player?._id) return;

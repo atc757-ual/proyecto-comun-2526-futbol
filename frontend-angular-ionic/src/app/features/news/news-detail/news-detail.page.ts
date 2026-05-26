@@ -25,16 +25,16 @@ import { PageFooterComponent } from '../../../shared/components/layout/layout-el
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class NewsDetailPage {
-  private newsService = inject(NEWS_SERVICE_TOKEN);
-  private authService = inject(AuthService);
-  private router = inject(Router);
+  private readonly newsService = inject(NEWS_SERVICE_TOKEN);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
   public platformService = inject(PlatformService); // Aseguramos que sea public
   public layoutService = inject(LayoutService);
-  private alertCtrl = inject(AlertController);
-  private toastService = inject(ToastService);
-  private navCtrl = inject(NavController);
-  private modalCtrl = inject(ModalController);
-  private storageService = inject(StorageService);
+  private readonly alertCtrl = inject(AlertController);
+  private readonly toastService = inject(ToastService);
+  private readonly navCtrl = inject(NavController);
+  private readonly modalCtrl = inject(ModalController);
+  private readonly storageService = inject(StorageService);
 
   selectedNew: NewsItem | null = null;
   newsList: NewsItem[] = [];

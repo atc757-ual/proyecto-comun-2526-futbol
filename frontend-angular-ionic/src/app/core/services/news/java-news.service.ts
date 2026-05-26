@@ -14,10 +14,10 @@ import { NewsItem } from '../../models/news.model';
  */
 @Injectable({ providedIn: 'root' })
 export class JavaNewsService implements INewsService {
-  private http = inject(HttpClient);
-  private auth = inject(Auth);
-  private storageService = inject(StorageService);
-  private authService = inject(AuthService);
+  private readonly http = inject(HttpClient);
+  private readonly auth = inject(Auth);
+  private readonly storageService = inject(StorageService);
+  private readonly authService = inject(AuthService);
   
   private apiUrl = environment.javaApiUrl + '/news';
 

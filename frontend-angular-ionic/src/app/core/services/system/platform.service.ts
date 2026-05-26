@@ -10,7 +10,7 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root'
 })
 export class PlatformService implements OnDestroy {
-  private platform = inject(Platform);
+  private readonly platform = inject(Platform);
   private ngZone   = inject(NgZone);
 
   // Referencia guardada para poder remover el listener con exactamente la misma función

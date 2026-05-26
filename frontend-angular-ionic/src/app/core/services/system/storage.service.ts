@@ -11,7 +11,7 @@ import { LoggerService } from './logger.service';
  */
 @Injectable({ providedIn: 'root' })
 export class StorageService {
-  private storage = inject(Storage);
+  private readonly storage = inject(Storage);
   private logger  = inject(LoggerService);
 
   // --- Operaciones de Subida ---

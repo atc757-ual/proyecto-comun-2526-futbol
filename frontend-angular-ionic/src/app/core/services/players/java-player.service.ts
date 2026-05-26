@@ -17,7 +17,7 @@ import { Player } from '../../models/player.model';
   providedIn: 'root'
 })
 export class JavaPlayerService implements IPlayerService {
-  private storageService = inject(StorageService);
+  private readonly storageService = inject(StorageService);
   private authService    = inject(AuthService);
   private http           = inject(HttpClient);
   private logger         = inject(LoggerService);

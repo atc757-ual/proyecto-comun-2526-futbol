@@ -380,8 +380,8 @@ const getPlayerHonours = async (idPlayer) => {
         }));
         // Ordenar por año descendente
         return mapped.sort((a, b) => {
-            const yearA = parseInt(a.strSeason?.substring(0, 4)) || 0;
-            const yearB = parseInt(b.strSeason?.substring(0, 4)) || 0;
+            const yearA = Number.parseInt(a.strSeason?.substring(0, 4)) || 0;
+            const yearB = Number.parseInt(b.strSeason?.substring(0, 4)) || 0;
             return yearB - yearA;
         });
     } catch (error) {
@@ -401,7 +401,7 @@ const getPlayerMilestones = async (idPlayer) => {
             strSeason: m.dateMilestone ? m.dateMilestone.substring(0, 4) : ''
         }));
         // Ordenar por año descendente
-        return mapped.sort((a, b) => (parseInt(b.strSeason) || 0) - (parseInt(a.strSeason) || 0));
+        return mapped.sort((a, b) => (Number.parseInt(b.strSeason) || 0) - (Number.parseInt(a.strSeason) || 0));
     } catch (error) {
         console.error('Error in TSDB getPlayerMilestones V2:', error.message);
         throw error;
@@ -417,7 +417,7 @@ const getPlayerTeamsHistory = async (idPlayer) => {
             strTeam: t.strFormerTeam,
             strTeamBadge: t.strBadge,
             strSeason: `${t.strJoined}${t.strDeparted ? ' - ' + t.strDeparted : ' - Presente'}`,
-            _year: parseInt(t.strJoined) || 0
+            _year: Number.parseInt(t.strJoined) || 0
         }));
         // Ordenar por año de inicio descendente
         return mapped.sort((a, b) => b._year - a._year);

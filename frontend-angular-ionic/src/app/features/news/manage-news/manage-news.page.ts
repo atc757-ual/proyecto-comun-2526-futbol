@@ -41,13 +41,13 @@ import { ToastService } from 'src/app/core/services/ui/toast.service';
   ]
 })
 export class ManageNewsPage implements OnInit {
-  private newsService = inject(NEWS_SERVICE_TOKEN);
-  private storageService = inject(StorageService);
+  private readonly newsService = inject(NEWS_SERVICE_TOKEN);
+  private readonly storageService = inject(StorageService);
   public authService = inject(AuthService);
-  private layoutService = inject(LayoutService);
-  private modalCtrl = inject(ModalController);
-  private toastService = inject(ToastService);
-  private navCtrl = inject(NavController);
+  private readonly layoutService = inject(LayoutService);
+  private readonly modalCtrl = inject(ModalController);
+  private readonly toastService = inject(ToastService);
+  private readonly navCtrl = inject(NavController);
 
   news: NewsItem[] = [];
   filteredNews: NewsItem[] = [];

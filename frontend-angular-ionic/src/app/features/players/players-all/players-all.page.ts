@@ -38,11 +38,11 @@ import { PageFooterComponent } from '../../../shared/components/layout/layout-el
   ]
 })
 export class PlayersAllPage implements OnInit {
-  private playerService = inject(PLAYER_SERVICE_TOKEN);
-  private authService = inject(AuthService);
-  private layoutService = inject(LayoutService);
-  private modalCtrl = inject(ModalController);
-  private toastService = inject(ToastService);
+  private readonly playerService = inject(PLAYER_SERVICE_TOKEN);
+  private readonly authService = inject(AuthService);
+  private readonly layoutService = inject(LayoutService);
+  private readonly modalCtrl = inject(ModalController);
+  private readonly toastService = inject(ToastService);
 
   // --- SIGNALS DE ESTADO ---
   private _allPlayers = signal<Player[]>([]);

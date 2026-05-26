@@ -111,7 +111,7 @@ const setAdminRole = async (req, res) => {
     
     // El middleware de JWT ya debería haber verificado que el solicitante es Master
     // pero añadimos una capa extra de seguridad aquí
-    const requester = req.user; // Asumiendo que el middleware inyecta el user decodificado
+
     
     if (!email) {
         return sendApiResult(res, 400, "Falta el email del usuario a promover");
@@ -126,7 +126,7 @@ const setAdminRole = async (req, res) => {
         
         // 3. Actualizar rol en MongoDB
         await User.findOneAndUpdate(
-            { email: email },
+            { email: { $eq: String(email) } },
             { role: 'admin' },
             { new: true }
         );
@@ -159,7 +159,7 @@ const removeAdminRole = async (req, res) => {
         
         // 3. Actualizar rol en MongoDB
         await User.findOneAndUpdate(
-            { email: email },
+            { email: { $eq: String(email) } },
             { role: 'user' },
             { new: true }
         );
@@ -180,7 +180,8 @@ const getUsers = async (req, res) => {
     const { email } = req.query;
     
     try {
-        const query = email ? { email: { $regex: email, $options: 'i' } } : {};
+        const safeEmail = email ? String(email).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') : null;
+        const query = safeEmail ? { email: { $regex: safeEmail, $options: 'i' } } : {};
         const users = await User.find(query).limit(10).select('name email role is_active');
         
         return sendApiResult(res, 200, "Usuarios encontrados", users);
@@ -209,7 +210,7 @@ const toggleUserStatus = async (req, res) => {
         
         // 3. Actualizar en MongoDB
         const updatedUser = await User.findOneAndUpdate(
-            { email: email },
+            { email: { $eq: String(email) } },
             { is_active: !disabled },
             { new: true }
         );

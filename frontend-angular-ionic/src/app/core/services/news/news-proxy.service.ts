@@ -8,9 +8,9 @@ import { NewsItem } from '../../models/news.model';
 
 @Injectable({ providedIn: 'root' })
 export class NewsProxyService implements INewsService {
-  private nodeService = inject(NodeNewsService);
-  private javaService = inject(JavaNewsService);
-  private platformService = inject(PlatformService);
+  private readonly nodeService = inject(NodeNewsService);
+  private readonly javaService = inject(JavaNewsService);
+  private readonly platformService = inject(PlatformService);
 
   private get activeService(): INewsService {
     return this.platformService.getUseJavaBackend() ? this.javaService : this.nodeService;

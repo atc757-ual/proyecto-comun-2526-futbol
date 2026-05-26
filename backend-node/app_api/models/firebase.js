@@ -1,5 +1,5 @@
 const admin = require('firebase-admin');
-const fs = require('fs');
+const fs = require('node:fs');
 
 let serviceAccount = null;
 

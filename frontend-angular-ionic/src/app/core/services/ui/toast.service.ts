@@ -7,7 +7,7 @@ import { checkmarkCircleOutline, alertCircleOutline } from 'ionicons/icons';
   providedIn: 'root'
 })
 export class ToastService {
-  private toastController = inject(ToastController);
+  private readonly toastController = inject(ToastController);
 
   constructor() {
     // Registro los iconos correspondientes a los avisos para que estén disponibles

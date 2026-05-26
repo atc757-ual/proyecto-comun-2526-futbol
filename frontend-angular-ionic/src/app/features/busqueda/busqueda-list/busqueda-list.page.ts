@@ -51,17 +51,17 @@ export class BusquedaListPage implements OnInit, OnDestroy {
 
   // 1. INYECCIONES DE DEPENDENCIAS
 
-  private playerService = inject(PLAYER_SERVICE_TOKEN);
-  private layoutService = inject(LayoutService);
-  private authService = inject(AuthService);
-  private ngZone = inject(NgZone);
-  private router = inject(Router);
-  private toastService = inject(ToastService);
-  private confettiService = inject(ConfettiService);
-  private locationPlugin = inject(LocationPlugin);
-  private modalCtrl = inject(ModalController);
-  private mapPlugin = inject(MapPlugin);
-  private cdr = inject(ChangeDetectorRef);
+  private readonly playerService = inject(PLAYER_SERVICE_TOKEN);
+  private readonly layoutService = inject(LayoutService);
+  private readonly authService = inject(AuthService);
+  private readonly ngZone = inject(NgZone);
+  private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
+  private readonly confettiService = inject(ConfettiService);
+  private readonly locationPlugin = inject(LocationPlugin);
+  private readonly modalCtrl = inject(ModalController);
+  private readonly mapPlugin = inject(MapPlugin);
+  private readonly cdr = inject(ChangeDetectorRef);
 
 
   // 2. PROPIEDADES DE ESTADO

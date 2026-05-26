@@ -43,7 +43,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 // Usar el enrutador de la API con el prefijo /api
 app.use('/api', apiRouter);
 
-const path = require('path');
+const path = require('node:path');
 const mongoose = require('mongoose');
 
 // Configuración de Pug como motor de plantillas

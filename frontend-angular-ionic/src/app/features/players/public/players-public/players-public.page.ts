@@ -37,11 +37,11 @@ import { AuthService } from '../../../../core/services/auth/auth.service';
   ]
 })
 export class PlayersPublicPage implements OnInit {
-  private playerService = inject(PLAYER_SERVICE_TOKEN);
-  private layoutService = inject(LayoutService);
+  private readonly playerService = inject(PLAYER_SERVICE_TOKEN);
+  private readonly layoutService = inject(LayoutService);
   public platformService = inject(PlatformService);
-  private authService = inject(AuthService);
-  private navCtrl = inject(NavController);
+  private readonly authService = inject(AuthService);
+  private readonly navCtrl = inject(NavController);
 
   // Signals
   public _allPlayers = signal<Player[]>([]);

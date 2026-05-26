@@ -5,7 +5,7 @@ import { Network, ConnectionStatus } from '@capacitor/network';
   providedIn: 'root',
 })
 export class NetworkPlugin {
-  private ngZone = inject(NgZone);
+  private readonly ngZone = inject(NgZone);
 
   /**
    * Obtiene el estado actual de la conexión

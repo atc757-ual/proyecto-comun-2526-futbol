@@ -34,14 +34,14 @@ export class AddEditNewsPage implements OnInit {
   public  authService   = inject(AuthService);
   private toastService  = inject(ToastService);
   private navCtrl       = inject(NavController);
-  private layoutService = inject(LayoutService);
+  private readonly layoutService = inject(LayoutService);
   private route         = inject(ActivatedRoute);
   public  platformService = inject(PlatformService);
   private sanitizer     = inject(DomSanitizer);
 
   getSafeUrl(url: string | null | undefined): SafeResourceUrl | string {
     if (!url) return '';
-    if (url.startsWith('data:') || url.startsWith('blob:')) {
+    if (url.startsWith('data:image/') || url.startsWith('blob:')) {
       return this.sanitizer.bypassSecurityTrustResourceUrl(url);
     }
     return url;

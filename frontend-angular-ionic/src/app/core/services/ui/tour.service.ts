@@ -42,7 +42,7 @@ const TOUR_STEPS: TourStepDef[] = [
 @Injectable({ providedIn: 'root' })
 export class TourService {
   private tour: Tour | null = null;
-  private platformService = inject(PlatformService);
+  private readonly platformService = inject(PlatformService);
   readonly tourDone$ = new Subject<void>();
 
   isTourDone(): boolean {

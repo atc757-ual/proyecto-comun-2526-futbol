@@ -60,15 +60,15 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
     }
   }
 
-  private playerService = inject(PLAYER_SERVICE_TOKEN);
-  private authService = inject(AuthService);
-  private navCtrl = inject(NavController);
-  private layoutService = inject(LayoutService);
-  private modalCtrl = inject(ModalController);
-  private confettiService = inject(ConfettiService);
-  private toastService = inject(ToastService);
-  private locationService = inject(LocationPlugin);
-  private cdr = inject(ChangeDetectorRef);
+  private readonly playerService = inject(PLAYER_SERVICE_TOKEN);
+  private readonly authService = inject(AuthService);
+  private readonly navCtrl = inject(NavController);
+  private readonly layoutService = inject(LayoutService);
+  private readonly modalCtrl = inject(ModalController);
+  private readonly confettiService = inject(ConfettiService);
+  private readonly toastService = inject(ToastService);
+  private readonly locationService = inject(LocationPlugin);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   public player: Player | null = null;
   public leagueDetails: any = null;

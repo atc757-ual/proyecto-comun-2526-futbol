@@ -8,9 +8,9 @@ import { Player } from '../../models/player.model';
 
 @Injectable({ providedIn: 'root' })
 export class PlayerProxyService implements IPlayerService {
-  private nodeService = inject(NodePlayerService);
-  private javaService = inject(JavaPlayerService);
-  private platformService = inject(PlatformService);
+  private readonly nodeService = inject(NodePlayerService);
+  private readonly javaService = inject(JavaPlayerService);
+  private readonly platformService = inject(PlatformService);
 
   private get activeService(): IPlayerService {
     return this.platformService.getUseJavaBackend() ? this.javaService : this.nodeService;

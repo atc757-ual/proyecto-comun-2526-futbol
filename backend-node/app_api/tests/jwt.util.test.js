@@ -18,7 +18,7 @@ describe('jwt.util - generateJWT', () => {
   test('successful token generation when private key loads', () => {
     // Reset module cache **before** configuring fs mocks, then set them
     jest.resetModules();
-    const fs = require('fs');
+    const fs = require('node:fs');
     fs.existsSync.mockReturnValue(true);
     fs.readFileSync.mockReturnValue('FAKE_PRIVATE_KEY');
     const { generateJWT } = require('../utils/jwt.util');
@@ -31,7 +31,7 @@ describe('jwt.util - generateJWT', () => {
 
   test('throws when private key file missing', () => {
     jest.resetModules();
-    const fs = require('fs');
+    const fs = require('node:fs');
     fs.existsSync.mockReturnValue(false);
     const { generateJWT } = require('../utils/jwt.util');
     expect(() => generateJWT('uid')).toThrow();
@@ -39,7 +39,7 @@ describe('jwt.util - generateJWT', () => {
 
   test('throws when generateJWT called after load failure', () => {
     jest.resetModules();
-    const fs = require('fs');
+    const fs = require('node:fs');
     fs.existsSync.mockReturnValue(true);
     fs.readFileSync.mockImplementation(() => { throw new Error('IO error'); });
     const { generateJWT } = require('../utils/jwt.util');

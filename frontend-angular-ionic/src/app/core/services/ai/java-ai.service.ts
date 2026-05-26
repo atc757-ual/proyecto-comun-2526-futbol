@@ -13,7 +13,7 @@ import { IAIService, AIAnalysisResponse } from './ai.service.interface';
   providedIn: 'root'
 })
 export class JavaAIService implements IAIService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
   private apiUrl = `${environment.javaApiUrl}/ai`;
 
   /**

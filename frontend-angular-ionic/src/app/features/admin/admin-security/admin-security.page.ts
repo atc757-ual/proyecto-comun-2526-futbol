@@ -35,9 +35,9 @@ import { environment } from 'src/environments/environment';
 })
 export class AdminSecurityPage implements OnInit {
   public authService = inject(AuthService);
-  private auth = inject(Auth);
-  private layoutService = inject(LayoutService);
-  private toastController = inject(ToastController);
+  private readonly auth = inject(Auth);
+  private readonly layoutService = inject(LayoutService);
+  private readonly toastController = inject(ToastController);
   public isLoading = signal(false);
   public firebaseClaims = signal<any>(null);
   public backendIsAdmin = signal<boolean>(false);

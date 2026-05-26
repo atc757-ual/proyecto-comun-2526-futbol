@@ -22,7 +22,7 @@ export class NavigationService {
   readonly pages = APP_PAGES;
 
   private router   = inject(Router);
-  private location = inject(Location);
+  private readonly location = inject(Location);
 
   isTabActive(tabUrl: string): boolean {
     const currentUrl = (this.router.url || '').toLowerCase();

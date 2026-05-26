@@ -62,7 +62,7 @@ export class TvScheduleWidget {
         });
       });
 
-      this.dates = Object.keys(groups).sort();
+      this.dates = Object.keys(groups).sort((a, b) => a.localeCompare(b));
       this.groupedEvents = groups;
       this.selectedDateIndex = 0;
     } catch (e) {

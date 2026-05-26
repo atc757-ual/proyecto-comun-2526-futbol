@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, NgZone } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -42,10 +42,10 @@ import { LocationPlugin } from '@core/plugins/location-plugin';
 import { MapPlugin } from '@core/plugins/maps-plugin';
 import { ConfettiService } from '@core/services/ui/confetti.service';
 import { AuthService } from '@core/services/auth/auth.service';
-import { PermissionModalComponent } from 'src/app/shared/components/permission-modal/permission-modal.component';
-import { GpsPermissionCardComponent } from 'src/app/shared/components/gps-permission-card/gps-permission-card.component';
-import { PageHeaderComponent } from 'src/app/shared/components/page-header/page-header.component';
-import { PageFooterComponent } from 'src/app/shared/components/page-footer/page-footer.component';
+import { PermissionModalComponent } from 'src/app/shared/components/modals/permission-modal/permission-modal.component';
+import { GpsPermissionCardComponent } from 'src/app/shared/components/ui/gps-permission-card/gps-permission-card.component';
+import { PageFullContentComponent } from 'src/app/shared/components/layout/layout-elements/page-full-content/page-full-content.component';
+import { PageFooterComponent } from 'src/app/shared/components/layout/layout-elements/page-footer/page-footer.component';
 
 @Component({
   selector: 'app-add-edit-player',
@@ -58,7 +58,7 @@ import { PageFooterComponent } from 'src/app/shared/components/page-footer/page-
     IonCard, IonCardContent, IonCardHeader, IonAvatar, IonSpinner,
     IonSegment, IonSegmentButton, IonSearchbar, IonCheckbox,
     IonList, IonBadge, IonImg, IonTextarea, IonModal, IonContent,
-    GpsPermissionCardComponent, PageHeaderComponent, PageFooterComponent
+    GpsPermissionCardComponent, PageFullContentComponent, PageFooterComponent
   ]
 })
 export class AddEditPlayerPage implements OnInit, OnDestroy {
@@ -79,12 +79,12 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private modalCtrl = inject(ModalController);
   private sanitizer = inject(DomSanitizer);
-  public activePermissionModal: any = null;
+  public activePermissionModal: HTMLIonModalElement | null = null;
   public pageTitle: string = '';
   public pageSubtitle: string = '';
-  public breadcrumbs: any[] = [];
+  public breadcrumbs: { label: string; url: string; icon?: string }[] = [];
 
-  getSafeUrl(url: string | null | undefined): any {
+  getSafeUrl(url: string | null | undefined): SafeResourceUrl | string {
     if (!url) return '';
     if (url.startsWith('data:') || url.startsWith('blob:')) {
       return this.sanitizer.bypassSecurityTrustResourceUrl(url);
@@ -108,7 +108,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   public isRevGeocoding: boolean = false;
   public isDataLoading = false;
 
-  // PaginaciÃƒÆ’Ã‚Â³n
+  // Paginación
   public currentPage = 1;
   public pageSize = 11;
 
@@ -253,37 +253,37 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
 
   feet = ['Right', 'Left', 'Ambidextrous'];
 
-  // Estados de los inputs (PatrÃƒÆ’Ã‚Â³n Noticias)
+  // Estados de los inputs (Patrón Noticias)
   focusedField: string | null = null;
   nameTouched = false;
   teamTouched = false;
   leagueTouched = false;
   imageTouched = false;
 
-  // Manejo de ImÃƒÆ’Ã‚Â¡genes (PatrÃƒÆ’Ã‚Â³n Noticias)
+  // Manejo de Imágenes (Patrón Noticias)
   selectedFile: File | null = null;
   previewImage: string | undefined | null = null;
   initialPreviewImage: string | undefined | null = null;
   isPublishing = false;
 
-  // Mapa y UbicaciÃƒÆ’Ã‚Â³n
+  // Mapa y Ubicación
   public hasLocation = false;
   public isCapturingLocation = false;
   public isCheckingGeo = true;
 
-  // GestiÃƒÆ’Ã‚Â³n Multimedia Avanzada
+  // Gestión Multimedia Avanzada
   public imageTypes = [
     { key: 'image_url', label: 'Foto Principal', icon: 'person-outline', helper: 'Imagen principal para el avatar y listas.' },
     { key: 'cutout', label: 'Foto Secundaria', icon: 'sparkles-outline', helper: 'Foto sin fondo para el efecto de volteo.' },
-    { key: 'banner', label: 'Banner', icon: 'image-outline', helper: 'Fondo decorativo para las estadÃƒÆ’Ã‚Â­sticas.' }
+    { key: 'banner', label: 'Banner', icon: 'image-outline', helper: 'Fondo decorativo para las estadisticas.' }
   ];
 
   public globalMediaMode: 'upload' | 'url' = 'url';
 
-  // Previsualizaciones especÃƒÆ’Ã‚Â­ficas para cada tipo
+  // Previsualizaciones específicas para cada tipo
   public previews: { [key: string]: string | null } = {};
 
-  // Visor de imÃƒÆ’Ã‚Â¡genes en pantalla completa
+  // Visor de imágenes en pantalla completa
   public activeViewerImage: string | null = null;
   public activeViewerTitle: string | null = null;
 
@@ -310,7 +310,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     }
     this.previews = {};
 
-    // Si pasamos a upload y no hay cÃƒÆ’Ã‚Â¡mara, lanzamos onboarding
+    // Si pasamos a upload y no hay cámara, lanzamos onboarding
     if (mode === 'upload' && !this.hasCameraPermission) {
       this.checkPermissionsOnboarding();
     }
@@ -352,12 +352,12 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     if (this.playerId) {
       this.isEditMode = true;
       this.pageTitle = 'Editar jugador';
-      this.pageSubtitle = 'Edita la información de tu jugador';
+      this.pageSubtitle = 'Edita la informaci�n de tu jugador';
       this.loadPlayer(this.playerId);
       this.entryMode = 'manual'; // En edicion siempre manual
     } else {
       this.pageTitle = 'Nuevo jugador';
-      this.pageSubtitle = 'Añade un nuevo jugador a tu base de datos';
+      this.pageSubtitle = 'A�ade un nuevo jugador a tu base de datos';
     }
 
     this.breadcrumbs = [
@@ -369,7 +369,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     // Inicializar previsualizaciones si ya hay datos
     this.syncPreviews();
 
-    // Si ya tenemos permisos, capturamos ubicación automáticamente. Si no, abrimos el onboarding explicativo.
+    // Si ya tenemos permisos, capturamos ubicaci�n autom�ticamente. Si no, abrimos el onboarding explicativo.
     Promise.all([
       this.checkGeoPermission(),
       this.checkCameraPermission()
@@ -396,7 +396,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       return;
     }
 
-    // 2. VerificaciÃƒÆ’Ã‚Â³n de permisos reales
+    // 2. Verificación de permisos reales
     try {
       const geoResult = await navigator.permissions.query({ name: 'geolocation' as any });
       let cameraState: PermissionState = 'prompt';
@@ -443,7 +443,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   loadLocalPlayers() {
     this.playerService.getPlayers().subscribe({
       next: (data) => this.localPlayers = data,
-      error: () => console.warn('No se pudieron cargar los jugadores locales para comparación')
+      error: () => console.warn('No se pudieron cargar los jugadores locales para comparaci�n')
     });
   }
 
@@ -552,75 +552,24 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     this.cdr.detectChanges();
 
     try {
-      // 1. Disparamos el prompt del navegador
-      navigator.geolocation.getCurrentPosition(
-        () => { /* Se maneja en la lÃƒÆ’Ã‚Â³gica de estado abajo */ },
-        () => { /* Se maneja en la lÃƒÆ’Ã‚Â³gica de estado abajo */ },
-        { timeout: 15000 }
-      );
-
-      // 2. Intentamos usar la Permissions API para esperar el cambio
-      if (navigator.permissions) {
-        try {
-          const status = await navigator.permissions.query({ name: 'geolocation' as any });
-
-          if (status.state === 'prompt') {
-            // Esperamos a que cambie (el usuario haga clic)
-            await new Promise<void>((resolve) => {
-              const onChange = () => {
-                status.removeEventListener('change', onChange);
-                resolve();
-              };
-              status.addEventListener('change', onChange);
-              setTimeout(resolve, 15000);
-            });
-          }
-
-          const finalStatus = await navigator.permissions.query({ name: 'geolocation' as any });
-
-          this.ngZone.run(async () => {
-            this.hasGeoPermission = finalStatus.state === 'granted';
-            this.isCapturingLocation = false;
-            if (this.hasGeoPermission) {
-              this.showToast('¡Permisos de ubicación activos!', 'success');
-              await this.captureLocation();
-            }
-            this.cdr.detectChanges();
-          });
-          return;
-        } catch (e) {
-          // Fallback
+      const granted = await this.locationPlugin.requestGeolocationPermission();
+      this.ngZone.run(async () => {
+        this.hasGeoPermission = granted;
+        this.isCapturingLocation = false;
+        if (granted) {
+          this.showToast('Permisos de ubicacion activos!', 'success');
+          await this.captureLocation();
         }
-      }
-
-      // Fallback para navegadores sin Permissions API
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      navigator.geolocation.getCurrentPosition(
-        async () => {
-          this.ngZone.run(async () => {
-            this.hasGeoPermission = true;
-            this.isCapturingLocation = false;
-            this.showToast('Permisos de ubicación activos!', 'success');
-            await this.captureLocation();
-            this.cdr.detectChanges();
-          });
-        },
-        () => {
-          this.ngZone.run(() => {
-            this.hasGeoPermission = false;
-            this.isCapturingLocation = false;
-            this.cdr.detectChanges();
-          });
-        },
-        { timeout: 5000 }
-      );
-
+        this.cdr.detectChanges();
+      });
     } catch (error) {
       this.ngZone.run(() => {
+        this.hasGeoPermission = false;
         this.isCapturingLocation = false;
         this.cdr.detectChanges();
       });
     }
+
   }
 
   searchInExternalApi() {
@@ -631,14 +580,14 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   segmentChanged(event: any) {
     this.entryMode = event.detail.value;
 
-    // Si cambiamos a manual, reseteamos los valores de bÃƒÆ’Ã‚Âºsqueda de IA y lanzamos onboarding si hace falta
+    // Si cambiamos a manual, reseteamos los valores de búsqueda de IA y lanzamos onboarding si hace falta
     if (this.entryMode === 'manual') {
       this.apiSearchQuery = '';
       this.apiResults = [];
       this.selectedApiPlayers = [];
       this.currentPage = 1;
 
-      // Lanzamos onboarding solo aquÃƒÆ’Ã‚Â­ para no molestar en la bÃƒÆ’Ã‚Âºsqueda inicial
+      // Lanzamos onboarding solo aquí para no molestar en la búsqueda inicial
       this.checkPermissionsOnboarding();
     }
   }
@@ -742,19 +691,19 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     const isAlreadySelected = this.isSelected(apiPlayer);
 
     if (isAlreadySelected) {
-      // Quitar de la selección filtrando por ID
+      // Quitar de la selecci�n filtrando por ID
       this.selectedApiPlayers = this.selectedApiPlayers.filter(p => p.externalId !== apiPlayer.externalId);
     } else {
       // LIMITE DE 11 JUGADORES
       if (this.selectedApiPlayers.length >= 11) {
-        this.showToast('Solo puedes añadir hasta 11 jugadores a la vez', 'warning');
+        this.showToast('Solo puedes a�adir hasta 11 jugadores a la vez', 'warning');
         return;
       }
 
-      // Añadir a la selección
+      // A�adir a la selecci�n
       this.selectedApiPlayers = [...this.selectedApiPlayers, apiPlayer];
 
-      // Si no tiene los detalles aÃƒÆ’Ã‚Âºn, los cargamos en segundo plano
+      // Si no tiene los detalles aún, los cargamos en segundo plano
       if (!apiPlayer.details) {
         try {
           const details = await firstValueFrom(this.playerService.lookupTSDBPlayer(apiPlayer.externalId)) as any;
@@ -789,7 +738,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
 
     this.isImporting = true;
 
-    // Construir el payload GeoJSON explÃƒÆ’Ã‚Â­cito para la BD
+    // Construir el payload GeoJSON explícito para la BD
     const locationPayload = {
       type: 'Point' as const,
       coordinates: [
@@ -798,7 +747,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       ]
     };
 
-    // Preparar los datos con ubicaciÃƒÆ’Ã‚Â³n y user_id
+    // Preparar los datos con ubicación y user_id
     const playersToImport = this.getSelectedPlayersArray().map(p => ({
       ...p,
       location: locationPayload,
@@ -815,11 +764,11 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         const count = playersToImport.length;
         this.showToast(
           count === 1
-            ? 'Se ha registrado el jugador con éxito'
-            : `Se han registrado ${count} jugadores con éxito`,
+            ? 'Se ha registrado el jugador con �xito'
+            : `Se han registrado ${count} jugadores con �xito`,
           'success'
         );
-        setTimeout(() => this.navCtrl.back(), 750);
+        setTimeout(() => this.router.navigate(['/players']), 1000);
       },
       error: (err: any) => {
         this.isImporting = false;
@@ -843,7 +792,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       const pos = await this.locationPlugin.getCurrentPosition({ useCache: false, enableHighAccuracy: false });
 
       if (!pos) {
-        throw new Error('No se obtuvo posición');
+        throw new Error('No se obtuvo posici�n');
       }
 
       this.player.location = {
@@ -875,7 +824,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
 
     // Inicializar el mapa
     const mapObj = await this.mapPlugin.initMap('player-map', lat, lng, 15);
-    const marker = this.mapPlugin.addMarker(lat, lng, 'Ubicación del jugador', true);
+    const marker = this.mapPlugin.addMarker(lat, lng, 'Ubicaci�n del jugador', true);
 
     // Truco Leaflet: Forzar redibujo para evitar zonas grises
     setTimeout(() => {
@@ -892,7 +841,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       this.updateAddress();
     });
 
-    // Carga inicial de direcciÃƒÆ’Ã‚Â³n
+    // Carga inicial de dirección
     this.updateAddress();
   }
 
@@ -907,7 +856,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
           this.cdr.detectChanges();
         },
         error: () => {
-          this.currentAddress = 'Ubicación seleccionada';
+          this.currentAddress = 'Ubicaci�n seleccionada';
           this.isRevGeocoding = false;
           this.cdr.detectChanges();
         }
@@ -939,7 +888,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   clearSelection() {
     this.selectedApiPlayers = [];
     this.cdr.detectChanges();
-    this.showToast('Selección limpiada', 'success');
+    this.showToast('Selecci�n limpiada', 'success');
   }
 
   updatePlayerImage(key: string, value: string) {
@@ -998,7 +947,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       }
     } catch {
-      // cÃƒÆ’Ã‚Â¡mara no disponible
+      // cámara no disponible
     }
   }
 
@@ -1020,7 +969,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       this.player.is_manual = true;
     }
 
-    // 1. Asegurar ubicaciÃƒÆ’Ã‚Â³n (si no es ediciÃƒÆ’Ã‚Â³n)
+    // 1. Asegurar ubicación (si no es edición)
     if (!this.isEditMode && !this.player.location) {
       await this.captureLocation();
     }
@@ -1032,8 +981,8 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         this.isPublishing = false;
         this.confettiService.celebrate();
         if (res && (res._id || res.id)) {
-          this.showToast(`Jugador ${this.isEditMode ? 'actualizado' : 'creado'} con éxito`, 'success');
-          setTimeout(() => this.router.navigate(['/players']), 750);
+          this.showToast(`Jugador ${this.isEditMode ? 'actualizado' : 'creado'} con �xito`, 'success');
+          setTimeout(() => this.router.navigate(['/players']), 1000);
         }
       },
       error: () => {
@@ -1075,4 +1024,13 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       this.toastService.showError(message);
     }
   }
+
+  trackByPlayerId(_: number, player: { _id?: string; external_id?: number }): string | number | undefined {
+    return player._id ?? player.external_id;
+  }
+
+  trackByIndex(index: number): number {
+    return index;
+  }
 }
+

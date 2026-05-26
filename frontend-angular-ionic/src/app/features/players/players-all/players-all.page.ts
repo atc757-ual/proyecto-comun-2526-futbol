@@ -21,9 +21,9 @@ import { PLAYER_SERVICE_TOKEN } from '../../../core/services/players/player.serv
 import { Player } from '../../../core/models/player.model';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { LayoutService } from '../../../core/services/ui/layout.service';
-import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
-import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
-import { PageFooterComponent } from '../../../shared/components/page-footer/page-footer.component';
+import { ConfirmModalComponent } from '../../../shared/components/modals/confirm-modal/confirm-modal.component';
+import { PageFullContentComponent } from '../../../shared/components/layout/layout-elements/page-full-content/page-full-content.component';
+import { PageFooterComponent } from '../../../shared/components/layout/layout-elements/page-footer/page-footer.component';
 
 @Component({
   selector: 'app-players-all',
@@ -34,7 +34,7 @@ import { PageFooterComponent } from '../../../shared/components/page-footer/page
     CommonModule, FormsModule, RouterModule,
     IonButton, IonIcon, IonSearchbar, IonSpinner,
     IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonItem, IonLabel,
-    IonThumbnail, IonBadge, PageHeaderComponent, PageFooterComponent, IonContent
+    IonThumbnail, IonBadge, PageFullContentComponent, PageFooterComponent, IonContent
   ]
 })
 export class PlayersAllPage implements OnInit {
@@ -129,7 +129,7 @@ export class PlayersAllPage implements OnInit {
     this.loadPlayers();
   }
 
-  loadPlayers(event?: any) {
+  loadPlayers(event?: { target: { complete: () => void } }) {
     if (!event) this.isLoading.set(true);
 
     this.playerService.getAllPlayers().subscribe({
@@ -146,7 +146,7 @@ export class PlayersAllPage implements OnInit {
     });
   }
 
-  onSearchChange(event: any) {
+  onSearchChange(event: { detail: { value?: string | null } }) {
     this.searchTerm.set(event.detail.value || '');
     this.currentPage.set(1);
   }
@@ -244,7 +244,16 @@ export class PlayersAllPage implements OnInit {
     if (!p.user_id) return false;
     const pUserIdStr = String(p.user_id).trim();
 
-    return (fbUid !== undefined && fbUid !== null && pUserIdStr === String(fbUid).trim()) || 
+    return (fbUid !== undefined && fbUid !== null && pUserIdStr === String(fbUid).trim()) ||
            (mongoId !== undefined && mongoId !== null && pUserIdStr === String(mongoId).trim());
   }
+
+  trackByPlayerId(_: number, player: Player): string | number | undefined {
+    return player._id ?? player.external_id;
+  }
+
+  trackByIndex(index: number): number {
+    return index;
+  }
 }
+

@@ -20,8 +20,8 @@ import { Player } from '../../core/models/player.model';
 import { AI_SERVICE_TOKEN } from '../../core/services/ai/ai.service.token';
 import { ToastService } from '../../core/services/ui/toast.service';
 import { AIAnalysisResponse } from '../../core/services/ai/ai.service.interface';
-import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
-import { PageFooterComponent } from '../../shared/components/page-footer/page-footer.component';
+import { PageFullContentComponent } from '../../shared/components/layout/layout-elements/page-full-content/page-full-content.component';
+import { PageFooterComponent } from '../../shared/components/layout/layout-elements/page-footer/page-footer.component';
 
 @Component({
   selector: 'app-ai-team',
@@ -32,7 +32,7 @@ import { PageFooterComponent } from '../../shared/components/page-footer/page-fo
     CommonModule, FormsModule, RouterModule,
     IonContent, // added for ion-content usage
     // Shared layout components
-    PageHeaderComponent,
+    PageFullContentComponent,
     PageFooterComponent,
     IonButton, IonIcon, IonCard, IonCardContent, IonCardHeader, IonCardTitle,
     IonSpinner, IonBadge, IonList, IonItem, IonLabel, IonAvatar
@@ -49,7 +49,7 @@ export class AiTeamPage implements OnInit {
   public hasPlayers = false;
   public localPlayers: Player[] = []; // Guardamos los jugadores reales para el matching
   public isLoading = true;
-  // Header bindings for app-page-header
+  // Header bindings for app-page-full-content
   public pageTitle: string = 'Fútbol AI';
   public pageSubtitle: string = 'Deja que la inteligencia artificial analice tu plantilla';
   public breadcrumbs = [
@@ -155,7 +155,6 @@ export class AiTeamPage implements OnInit {
       error: (err) => {
         clearInterval(this.textInterval);
         this.layoutService.setAILoading(false);
-        console.error('Error IA:', err);
         this.isGenerating = false;
 
         // Extraer mensaje del backend si existe
@@ -186,4 +185,23 @@ export class AiTeamPage implements OnInit {
       }
     });
   }
+
+  getPositionLabel(position: string): string {
+    const labels: Record<string, string> = {
+      'PO': 'Portero',
+      'DF': 'Defensa',
+      'MC': 'Centrocampista',
+      'DL': 'Delantero'
+    };
+    return labels[(position || '').toUpperCase()] || position;
+  }
+
+  trackByAIPlayerName(_: number, player: { name: string }): string {
+    return player.name;
+  }
+
+  trackByIndex(index: number): number {
+    return index;
+  }
 }
+

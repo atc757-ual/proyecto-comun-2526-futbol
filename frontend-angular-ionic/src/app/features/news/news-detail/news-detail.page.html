@@ -1,5 +1,5 @@
 <ion-content class="flex-content">
-  <app-page-header [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle" [breadcrumbs]="breadcrumbs"></app-page-header>
+  <app-page-full-content [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle" [breadcrumbs]="breadcrumbs"></app-page-full-content>
   <div class="content-container">
     <div class="row">
       <!-- COLUMNA 8: DETALLE -->
@@ -35,7 +35,7 @@
             <div class="article-content">
               <!-- CABECERA EDITORIAL -->
               <div *ngIf="selectedNew.tags.length > 0">
-                <span class="news-tag" *ngFor="let tag of selectedNew.tags">#{{ tag }}</span>
+                <span class="news-tag" *ngFor="let tag of selectedNew.tags; trackBy: trackByIndex">#{{ tag }}</span>
               </div>
 
               <h1 class="article-title">{{ selectedNew.title }}</h1>
@@ -78,8 +78,8 @@
           <div *ngFor="let i of [1,2]" class="d-flex gap-base h-100px">
             <ion-skeleton-text animated class="sk-thumb"></ion-skeleton-text>
             <div class="flex-1 py-s">
-              <ion-skeleton-text animated style="width: 85%; height: 16px; margin-bottom: 8px;"></ion-skeleton-text>
-              <ion-skeleton-text animated style="width: 70%; height: 14px;"></ion-skeleton-text>
+              <ion-skeleton-text animated class="sk-w-85 sk-h-16 mb-s"></ion-skeleton-text>
+              <ion-skeleton-text animated class="sk-w-70 sk-h-14"></ion-skeleton-text>
             </div>
           </div>
         </ion-list>
@@ -91,50 +91,53 @@
           </ion-card-header>
           <ion-card-content>
             <!-- Widget de Estado -->
-            <div class="status-widget mb-base" [class.is-published]="selectedNew?.isActive">
+            <div class="status-widget" [class.is-published]="selectedNew?.isActive">
               <div class="status-header">
-                <span class="status-tag">
-                  <ion-icon [name]="selectedNew?.isActive ? 'eye-outline' : 'eye-off-outline'"></ion-icon>
-                  {{ selectedNew?.isActive ? 'PUBLICADO' : 'BORRADOR' }}
-                </span>
-                <ion-toggle mode="ios" [checked]="selectedNew?.isActive" (ionChange)="toggleVisibility()"
-                  [disabled]="isUpdatingStatus">
-                </ion-toggle>
-              </div>
-              <p class="status-desc">
+               <div>
+                 <span class="status-tag mb-xs">
+                  <ion-icon [name]="selectedNew?.isActive ? 'eye-outline' : 'eye-off-outline'">
+                  </ion-icon>
+                  <span>{{ selectedNew?.isActive ? 'Publicado' : 'Borrador' }}</span>
+                 </span>
+                <p class="status-desc">
                 {{ selectedNew?.isActive ? 'Noticia visible para todos los usuarios.' : 'La noticia no es visible para
                 el
                 público.' }}
-              </p>
-            </div>
-
-            <div class="separator my-s"></div>
-
-            <ion-item [button]="true" lines="none" detail="true" class="action-item is-blue" routerLink="/add-news">
-              <ion-icon slot="start" aria-hidden="true" name="add-circle-outline"></ion-icon>
-              <ion-label>Nueva noticia</ion-label>
-            </ion-item>
-
-            <ion-item *ngIf="selectedNew" [button]="true" lines="none" detail="true" class="action-item is-green"
-              (click)="editNews()">
-              <ion-icon slot="start" aria-hidden="true" name="create-outline"></ion-icon>
-              <ion-label>Editar contenido</ion-label>
-            </ion-item>
-
-            <ion-item *ngIf="selectedNew" [button]="true" lines="none" detail="true" class="action-item is-red"
-              (click)="confirmDelete()">
-              <ion-icon slot="start" aria-hidden="true" name="trash-outline"></ion-icon>
-              <ion-label>Eliminar permanente</ion-label>
-            </ion-item>
-          </ion-card-content>
-        </ion-card>
+                </p>
+                </div>
+                <ion-toggle mode="ios" [checked]="selectedNew?.isActive" (ionChange)="toggleVisibility()" [disabled]="isUpdatingStatus">
+                </ion-toggle>
+                </div>
+                
+                </div>
+                
+                <div class="separator my-s"></div>
+                
+                <ion-item [button]="true" lines="none" detail="true" class="action-item is-blue" routerLink="/add-news">
+                  <ion-icon slot="start" aria-hidden="true" name="add-circle-outline"></ion-icon>
+                  <ion-label>Nueva noticia</ion-label>
+                </ion-item>
+                <div class="separator my-s"></div>
+                <ion-item *ngIf="selectedNew" [button]="true" lines="none" detail="true" class="action-item is-green"
+                  (click)="editNews()">
+                  <ion-icon slot="start" aria-hidden="true" name="create-outline"></ion-icon>
+                  <ion-label>Editar contenido</ion-label>
+                </ion-item>
+                <div class="separator my-s"></div>
+                <ion-item *ngIf="selectedNew" [button]="true" lines="none" detail="true" class="action-item is-red"
+                  (click)="confirmDelete()">
+                  <ion-icon slot="start" aria-hidden="true" name="trash-outline"></ion-icon>
+                  <ion-label>Eliminar permanente</ion-label>
+                </ion-item>
+                </ion-card-content>
+                </ion-card>
 
         <!-- LISTA REAL -->
         <ion-list class="side-news-list" *ngIf="!isLoading && newsList.length > 0" lines="none">
           <ion-list-header>
             <ion-label class="f-bold mb-base fs-18 text-neutral-8">Noticias Destacadas</ion-label>
           </ion-list-header>
-          <ng-container *ngFor="let news of newsList; let i = index">
+          <ng-container *ngFor="let news of newsList; let i = index; trackBy: trackByNewsId">
             <ion-item button detail="false" class="side-news-item" [class.active]="news.id === selectedNew?.id"
               (click)="selectNews(news)">
               <div class="side-news-rank" slot="start">{{ i + 1 }}</div>

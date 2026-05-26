@@ -1,11 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { IonicModule, NavController } from '@ionic/angular';
 import { IonContent } from '@ionic/angular/standalone';
-import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
-import { PageFooterComponent } from '../../../shared/components/page-footer/page-footer.component';
+import { PageFullContentComponent } from '../../../shared/components/layout/layout-elements/page-full-content/page-full-content.component';
+import { PageFooterComponent } from '../../../shared/components/layout/layout-elements/page-footer/page-footer.component';
 import { addIcons } from 'ionicons';
 import {
   cloudUploadOutline, sendOutline, arrowBackOutline,
@@ -26,16 +27,25 @@ import { ToastService } from 'src/app/core/services/ui/toast.service';
   templateUrl: './add-edit-news.page.html',
   styleUrls: ['./add-edit-news.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterModule, PageHeaderComponent, PageFooterComponent]
+  imports: [IonicModule, CommonModule, FormsModule, RouterModule, PageFullContentComponent, PageFooterComponent]
 })
 export class AddEditNewsPage implements OnInit {
-  private newsService = inject(NEWS_SERVICE_TOKEN);
-  public authService = inject(AuthService);
-  private toastService = inject(ToastService);
-  private navCtrl = inject(NavController);
+  private newsService   = inject(NEWS_SERVICE_TOKEN);
+  public  authService   = inject(AuthService);
+  private toastService  = inject(ToastService);
+  private navCtrl       = inject(NavController);
   private layoutService = inject(LayoutService);
-  private route = inject(ActivatedRoute);
-  public platformService = inject(PlatformService);
+  private route         = inject(ActivatedRoute);
+  public  platformService = inject(PlatformService);
+  private sanitizer     = inject(DomSanitizer);
+
+  getSafeUrl(url: string | null | undefined): SafeResourceUrl | string {
+    if (!url) return '';
+    if (url.startsWith('data:') || url.startsWith('blob:')) {
+      return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    }
+    return url;
+  }
 
   // Iconos para lógica de intercambio
   public calendarOutline = calendarOutline;
@@ -366,3 +376,4 @@ export class AddEditNewsPage implements OnInit {
   }
 
 }
+

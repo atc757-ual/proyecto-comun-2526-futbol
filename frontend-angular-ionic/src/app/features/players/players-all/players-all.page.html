@@ -1,5 +1,5 @@
 <ion-content class="flex-content">
-  <app-page-header [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle" [breadcrumbs]="breadcrumbs"></app-page-header>
+  <app-page-full-content [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle" [breadcrumbs]="breadcrumbs"></app-page-full-content>
   <div class="content-container">
     <div class="main-container animate-fade-in">
       <div class="row">
@@ -30,12 +30,12 @@
                     <div class="players-grid">
 
                       <!-- VERSIÓN DESKTOP: CARDS -->
-                      <ng-container *ngFor="let player of pagedPlayers(); let last = last">
+                      <ng-container *ngFor="let player of pagedPlayers(); let last = last; trackBy: trackByPlayerId">
                         <ion-card class="player-premium-card hide-on-phone animate-fade-in pointer"
                           [class.is-mine]="isMine(player)" [routerLink]="['/player-detail', player._id]"
                           [queryParams]="{ from: 'universe' }">
                           <div class="card-image-container">
-                            <img [src]="player.image_url" (error)="handleImageError($event)" />
+                            <img [src]="player.image_url" [alt]="player.name" loading="lazy" (error)="handleImageError($event)" />
                             <div class="card-overlay"></div>
                             <div class="position-badge">{{ player.position || 'N/A' }}</div>
 
@@ -48,16 +48,18 @@
                             <!-- Acciones Flotantes -->
                             <div class="admin-actions-floating" (click)="$event.stopPropagation()">
                               <button class="action-fab edit" *ngIf="isAdmin"
-                                [routerLink]="['/player-edit', player._id]">
+                                [routerLink]="['/player-edit', player._id]"
+                                aria-label="Editar jugador">
                                 <ion-icon class="fs-20" name="create-outline"></ion-icon>
                               </button>
-                              <button class="action-fab delete" *ngIf="isAdmin" (click)="deletePlayer(player)">
+                              <button class="action-fab delete" *ngIf="isAdmin" (click)="deletePlayer(player)"
+                                aria-label="Eliminar jugador">
                                 <ion-icon class="fs-20" name="trash-outline"></ion-icon>
                               </button>
                             </div>
                           </div>
 
-                          <ion-card-content class="ps">
+                          <ion-card-content class="p-s">
                             <div class="player-main-info">
                               <h2 class="f-bold text-neutral-9 fs-16 mb-xs text-ellipsis">{{ player.name }}</h2>
                               <div class="d-flex ai-center gap-xs mb-s">
@@ -77,23 +79,23 @@
                           [class.is-mine]="isMine(player)" lines="none" [routerLink]="['/player-detail', player._id]"
                           [queryParams]="{ from: 'universe' }">
                           <ion-thumbnail slot="start" class="mobile-thumb">
-                            <img [src]="player.image_url" (error)="handleImageError($event)" />
-                            <div class="mobile-pos-badge">{{ player.position || 'N/A' }}</div>
+                            <img [src]="player.image_url" [alt]="player.name" loading="lazy" (error)="handleImageError($event)" />
                           </ion-thumbnail>
 
                           <ion-label class="mobile-label">
-                            <div class="mobile-main-row">
-                              <div class="mobile-text-info">
-                                <h2 class="f-semibold text-neutral-9 fs-16 m-0 text-ellipsis">{{ player.name }}</h2>
-                                <div class="d-flex ai-center gap-xs mt-xs">
+                           <div class="d-flex ai-center gap-xs">
+                                <h2 class="f-semibold text-neutral-9 fs-14 m-0 text-ellipsis">{{ player.name }}</h2>
+                                <span class="text-neutral-3">|</span>
+                                <div class="d-flex ai-center gap-xs">
                                   <ion-icon name="shield-outline" color="primary" class="fs-12"></ion-icon>
-                                  <span class="fs-12 text-neutral-6 f-medium text-ellipsis">{{ player.team }}</span>
-                                </div>
-                                <div class="mt-xs">
-                                  <span class="fs-12 text-neutral-4 uppercase letter-spacing-1">{{ player.nationality
-                                    }}</span>
+                                  <span class="fs-12 text-neutral-7 f-medium">{{ player.team }}</span>
                                 </div>
                               </div>
+                              <div class="d-flex ai-center gap-s">
+                                <div class="mt-xxs">
+                                  <div class="fs-12 text-neutral-7 f-medium">Posición: {{ player.position || 'N/A' }}</div>
+                                  <div class="fs-12 text-neutral-6 f-medium">{{ player.nationality }}</div>
+                                </div>
 
                               <div class="mobile-actions-stack">
                                 <div class="mobile-mine-tag-v2 animate-fade-in" *ngIf="isMine(player)">
@@ -153,7 +155,7 @@
                     </ion-button>
 
                     <div class="page-indicators">
-                      <ion-button mode="ios" *ngFor="let page of getPages()"
+                      <ion-button mode="ios" *ngFor="let page of getPages(); trackBy: trackByIndex"
                         [fill]="currentPage() === page ? 'solid' : 'clear'"
                         [color]="currentPage() === page ? 'primary' : 'dark'" class="page-btn"
                         [class.active]="currentPage() === page" (click)="goToPage(page)">

@@ -1,0 +1,67 @@
+<ion-content class="ion-no-padding" [scrollY]="true">
+  <div class="auth-page-wrapper">
+
+    <div class="auth-split-container">
+
+      <!-- LADO IZQUIERDO: FORMULARIO -->
+      <div class="auth-form-side">
+        <div class="form-wrapper" [class.is-mobile-app]="platformService.isMobileApp">
+
+          <!-- Back Link Placeholder (Mantiene la altura fija haya o no botón) -->
+          <div class="back-btn-placeholder">
+            <a *ngIf="!layoutService.isLogin()" routerLink="/auth/login" class="back-link-minimal">
+              <ion-icon name="arrow-back"></ion-icon>
+            </a>
+          </div>
+
+          <!-- Logo superior (Margen fijo para que no salte) -->
+          <div class="mt-s text-center mb-m">
+            <div class="logo-circle mx-auto">
+              <ion-icon name="football-outline" class="text-primary fs-56"></ion-icon>
+            </div>
+            <h1 class="f-bold text-primary mt-s fs-24">Fútbol Club</h1>
+          </div>
+
+          <!-- Cabecera de texto dinámica -->
+          <div class="text-left mb-m">
+            <h2 class="f-bold text-neutral-9 fs-22">{{ layoutService.authTitle() }}</h2>
+            <span class="f-medium text-neutral-7 fs-16">{{ layoutService.authSubtitle() }}</span>
+          </div>
+
+          <!-- ÁREA DE CONTENIDO -->
+          <div class="dynamic-content-area animate-fade-in">
+            <router-outlet></router-outlet>
+          </div>
+
+          <!-- FOOTER NATIVO APP (MÍNIMO - SOLO EN NATIVO APP) -->
+          <footer class="auth-global-footer hide-on-desktop" *ngIf="platformService.isMobileApp">
+            <span class="text-neutral-7 fs-14">© 2026 Fútbol Club. By Alex Taquila.</span>
+            <div class="d-flex gap-s ai-center jc-center mt-xs">
+              <a href="https://www.linkedin.com/in/alextaquilacamasca/" target="_blank" class="icon-footer">
+                <ion-icon name="logo-linkedin" class="pointer"></ion-icon>
+              </a>
+              <a href="https://github.com/atc757-ual/" target="_blank" class="icon-footer">
+                <ion-icon name="logo-github" class="pointer"></ion-icon>
+              </a>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+
+      <!-- LADO DERECHO: IMAGEN -->
+      <div class="auth-image-side hide-on-phone">
+        <div class="image-overlay">
+          <div class="overlay-content">
+            <h2 class="f-bold">Vive la<br>experiencia<br>real del fútbol.</h2>
+            <p>Gestiona tus jugadores y obtén tu once ideal.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ðŸ’» FOOTER WEB UNIFICADO (GRIS - NO FIJO - DESPLAZABLE AL FINAL) -->
+    <app-page-footer *ngIf="!platformService.isMobileApp"></app-page-footer>
+  </div>
+</ion-content>

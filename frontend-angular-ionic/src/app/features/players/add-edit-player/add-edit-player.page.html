@@ -1,5 +1,5 @@
 <ion-content class="flex-content">
-  <app-page-header [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle" [breadcrumbs]="breadcrumbs"></app-page-header>
+  <app-page-full-content [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle" [breadcrumbs]="breadcrumbs"></app-page-full-content>
   <div class="content-container">
 
     <div class="row animate-fade-in" *ngIf="!isDataLoading">
@@ -51,7 +51,7 @@
                 </div>
 
                 <div class="minimal-list-container">
-                  <div *ngFor="let res of pagedResults" class="minimal-result-item" [class.selected]="isSelected(res)"
+                  <div *ngFor="let res of pagedResults; trackBy: trackByIndex" class="minimal-result-item" [class.selected]="isSelected(res)"
                     [class.disabled-item]="!isSelected(res) && selectedApiPlayers.length >= 11"
                     [class.already-in-staff]="isInStaff(res.externalId)"
                     (click)="(!isInStaff(res.externalId) && (isSelected(res) || selectedApiPlayers.length < 11)) && toggleApiSelection(res)">
@@ -59,7 +59,7 @@
                     <div class="item-content-wrapper">
                       <ion-avatar class="mini-avatar">
                         <ion-icon name="person-outline"></ion-icon>
-                        <img [src]="res.image_url" (error)="handleImageError($event)" />
+                        <img [src]="res.image_url" [alt]="res.name || 'Jugador'" loading="lazy" (error)="handleImageError($event)" />
                       </ion-avatar>
 
                       <div class="player-info-main">

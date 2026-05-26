@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, IonContent, AlertController, NavController, ModalController } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
-import { ConfirmModalComponent } from 'src/app/shared/components/confirm-modal/confirm-modal.component';
+import { ConfirmModalComponent } from 'src/app/shared/components/modals/confirm-modal/confirm-modal.component';
 import { NewsItem } from 'src/app/core/models/news.model';
 import { AuthService } from 'src/app/core/services/auth/auth.service';
 import { PlatformService } from 'src/app/core/services/system/platform.service';
@@ -13,15 +13,15 @@ import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { StorageService } from 'src/app/core/services/system/storage.service';
 import { NEWS_SERVICE_TOKEN } from '../../../core/services/news/news.service.token';
 import { ToastService } from 'src/app/core/services/ui/toast.service';
-import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
-import { PageFooterComponent } from '../../../shared/components/page-footer/page-footer.component';
+import { PageFullContentComponent } from '../../../shared/components/layout/layout-elements/page-full-content/page-full-content.component';
+import { PageFooterComponent } from '../../../shared/components/layout/layout-elements/page-footer/page-footer.component';
 
 @Component({
   selector: 'app-news-detail',
   templateUrl: './news-detail.page.html',
   styleUrls: ['./news-detail.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterModule, PageHeaderComponent, PageFooterComponent],
+  imports: [IonicModule, CommonModule, FormsModule, RouterModule, PageFullContentComponent, PageFooterComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class NewsDetailPage {
@@ -229,4 +229,13 @@ export class NewsDetailPage {
       }
     });
   }
+
+  trackByNewsId(_: number, news: NewsItem): string | undefined {
+    return news._id;
+  }
+
+  trackByIndex(index: number): number {
+    return index;
+  }
 }
+

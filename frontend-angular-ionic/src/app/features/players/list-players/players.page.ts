@@ -20,9 +20,9 @@ import { Player } from '../../../core/models/player.model';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { LayoutService } from '../../../core/services/ui/layout.service';
 import { ToastService } from '../../../core/services/ui/toast.service';
-import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
-import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
-import { PageFooterComponent } from '../../../shared/components/page-footer/page-footer.component';
+import { ConfirmModalComponent } from '../../../shared/components/modals/confirm-modal/confirm-modal.component';
+import { PageFullContentComponent } from '../../../shared/components/layout/layout-elements/page-full-content/page-full-content.component';
+import { PageFooterComponent } from '../../../shared/components/layout/layout-elements/page-footer/page-footer.component';
 import { IonContent } from '@ionic/angular/standalone';
 
 @Component({
@@ -34,7 +34,7 @@ import { IonContent } from '@ionic/angular/standalone';
     CommonModule, FormsModule, RouterModule,
     IonButton, IonIcon, IonSearchbar, IonSpinner,
     IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonItem, IonLabel,
-    IonThumbnail, PageHeaderComponent, PageFooterComponent, IonContent
+    IonThumbnail, PageFullContentComponent, PageFooterComponent, IonContent
   ]
 })
 export class PlayersPage implements OnInit {
@@ -136,6 +136,10 @@ export class PlayersPage implements OnInit {
 
   ngOnInit() {
     this.isAdmin = this.authService.isAdmin();
+    this.loadPlayers();
+  }
+
+  ionViewWillEnter() {
     this.loadPlayers();
   }
 
@@ -244,8 +248,12 @@ export class PlayersPage implements OnInit {
     });
   }
 
+  trackByPlayerId(index: number, player: Player): string {
+    return player._id || String(index);
+  }
+
   handleImageError(event: any) {
-    // Si la imagen falla, la ocultamos para que se vea el icono de fondo
     event.target.style.display = 'none';
   }
 }
+

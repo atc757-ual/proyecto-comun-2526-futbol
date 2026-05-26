@@ -1,5 +1,5 @@
 <ion-content class="flex-content">
-  <app-page-header [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle" [breadcrumbs]="breadcrumbs"></app-page-header>
+  <app-page-full-content [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle" [breadcrumbs]="breadcrumbs"></app-page-full-content>
   <div class="content-container">
     <div class="row leagues-drilldown-container animate-fade-in">
 
@@ -89,7 +89,7 @@
                   <div class="section-header py-s border-bottom mb-s">
                     <h3 class="f-bold text-neutral-9 fs-14 m-0">Ligas encontradas</h3>
                   </div>
-                  <div *ngFor="let league of pagedResults" (click)="selectLeague(league)"
+                  <div *ngFor="let league of pagedResults; trackBy: trackByLeagueId" (click)="selectLeague(league)"
                     class="minimal-result-item animate-fade-in">
                     <div class="item-content-wrapper">
                       <div class="mini-avatar">
@@ -118,7 +118,7 @@
                       {{ selectedLeague ? 'Clubes en ' + selectedLeague.strLeague : 'Clubes encontrados' }}
                     </h3>
                   </div>
-                  <div *ngFor="let team of pagedResults" (click)="selectTeam(team)"
+                  <div *ngFor="let team of pagedResults; trackBy: trackByTeamId" (click)="selectTeam(team)"
                     class="minimal-result-item animate-fade-in">
                     <div class="item-content-wrapper">
                       <div class="mini-avatar">
@@ -152,7 +152,7 @@
                     </ion-button>
                   </div>
 
-                  <div *ngFor="let player of pagedResults" class="minimal-result-item animate-fade-in"
+                  <div *ngFor="let player of pagedResults; trackBy: trackByPlayerId" class="minimal-result-item animate-fade-in"
                     [class.selected]="selectedPlayers.has(player.idPlayer)"
                     [class.already-in-staff]="isAlreadyAdded(player.strPlayer)"
                     (click)="!isAlreadyAdded(player.strPlayer) && togglePlayer(player)">
@@ -250,7 +250,7 @@
             </div>
 
             <ion-list lines="none" class="selected-players-list" *ngIf="selectedPlayers.size > 0">
-              <ng-container *ngFor="let id of getSelectedPlayersList(); let last = last">
+              <ng-container *ngFor="let id of getSelectedPlayersList(); let last = last; trackBy: trackByStringId">
                 <ion-item class="selected-item-mini">
                   <ion-avatar slot="start" class="mini-avatar-xs">
                     <ion-icon name="person"></ion-icon>

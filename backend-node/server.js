@@ -12,11 +12,21 @@ const swaggerDocs = require('./app_api/routes/api-docs');
 const app = express();
 const port = process.env.PORT || 3000;
 
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+  : null;
+
 app.use(cors({
-  origin: '*',
+  origin: allowedOrigins
+    ? (origin, cb) => {
+        // Permitir requests sin origin (Postman, curl, mobile apps nativas)
+        if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+        cb(new Error(`CORS: origen no permitido: ${origin}`));
+      }
+    : '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: [
-    'Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'X-API-KEY', 
+    'Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'X-API-KEY',
     'x-user-role', 'X-User-Role', 'x-transaction-id', 'X-Transaction-Id'
   ]
 }));
@@ -93,9 +103,24 @@ const renderStatusDashboard = async (req, res) => {
   }
 };
 
-// Mantener visibilidad local y exponer ruta limpia para reverse proxy
-app.get('/', renderStatusDashboard);
-app.get('/status', renderStatusDashboard);
+// Middleware de autenticación para el dashboard de estado.
+// Acepta: ?key=STATUS_API_KEY  ó  ?token=<jwt_admin>  ó  Authorization: Bearer <jwt_admin>
+const { authorizeRequest, isAdmin } = require('./app_api/middleware/auth.middleware');
+const statusAuth = (req, res, next) => {
+  const apiKey = process.env.STATUS_API_KEY;
+  if (!apiKey || req.query.key === apiKey) return next();
+
+  // Permitir acceso con el JWT de admin del backend (pasado como ?token= o cabecera)
+  if (req.query.token) {
+    req.headers.authorization = `Bearer ${req.query.token}`;
+  }
+  authorizeRequest(req, res, () => isAdmin(req, res, next));
+};
+
+// / → health check mínimo para reverse proxies como Render (sin datos sensibles)
+// /status → dashboard completo, protegido con STATUS_API_KEY
+app.get('/', (req, res) => res.json({ status: 'ok', uptime: Math.floor(process.uptime()) }));
+app.get('/status', statusAuth, renderStatusDashboard);
 
 
 // Captura de errores 404

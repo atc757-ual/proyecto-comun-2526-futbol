@@ -76,6 +76,7 @@ describe('HomePage', () => {
           provide: Platform,
           useValue: {
             is: () => false,
+            ready: () => Promise.resolve(),
             backButton: {
               subscribeWithPriority: () => ({ unsubscribe: () => {} })
             }

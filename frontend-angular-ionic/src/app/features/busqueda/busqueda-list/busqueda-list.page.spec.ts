@@ -219,9 +219,9 @@ describe('BusquedaListPage', () => {
     });
 
     it('backToLeagues() debería limpiar equipo y jugadores', () => {
-      component.selectedLeague = { strLeague: 'Premier' };
-      component.selectedTeam = { strTeam: 'Arsenal' };
-      component.players = [{ idPlayer: '1' }];
+      component.selectedLeague = { idLeague: '1', strLeague: 'Premier' };
+      component.selectedTeam = { idTeam: '1', strTeam: 'Arsenal' };
+      component.players = [{ idPlayer: '1', strPlayer: 'Test' }];
 
       component.backToLeagues();
 
@@ -231,9 +231,9 @@ describe('BusquedaListPage', () => {
     });
 
     it('backToTeams() debería limpiar solo los jugadores', () => {
-      component.selectedLeague = { strLeague: 'Premier' };
-      component.selectedTeam = { strTeam: 'Arsenal' };
-      component.players = [{ idPlayer: '1' }];
+      component.selectedLeague = { idLeague: '1', strLeague: 'Premier' };
+      component.selectedTeam = { idTeam: '1', strTeam: 'Arsenal' };
+      component.players = [{ idPlayer: '1', strPlayer: 'Test' }];
 
       component.backToTeams();
 
@@ -244,9 +244,9 @@ describe('BusquedaListPage', () => {
 
     it('clearAll() debería resetear todo el estado de búsqueda', () => {
       component.apiSearchQuery = 'Test';
-      component.players = [{ idPlayer: '1' }];
-      component.leagueResults = [{ idLeague: '1' }];
-      component.teamResults = [{ idTeam: '1' }];
+      component.players = [{ idPlayer: '1', strPlayer: 'Test' }];
+      component.leagueResults = [{ idLeague: '1', strLeague: 'Test' }];
+      component.teamResults = [{ idTeam: '1', strTeam: 'Test' }];
 
       component.clearAll();
 
@@ -352,7 +352,7 @@ describe('BusquedaListPage', () => {
       component.selectedPlayers.set('p1', { idPlayer: 'p1', strPlayer: 'Messi' });
       component.hasLocation = true;
       component.currentLocation = { type: 'Point', coordinates: [-3.7038, 40.4168] };
-      mockPlayerService.lookupTSDBPlayer.and.returnValue(of({ idPlayer: 'p1' }));
+      mockPlayerService.lookupTSDBPlayer.and.returnValue(of({ idPlayer: 'p1', strPlayer: 'Messi' }));
       mockPlayerService.mapTSDBToPlayer.and.returnValue({ name: 'Messi' });
       mockPlayerService.addPlayer.and.returnValue(of({ id: 'new1' }));
 
@@ -381,7 +381,7 @@ describe('BusquedaListPage', () => {
       mockPlayerService.getTeamsByLeague.and.returnValue(of([
         { idTeam: '1', strTeam: 'Arsenal', strTeamBadge: 'somefile.png' }
       ]));
-      component.selectLeague({ idLeague: '1' });
+      component.selectLeague({ idLeague: '1', strLeague: '' });
       expect(component.teamResults[0].strTeamBadge).toBe(
         'https://www.thesportsdb.com/images/media/team/badge/somefile.png'
       );
@@ -391,7 +391,7 @@ describe('BusquedaListPage', () => {
       mockPlayerService.getTeamsByLeague.and.returnValue(of([
         { idTeam: '1', strTeam: 'Arsenal', strTeamBadge: 'https://existing-url.com/badge.png' }
       ]));
-      component.selectLeague({ idLeague: '1' });
+      component.selectLeague({ idLeague: '1', strLeague: '' });
       expect(component.teamResults[0].strTeamBadge).toBe('https://existing-url.com/badge.png');
     });
   });

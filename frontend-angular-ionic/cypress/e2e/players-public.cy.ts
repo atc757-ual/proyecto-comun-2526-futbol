@@ -322,12 +322,12 @@ describe('Player Detail Public — Comentarios Paginados', () => {
 describe('Navegación entre páginas públicas', () => {
   beforeEach(() => {
     stubPublicPlayers();
+    stubPlayerDetail();
     cy.visit('/players-public');
     cy.wait('@getPublicPlayers');
   });
 
   it('debería navegar al detalle del jugador al hacer click en la tarjeta', () => {
-    stubPlayerDetail();
     cy.get('.player-premium-card:visible, .player-mobile-item:visible', { timeout: 10000 })
       .should('have.length.at.least', 1)
       .first()

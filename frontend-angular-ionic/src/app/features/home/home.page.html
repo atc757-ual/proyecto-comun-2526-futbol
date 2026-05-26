@@ -1,5 +1,5 @@
 <ion-content class="flex-content">
-  <app-page-header [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle"></app-page-header>
+  <app-page-full-content [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle"></app-page-full-content>
   <div class="content-container">
     <!-- CARRUSEL DE NOTICIAS (SWIPER) o SKELETON -->
     <div class=" news-swiper-wrapper" *ngIf="isLoadingFeatured || featuredNews.length > 0">
@@ -9,16 +9,16 @@
         pagination-clickable="true" observer="true" observe-parents="true" autoplay="true" autoplay-delay="4000"
         autoplay-disable-on-interaction="false" slides-per-view="1" space-between="0" watch-slides-progress="true"
         class="featured-swiper">
-        <swiper-slide *ngFor="let news of featuredNews">
+        <swiper-slide *ngFor="let news of featuredNews; trackBy: trackByNewsId">
           <div class="slide-content" [style.background-image]="'url(' + news.image + ')'">
             <div class="overlay-gradient"></div>
             <div class="news-info-overlay">
-              <div class="news-badge-small">FÚTBOL</div>
+              <div class="news-badge-small">{{ news.category }}</div>
               <div class="news-meta-overlay">
                 <span class="source">{{ news.author }}</span>
                 <span class="date">• {{ news.date }}</span>
               </div>
-              <h2 class="news-title-overlay">{{ news.title }}</h2>
+              <h3 class="news-title-overlay">{{ news.title }}</h3>
               <p class="news-excerpt-overlay">{{ news.excerpt }}</p>
               <div class="read-more-button" (click)="goToNewsDetail(news)">
                 <span>Ver noticia</span>
@@ -30,29 +30,23 @@
       </swiper-container>
 
       <!-- SKELETON LOADING BANNER -->
-      <div *ngIf="isLoadingFeatured" class="skeleton-banner animate-fade-in"
-        style="height: 320px; background: #1e293b; position: relative; padding: 40px; display: flex; align-items: flex-end; justify-content: flex-start; border-radius: 16px;">
-        <div style="width: 100%; max-width: 600px; z-index: 2; display: flex; flex-direction: column;">
-          <ion-skeleton-text [animated]="true"
-            style="width: 80px; height: 18px; border-radius: 4px; margin-bottom: 12px; --background: rgba(255,255,255,0.1); --background-activated: rgba(255,255,255,0.2);"></ion-skeleton-text>
-          <ion-skeleton-text [animated]="true"
-            style="width: 40%; height: 14px; margin-bottom: 8px; --background: rgba(255,255,255,0.1); --background-activated: rgba(255,255,255,0.2);"></ion-skeleton-text>
-          <ion-skeleton-text [animated]="true"
-            style="width: 80%; height: 32px; margin-bottom: 12px; --background: rgba(255,255,255,0.1); --background-activated: rgba(255,255,255,0.2);"></ion-skeleton-text>
-          <ion-skeleton-text [animated]="true"
-            style="width: 95%; height: 16px; margin-bottom: 24px; --background: rgba(255,255,255,0.1); --background-activated: rgba(255,255,255,0.2);"></ion-skeleton-text>
-          <ion-skeleton-text [animated]="true"
-            style="width: 120px; height: 36px; border-radius: 20px; --background: rgba(255,255,255,0.1); --background-activated: rgba(255,255,255,0.2);"></ion-skeleton-text>
+      <div *ngIf="isLoadingFeatured" class="skeleton-banner animate-fade-in">
+        <div class="skeleton-banner-content">
+          <ion-skeleton-text [animated]="true" class="skeleton-badge"></ion-skeleton-text>
+          <ion-skeleton-text [animated]="true" class="skeleton-meta"></ion-skeleton-text>
+          <ion-skeleton-text [animated]="true" class="skeleton-title"></ion-skeleton-text>
+          <ion-skeleton-text [animated]="true" class="skeleton-excerpt"></ion-skeleton-text>
+          <ion-skeleton-text [animated]="true" class="skeleton-btn"></ion-skeleton-text>
         </div>
       </div>
 
       <!-- Navegación Externa Garantizada -->
       <ng-container *ngIf="!isLoadingFeatured">
-        <div class="custom-swiper-button custom-prev">
-          <ion-icon name="chevron-back"></ion-icon>
+        <div class="custom-swiper-button custom-prev" role="button" aria-label="Anterior">
+          <ion-icon name="chevron-back" aria-hidden="true"></ion-icon>
         </div>
-        <div class="custom-swiper-button custom-next">
-          <ion-icon name="chevron-forward"></ion-icon>
+        <div class="custom-swiper-button custom-next" role="button" aria-label="Siguiente">
+          <ion-icon name="chevron-forward" aria-hidden="true"></ion-icon>
         </div>
       </ng-container>
     </div>
@@ -109,17 +103,14 @@
           <div class="col-6 col-sm-12">
             <div class="animate-fade-in h-100">
               <!-- SKELETON JUGADORES -->
-              <ion-card class="m-0 mb-base shadow-sm" *ngIf="isLoadingPlayers" style="height: 100%; min-height: 250px;">
+              <ion-card class="m-0 mb-base shadow-sm sk-card" *ngIf="isLoadingPlayers">
                 <ion-card-content class="p-base">
-                  <ion-skeleton-text animated
-                    style="width: 50%; height: 20px; margin-bottom: 20px;"></ion-skeleton-text>
+                  <ion-skeleton-text animated class="sk-w-50 sk-h-20 mb-base"></ion-skeleton-text>
                   <div class="d-flex ai-center gap-s mb-s" *ngFor="let item of [1,2,3]">
-                    <ion-skeleton-text animated
-                      style="width: 44px; height: 44px; border-radius: 50%;"></ion-skeleton-text>
-                    <div style="flex: 1;">
-                      <ion-skeleton-text animated
-                        style="width: 60%; height: 14px; margin-bottom: 6px;"></ion-skeleton-text>
-                      <ion-skeleton-text animated style="width: 40%; height: 10px;"></ion-skeleton-text>
+                    <ion-skeleton-text animated class="sk-avatar"></ion-skeleton-text>
+                    <div class="flex-1">
+                      <ion-skeleton-text animated class="sk-w-60 sk-h-14 mb-xs"></ion-skeleton-text>
+                      <ion-skeleton-text animated class="sk-w-40 sk-h-10"></ion-skeleton-text>
                     </div>
                   </div>
                 </ion-card-content>
@@ -153,19 +144,15 @@
           <div class="col-6 col-sm-12">
             <div class="animate-fade-in h-100">
               <!-- SKELETON CALENDARIO TV -->
-              <ion-card class="m-0 mb-base shadow-sm" *ngIf="isLoadingSchedule"
-                style="height: 100%; min-height: 250px;">
+              <ion-card class="m-0 mb-base shadow-sm sk-card" *ngIf="isLoadingSchedule">
                 <ion-card-content class="p-base">
-                  <ion-skeleton-text animated
-                    style="width: 60%; height: 20px; margin-bottom: 20px;"></ion-skeleton-text>
+                  <ion-skeleton-text animated class="sk-w-60 sk-h-20 mb-base"></ion-skeleton-text>
                   <div class="d-flex jc-between ai-center mb-s" *ngFor="let item of [1,2,3]">
-                    <div style="flex: 1;">
-                      <ion-skeleton-text animated
-                        style="width: 70%; height: 14px; margin-bottom: 6px;"></ion-skeleton-text>
-                      <ion-skeleton-text animated style="width: 50%; height: 10px;"></ion-skeleton-text>
+                    <div class="flex-1">
+                      <ion-skeleton-text animated class="sk-w-70 sk-h-14 mb-xs"></ion-skeleton-text>
+                      <ion-skeleton-text animated class="sk-w-50 sk-h-10"></ion-skeleton-text>
                     </div>
-                    <ion-skeleton-text animated
-                      style="width: 50px; height: 18px; border-radius: 4px;"></ion-skeleton-text>
+                    <ion-skeleton-text animated class="sk-badge"></ion-skeleton-text>
                   </div>
                 </ion-card-content>
               </ion-card>
@@ -198,16 +185,16 @@
             <div class="live-scores-wrapper" *ngIf="!isLoadingLive && liveScores.length > 0">
               <swiper-container class="live-scores-swiper" pagination="true" slides-per-view="1" space-between="0">
 
-                <swiper-slide *ngFor="let page of liveScorePages">
+                <swiper-slide *ngFor="let page of liveScorePages; trackBy: trackByIndex">
                   <div class="match-cards-container">
-                    <div class="modern-match-card animate-in" *ngFor="let match of page"
+                    <div class="modern-match-card animate-in" *ngFor="let match of page; trackBy: trackByScore"
                       [routerLink]="['/matches', match.idEvent]">
 
                       <!-- Team Home -->
                       <div class="team-block home">
                         <div class="team-accent-stripe home" [style.background]="match.customGradient"></div>
                         <div class="team-logo-wrap">
-                          <img [src]="match.strHomeTeamBadge || 'assets/imgs/default-team.png'" alt="Home">
+                          <img [src]="match.strHomeTeamBadge || 'assets/imgs/default-team.png'" [alt]="match.strHomeTeam || 'Equipo local'" loading="lazy">
                         </div>
                         <span class="team-name-small">{{ match.strHomeTeam }}</span>
                       </div>
@@ -223,9 +210,9 @@
                           </span>
                         </div>
                         <div class="score-row-large">
-                          <span class="win-marker left" *ngIf="match.intHomeScore > match.intAwayScore">◀</span>
+                          <span class="win-marker left" *ngIf="match.intHomeScore != null && match.intAwayScore != null && match.intHomeScore > match.intAwayScore">◀</span>
                           <span class="score-num">{{ match.intHomeScore }} - {{ match.intAwayScore }}</span>
-                          <span class="win-marker right" *ngIf="match.intAwayScore > match.intHomeScore">▶</span>
+                          <span class="win-marker right" *ngIf="match.intAwayScore != null && match.intHomeScore != null && match.intAwayScore > match.intHomeScore">▶</span>
                         </div>
                       </div>
 
@@ -233,7 +220,7 @@
                       <div class="team-block away">
                         <div class="team-accent-stripe away" [style.background]="match.customGradient"></div>
                         <div class="team-logo-wrap">
-                          <img [src]="match.strAwayTeamBadge || 'assets/imgs/default-team.png'" alt="Away">
+                          <img [src]="match.strAwayTeamBadge || 'assets/imgs/default-team.png'" [alt]="match.strAwayTeam || 'Equipo visitante'" loading="lazy">
                         </div>
                         <span class="team-name-small">{{ match.strAwayTeam }}</span>
                       </div>
@@ -256,13 +243,11 @@
             <div *ngIf="isLoadingLive" class="live-skeletons">
               <ion-card class="m-0 mb-s shadow-sm" *ngFor="let i of [1,2,3]">
                 <ion-card-content class="p-s">
-                  <ion-skeleton-text animated style="width: 60%; height: 12px;"></ion-skeleton-text>
+                  <ion-skeleton-text animated class="sk-w-60 sk-h-12"></ion-skeleton-text>
                   <div class="d-flex jc-between mt-s">
-                    <ion-skeleton-text animated
-                      style="width: 30px; height: 30px; border-radius: 50%;"></ion-skeleton-text>
-                    <ion-skeleton-text animated style="width: 40px; height: 20px;"></ion-skeleton-text>
-                    <ion-skeleton-text animated
-                      style="width: 30px; height: 30px; border-radius: 50%;"></ion-skeleton-text>
+                    <ion-skeleton-text animated class="sk-avatar-sm"></ion-skeleton-text>
+                    <ion-skeleton-text animated class="w-40 h-20"></ion-skeleton-text>
+                    <ion-skeleton-text animated class="sk-avatar-sm"></ion-skeleton-text>
                   </div>
                 </ion-card-content>
               </ion-card>

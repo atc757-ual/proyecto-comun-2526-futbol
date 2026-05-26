@@ -1,10 +1,11 @@
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Subject, takeUntil } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, LoadingController, NavController } from '@ionic/angular';
 import { IonContent } from '@ionic/angular/standalone';
-import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
-import { PageFooterComponent } from '../../../shared/components/page-footer/page-footer.component';
+import { PageFullContentComponent } from '../../../shared/components/layout/layout-elements/page-full-content/page-full-content.component';
+import { PageFooterComponent } from '../../../shared/components/layout/layout-elements/page-footer/page-footer.component';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { NewsItem } from '../../../core/models/news.model';
 import { NEWS_SERVICE_TOKEN } from '../../../core/services/news/news.service.token';
@@ -20,7 +21,7 @@ import { addCircleOutline, newspaperOutline, homeOutline, settingsOutline, chevr
   templateUrl: './news.page.html',
   styleUrls: ['./news.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, FormsModule, PageHeaderComponent, PageFooterComponent]
+  imports: [CommonModule, IonicModule, RouterModule, FormsModule, PageFullContentComponent, PageFooterComponent]
 })
 export class NewsPage implements OnInit, OnDestroy {
   private newsService = inject(NEWS_SERVICE_TOKEN);
@@ -38,7 +39,8 @@ export class NewsPage implements OnInit, OnDestroy {
   isAdmin = false;
   isLoading = true;
   activeSpotlightIndex = -1; // Empezamos en -1 para que nada tenga foco al cargar
-  private spotlightTimer: any;
+  private readonly destroy$ = new Subject<void>();
+  private spotlightTimer: ReturnType<typeof setInterval> | null = null;
 
   // Variables de Paginación
   currentPage = 1;
@@ -58,6 +60,12 @@ export class NewsPage implements OnInit, OnDestroy {
     { label: 'Noticias' }
   ];
 
+  ionViewWillEnter() {
+    this.isAdmin = this.authService.isAdmin();
+    this.loadNews();
+    this.loadFeatured();
+  }
+
   async ngOnInit() {
 
     this.isAdmin = this.authService.isAdmin(); // Usamos la instancia inyectada
@@ -73,6 +81,8 @@ export class NewsPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
     if (this.spotlightTimer) {
       clearInterval(this.spotlightTimer);
     }
@@ -96,7 +106,7 @@ export class NewsPage implements OnInit, OnDestroy {
   loadNews() {
     this.isLoading = true;
 
-    this.newsService.getFeed().subscribe({
+    this.newsService.getFeed().pipe(takeUntil(this.destroy$)).subscribe({
       next: (news) => {
         // Usamos las noticias reales del servicio
         this.totalNews = news;
@@ -117,9 +127,8 @@ export class NewsPage implements OnInit, OnDestroy {
   }
 
   loadFeatured() {
-    this.newsService.getFeatured().subscribe({
+    this.newsService.getFeatured().pipe(takeUntil(this.destroy$)).subscribe({
       next: (news) => {
-        // Mostramos solo las 5 primeras en el sidebar
         this.featuredNews = news.slice(0, 5);
       },
       error: () => this.toastService.showError('Error cargando noticias destacadas')
@@ -167,4 +176,13 @@ export class NewsPage implements OnInit, OnDestroy {
       this.navCtrl.navigateForward(['/news', id]);
     }
   }
+
+  trackByNewsId(index: number, news: NewsItem): string | number {
+    return news.id || index;
+  }
+
+  trackByPage(index: number, page: number): number {
+    return page;
+  }
 }
+

@@ -11,13 +11,11 @@ class AIService {
         // Solo instanciamos el modelo real si NO estamos en entorno de pruebas
         if (!this.isTest) {
             const { ChatGoogleGenerativeAI } = require("@langchain/google-genai");
-            const modelName = "gemini-flash-latest"; // Nombre oficial verificado
-            const version = "v1beta"; 
 
             this.model = new ChatGoogleGenerativeAI({
-                model: modelName,
-                apiVersion: version,
+                model: "gemini-2.5-flash",
                 apiKey: process.env.GOOGLE_API_KEY,
+                apiVersion: "v1beta",
                 temperature: 0.2,
                 maxOutputTokens: 4096,
             });
@@ -71,9 +69,9 @@ class AIService {
 
             // Configuro las opciones de mi disyuntor de IA
             const aiBreakerOptions = {
-                timeout: 10000,               // Otorgo 10 segundos antes de considerar time-out (los modelos LLM son pesados)
+                timeout: 30000,               // 30 segundos — los LLM pueden tardar bastante en responder
                 errorThresholdPercentage: 50,  // Si el 50% de las peticiones fallan, abro el circuito
-                resetTimeout: 15000           // Tras 15 segundos en abierto, paso a semiabierto para probar disponibilidad
+                resetTimeout: 30000           // Tras 30 segundos en abierto, paso a semiabierto para probar disponibilidad
             };
 
             // Inicializo el Circuit Breaker para las peticiones de IA

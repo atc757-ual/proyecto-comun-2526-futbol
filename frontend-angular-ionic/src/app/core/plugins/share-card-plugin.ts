@@ -60,7 +60,7 @@ export class ShareCardPlugin {
       // 5. Compartir el archivo guardado nativamente
       await Share.share({
         title: `Ficha de ${playerName}`,
-        text: `Informe de scouting de ${playerName}.`,
+        text: `Información de ${playerName}.`,
         files: [writeResult.uri]
       });
 

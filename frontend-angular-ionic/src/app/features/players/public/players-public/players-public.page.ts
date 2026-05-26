@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, effect } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -9,9 +9,9 @@ import {
 } from '@ionic/angular/standalone';
 import { RouterModule } from '@angular/router';
 import { addIcons } from 'ionicons';
-import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
-import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
-import { PageFooterComponent } from '../../../../shared/components/page-footer/page-footer.component';
+import { PaginationComponent } from '../../../../shared/components/ui/pagination/pagination.component';
+import { PageFullContentComponent } from '../../../../shared/components/layout/layout-elements/page-full-content/page-full-content.component';
+import { PageFooterComponent } from '../../../../shared/components/layout/layout-elements/page-footer/page-footer.component';
 import {
   personAddOutline, searchOutline, shieldOutline,
   eyeOutline, closeCircleOutline, chevronBackOutline,
@@ -33,7 +33,7 @@ import { AuthService } from '../../../../core/services/auth/auth.service';
     CommonModule, FormsModule, RouterModule,
     IonSearchbar, IonCard, IonCardContent, IonCardHeader, IonCardTitle,
     IonIcon, IonSpinner, IonLabel, IonItem, IonThumbnail,
-    PaginationComponent, PageHeaderComponent, PageFooterComponent, IonContent
+    PaginationComponent, PageFullContentComponent, PageFooterComponent, IonContent
   ]
 })
 export class PlayersPublicPage implements OnInit {
@@ -102,7 +102,12 @@ export class PlayersPublicPage implements OnInit {
     { label: 'Jugadores', url: '' }
   ];
 
+
   ngOnInit() {
+    this.loadPlayers();
+  }
+
+  ionViewWillEnter() {
     this.loadPlayers();
   }
 
@@ -142,4 +147,13 @@ export class PlayersPublicPage implements OnInit {
   goTo(url: string) {
     this.navCtrl.navigateRoot(url, { animated: false });
   }
+
+  trackByPlayerId(_: number, player: { _id?: string; external_id?: number }): string | number | undefined {
+    return player._id ?? player.external_id;
+  }
+
+  trackByIndex(index: number): number {
+    return index;
+  }
 }
+

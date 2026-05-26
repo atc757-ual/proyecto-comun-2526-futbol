@@ -51,10 +51,10 @@ services:
       - football-network
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8888/actuator/health" ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 40s
+      interval: 15s
+      timeout: 10s
+      retries: 12
+      start_period: 150s
 
   eureka-server:
     build:
@@ -73,10 +73,10 @@ services:
       - football-network
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 40s
+      interval: 15s
+      timeout: 10s
+      retries: 12
+      start_period: 150s
 
   user-client:
     build:

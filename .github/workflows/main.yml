@@ -12,16 +12,13 @@ env:
   IMAGE_NAME_PREFIX: ${{ github.repository_owner }}/football
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
-# Permisos globales para asegurar que el token pueda escribir en GHCR
-permissions:
-  contents: read
-  packages: write
-  pull-requests: read
-
 jobs:
   # --- FRONTEND JOB (Angular/Ionic) ---
   frontend:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v4
       
@@ -109,6 +106,9 @@ jobs:
   # --- BACKEND NODE JOB ---
   backend-node:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
     services:
       mongodb:
         image: mongo:latest
@@ -165,6 +165,10 @@ jobs:
   # --- BACKEND JAVA JOB ---
   backend-java:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+      pull-requests: read
     services:
       postgres:
         image: postgres:15
@@ -255,6 +259,9 @@ jobs:
   # --- CORBA SERVICE JOB ---
   service-corba:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v4
       
@@ -311,6 +318,8 @@ jobs:
     needs: [frontend, backend-node, backend-java, service-corba]
     runs-on: ubuntu-24.04
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: read
     steps:
       - name: Deploy to VM via SSH
         uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17 # v1.2.0

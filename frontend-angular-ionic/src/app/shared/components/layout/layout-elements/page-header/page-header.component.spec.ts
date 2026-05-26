@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { signal } from '@angular/core';
 import { PageHeaderComponent } from './page-header.component';
 import { AuthService } from 'src/app/core/services/auth/auth.service';
 import { PlatformService } from 'src/app/core/services/system/platform.service';

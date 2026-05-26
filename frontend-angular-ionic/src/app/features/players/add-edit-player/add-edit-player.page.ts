@@ -91,7 +91,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     // Solo necesita bypass para esquemas no estándar como capacitor: o blob:
     if (url.startsWith('data:image/')) return url;
     if (url.startsWith('blob:') || url.startsWith('capacitor:')) {
-      return this.sanitizer.bypassSecurityTrustUrl(url);
+      return this.sanitizer.bypassSecurityTrustUrl(url); // NOSONAR: only blob: and capacitor: URLs are bypassed, never user input
     }
     return url;
   }

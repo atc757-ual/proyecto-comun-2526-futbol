@@ -24,6 +24,25 @@ const visitBusqueda = () => {
   cy.get('app-busqueda-list', { timeout: 8000 }).should('exist');
 };
 
+// Shared selector — declared once to avoid CPD duplication across suites
+const searchInputSelector = 'ion-searchbar input:not([disabled])';
+
+// ─── Navigation helpers ───────────────────────────────────────────────────────
+const switchToModeAndSearch = (mode: 'player' | 'team' | 'league', term: string) => {
+  cy.get(`ion-segment-button[value="${mode}"]`).click({ force: true });
+  cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type(term, { force: true });
+};
+
+const navigateToPremierLeague = () => {
+  switchToModeAndSearch('league', 'Premier');
+  cy.contains('English Premier League').click({ force: true });
+};
+
+const addMessiToBasket = () => {
+  switchToModeAndSearch('player', 'Messi');
+  cy.contains('.minimal-result-item', 'Lionel Messi', { timeout: 10000 }).click({ force: true });
+};
+
 // ─── TheSportsDB API stubs for offline testing ────────────────────────────────
 const stubLeagueSearch = (alias = 'searchLeagues') => {
   cy.intercept('GET', /.*(searchleagues|search-leagues|leagues\/search).*/, {
@@ -155,8 +174,6 @@ describe('Search – UI Base', () => {
 // SUITE 2: LEAGUE → TEAM → PLAYER FLOW
 // =============================================================================
 describe('Search – League → Team → Player flow', () => {
-  const searchInputSelector = 'ion-searchbar input:not([disabled])';
-
   beforeEach(() => {
     loginUser();
     stubLeagueSearch();
@@ -167,44 +184,33 @@ describe('Search – League → Team → Player flow', () => {
   });
 
   it('should search leagues and show results', () => {
-    cy.get('ion-segment-button[value="league"]').click({ force: true });
-    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Premier', { force: true });
+    switchToModeAndSearch('league', 'Premier');
     cy.get('.minimal-result-item').should('have.length.at.least', 1);
     cy.contains('English Premier League').should('exist');
   });
 
   it('should navigate to teams when selecting a league', () => {
-    cy.get('ion-segment-button[value="league"]').click({ force: true });
-    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Premier', { force: true });
-    cy.contains('English Premier League').click({ force: true });
+    navigateToPremierLeague();
     cy.contains('Arsenal').should('exist');
     cy.contains('Chelsea').should('exist');
   });
 
   it('should show navigation breadcrumbs when selecting a league', () => {
-    cy.get('ion-segment-button[value="league"]').click({ force: true });
-    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Premier', { force: true });
-    cy.contains('English Premier League').click({ force: true });
-
+    navigateToPremierLeague();
     cy.get('.hierarchy-pills').should('exist');
     cy.get('.nav-pill').should('have.length.at.least', 2);
   });
 
   it('should load players when selecting a team', () => {
-    cy.get('ion-segment-button[value="league"]').click({ force: true });
-    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Premier', { force: true });
-    cy.contains('English Premier League').click({ force: true });
+    navigateToPremierLeague();
     cy.contains('Arsenal').click({ force: true });
     cy.contains('Bukayo Saka').should('exist');
     cy.contains('Martin Odegaard').should('exist');
   });
 
   it('backToTeams should return to the teams list', () => {
-    cy.get('ion-segment-button[value="league"]').click({ force: true });
-    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Premier', { force: true });
-    cy.contains('English Premier League').click({ force: true });
+    navigateToPremierLeague();
     cy.contains('Arsenal').click({ force: true });
-
     cy.get('.nav-pill').contains('Arsenal').click({ force: true });
     cy.contains('Chelsea').should('exist');
     cy.contains('Bukayo Saka').should('not.exist');
@@ -215,8 +221,6 @@ describe('Search – League → Team → Player flow', () => {
 // SUITE 3: TEAM → PLAYER FLOW
 // =============================================================================
 describe('Search – Team → Player flow', () => {
-  const searchInputSelector = 'ion-searchbar input:not([disabled])';
-
   beforeEach(() => {
     loginUser();
     stubTeamSearch();
@@ -226,25 +230,21 @@ describe('Search – Team → Player flow', () => {
   });
 
   it('should search teams by name and show results', () => {
-    cy.get('ion-segment-button[value="team"]').click({ force: true });
-    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Barcelona', { force: true });
+    switchToModeAndSearch('team', 'Barcelona');
     cy.contains('FC Barcelona').should('exist');
   });
 
   it('should load players when selecting a team in Team mode', () => {
-    cy.get('ion-segment-button[value="team"]').click({ force: true });
-    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Barcelona', { force: true });
+    switchToModeAndSearch('team', 'Barcelona');
     cy.contains('FC Barcelona').click({ force: true });
     cy.get('.minimal-result-item').should('have.length.at.least', 1);
   });
 });
 
 // =============================================================================
-// SUITE 4: DIRECT PLAYER SEARCH
+// SUITE 4: PLAYER SEARCH, BASKET AND IMPORT
 // =============================================================================
-describe('Search – Direct Player Search', () => {
-  const searchInputSelector = 'ion-searchbar input:not([disabled])';
-
+describe('Search – Player Search, Basket and Import', () => {
   beforeEach(() => {
     loginUser();
     stubPlayerSearch();
@@ -252,60 +252,37 @@ describe('Search – Direct Player Search', () => {
     cy.dismissUiBlockers();
   });
 
+  // ── Direct Player Search ──────────────────────────────────────────────────
   it('should search players directly and show results', () => {
-    cy.get('ion-segment-button[value="player"]').click({ force: true });
-    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Messi', { force: true });
+    switchToModeAndSearch('player', 'Messi');
     cy.contains('Lionel Messi').should('exist');
   });
 
   it('should show the player position in results', () => {
-    cy.get('ion-segment-button[value="player"]').click({ force: true });
-    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Messi', { force: true });
+    switchToModeAndSearch('player', 'Messi');
     cy.contains('.minimal-result-item', 'Lionel Messi', { timeout: 10000 })
       .should('exist')
       .within(() => {
         cy.get('.pos-tag').should('contain.text', 'Forward');
       });
   });
-});
 
-// =============================================================================
-// SUITE 5: SELECTION AND BASKET
-// =============================================================================
-describe('Search – Selection and Basket', () => {
-  const searchInputSelector = 'ion-searchbar input:not([disabled])';
-
-  beforeEach(() => {
-    loginUser();
-    stubPlayerSearch();
-    visitBusqueda();
-    cy.dismissUiBlockers();
-  });
-
+  // ── Selection and Basket ──────────────────────────────────────────────────
   it('should add a player to the basket on click', () => {
-    cy.get('ion-segment-button[value="player"]').click({ force: true });
-    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Messi', { force: true });
-    cy.contains('.minimal-result-item', 'Lionel Messi', { timeout: 10000 }).click({ force: true });
-
+    addMessiToBasket();
     cy.get('.basket-counter').should('contain', '1');
     cy.get('.selected-players-list').should('exist');
   });
 
   it('should remove a player from the basket when clicking X', () => {
-    cy.get('ion-segment-button[value="player"]').click({ force: true });
-    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Messi', { force: true });
-    cy.contains('.minimal-result-item', 'Lionel Messi', { timeout: 10000 }).click({ force: true });
-
+    addMessiToBasket();
     cy.get('.selected-players-list ion-button[color="danger"]').first().click({ force: true });
     cy.get('.basket-counter').should('contain', '0');
     cy.get('.empty-basket').should('exist');
   });
 
   it('the "Clear" button should empty the basket', () => {
-    cy.get('ion-segment-button[value="player"]').click({ force: true });
-    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Messi', { force: true });
-    cy.contains('.minimal-result-item', 'Lionel Messi', { timeout: 10000 }).click({ force: true });
-
+    addMessiToBasket();
     cy.get('ion-button').contains('Limpiar').click({ force: true });
     cy.get('.basket-counter').should('contain', '0');
   });
@@ -313,38 +290,51 @@ describe('Search – Selection and Basket', () => {
   it('the import button should be disabled with no players selected', () => {
     cy.contains('ion-button', 'Importar').should('have.class', 'button-disabled');
   });
+
+  // ── Player Import ─────────────────────────────────────────────────────────
+  it('should keep import button disabled without GPS when players are selected', () => {
+    switchToModeAndSearch('player', 'Messi');
+    cy.get('.minimal-result-item').first().click({ force: true });
+    cy.contains('ion-button', 'Importar').should('have.class', 'button-disabled');
+  });
+
+  it('should show the correct player count on the import button', () => {
+    switchToModeAndSearch('player', 'Messi');
+    cy.wait('@searchPlayers');
+    cy.get('.minimal-result-item').first().click({ force: true });
+    cy.get('ion-button').contains('Importar Jugador').should('exist');
+  });
 });
 
 // =============================================================================
-// SUITE 6: GPS PERMISSION CARD (GpsPermissionCardComponent)
+// SUITE 5: GPS PERMISSION CARD (GpsPermissionCardComponent)
 // =============================================================================
 describe('Search – GPS Permission Card', () => {
-
-    const mockGeoPermissionDenied = () => {
-      cy.visit('/busqueda', {
-        onBeforeLoad(win) {
-          if (win.navigator && win.navigator.permissions) {
-            cy.stub(win.navigator.permissions, 'query').callsFake((params) => {
-              if (params.name === 'geolocation') {
-                return Promise.resolve({ state: 'denied' });
-              }
-              return Promise.resolve({ state: 'granted' });
-            });
-          }
+  const mockGeoPermissionDenied = () => {
+    cy.visit('/busqueda', {
+      onBeforeLoad(win) {
+        if (win.navigator?.permissions) {
+          cy.stub(win.navigator.permissions, 'query').callsFake((params) => {
+            if (params.name === 'geolocation') {
+              return Promise.resolve({ state: 'denied' });
+            }
+            return Promise.resolve({ state: 'granted' });
+          });
         }
-      });
-    };
-
-    beforeEach(() => {
-      loginUser();
-      stubLeagueSearch();
-      stubTeamsByLeague();
-      stubPlayersByTeam();
-      stubPlayerSearch();
-      stubTeamSearch();
-      mockGeoPermissionDenied();
-      cy.dismissUiBlockers();
+      }
     });
+  };
+
+  beforeEach(() => {
+    loginUser();
+    stubLeagueSearch();
+    stubTeamsByLeague();
+    stubPlayersByTeam();
+    stubPlayerSearch();
+    stubTeamSearch();
+    mockGeoPermissionDenied();
+    cy.dismissUiBlockers();
+  });
 
   it('should display the GPS card with correct state after load', () => {
     cy.get('app-gps-permission-card').should('exist');
@@ -367,33 +357,3 @@ describe('Search – GPS Permission Card', () => {
   });
 });
 
-// =============================================================================
-// SUITE 7: PLAYER IMPORT
-// =============================================================================
-describe('Search – Player Import', () => {
-  beforeEach(() => {
-    loginUser();
-    stubPlayerSearch();
-    visitBusqueda();
-    cy.dismissUiBlockers();
-  });
-
-  it('should keep import button disabled without GPS when players are selected', () => {
-    const searchInputSelector = 'ion-searchbar input:not([disabled])';
-
-    cy.get('ion-segment-button[value="player"]').click({ force: true });
-    cy.get(searchInputSelector).click({ force: true }).clear({ force: true }).type('Messi', { force: true });
-    cy.get('.minimal-result-item').first().click({ force: true });
-
-    cy.contains('ion-button', 'Importar').should('have.class', 'button-disabled');
-  });
-
-  it('should show the correct player count on the import button', () => {
-    cy.get('ion-segment-button[value="player"]').click({ force: true });
-    cy.get('ion-searchbar').find('input').type('Messi', { force: true });
-    cy.wait('@searchPlayers');
-    cy.get('.minimal-result-item').first().click({ force: true });
-
-    cy.get('ion-button').contains('Importar Jugador').should('exist');
-  });
-});

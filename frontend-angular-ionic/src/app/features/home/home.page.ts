@@ -15,20 +15,24 @@ import { RouterModule, Router } from '@angular/router';
 import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { AuthService } from 'src/app/core/services/auth/auth.service';
 import { Auth } from '@angular/fire/auth';
-import { Subscription, timer } from 'rxjs';
-import { PermissionModalComponent } from 'src/app/shared/components/permission-modal/permission-modal.component';
-import { PageHeaderComponent } from 'src/app/shared/components/page-header/page-header.component';
-import { PageFooterComponent } from 'src/app/shared/components/page-footer/page-footer.component';
+import { Subscription, timer, Subject, takeUntil, take } from 'rxjs';
+import { TsdbLiveScore } from 'src/app/core/models/tsdb.model';
+import { NewsItem } from 'src/app/core/models/news.model';
+import { PermissionModalComponent } from 'src/app/shared/components/modals/permission-modal/permission-modal.component';
+import { PageFullContentComponent } from 'src/app/shared/components/layout/layout-elements/page-full-content/page-full-content.component';
+import { PageFooterComponent } from 'src/app/shared/components/layout/layout-elements/page-footer/page-footer.component';
 import { ModalController } from '@ionic/angular';
 import { PLAYER_SERVICE_TOKEN } from 'src/app/core/services/players/player.service.token';
 import { NEWS_SERVICE_TOKEN } from 'src/app/core/services/news/news.service.token';
+import { LocationPlugin } from 'src/app/core/plugins/location-plugin';
+import { TourService } from 'src/app/core/services/ui/tour.service';
 
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterModule, PageHeaderComponent, PageFooterComponent],
+  imports: [IonicModule, CommonModule, FormsModule, RouterModule, PageFullContentComponent, PageFooterComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class HomePage implements OnInit, OnDestroy {
@@ -42,13 +46,16 @@ export class HomePage implements OnInit, OnDestroy {
   private alertCtrl = inject(AlertController);
   private modalCtrl = inject(ModalController);
   private auth = inject(Auth);
+  private locationPlugin = inject(LocationPlugin);
+  private tourService = inject(TourService);
   private refreshSub?: Subscription;
+  private readonly destroy$ = new Subject<void>();
   // Propiedades públicas de estado
   pageTitle = 'Inicio';
   pageSubtitle = '';
   featuredNews: any[] = [];
-  liveScores: any[] = [];
-  liveScorePages: any[][] = [];
+  liveScores: TsdbLiveScore[] = [];
+  liveScorePages: TsdbLiveScore[][] = [];
   isLoadingFeatured = true;
   isLoadingLive = true;
   isLoadingSchedule = true;
@@ -87,8 +94,15 @@ export class HomePage implements OnInit, OnDestroy {
     this.loadMyPlayers();
     this.loadTVScheduleByCountry();
 
-    // Verifico si es requerido solicitar accesos mediante el modal de onboarding
-    this.checkPermissionsOnboarding();
+    // Tour guiado: solo se muestra la primera vez
+    if (this.tourService.isTourDone()) {
+      this.checkPermissionsOnboarding();
+    } else {
+      this.tourService.tourDone$.pipe(take(1), takeUntil(this.destroy$)).subscribe(() => {
+        this.checkPermissionsOnboarding();
+      });
+    }
+    this.tourService.startIfFirstTime();
 
     // Establezco un temporizador para refrescar marcadores cada 60 segundos
     this.refreshSub = timer(60000, 60000).subscribe(() => {
@@ -98,7 +112,8 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    // Cancelo la suscripción al temporizador activo al destruir el componente
+    this.destroy$.next();
+    this.destroy$.complete();
     if (this.refreshSub) {
       this.refreshSub.unsubscribe();
     }
@@ -171,20 +186,21 @@ export class HomePage implements OnInit, OnDestroy {
     }
 
     try {
-      const geoResult = await navigator.permissions.query({ name: 'geolocation' as any });
-      let cameraState: PermissionState = 'prompt';
+      // Usar LocationPlugin para chequear geo (funciona correctamente en Android/Capacitor)
+      const geoGranted = await this.locationPlugin.isGeolocationPermissionGranted();
+      let cameraGranted = false;
       try {
         const camResult = await navigator.permissions.query({ name: 'camera' as any });
-        cameraState = camResult.state;
+        cameraGranted = camResult.state === 'granted';
       } catch (e) {
-        cameraState = 'prompt';
+        cameraGranted = false;
       }
 
-      if (geoResult.state === 'granted' && cameraState === 'granted') {
+      if (geoGranted && cameraGranted) {
         return;
       }
     } catch (e) {
-      console.warn('Error al consultar permisos de forma nativa, abriendo modal:', e);
+      console.warn('Error al consultar permisos, abriendo modal:', e);
     }
 
     const modal = await this.modalCtrl.create({
@@ -209,11 +225,12 @@ export class HomePage implements OnInit, OnDestroy {
    */
   loadFeaturedNews() {
     this.isLoadingFeatured = true;
-    this.newsService.getFeatured().subscribe({
+    this.newsService.getFeatured().pipe(takeUntil(this.destroy$)).subscribe({
       next: (news) => {
         this.featuredNews = news.map(item => ({
           id: item.id,
           title: item.title,
+          category: item.category,
           excerpt: item.summary,
           author: item.author,
           date: item.date,
@@ -230,7 +247,7 @@ export class HomePage implements OnInit, OnDestroy {
    */
   loadLiveScores(isAuto = false) {
     if (!isAuto) this.isLoadingLive = true;
-    this.playerService.getTSDBLiveScores().subscribe({
+    this.playerService.getTSDBLiveScores().pipe(takeUntil(this.destroy$)).subscribe({
       next: (scores: any) => {
         let scoresList: any[] = [];
         if (Array.isArray(scores)) {
@@ -285,7 +302,7 @@ export class HomePage implements OnInit, OnDestroy {
    */
   loadMyPlayers() {
     this.isLoadingPlayers = true;
-    this.playerService.getPlayers().subscribe({
+    this.playerService.getPlayers().pipe(takeUntil(this.destroy$)).subscribe({
       next: (players) => {
         this.myPlayersJson = JSON.stringify(players);
         this.playerCount = (players || []).length;
@@ -302,7 +319,7 @@ export class HomePage implements OnInit, OnDestroy {
    */
   loadTVScheduleByCountry() {
     this.isLoadingSchedule = true;
-    this.playerService.getTVByCountry('Spain').subscribe({
+    this.playerService.getTVByCountry('Spain').pipe(takeUntil(this.destroy$)).subscribe({
       next: (data) => {
         this.tvScheduleJson = JSON.stringify(data);
         this.isLoadingSchedule = false;
@@ -311,11 +328,16 @@ export class HomePage implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Soporte trackBy para el listado de marcadores en vivo
-   */
-  trackByScore(index: number, score: any) {
+  trackByScore(index: number, score: TsdbLiveScore): string | number {
     return score.idLiveScore || index;
+  }
+
+  trackByNewsId(index: number, news: any): string | number {
+    return news.id || index;
+  }
+
+  trackByIndex(index: number): number {
+    return index;
   }
 
   /**
@@ -325,3 +347,4 @@ export class HomePage implements OnInit, OnDestroy {
     event.target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="%23e2e8f0"/><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="%2394a3b8"/></svg>';
   }
 }
+

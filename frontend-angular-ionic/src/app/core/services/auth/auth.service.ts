@@ -5,25 +5,42 @@ import {
   sendPasswordResetEmail, confirmPasswordReset,
   verifyPasswordResetCode, ActionCodeSettings
 } from '@angular/fire/auth';
-import { setPersistence, browserLocalPersistence, browserSessionPersistence } from 'firebase/auth';
 import { getApp } from 'firebase/app';
-import { Platform } from '@ionic/angular/standalone';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { firstValueFrom, map } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { PlatformService } from '../system/platform.service';
+import { LoggerService } from '../system/logger.service';
 import { PreferencesPlugin } from '../../plugins/preferences-plugin';
+
+export interface UserData {
+  name: string;
+  email: string;
+  id?: number | string;
+  _id?: string;          // MongoDB ObjectId (Node backend)
+  uid?: string;          // Firebase UID
+  firebaseUid?: string;
+  is_active?: boolean;
+  role?: string;
+}
+
+interface AuthSyncResponse {
+  data: {
+    token: string;
+    user: UserData;
+  };
+}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private auth = inject(Auth);
-  private http = inject(HttpClient);
-  private platform = inject(Platform);
+  private auth              = inject(Auth);
+  private http              = inject(HttpClient);
   private preferencesPlugin = inject(PreferencesPlugin);
+  private logger            = inject(LoggerService);
 
   // --- SIGNALS DE ESTADO ---
-  private _userData = signal<any>(null); // Ya no cargamos de LocalStorage al inicio
+  private _userData = signal<UserData | null>(null);
   public userData = this._userData.asReadonly();
 
   // Signal computado para obtener solo el primer nombre
@@ -42,17 +59,16 @@ export class AuthService {
   );
 
   constructor() {
-    console.log('[AUTH] Inicializado');
     this.loadPersistedData();
-    
+
     // Auto-sincronización al detectar usuario de Firebase (Persistencia)
-    this.user$.subscribe(async (fbUser) => {
+    this.user$.pipe(takeUntilDestroyed()).subscribe(async (fbUser) => {
       if (fbUser) {
-        console.log('[AUTH] Usuario detectado, sincronizando estado en memoria...');
+        this.logger.log('[AUTH] Usuario detectado, sincronizando estado en memoria...');
         try {
           await this.syncUserWithBackend();
         } catch (err) {
-          console.error('[AUTH] Error en auto-sincronización:', err);
+          this.logger.error('[AUTH] Error en auto-sincronización', err);
         }
       }
     });
@@ -66,16 +82,16 @@ export class AuthService {
       const savedUserStr = await this.preferencesPlugin.get('user_data');
       if (savedUserStr) {
         this._userData.set(JSON.parse(savedUserStr));
-        console.log('[AUTH] Perfil del usuario cargado desde Preferences con éxito.');
+        this.logger.log('[AUTH] Perfil del usuario cargado desde Preferences con éxito.');
       }
-      
+
       const token = await this.preferencesPlugin.get('jwt_token');
       if (token && !localStorage.getItem('jwt_token')) {
         localStorage.setItem('jwt_token', token);
-        console.log('[AUTH] Token JWT restaurado en LocalStorage desde Preferences.');
+        this.logger.log('[AUTH] Token JWT restaurado en LocalStorage desde Preferences.');
       }
     } catch (e) {
-      console.warn('[AUTH] Error al cargar persistencia de Preferences:', e);
+      this.logger.warn('[AUTH] Error al cargar persistencia de Preferences', e);
     }
   }
 
@@ -84,7 +100,7 @@ export class AuthService {
    */
   async login(email: string, password: string) {
     const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
-    console.log('[AUTH-DEBUG] Login Firebase exitoso. Validando verificación de correo...');
+    this.logger.log('[AUTH] Login Firebase exitoso. Validando verificación de correo...');
     
     // Verifico si el correo electrónico ha sido validado antes de autorizar el ingreso
     if (userCredential.user && !userCredential.user.emailVerified) {
@@ -127,7 +143,7 @@ export class AuthService {
       
       // Envío el correo de verificación nativo de Firebase
       await sendEmailVerification(userCredential.user);
-      console.log('[AUTH] Correo de verificación enviado con éxito.');
+      this.logger.log('[AUTH] Correo de verificación enviado con éxito.');
       
       // Cierro la sesión inmediata para impedir el acceso sin verificar
       await signOut(this.auth);
@@ -145,7 +161,7 @@ export class AuthService {
    */
   async syncUserWithBackend(targetBackend?: boolean, forceRefresh: boolean = false) {
     if (this.syncPromise) {
-      console.log('[AUTH] Sincronización ya en curso. Reutilizando promesa existente...');
+      this.logger.log('[AUTH] Sincronización ya en curso. Reutilizando promesa existente...');
       return this.syncPromise;
     }
 
@@ -171,32 +187,27 @@ export class AuthService {
           
         const fullUrl = `${baseUrl}/auth/signin`;
         
-        console.log(`[AUTH] Sincronizando con backend: ${useJava ? 'JAVA' : 'NODE'}`);
+        this.logger.log(`[AUTH] Sincronizando con backend: ${useJava ? 'JAVA' : 'NODE'}`);
         
-        const response: any = await firstValueFrom(
-          this.http.post(fullUrl, { idToken })
+        const response = await firstValueFrom(
+          this.http.post<AuthSyncResponse>(fullUrl, { idToken })
         );
 
-        if (response && response.data && response.data.token) {
-          // Guardar JWT en LocalStorage para interceptor síncrono
+        if (response?.data?.token) {
           localStorage.setItem('jwt_token', response.data.token);
-          
-          // Guardar JWT y datos de usuario de forma asíncrona en Preferences (filtrando campos sensibles)
           await this.preferencesPlugin.set('jwt_token', response.data.token);
-          
-          const persistentUser = {
+
+          const persistentUser: Pick<UserData, 'name' | 'email'> = {
             name: response.data.user.name || '',
             email: response.data.user.email || ''
           };
           await this.preferencesPlugin.set('user_data', JSON.stringify(persistentUser));
-          
-          // El objeto de usuario completo queda en memoria activa (RAM)
-          this._userData.set(response.data.user);
 
-          console.log('[AUTH] Sincronización exitosa. Token y perfil limitado guardados de forma segura.');
+          this._userData.set(response.data.user);
+          this.logger.log('[AUTH] Sincronización exitosa. Token y perfil guardados de forma segura.');
         }
       } catch (error) {
-        console.error('Error al sincronizar con el backend:', error);
+        this.logger.error('[AUTH] Error al sincronizar con el backend', error);
         throw error;
       }
     })();
@@ -315,7 +326,7 @@ export class AuthService {
       // Ajusta 'admin' según el valor exacto que envíe el backend activo (Node.js o Java)
       return payloadJson && (payloadJson.role === 'admin' || payloadJson.role === 'ADMIN' || payloadJson.role === 'Admin');
     } catch (e) {
-      console.error('[AUTH] Error al decodificar el token para isAdmin:', e);
+      this.logger.error('[AUTH] Error al decodificar el token para isAdmin', e);
       return false;
     }
   }
@@ -418,8 +429,8 @@ export class AuthService {
       }
 
       return null;
-    } catch (error: any) {
-      console.error('[AUTH] Error al leer Términos y Condiciones:', error);
+    } catch (error) {
+      this.logger.error('[AUTH] Error al leer Términos y Condiciones', error);
       return null;
     }
   }

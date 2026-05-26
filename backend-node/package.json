@@ -8,7 +8,7 @@
     "dev": "nodemon server.js",
     "start:local": "cross-env PORT=3001 node server.js",
     "dev:local": "cross-env PORT=3001 nodemon server.js",
-    "test": "cross-env NODE_ENV=test node -r dotenv/config ./node_modules/jest/bin/jest.js --testTimeout=30000 --runInBand --coverage",
+    "test": "cross-env NODE_ENV=test node -r dotenv/config ./node_modules/jest/bin/jest.js --testTimeout=30000 --runInBand --coverage --forceExit",
     "lint": "eslint ."
   },
   "keywords": [],

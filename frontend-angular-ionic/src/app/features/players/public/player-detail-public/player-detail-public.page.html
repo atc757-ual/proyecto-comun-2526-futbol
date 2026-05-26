@@ -1,5 +1,5 @@
 <ion-content class="flex-content">
-  <app-page-header [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle" [breadcrumbs]="breadcrumbs"></app-page-header>
+  <app-page-full-content [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle" [breadcrumbs]="breadcrumbs"></app-page-full-content>
   <div class="content-container">
     <div *ngIf="player">
       <!-- COMPACT SCOUTING BANNER -->
@@ -92,7 +92,7 @@
                 <span class="fs-16 f-bold text-neutral-8 pr-s ls-1">Biografía</span>
               </div>
               <div class="bio-wrapper" [class.expanded]="isSummaryExpanded">
-                <p class="bio-text m-0 lh-1-6">{{ player.summary || 'No hay descripción disponible.' }}</p>
+                <p class="bio-text m-0 lh-relaxed">{{ player.summary || 'No hay descripción disponible.' }}</p>
                 <div class="bio-fade" *ngIf="!isSummaryExpanded && player.summary && player.summary.length > 150"></div>
               </div>
               <div class="text-center mt-base" *ngIf="player.summary && player.summary.length > 150">
@@ -216,7 +216,7 @@
                     <p class="text-neutral-5 fs-14 mt-xs">¡Sé el primero en decir qué te parece!</p>
                   </div>
 
-                  <div class="comment-bubble mt-s" *ngFor="let comment of pagedComments()"
+                  <div class="comment-bubble mt-s" *ngFor="let comment of pagedComments(); trackBy: trackByCommentId"
                     [class.rating-positive]="comment.rating >= 4" [class.rating-neutral]="comment.rating === 3"
                     [class.rating-negative]="comment.rating > 0 && comment.rating <= 2">
                     <div class="bubble-head">
@@ -226,8 +226,10 @@
                             [src]="'https://ui-avatars.com/api/?name=' + (comment.user_name || comment.autor_name || comment.author_name || 'Invitado') + '&background=random'" />
                         </ion-avatar>
                         <div class="author-info">
-                          <span class="author">{{ comment.user_name || comment.autor_name || comment.author_name ||
-                            'Invitado' }}</span>
+                          <span class="author">
+                            {{ comment.user_name || comment.autor_name || comment.author_name || 'Invitado' }}
+                            <ion-icon *ngIf="comment.user_id" name="checkmark-circle" color="primary" class="verified-icon" title="Usuario verificado"></ion-icon>
+                          </span>
                           <span class="date">{{ (comment.created_at || comment.entryDate) | date:'dd MMM yyyy HH:mm'
                             }}</span>
                         </div>
@@ -247,7 +249,7 @@
                       <ion-icon name="chevron-back-outline" slot="start"></ion-icon> Anterior
                     </ion-button>
                     <div class="page-indicators">
-                      <ion-button mode="ios" *ngFor="let page of getPages()"
+                      <ion-button mode="ios" *ngFor="let page of getPages(); trackBy: trackByIndex"
                         [fill]="currentPage === page ? 'solid' : 'clear'" [class.active]="currentPage === page"
                         (click)="goToPage(page)">
                         {{ page }}
@@ -302,6 +304,15 @@
                   </p>
                 </div>
               </div>
+
+              <div class="actions-bottom-right" data-html2canvas-ignore="true">
+                <button class="side-action-btn share" (click)="showRegisterModal(); $event.stopPropagation()">
+                  <ion-icon name="share-outline"></ion-icon>
+                </button>
+                <button class="side-action-btn favorite" (click)="showRegisterModal(); $event.stopPropagation()">
+                  <ion-icon name="heart-outline"></ion-icon>
+                </button>
+              </div>
             </div>
 
             <ion-card-content>
@@ -339,6 +350,7 @@
                     *ngIf="player.social_media.website"><ion-icon name="globe-outline"></ion-icon></a>
                 </div>
               </div>
+
             </ion-card-content>
           </ion-card>
 
@@ -346,6 +358,6 @@
         </div>
       </div>
     </div>
-  </div>
-  <app-page-footer></app-page-footer>
+  </div>  
+ <app-page-footer></app-page-footer>
 </ion-content>

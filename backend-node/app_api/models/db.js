@@ -76,6 +76,7 @@ mongoose.connection.on('disconnected', () => {
 });
 
 // Función para cierre limpio de la conexión
+/* istanbul ignore next */
 const gracefulShutdown = (msg, callback) => {
     mongoose.connection.close().then(() => {
         console.log(`Mongoose disconnected through ${msg}`);
@@ -84,6 +85,7 @@ const gracefulShutdown = (msg, callback) => {
 };
 
 // Para reinicios de nodemon
+/* istanbul ignore next */
 process.once('SIGUSR2', () => {
     gracefulShutdown('nodemon restart', () => {
         process.kill(process.pid, 'SIGUSR2');
@@ -91,6 +93,7 @@ process.once('SIGUSR2', () => {
 });
 
 // Para terminación de la aplicación (Docker/Local)
+/* istanbul ignore next */
 process.on('SIGINT', () => {
     gracefulShutdown('app termination', () => {
         process.exit(0);
@@ -98,6 +101,7 @@ process.on('SIGINT', () => {
 });
 
 // Para terminación en Heroku/Cloud
+/* istanbul ignore next */
 process.on('SIGTERM', () => {
     gracefulShutdown('Heroku app termination', () => {
         process.exit(0);

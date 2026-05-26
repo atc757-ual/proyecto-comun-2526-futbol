@@ -27,7 +27,7 @@ export const routes: Routes = [
   {
     path: 'auth',
     canActivate: [guestGuard],
-    loadComponent: () => import('./shared/components/auth-layout/auth-layout.component').then((m) => m.AuthLayoutComponent),
+    loadComponent: () => import('./shared/components/layout/layout-auth/layout-auth.component').then((m) => m.LayoutAuthComponent),
     children: [
       { path: 'login', loadComponent: () => import('./features/auth/login/login.page').then((m) => m.LoginPage) },
       { path: 'register', loadComponent: () => import('./features/auth/register/register.page').then((m) => m.RegisterPage) },
@@ -38,7 +38,7 @@ export const routes: Routes = [
   // 2. PUBLIC ROUTES (Con su propio Layout explícito y compartido)
   {
     path: '',
-    loadComponent: () => import('./shared/components/public-layout/public-layout.component').then((m) => m.PublicLayoutComponent),
+    loadComponent: () => import('./shared/components/layout/layout-public/layout-public.component').then((m) => m.LayoutPublicComponent),
     children: [
       {
         path: 'players-public',
@@ -56,7 +56,7 @@ export const routes: Routes = [
   // 3. MAIN LAYOUT (Todo lo demás protegido)
   {
     path: '',
-    loadComponent: () => import('./shared/components/main-layout/main-layout.component').then((m) => m.MainLayoutComponent),
+    loadComponent: () => import('./shared/components/layout/layout-main/layout-main.component').then((m) => m.LayoutMainComponent),
     canActivate: [authGuard],
     children: [
       { path: 'home', loadComponent: () => import('./features/home/home.page').then((m) => m.HomePage) },

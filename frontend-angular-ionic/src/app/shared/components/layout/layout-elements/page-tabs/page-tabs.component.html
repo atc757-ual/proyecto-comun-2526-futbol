@@ -1,0 +1,19 @@
+<!-- MOBILE BOTTOM BAR -->
+<ion-footer class="mobile-tab-footer ion-no-border">
+  <ion-tab-bar slot="bottom" class="mobile-tab-bar">
+    <ng-container *ngFor="let p of navService.pages; let i = index">
+      <ion-tab-button [id]="'tab-' + p.tab" [tab]="p.title" [routerLink]="p.url"
+                      [class.tab-selected]="navService.isTabActive(p.url)"
+                      [class.ai-tab-special]="i === 2">
+
+        <ion-icon *ngIf="i !== 2" [name]="p.icon"></ion-icon>
+
+        <div *ngIf="i === 2" class="ai-icon-circle">
+          <ion-icon [name]="p.icon"></ion-icon>
+        </div>
+
+        <ion-label *ngIf="i !== 2">{{ p.title }}</ion-label>
+      </ion-tab-button>
+    </ng-container>
+  </ion-tab-bar>
+</ion-footer>

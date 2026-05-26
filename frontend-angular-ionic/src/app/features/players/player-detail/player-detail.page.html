@@ -1,5 +1,5 @@
 <ion-content class="flex-content">
-  <app-page-header [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle" [breadcrumbs]="breadcrumbs"></app-page-header>
+  <app-page-full-content [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle" [breadcrumbs]="breadcrumbs"></app-page-full-content>
   <div class="content-container pb-xl">
     <div *ngIf="player">
       <!-- COMPACT SCOUTING BANNER -->
@@ -78,7 +78,7 @@
             </div>
             <div class="stat-box">
               <div class="stat-icon">
-                <img *ngIf="leagueDetails?.strBadge" [src]="leagueDetails.strBadge" class="mini-league-badge">
+                <img *ngIf="leagueDetails?.strBadge" [src]="leagueDetails?.strBadge" class="mini-league-badge" [attr.alt]="leagueDetails?.strLeague || 'Escudo de liga'">
                 <ion-icon *ngIf="!leagueDetails?.strBadge" name="earth-outline"></ion-icon>
               </div>
               <div class="stat-data">
@@ -106,7 +106,7 @@
                 <span class="fs-16 f-bold text-neutral-8 pr-s ls-1">Biografía</span>
               </div>
               <div class="bio-wrapper" [class.expanded]="isSummaryExpanded">
-                <p class="bio-text m-0 lh-1-6">{{ player.summary || 'No hay descripción disponible.' }}</p>
+                <p class="bio-text m-0 lh-relaxed">{{ player.summary || 'No hay descripción disponible.' }}</p>
                 <div class="bio-fade" *ngIf="!isSummaryExpanded && player.summary && player.summary.length > 150"></div>
               </div>
               <div class="text-center mt-base" *ngIf="player.summary && player.summary.length > 150">
@@ -142,10 +142,10 @@
                   <div *ngIf="!isLoadingExtra && career.length === 0" class="text-center p-xl text-neutral-5">No hay
                     registros históricos</div>
                   <div class="career-list" *ngIf="!isLoadingExtra && career.length > 0">
-                    <div class="career-item" *ngFor="let item of visibleCareer">
+                    <div class="career-item" *ngFor="let item of visibleCareer; trackBy: trackByIndex">
                       <div class="career-badge-container">
                         <ion-icon name="shield-outline"></ion-icon>
-                        <img [src]="item.strTeamBadge" (error)="handleImageError($event)">
+                        <img [src]="item.strTeamBadge" [alt]="item.strTeam || 'Escudo'" loading="lazy" (error)="handleImageError($event)">
                       </div>
                       <div class="career-info">
                         <h4>{{ item.strTeam }}</h4>
@@ -170,10 +170,10 @@
                     trofeos
                     registrados</div>
                   <div class="honours-grid" *ngIf="!isLoadingExtra && honours.length > 0">
-                    <div class="honour-card" *ngFor="let item of visibleHonours">
+                    <div class="honour-card" *ngFor="let item of visibleHonours; trackBy: trackByIndex">
                       <div class="trophy-img-box mb-s">
                         <ion-icon name="trophy-outline"></ion-icon>
-                        <img [src]="item.strTeamBadge" class="trophy-main" (error)="handleImageError($event)">
+                        <img [src]="item.strTeamBadge" class="trophy-main" [alt]="item.strTeam || 'Escudo'" loading="lazy" (error)="handleImageError($event)">
                       </div>
                       <div class="honour-text">
                         <span class="name">{{ item.strTeam }}</span>
@@ -198,10 +198,10 @@
                     hitos
                     relevantes</div>
                   <div class="honours-grid" *ngIf="!isLoadingExtra && milestones.length > 0">
-                    <div class="honour-card" *ngFor="let item of visibleMilestones">
+                    <div class="honour-card" *ngFor="let item of visibleMilestones; trackBy: trackByIndex">
                       <div class="milestone-img-box mb-s">
                         <ion-icon name="flag-outline"></ion-icon>
-                        <img [src]="item.strTeamBadge" class="milestone-main" (error)="handleImageError($event)">
+                        <img [src]="item.strTeamBadge" class="milestone-main" [alt]="item.strTeam || 'Escudo'" loading="lazy" (error)="handleImageError($event)">
                       </div>
                       <div class="honour-text">
                         <span class="name">{{ item.strTeam }}</span>
@@ -328,7 +328,7 @@
                     <p class="text-neutral-5 fs-14 mt-xs">¡Sé el primero en aportar un informe técnico!</p>
                   </div>
 
-                  <div class="comment-bubble mt-s" *ngFor="let comment of pagedComments"
+                  <div class="comment-bubble mt-s" *ngFor="let comment of pagedComments; trackBy: trackByCommentId"
                     [class.rating-positive]="comment.rating >= 4" [class.rating-neutral]="comment.rating === 3"
                     [class.rating-negative]="comment.rating > 0 && comment.rating <= 2"
                     [class.is-editing]="editingCommentId === (comment.id || comment._id)">
@@ -341,8 +341,10 @@
                               [src]="'https://ui-avatars.com/api/?name=' + (comment.user_name || comment.autor_name || comment.author_name || 'Invitado') + '&background=random'" />
                           </ion-avatar>
                           <div class="author-info">
-                            <span class="author">{{ comment.user_name || comment.autor_name || comment.author_name ||
-                              'Invitado' }}</span>
+                            <span class="author">
+                              {{ comment.user_name || comment.autor_name || comment.author_name || 'Invitado' }}
+                              <ion-icon *ngIf="comment.user_id" name="checkmark-circle" color="primary" class="verified-icon" title="Usuario verificado"></ion-icon>
+                            </span>
                             <span class="date">{{ (comment.created_at || comment.entryDate) | date:'dd MMM yyyy HH:mm'
                               }}</span>
                           </div>
@@ -388,7 +390,7 @@
                       <ion-icon name="chevron-back-outline" slot="start"></ion-icon> Anterior
                     </ion-button>
                     <div class="page-indicators">
-                      <ion-button mode="ios" *ngFor="let page of getPages()"
+                      <ion-button mode="ios" *ngFor="let page of getPages(); trackBy: trackByIndex"
                         [fill]="currentPage === page ? 'solid' : 'clear'" [class.active]="currentPage === page"
                         (click)="goToPage(page)">
                         {{ page }}
@@ -419,13 +421,13 @@
                 <!-- IMAGEN PRINCIPAL (CLUB - TEAM 1) -->
                 <div class="hero-image-wrapper" [class.is-hidden]="showCutout">
                   <img class="hero-bg-img" [src]="getSafeImageUrl(player.images?.cutout || player.image_url)"
-                    crossorigin="anonymous" (error)="handleImageError($event)">
+                    [alt]="player.name" crossorigin="anonymous" (error)="handleImageError($event)">
                 </div>
 
                 <!-- IMAGEN DE ACCIÓN (PAÍS - TEAM 2) -->
                 <div class="hero-image-wrapper cutout-wrapper" [class.is-visible]="showCutout">
-                  <img class="hero-bg-img action-bg" [src]="getSafeImageUrl(player.image_url)" crossorigin="anonymous"
-                    (error)="handleImageError($event)">
+                  <img class="hero-bg-img action-bg" [src]="getSafeImageUrl(player.image_url)" [alt]="player.name"
+                    crossorigin="anonymous" (error)="handleImageError($event)">
                 </div>
 
                 <div class="hero-overlay"></div>
@@ -515,7 +517,7 @@
                   <div class="team-horizontal-content">
                     <div class="team-logo-container">
                       <ion-icon name="shield"></ion-icon>
-                      <img [src]="team.strTeamBadge" class="team-logo-main" (error)="handleImageError($event)">
+                      <img [src]="team.strTeamBadge" class="team-logo-main" [alt]="team.strTeam || 'Escudo'" loading="lazy" (error)="handleImageError($event)">
                     </div>
                     <div class="team-main-data">
                       <h3>{{ team.strTeam }}</h3>

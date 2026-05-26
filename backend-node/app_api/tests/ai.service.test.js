@@ -1,11 +1,15 @@
 // Force non-test environment so the real service chain initializes
 process.env.NODE_ENV = 'development';
 
+// Capture circuit-breaker callbacks before clearAllMocks wipes mock.calls
+let _circuitHandlers = {};
+let _circuitFallback;
+
 jest.mock('opossum', () => {
     return jest.fn().mockImplementation((fn) => ({
         fire: jest.fn().mockImplementation((input) => fn(input)),
-        fallback: jest.fn(),
-        on: jest.fn()
+        fallback: jest.fn().mockImplementation((cb) => { _circuitFallback = cb; }),
+        on: jest.fn().mockImplementation((event, cb) => { _circuitHandlers[event] = cb; })
     }));
 });
 
@@ -65,5 +69,26 @@ describe('AIService', () => {
         AIService.aiBreaker.fire.mockRejectedValueOnce(new Error('circuit abierto'));
         await expect(AIService.analyzePlayers([]))
             .rejects.toThrow('Fallo en la comunicación con la IA: circuit abierto');
+    });
+
+    // ── Coverage for non-test-mode internals ────────────────────────────────────
+    test('invokes the AI chain when fire uses its default implementation', async () => {
+        AIService.chain.invoke.mockResolvedValueOnce('{"analysis":"directo","idealEleven":[]}');
+        // Do NOT override fire → uses default impl which calls invokeChain → chain.invoke
+        const result = await AIService.analyzePlayers([{ name: 'F' }]);
+        expect(result.analysis).toBe('directo');
+    });
+
+    test('circuit breaker event handlers are callable without errors', () => {
+        const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+        const infoSpy = jest.spyOn(console, 'info').mockImplementation(() => {});
+        Object.values(_circuitHandlers).forEach(cb => cb());
+        warnSpy.mockRestore();
+        infoSpy.mockRestore();
+    });
+
+    test('circuit breaker fallback re-throws the original error', () => {
+        const err = new Error('error de fallback');
+        expect(() => _circuitFallback(null, err)).toThrow('error de fallback');
     });
 });

@@ -1,10 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, firstValueFrom, throwError } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { Observable, firstValueFrom, from, of, throwError } from 'rxjs';
+import { map, catchError, switchMap } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import { StorageService } from '../system/storage.service';
 import { AuthService } from '../auth/auth.service';
+import { LoggerService } from '../system/logger.service';
 
 import { Player } from '../../models/player.model';
 import { IPlayerService } from './player.service.interface';
@@ -18,8 +19,9 @@ export { Player };
 })
 export class NodePlayerService implements IPlayerService {
   private storageService = inject(StorageService);
-  private authService = inject(AuthService);
-  private http = inject(HttpClient);
+  private authService   = inject(AuthService);
+  private http          = inject(HttpClient);
+  private logger        = inject(LoggerService);
 
   private apiUrl = `${environment.nodeApiUrl}/players`;
   private cache: { [key: string]: { data: any, timestamp: number } } = {};
@@ -155,17 +157,14 @@ export class NodePlayerService implements IPlayerService {
 
   reverseGeocode(lat: number, lng: number): Observable<string> {
     const url = `${environment.nodeApiUrl}/geo`;
-    console.log(`[PLAYER-SERVICE] Consultando geocoding para: ${lat}, ${lng}`);
+    this.logger.log(`[PlayerService] Consultando geocoding para: ${lat}, ${lng}`);
 
-    return this.http.get<any>(url, {
+    return this.http.get<{ data: { displayAddress?: string } }>(url, {
       params: { lat, lng }
     }).pipe(
-      map(res => {
-        console.log('[PLAYER-SERVICE] Respuesta recibida:', res);
-        return res.data?.displayAddress || 'Ubicación desconocida';
-      }),
-      catchError((err: any) => {
-        console.error('[PLAYER-SERVICE] Error en petición de geocoding:', err);
+      map(res => res.data?.displayAddress || 'Ubicación desconocida'),
+      catchError((err: unknown) => {
+        this.logger.error('[PlayerService] Error en petición de geocoding', err);
         return throwError(() => err);
       })
     );
@@ -178,54 +177,44 @@ export class NodePlayerService implements IPlayerService {
    */
   savePlayer(id: string | null, player: Player, file: File | null, oldImageUrl: string | null): Observable<Player> {
     const isEdit = !!id;
+    return from(this.preparePlayer(player, file, oldImageUrl, isEdit)).pipe(
+      switchMap(finalPlayer => isEdit ? this.updatePlayer(id!, finalPlayer) : this.addPlayer(finalPlayer))
+    );
+  }
+
+  private async preparePlayer(
+    player: Player,
+    file: File | null,
+    oldImageUrl: string | null,
+    isEdit: boolean
+  ): Promise<Player> {
     const currentUser = this.authService.currentUser();
-    const adminEmail = currentUser?.email || 'admin';
+    const adminEmail  = currentUser?.email || 'admin';
+    let imageUrl      = player.image_url;
 
-    return new Observable<Player>(observer => {
-      (async () => {
-        try {
-          let imageUrl = player.image_url;
+    if (file) {
+      this.logger.log('[PlayerService] Subiendo nueva imagen a Storage...');
+      imageUrl = await this.storageService.uploadImage(file, 'players');
 
-          // 1. Gestionar Imagen
-          if (file) {
-            console.log('[PlayerService] Subiendo nueva imagen a Storage...');
-            imageUrl = await this.storageService.uploadImage(file, 'players');
+      if (isEdit && oldImageUrl?.includes('firebasestorage') && oldImageUrl !== imageUrl) {
+        await this.storageService.deleteImageByUrl(oldImageUrl, 'players');
+      }
+    }
 
-            if (isEdit && oldImageUrl && oldImageUrl.includes('firebasestorage') && oldImageUrl !== imageUrl) {
-              await this.storageService.deleteImageByUrl(oldImageUrl, 'players');
-            }
-          }
+    const finalPlayer: Player = {
+      ...player,
+      image_url: imageUrl,
+      updated_by: adminEmail,
+      updated_at: new Date()
+    };
 
-          // 2. Preparar Datos Finales y Auditoría
-          const finalPlayer: Player = {
-            ...player,
-            image_url: imageUrl,
-            updated_by: adminEmail,
-            updated_at: new Date()
-          };
+    if (!isEdit) {
+      finalPlayer.created_by = adminEmail;
+      finalPlayer.created_at = new Date();
+      finalPlayer.user_id    = currentUser?.uid || 'unknown';
+    }
 
-          if (!isEdit) {
-            finalPlayer.created_by = adminEmail;
-            finalPlayer.created_at = new Date();
-            finalPlayer.user_id = currentUser?.uid || 'unknown';
-          }
-
-          // 3. Persistir en BD
-          const request$ = isEdit ? this.updatePlayer(id!, finalPlayer) : this.addPlayer(finalPlayer);
-
-          request$.subscribe({
-            next: (res) => {
-              observer.next(res);
-              observer.complete();
-            },
-            error: (err) => observer.error(err)
-          });
-
-        } catch (error) {
-          observer.error(error);
-        }
-      })();
-    });
+    return finalPlayer;
   }
 
   addPlayer(player: Player): Observable<Player> {
@@ -303,7 +292,7 @@ export class NodePlayerService implements IPlayerService {
 
             successCount++;
           } catch (err) {
-            console.error('[PlayerService] Error importando crack:', apiPlayer.name, err);
+            this.logger.error(`[PlayerService] Error importando crack: ${apiPlayer.name}`, err);
           }
         }
         observer.next({ success: true, count: successCount });

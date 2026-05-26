@@ -14,14 +14,14 @@ public interface NewsFeignClient {
     ApiResult<List<NewsDTO>> findAll(
             @RequestHeader(value = "Authorization", required = false) String auth,
             @RequestHeader("X-User-Role") String role,
-            @RequestParam(required = false) Integer page,
-            @RequestParam(required = false) Integer limit);
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "limit", required = false) Integer limit);
 
     @GetMapping("/feed")
     ApiResult<List<NewsDTO>> getFeed(
             @RequestHeader(value = "Authorization", required = false) String auth,
-            @RequestParam(required = false) Integer page,
-            @RequestParam(required = false) Integer limit);
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "limit", required = false) Integer limit);
 
     @GetMapping("/{id}")
     ApiResult<NewsDTO> findById(

@@ -1,0 +1,19 @@
+<!-- === MOBILE APP === -->
+<div *ngIf="platformService.isMobileApp" class="mobile-wrapper" id="mobile-public-content">
+  <app-page-header mode="public"></app-page-header>
+
+  <div class="layout-router-container pb-xl">
+    <ion-router-outlet [animated]="false"></ion-router-outlet>
+  </div>
+</div>
+
+<!-- === WEB / DESKTOP === -->
+<ng-container *ngIf="!platformService.isMobileApp">
+  <div class="main-wrapper overflow-y-auto" id="public-content">
+    <app-page-header mode="public"></app-page-header>
+
+    <div class="layout-router-container pb-xl">
+      <ion-router-outlet [animated]="false"></ion-router-outlet>
+    </div>
+  </div>
+</ng-container>

@@ -1,8 +1,9 @@
 import { inject, Injectable } from '@angular/core';
-import { 
-  Storage, ref, uploadBytes, 
-  getDownloadURL, deleteObject 
+import {
+  Storage, ref, uploadBytes,
+  getDownloadURL, deleteObject
 } from '@angular/fire/storage';
+import { LoggerService } from './logger.service';
 
 /**
  * Servicio encargado de gestionar la subida y eliminación de archivos multimedia
@@ -11,6 +12,7 @@ import {
 @Injectable({ providedIn: 'root' })
 export class StorageService {
   private storage = inject(Storage);
+  private logger  = inject(LoggerService);
 
   // --- Operaciones de Subida ---
 
@@ -27,10 +29,10 @@ export class StorageService {
       const snapshot = await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(snapshot.ref);
       
-      console.log(`[STORAGE] Imagen subida con éxito: ${downloadURL}`);
+      this.logger.log(`[STORAGE] Imagen subida con éxito: ${downloadURL}`);
       return downloadURL;
     } catch (error) {
-      console.error('[STORAGE] Error al subir imagen:', error);
+      this.logger.error('[STORAGE] Error al subir imagen', error);
       throw error;
     }
   }
@@ -38,47 +40,45 @@ export class StorageService {
   // --- Operaciones de Eliminación ---
 
   /**
-   * Elimina una imagen de Firebase Storage dada su URL
+   * Elimina una imagen de Firebase Storage dada su URL.
    * @param url La URL completa del archivo en storage
-   * @param expectedFolder Opcional: Carpeta esperada para validar que el archivo pertenece al contexto
+   * @param expectedFolder Opcional: carpeta esperada para validar que el archivo pertenece al contexto
    */
   async deleteImageByUrl(url: string, expectedFolder?: string): Promise<void> {
-    console.log(`[STORAGE] Intento de borrado para URL: ${url} (Carpeta esperada: ${expectedFolder || 'Cualquiera'})`);
-    
+    this.logger.log(`[STORAGE] Intento de borrado para: ${url} (carpeta: ${expectedFolder ?? 'cualquiera'})`);
+
     if (!url || !url.includes('firebasestorage.googleapis.com')) {
-      console.warn('[STORAGE] La URL no es de Firebase Storage o está vacía. Saltando borrado.');
+      this.logger.warn('[STORAGE] URL no es de Firebase Storage o está vacía. Saltando borrado.');
       return;
     }
 
     try {
-      const decodedUrl = decodeURIComponent(url);
-      const startIndex = decodedUrl.indexOf('/o/') + 3;
-      const endIndex = decodedUrl.indexOf('?');
-      
+      const decodedUrl  = decodeURIComponent(url);
+      const startIndex  = decodedUrl.indexOf('/o/') + 3;
+      const endIndex    = decodedUrl.indexOf('?');
+
       if (startIndex === 2 || endIndex === -1) {
-        console.error('[STORAGE] No se pudo extraer la ruta del archivo de la URL:', decodedUrl);
+        this.logger.error('[STORAGE] No se pudo extraer la ruta del archivo de la URL', decodedUrl);
         return;
       }
 
       const filePath = decodedUrl.substring(startIndex, endIndex);
-      
-      // VALIDACIÓN DE CARPETA: Bloquea intentos de borrado fuera del contexto especificado por seguridad
+
+      // VALIDACIÓN DE CARPETA: bloquea borrados fuera del contexto especificado
       if (expectedFolder && !filePath.startsWith(`${expectedFolder}/`)) {
-        console.warn(`[STORAGE] 🛡️ Bloqueado: El archivo "${filePath}" no pertenece a la carpeta "${expectedFolder}". Saltando borrado.`);
+        this.logger.warn(`[STORAGE] Bloqueado: "${filePath}" no pertenece a "${expectedFolder}". Saltando.`);
         return;
       }
 
-      console.log(`[STORAGE] Ruta validada: "${filePath}". Solicitando borrado a Firebase...`);
+      this.logger.log(`[STORAGE] Ruta validada: "${filePath}". Solicitando borrado...`);
+      await deleteObject(ref(this.storage, filePath));
+      this.logger.log(`[STORAGE] Imagen eliminada con éxito: ${filePath}`);
 
-      const storageRef = ref(this.storage, filePath);
-      await deleteObject(storageRef);
-      
-      console.log(`[STORAGE] ✅ Imagen eliminada con éxito del servidor: ${filePath}`);
-    } catch (error: any) {
-      if (error?.code === 'storage/object-not-found') {
-        console.warn(`[STORAGE] El archivo ya no existe en el servidor (404). Ignorando.`);
+    } catch (error: unknown) {
+      if ((error as { code?: string })?.code === 'storage/object-not-found') {
+        this.logger.warn('[STORAGE] El archivo ya no existe en el servidor (404). Ignorando.');
       } else {
-        console.error('[STORAGE] ❌ Error al eliminar imagen de Firebase:', error);
+        this.logger.error('[STORAGE] Error al eliminar imagen de Firebase', error);
       }
     }
   }

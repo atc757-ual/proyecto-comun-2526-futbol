@@ -104,6 +104,7 @@ public class ExternalController {
                 }
                 
                 if (teamObj instanceof java.util.Map) {
+                    @SuppressWarnings("unchecked")
                     java.util.Map<String, Object> teamMap = new java.util.HashMap<>((java.util.Map<String, Object>) teamObj);
                     if (teamMap.containsKey("strBadge") && !teamMap.containsKey("strTeamBadge")) {
                         teamMap.put("strTeamBadge", teamMap.get("strBadge"));

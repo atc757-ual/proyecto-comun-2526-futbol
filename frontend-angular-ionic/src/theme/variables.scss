@@ -50,8 +50,6 @@
     /* --- ALIAS DE TAMAÑOS (Mobile - fsm) --- */
     --fsm-8: 0.5rem;
     /* 8px (Igual) */
-    --fsm-10: 0.5625rem;
-    /* 9px */
     --fsm-10: 0.625rem;
     /* 10px */
     --fsm-12: 0.75rem;
@@ -85,6 +83,14 @@
     --fw-medium: 500;
     --fw-semibold: 600;
     --fw-bold: 700;
+
+    /* --- LINE-HEIGHT (Interlineado) --- */
+    --lh-tight: 1.2;
+    /* Títulos y headlines */
+    --lh-base: 1.5;
+    /* Párrafos cortos, labels, metadatos */
+    --lh-relaxed: 1.6;
+    /* Textos largos, bio, artículos */
 
     /* --- CONFIGURACIÓN IONIC --- */
     --ion-font-family: var(--font-primary);
@@ -179,10 +185,11 @@
     --breadcrumb-gap-mobile: 4px;
 
     /* --- BORDER RADIUS --- */
-    --border-radius-small: 0.375rem;
-    --border-radius-soft: 0.5rem;
-    --border-radius-medium: 0.75rem;
-    --border-radius-large: 1rem;
+    --border-radius-small:  0.375rem;   /* 6px */
+    --border-radius-soft:   0.5rem;     /* 8px */
+    --border-radius-card:   0.625rem;   /* 10px — tarjetas compactas */
+    --border-radius-medium: 0.75rem;    /* 12px */
+    --border-radius-large:  1rem;       /* 16px */
     --border-radius-circle: 100%;
 
     /* --- TRANSICIONES Y Z-INDEX --- */
@@ -256,4 +263,62 @@
     /* Escalas de Color Extendidas (Eliminadas para optimizar CSS) */
 
     --color-lightbox-rgb: 53, 52, 68;
+
+    /* --- COLORES DARK (AI Scout, Player Hero) --- */
+    --color-dark-navy:     #0f172a;
+    --color-dark-navy-rgb: 15, 23, 42;     /* Para rgba() con transparencia */
+    --color-dark-slate:    #1e293b;
+
+    /* --- SOMBRAS SEMÁNTICAS --- */
+    --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.05);
+    --shadow-s:    0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-sm:   0 4px 10px rgba(0, 0, 0, 0.10);
+    --shadow-m:    0 6px 16px rgba(0, 0, 0, 0.12);
+    --shadow-md:   0 8px 20px rgba(0, 0, 0, 0.15);
+    --shadow-l:    0 8px 20px rgba(0, 0, 0, 0.30);
+    --shadow-lg:   0 12px 30px rgba(0, 0, 0, 0.20);
+
+    /* --- TRANSICIONES --- */
+    --transition-base: 0.3s ease;
+
+    /* --- BORDES --- */
+    --border-thin: 1px;
+    --border-radius-pill: 9999px;
+
+    /* --- LETTER-SPACING --- */
+    --ls-tight: -0.5px;
+    --ls-wide:   1px;
+
+    /* --- LAYOUT ESPECÍFICO --- */
+    --space-hero-compact: 260px;
+
+    /* --- COLORES SEMÁNTICOS EXTENDIDOS --- */
+    --color-primary-light:    rgba(var(--color-primary-rgb), 0.15);
+    --color-accent-sky:       #60a5fa;   /* Azul cielo (gradientes AI) */
+    --color-emerald:          #10b981;   /* Verde esmeralda (permisos, éxito) */
+    --color-football-pitch:   #1b5e20;   /* Verde campo de fútbol */
+
+    /* RGB semánticos para sombras con color */
+    --color-success-rgb:      0, 163, 100;
+    --color-warning-rgb:      248, 177, 6;
+
+    /* Colores de posiciones de jugador */
+    --color-position-gk:        #ffca28;  /* Portero — amarillo */
+    --color-position-gk-text:   #5d4037;
+    --color-position-gk-border: #ffe082;
+    --color-position-df:        #1e88e5;  /* Defensa — azul */
+    --color-position-df-border: #90caf9;
+    --color-position-mc:        #8e24aa;  /* Mediocampista — morado */
+    --color-position-mc-border: #ce93d8;
+    --color-position-dl:        #e53935;  /* Delantero — rojo */
+    --color-position-dl-border: #ef9a9a;
+
+    /* Fondos de badges y banners */
+    --color-warning-bg:       #fff9e6;   /* Banner propietario (muy claro) */
+    --color-warning-badge:    #fff3cd;   /* Badge amarillo claro */
+    --color-warning-dark:     #856404;   /* Texto sobre badge warning */
+    --color-info-bg:          #e1f5fe;   /* Badge informativo azul claro */
+    --color-success-bg:       #f0fdf4;   /* Fondo verde muy claro */
+    --color-success-bg-deep:  #dcfce7;   /* Fondo verde claro */
+    --color-success-border:   #bbf7d0;   /* Borde verde claro */
 }

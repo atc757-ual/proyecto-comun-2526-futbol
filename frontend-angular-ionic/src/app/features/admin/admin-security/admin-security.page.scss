@@ -199,7 +199,7 @@ ion-badge {
     border: 1px solid var(--color-neutral-3);
     max-height: 250px;
     overflow-y: auto;
-    animation: slideIn 0.2s ease-out;
+    animation: slideInDown 0.2s ease-out;
 
     ion-item {
         &::part(native) {
@@ -232,7 +232,7 @@ ion-badge {
     }
 }
 
-@keyframes slideIn {
+@keyframes slideInDown {
     from {
         opacity: 0;
         transform: translateY(-10px);
@@ -252,7 +252,7 @@ ion-badge {
     justify-content: space-between;
     align-items: center;
     border: 1px dashed var(--ion-color-primary);
-    animation: fadeIn 0.3s ease-in;
+    animation: fadeInScale 0.3s ease-in;
     margin-top: var(--space-s);
 
     .user-info {
@@ -297,7 +297,7 @@ ion-badge {
     }
 }
 
-@keyframes fadeIn {
+@keyframes fadeInScale {
     from {
         opacity: 0;
         transform: scale(0.95);

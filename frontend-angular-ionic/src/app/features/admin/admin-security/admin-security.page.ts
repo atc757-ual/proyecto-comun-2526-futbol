@@ -6,18 +6,19 @@ import {
   IonCardContent, IonItem, IonLabel, IonIcon, IonBadge,
   IonButton, IonSpinner, IonList, IonInput, ToastController, IonContent
 } from '@ionic/angular/standalone';
-import { PageHeaderComponent } from 'src/app/shared/components/page-header/page-header.component';
-import { PageFooterComponent } from 'src/app/shared/components/page-footer/page-footer.component';
+import { PageFullContentComponent } from 'src/app/shared/components/layout/layout-elements/page-full-content/page-full-content.component';
+import { PageFooterComponent } from 'src/app/shared/components/layout/layout-elements/page-footer/page-footer.component';
 import { addIcons } from 'ionicons';
 import {
   shieldCheckmarkOutline, shieldOutline, keyOutline,
   fingerPrintOutline, refreshOutline, alertCircleOutline, personAddOutline,
   atOutline, personRemoveOutline, personCircleOutline, closeOutline, banOutline,
-  checkmarkCircleOutline
+  checkmarkCircleOutline, serverOutline
 } from 'ionicons/icons';
 import { AuthService } from 'src/app/core/services/auth/auth.service';
 import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { Auth } from '@angular/fire/auth';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-admin-security',
@@ -29,7 +30,7 @@ import { Auth } from '@angular/fire/auth';
     IonCard, IonCardHeader, IonCardTitle,
     IonCardContent, IonItem, IonLabel, IonIcon, IonBadge,
     IonButton, IonList, IonInput, IonSpinner, IonContent,
-    PageHeaderComponent, PageFooterComponent
+    PageFullContentComponent, PageFooterComponent
   ]
 })
 export class AdminSecurityPage implements OnInit {
@@ -67,7 +68,7 @@ export class AdminSecurityPage implements OnInit {
       shieldCheckmarkOutline, shieldOutline, keyOutline,
       fingerPrintOutline, refreshOutline, alertCircleOutline, personAddOutline,
       atOutline, personRemoveOutline, personCircleOutline, closeOutline, banOutline,
-      checkmarkCircleOutline
+      checkmarkCircleOutline, serverOutline
     });
   }
 
@@ -158,6 +159,13 @@ export class AdminSecurityPage implements OnInit {
     }
   }
 
+  openStatusDashboard(): void {
+    const token = localStorage.getItem('jwt_token');
+    const base = environment.nodeApiUrl.replace(/\/api$/, '');
+    const url = token ? `${base}/status?token=${token}` : `${base}/status`;
+    window.open(url, '_blank');
+  }
+
   async promoteSelf() {
     const email = this.auth.currentUser?.email;
     if (email) {
@@ -227,3 +235,4 @@ export class AdminSecurityPage implements OnInit {
     return cleanDetail || 'Ocurrió un error inesperado al procesar la solicitud.';
   }
 }
+

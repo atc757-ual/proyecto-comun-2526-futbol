@@ -5,6 +5,7 @@ import { map, catchError, switchMap } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import { StorageService } from '../system/storage.service';
 import { AuthService } from '../auth/auth.service';
+import { LoggerService } from '../system/logger.service';
 import { IPlayerService } from './player.service.interface';
 import { Player } from '../../models/player.model';
 
@@ -17,8 +18,9 @@ import { Player } from '../../models/player.model';
 })
 export class JavaPlayerService implements IPlayerService {
   private storageService = inject(StorageService);
-  private authService = inject(AuthService);
-  private http = inject(HttpClient);
+  private authService    = inject(AuthService);
+  private http           = inject(HttpClient);
+  private logger         = inject(LoggerService);
 
   private apiUrl = `${environment.javaApiUrl}/players`;
   private externalUrl = `${environment.javaApiUrl}/external`;
@@ -38,7 +40,7 @@ export class JavaPlayerService implements IPlayerService {
     return this.http.get<{ data: Player[] }>(`${this.apiUrl}`).pipe(
       map(res => this.sortPlayers(res.data || [])),
       catchError(err => {
-        console.error('[TRAZA-ERROR-FRONTEND] Falló getAllPlayers():', err);
+        this.logger.error('[JavaPlayerService] Falló getAllPlayers()', err);
         return throwError(() => err);
       })
     );
@@ -48,7 +50,7 @@ export class JavaPlayerService implements IPlayerService {
     return this.http.get<{ data: Player[] }>(`${this.apiUrl}/public`, { params: filters }).pipe(
       map(res => this.sortPlayers(res.data || [])),
       catchError(err => {
-        console.error('[TRAZA-ERROR-FRONTEND] Falló getPublicPlayers():', err);
+        this.logger.error('[JavaPlayerService] Falló getPublicPlayers()', err);
         return throwError(() => err);
       })
     );
@@ -64,14 +66,14 @@ export class JavaPlayerService implements IPlayerService {
             return player;
           }),
           catchError(err => {
-            console.warn(`[TRAZA-WARN-FRONTEND] Falló cargar comentarios para jugador ${id}:`, err);
+            this.logger.warn(`[JavaPlayerService] Falló cargar comentarios para jugador ${id}`, err);
             player.comments = [];
             return of(player);
           })
         );
       }),
       catchError(err => {
-        console.error(`[TRAZA-ERROR-FRONTEND] Falló getPlayer(${id}):`, err);
+        this.logger.error(`[JavaPlayerService] Falló getPlayer(${id})`, err);
         return throwError(() => err);
       })
     );
@@ -87,14 +89,14 @@ export class JavaPlayerService implements IPlayerService {
             return player;
           }),
           catchError(err => {
-            console.warn(`[TRAZA-WARN-FRONTEND] Falló cargar comentarios para jugador público ${id}:`, err);
+            this.logger.warn(`[JavaPlayerService] Falló cargar comentarios para jugador público ${id}`, err);
             player.comments = [];
             return of(player);
           })
         );
       }),
       catchError(err => {
-        console.error(`[TRAZA-ERROR-FRONTEND] Falló getPublicPlayer(${id}):`, err);
+        this.logger.error(`[JavaPlayerService] Falló getPublicPlayer(${id})`, err);
         return throwError(() => err);
       })
     );
@@ -316,7 +318,7 @@ export class JavaPlayerService implements IPlayerService {
     return this.http.post<{ data: Player }>(this.apiUrl, finalPlayer).pipe(
       map(res => this.mapPlayer(res.data)),
       catchError(err => {
-        console.error('[TRAZA-ERROR-FRONTEND] Falló addPlayer():', err);
+        this.logger.error('[JavaPlayerService] Falló addPlayer()', err);
         return throwError(() => err);
       })
     );
@@ -390,7 +392,7 @@ export class JavaPlayerService implements IPlayerService {
     return this.http.put<{ data: Player }>(this.apiUrl, finalPlayer).pipe(
       map(res => this.mapPlayer(res.data)),
       catchError(err => {
-        console.error(`[TRAZA-ERROR-FRONTEND] Falló updatePlayer(${id}):`, err);
+        this.logger.error(`[JavaPlayerService] Falló updatePlayer(${id})`, err);
         return throwError(() => err);
       })
     );
@@ -405,7 +407,7 @@ export class JavaPlayerService implements IPlayerService {
   deletePlayer(id: string | number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
       catchError(err => {
-        console.error(`[TRAZA-ERROR-FRONTEND] Falló deletePlayer(${id}):`, err);
+        this.logger.error(`[JavaPlayerService] Falló deletePlayer(${id})`, err);
         return throwError(() => err);
       })
     );
@@ -457,7 +459,7 @@ export class JavaPlayerService implements IPlayerService {
             await firstValueFrom(this.savePlayer(null, mappedPlayer, null, null));
             successCount++;
           } catch (err) {
-            console.error('[JavaPlayerService] Error importando:', apiPlayer.name, err);
+            this.logger.error(`[JavaPlayerService] Error importando: ${apiPlayer.name}`, err);
           }
         }
         observer.next({ success: true, count: successCount });

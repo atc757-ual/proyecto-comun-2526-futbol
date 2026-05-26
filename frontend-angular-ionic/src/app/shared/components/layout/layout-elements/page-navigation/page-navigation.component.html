@@ -1,0 +1,55 @@
+<!-- DESKTOP SIDEBAR MENU -->
+<ion-menu *ngIf="!platformService.isMobileApp" contentId="main-content" class="mobile-only-menu hide-on-desktop"
+  side="start" mode="ios">
+  <ion-content class="ion-no-padding" scroll-y="false">
+    <div class="menu-wrapper">
+      <div class="menu-header d-flex ai-center jc-between px-base">
+        <div class="logo-container">
+          <div class="logo-circle-wrapper">
+            <ion-icon name="football" class="logo-icon"></ion-icon>
+          </div>
+          <span class="logo-text">Fútbol Club</span>
+        </div>
+        <ion-menu-toggle>
+          <ion-button fill="none" class="close-menu-btn">
+            <ion-icon slot="icon-only" size="large" name="close-outline"></ion-icon>
+          </ion-button>
+        </ion-menu-toggle>
+      </div>
+      <div class="separator my-s"></div>
+      <div class="menu-options-container">
+        <!-- SECCIÓN SUPERIOR: NAVEGACIÓN -->
+        <div class="menu-items-top ">
+          <ng-container *ngFor="let p of navService.pages">
+            <ion-menu-toggle auto-hide="false">
+              <ion-item lines="none" class="nav-item pointer" [routerLink]="p.url"
+                [class.active-item]="navService.isTabActive(p.url)">
+                <ion-icon slot="start" [name]="p.icon"></ion-icon>
+                <ion-label>{{ p.title }}</ion-label>
+              </ion-item>
+            </ion-menu-toggle>
+          </ng-container>
+        </div>
+      </div>
+      <!-- ESPACIADOR -->
+      <div class="menu-spacer"></div>
+      <div class="separator my-s"></div>
+      <!-- SECCIÓN INFERIOR: CUENTA -->
+      <div class="menu-items-bottom">
+        <ion-menu-toggle auto-hide="false">
+          <ion-item lines="none" class="nav-item profile-item pointer " routerLink="/profile"
+            routerLinkActive="active-item">
+            <ion-icon color="primary" slot="start" name="person-outline"></ion-icon>
+            <ion-label class="text-primary">Mi Perfil</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+        <ion-menu-toggle auto-hide="false">
+          <ion-item lines="none" class="nav-item logout-item pointer" (click)="logout()">
+            <ion-icon slot="start" name="log-out-outline"></ion-icon>
+            <ion-label>Cerrar Sesión</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+      </div>
+    </div>
+  </ion-content>
+</ion-menu>

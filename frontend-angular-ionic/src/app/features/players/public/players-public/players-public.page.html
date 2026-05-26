@@ -1,5 +1,5 @@
 <ion-content class="flex-content">
-  <app-page-header [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle" [breadcrumbs]="breadcrumbs"></app-page-header>
+  <app-page-full-content [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle" [breadcrumbs]="breadcrumbs"></app-page-full-content>
   <div class="content-container">
     <div class="row">
       <!-- COLUMNA PRINCIPAL (8): Listado Público -->
@@ -22,7 +22,7 @@
               <div *ngIf="!isLoading()">
                 <div *ngIf="pagedPlayers().length > 0">
                   <div class="players-grid">
-                    <ng-container *ngFor="let player of pagedPlayers(); let last = last">
+                    <ng-container *ngFor="let player of pagedPlayers(); let last = last; trackBy: trackByPlayerId">
                       <!-- VERSIÓN DESKTOP: CARDS -->
                       <ion-card class="player-premium-card hide-on-phone animate-fade-in" role="button" tabindex="0"
                         (click)="goToPlayerDetail(player._id)" (keydown.enter)="goToPlayerDetail(player._id)"
@@ -57,7 +57,6 @@
                         <ion-thumbnail slot="start" class="mobile-thumb">
                           <img [src]="player.image_url || player.photo"
                             onerror="this.onerror=null;this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiB2aWV3Qm94PSIwIDAgODAwIDgwMCI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI4MDAiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgZm9udC1mYW1pbHk9InN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtc2l6ZT0iODAiIGZpbGw9IiM0NzU1NjkiPjQwNDwvdGV4dD48L3N2Zz4='" />
-                          <div class="mobile-pos-badge">{{ player.position || 'N/A' }}</div>
                         </ion-thumbnail>
 
                         <ion-label class="mobile-label">
@@ -70,10 +69,11 @@
                             </div>
                           </div>
 
-                          <div class="d-flex ai-center gap-s">
-                            <span class="fs-12 text-neutral-7 f-medium">{{ player.nationality }} • {{ player.age || '?'
-                              }}
-                              años</span>
+                          <div class="mt-xxs">
+                            <span class="fs-12 text-neutral-7 f-medium">{{ player.nationality }} • {{ player.age || '?' }} años</span>
+                          </div>
+                          <div class="mt-xxs">
+                            <span class="fs-12 text-neutral-7 f-medium">Posición: {{ player.position || 'N/A' }}</span>
                           </div>
                         </ion-label>
                       </ion-item>
@@ -122,5 +122,5 @@
       </div>
     </div>
   </div>
-  <app-page-footer></app-page-footer>
+    <app-page-footer></app-page-footer>
 </ion-content>

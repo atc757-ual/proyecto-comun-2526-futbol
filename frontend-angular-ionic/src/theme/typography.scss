@@ -258,6 +258,11 @@
     font-weight: var(--fw-bold) !important;
 }
 
+/* --- LINE-HEIGHT UTILITARIOS --- */
+.lh-tight    { line-height: var(--lh-tight)   !important; }
+.lh-base     { line-height: var(--lh-base)    !important; }
+.lh-relaxed  { line-height: var(--lh-relaxed) !important; }
+
 /* --- ALINEACIÓN DE TEXTO --- */
 .text-left { text-align: left !important; }
 .text-center { text-align: center !important; }

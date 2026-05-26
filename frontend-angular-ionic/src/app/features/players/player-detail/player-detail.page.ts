@@ -1,14 +1,16 @@
 import { Component, OnInit, OnDestroy, inject, Input, signal, CUSTOM_ELEMENTS_SCHEMA, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { forkJoin, firstValueFrom } from 'rxjs';
+import { forkJoin, firstValueFrom, Subject, takeUntil } from 'rxjs';
+import { TsdbHonour, TsdbCareer, TsdbMilestone, TsdbTeam, TsdbLeague, Breadcrumb } from '../../../core/models/tsdb.model';
+import { Comment, CommentPayload } from '../../../core/models/comment.model';
 import {
   IonIcon, IonCard, IonCardContent, IonButton, IonAvatar, IonSegment, IonSegmentButton, IonLabel,
   IonSpinner, LoadingController, NavController, AlertController, ModalController,
   IonTextarea
 } from '@ionic/angular/standalone';
 import { RouterModule, ActivatedRoute } from '@angular/router';
-import { ConfirmModalComponent } from 'src/app/shared/components/confirm-modal/confirm-modal.component';
+import { ConfirmModalComponent } from 'src/app/shared/components/modals/confirm-modal/confirm-modal.component';
 import { ToastService } from '../../../core/services/ui/toast.service';
 import { addIcons } from 'ionicons';
 import {
@@ -32,13 +34,13 @@ import { AuthService } from '../../../core/services/auth/auth.service';
 import { Geolocation } from '@capacitor/geolocation';
 import { LayoutService } from '../../../core/services/ui/layout.service';
 import { ConfettiService } from 'src/app/core/services/ui/confetti.service';
-import { PermissionModalComponent } from 'src/app/shared/components/permission-modal/permission-modal.component';
+import { PermissionModalComponent } from 'src/app/shared/components/modals/permission-modal/permission-modal.component';
 import { LocationPlugin } from '../../../core/plugins/location-plugin';
 import { MapPlugin } from '../../../core/plugins/maps-plugin';
 import { ShareCardPlugin } from '../../../core/plugins/share-card-plugin';
 import { HapticsPlugin } from '../../../core/plugins/haptics-plugin';
-import { PageHeaderComponent } from 'src/app/shared/components/page-header/page-header.component';
-import { PageFooterComponent } from 'src/app/shared/components/page-footer/page-footer.component';
+import { PageFullContentComponent } from 'src/app/shared/components/layout/layout-elements/page-full-content/page-full-content.component';
+import { PageFooterComponent } from 'src/app/shared/components/layout/layout-elements/page-footer/page-footer.component';
 import { IonContent } from '@ionic/angular/standalone';
 
 import { register } from 'swiper/element/bundle';
@@ -52,7 +54,7 @@ import { register } from 'swiper/element/bundle';
     CommonModule, FormsModule, RouterModule,
     IonIcon, IonCard, IonCardContent, IonButton, IonAvatar,
     IonSegment, IonSegmentButton, IonLabel, IonSpinner, IonTextarea,
-    PageHeaderComponent, PageFooterComponent, IonContent
+    PageFullContentComponent, PageFooterComponent, IonContent
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
@@ -90,7 +92,7 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
   private alertCtrl = inject(AlertController);
   private toastService = inject(ToastService);
   private modalCtrl = inject(ModalController);
-  private activePermissionModal: any = null;
+  private activePermissionModal: HTMLIonModalElement | null = null;
   private confettiService = inject(ConfettiService);
   private locationService = inject(LocationPlugin);
   private mapPlugin = inject(MapPlugin);
@@ -99,16 +101,16 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
 
   public player: Player | null = null;
-  public honours: any[] = [];
-  public career: any[] = [];
-  public milestones: any[] = [];
+  public honours: TsdbHonour[] = [];
+  public career: TsdbCareer[] = [];
+  public milestones: TsdbMilestone[] = [];
   public isCareerExpanded = false;
   public isHonoursExpanded = false;
   public isMilestonesExpanded = false;
-  public teamDetails: any[] = [];
-  public teamInfo1: any = null;
-  public teamInfo2: any = null;
-  public leagueDetails: any = null;
+  public teamDetails: TsdbTeam[] = [];
+  public teamInfo1: TsdbTeam | null = null;
+  public teamInfo2: TsdbTeam | null = null;
+  public leagueDetails: TsdbLeague | null = null;
   public isLoading = true;
   public isLoadingExtra = false;
   public isLoadingLocation = false;
@@ -118,7 +120,7 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
   public descriptiveLocation: string = '';
   public pageTitle: string = 'Detalle de jugador';
   public pageSubtitle: string = 'Perfil detallado del jugador seleccionado';
-  public breadcrumbs: any[] = [];
+  public breadcrumbs: Breadcrumb[] = [];
 
   // Lógica de "Ver más"
   public isSummaryExpanded = false;
@@ -162,8 +164,9 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
   // Estados de Focus para el Formulario
   public commentFocused = false;
 
-  private statsInterval: any;
-  private permissionTimeout: any = null;
+  private readonly destroy$ = new Subject<void>();
+  private statsInterval: ReturnType<typeof setInterval> | null = null;
+  private permissionTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     register();
@@ -303,6 +306,8 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
     if (this.statsInterval) clearInterval(this.statsInterval);
     if (this.permissionTimeout) clearTimeout(this.permissionTimeout);
     if (this.activePermissionModal) {
@@ -330,7 +335,7 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
   async loadPlayer(id: string) {
     this.isLoading = true;
     try {
-      this.playerService.getPlayer(id).subscribe({
+      this.playerService.getPlayer(id).pipe(takeUntil(this.destroy$)).subscribe({
         next: (player) => {
           this.player = player;
           this.isLoading = false;
@@ -384,7 +389,7 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
       career: this.playerService.getPlayerTeamsHistory(tsdbId),
       honours: this.playerService.getPlayerHonours(tsdbId),
       milestones: this.playerService.getPlayerMilestones(tsdbId)
-    }).subscribe({
+    }).pipe(takeUntil(this.destroy$)).subscribe({
       next: (res) => {
         this.career = res.career;
         this.honours = res.honours;
@@ -422,8 +427,8 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
     this.teamInfo1 = null;
     this.teamInfo2 = null;
 
-    this.playerService.lookupTSDBTeam(teamId).subscribe({
-      next: (res: any) => {
+    this.playerService.lookupTSDBTeam(teamId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (res: TsdbTeam) => {
         if (res) {
           this.teamInfo1 = res;
           this.teamDetails.push(res);
@@ -433,8 +438,8 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
     });
 
     if (teamId2) {
-      this.playerService.lookupTSDBTeam(teamId2).subscribe({
-        next: (res: any) => {
+      this.playerService.lookupTSDBTeam(teamId2).pipe(takeUntil(this.destroy$)).subscribe({
+        next: (res: TsdbTeam) => {
           if (res) {
             this.teamInfo2 = res;
             this.teamDetails.push(res);
@@ -446,8 +451,8 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
   }
 
   loadLeagueInfo(leagueId: string) {
-    this.playerService.lookupTSDBLeague(leagueId).subscribe({
-      next: (res: any) => { this.leagueDetails = res; },
+    this.playerService.lookupTSDBLeague(leagueId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (res: TsdbLeague) => { this.leagueDetails = res; },
       error: (err) => console.warn('Error loading league info:', err)
     });
   }
@@ -508,8 +513,8 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
 
   // --- CENTRO DE COMENTARIOS V2 ---
 
-  startEditing(comment: any) {
-    this.editingCommentId = comment.id || comment._id;
+  startEditing(comment: Comment) {
+    this.editingCommentId = comment.id || comment._id || null;
     this.editingContent = comment.content;
     this.editingRating = comment.rating;
   }
@@ -580,11 +585,11 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
     this.isSubmittingComment = true;
     const user = this.authService.userData();
 
-    const commentData: any = {
+    const commentData: CommentPayload = {
       content: this.newComment,
       rating: this.newRating,
       autor_name: user?.name || 'Usuario Scouting',
-      user_id: user?.firebaseUid || user?.uid // Usar siempre el UID de Firebase
+      user_id: user?.firebaseUid || user?.uid || ''
     };
 
     // Intentar capturar ubicación si tenemos permiso
@@ -650,8 +655,8 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
   nextPage() { if (this.currentPage < this.totalPages()) this.currentPage++; }
 
   // --- INTERACTIVIDAD DASHBOARD ---
-  onStatScroll(event: any) {
-    const element = event.target;
+  onStatScroll(event: Event) {
+    const element = event.target as HTMLElement;
     const scrollPercent = element.scrollLeft / (element.scrollWidth - element.clientWidth);
     this.currentStatPage = Math.round(scrollPercent * 2);
   }
@@ -689,7 +694,7 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
     this.isSummaryExpanded = !this.isSummaryExpanded;
   }
 
-  canDeleteComment(comment: any): boolean {
+  canDeleteComment(comment: Comment): boolean {
     if (this.isAdmin) return true;
     const currentUser = this.authService.currentUser();
     return currentUser?.uid === comment.user_id;
@@ -713,7 +718,7 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
 
   private loadDescriptiveLocation(lat: number, lng: number) {
     this.isLoadingLocation = true;
-    this.playerService.reverseGeocode(lat, lng).subscribe({
+    this.playerService.reverseGeocode(lat, lng).pipe(takeUntil(this.destroy$)).subscribe({
       next: (addr) => {
         this.descriptiveLocation = addr;
         this.isLoadingLocation = false;
@@ -804,9 +809,8 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
     return url;
   }
 
-  handleImageError(event: any) {
-    // Si la imagen falla, la ocultamos para que se vea el icono de fondo
-    event.target.style.display = 'none';
+  handleImageError(event: Event) {
+    (event.target as HTMLImageElement).style.display = 'none';
   }
 
   async sharePlayerCard(cardElement: HTMLElement) {
@@ -833,4 +837,13 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
       await loading.dismiss();
     }
   }
+
+  trackByIndex(index: number): number {
+    return index;
+  }
+
+  trackByCommentId(_: number, comment: { _id?: string; id?: string }): string | undefined {
+    return comment._id ?? comment.id;
+  }
 }
+

@@ -192,12 +192,12 @@
 
 // --- VERSIÓN MÓVIL ---
 .player-mobile-item {
-  --padding-start: 12px;
-  --padding-end: 12px;
-  --padding-top: 12px;
-  --padding-bottom: 12px;
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
   --background: var(--color-white);
-  border-radius: 12px;
+  border-radius: var(--border-radius-soft);
   margin-bottom: 0;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -209,13 +209,11 @@
   }
 
   .mobile-thumb {
-    width: 68px;
-    height: 68px;
+    width: 60px;
+    height: 60px;
     position: relative;
-    border-radius: 10px;
+    border-radius: var(--border-radius-small);
     overflow: hidden;
-    border: 1px solid var(--color-neutral-2);
-
     .mobile-pos-badge {
       position: absolute;
       bottom: 0;
@@ -223,10 +221,9 @@
       width: 100%;
       background: var(--color-primary);
       color: var(--color-white);
-      font-size: 8px;
+      font-size: var(--fs-10);
       text-align: center;
-      padding: 2px 0;
-      font-weight: 700;
+      padding: 0px 2px;
       z-index: 2;
     }
   }

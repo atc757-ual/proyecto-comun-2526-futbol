@@ -51,10 +51,10 @@ services:
       - football-network
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8888/actuator/health" ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 40s
+      interval: 15s
+      timeout: 10s
+      retries: 12
+      start_period: 150s
 
   eureka-server:
     build:
@@ -73,10 +73,10 @@ services:
       - football-network
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 40s
+      interval: 15s
+      timeout: 10s
+      retries: 12
+      start_period: 150s
 
   user-client:
     build:
@@ -251,8 +251,15 @@ services:
       context: .
       dockerfile: frontend-angular-ionic/Dockerfile
     container_name: football-frontend
+    # En local: usa ports. En VM con nginx-proxy: comenta ports y descomenta expose
     ports:
       - "80:80"
+    # expose:
+    #   - "80"
+    environment:
+      - VIRTUAL_HOST=futbolclub.duckdns.org      
+      - LETSENCRYPT_HOST=futbolclub.duckdns.org 
+      - LETSENCRYPT_EMAIL=atc757@inlumine.ual.es    
     depends_on:
       backend-node:
         condition: service_started
@@ -300,6 +307,41 @@ services:
     depends_on:
       - corba-naming
       - corba-server
+    networks:
+      - football-network
+
+  # --- REVERSE PROXY Y SSL (perfil "vm", no arranca en local) ---
+
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy:alpine
+    container_name: nginx-proxy
+    restart: always
+    profiles: ["vm"]
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./nginx/certs:/etc/nginx/certs
+      - ./nginx/vhost.d:/etc/nginx/vhost.d
+      - ./nginx/html:/usr/share/nginx/html
+    networks:
+      - football-network
+
+  acme-companion:
+    image: nginxproxy/acme-companion
+    container_name: acme-companion
+    restart: always
+    profiles: ["vm"]
+    environment:
+      - DEFAULT_EMAIL=atc757@inlumine.ual.es
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./nginx/certs:/etc/nginx/certs
+      - ./nginx/vhost.d:/etc/nginx/vhost.d
+      - ./nginx/html:/usr/share/nginx/html
+    depends_on:
+      - nginx-proxy
     networks:
       - football-network
 

@@ -1,0 +1,370 @@
+# ============================================================
+# REST Client — API de Fútbol (Node.js)
+# Extensión VS Code: "REST Client" (humao.rest-client)
+# Inicia el backend: npm start  →  http://localhost:3000
+# ============================================================
+
+@baseUrl = http://localhost:3000/api
+@adminToken = PEGA_AQUI_TU_JWT_DE_NODE
+
+# Para obtener el JWT: ejecuta primero el bloque "LOGIN" y copia
+# el valor de `data.token` que devuelve la respuesta.
+
+# ================================================================
+# HEALTH CHECK
+# ================================================================
+
+### Health check público
+GET http://localhost:3000/
+Accept: application/json
+
+###
+
+# ================================================================
+# AUTH — Obtener JWT del backend Node
+# ================================================================
+# Necesitas un idToken de Firebase. Para conseguirlo en desarrollo:
+# 1. Abre la app en el navegador, inicia sesión
+# 2. Abre la consola del navegador y ejecuta:
+#    firebase.auth().currentUser.getIdToken().then(t => console.log(t))
+# 3. Pega ese token en el campo idToken de abajo
+
+### LOGIN — Obtener JWT de Node (ejecuta esto primero)
+# @name login
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "idToken": "PEGA_AQUI_TU_FIREBASE_ID_TOKEN"
+}
+
+# Tras ejecutar, copia el `data.token` y pégalo en @adminToken arriba
+
+
+# ================================================================
+# JUGADORES — CRUD completo
+# ================================================================
+
+### Listar jugadores (autenticado)
+GET {{baseUrl}}/players
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Listar jugadores PÚBLICO (sin token)
+GET {{baseUrl}}/players/public
+Accept: application/json
+
+###
+
+### Crear jugador (mock completo)
+POST {{baseUrl}}/players
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Juan García Mock",
+  "team": "Real Madrid",
+  "league": "La Liga",
+  "position": "Delantero",
+  "nationality": "Española",
+  "age": 25,
+  "image_url": "https://picsum.photos/200",
+  "user_id": "uid_test_123",
+  "description": "Jugador creado desde REST Client para pruebas"
+}
+
+###
+
+### Obtener jugador por ID (reemplaza el ID)
+@playerId = PEGA_AQUI_EL_ID_DEL_JUGADOR
+
+GET {{baseUrl}}/players/{{playerId}}
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Actualizar jugador
+PUT {{baseUrl}}/players/{{playerId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Juan García Actualizado",
+  "team": "Barcelona",
+  "league": "La Liga",
+  "position": "Centrocampista"
+}
+
+###
+
+### Eliminar jugador
+DELETE {{baseUrl}}/players/{{playerId}}
+Authorization: Bearer {{adminToken}}
+
+###
+
+
+# ================================================================
+# COMENTARIOS
+# ================================================================
+
+### Crear comentario (autenticado)
+POST {{baseUrl}}/players/{{playerId}}/comments
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "user_id": "uid_test_123",
+  "user_name": "Tester Mock",
+  "content": "Gran jugador, muy técnico y rápido.",
+  "rating": 4.5
+}
+
+###
+
+### Crear comentario PÚBLICO (sin token)
+POST {{baseUrl}}/players/public/{{playerId}}/comments
+Content-Type: application/json
+
+{
+  "user_id": "anonimo_1",
+  "user_name": "Fan Anónimo",
+  "content": "Increíble actuación en el último partido.",
+  "rating": 5
+}
+
+###
+
+
+# ================================================================
+# NOTICIAS
+# ================================================================
+
+### Listar noticias
+GET {{baseUrl}}/news
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Crear noticia (solo admin)
+POST {{baseUrl}}/news
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "title": "Noticia de prueba desde REST Client",
+  "summary": "Resumen corto de la noticia de prueba.",
+  "body": "Este es el cuerpo completo de la noticia de prueba. Creada manualmente para validar el endpoint.",
+  "author": "Tester"
+}
+
+###
+
+### Carga masiva de noticias (solo admin)
+POST {{baseUrl}}/news/bulk
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+[
+  {
+    "title": "Noticia bulk 1",
+    "summary": "Resumen 1",
+    "body": "Cuerpo de la noticia 1 en carga masiva.",
+    "author": "Admin"
+  },
+  {
+    "title": "Noticia bulk 2",
+    "summary": "Resumen 2",
+    "body": "Cuerpo de la noticia 2 en carga masiva.",
+    "author": "Admin"
+  }
+]
+
+###
+
+
+# ================================================================
+# GEOCODING
+# ================================================================
+
+### Geocodificación inversa (Madrid)
+GET {{baseUrl}}/geo?latitude=40.4168&longitude=-3.7038
+Accept: application/json
+
+###
+
+### Geocodificación inversa (Barcelona)
+GET {{baseUrl}}/geo?latitude=41.3851&longitude=2.1734
+Accept: application/json
+
+###
+
+
+# ================================================================
+# EXTERNAL — TheSportsDB (TSDB)
+# ================================================================
+
+### Buscar jugador por nombre
+GET {{baseUrl}}/external/tsdb/search-players?name=Messi
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Buscar equipo por nombre
+GET {{baseUrl}}/external/tsdb/search-teams?name=Barcelona
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Buscar ligas por nombre
+GET {{baseUrl}}/external/tsdb/search-leagues?name=Premier
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Jugadores de un equipo por nombre
+GET {{baseUrl}}/external/tsdb/search-players-team?team=Arsenal
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Detalles de jugador TSDB por ID
+GET {{baseUrl}}/external/tsdb/player/34145860
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Detalles de equipo TSDB por ID
+GET {{baseUrl}}/external/tsdb/team/133604
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Plantilla completa de un equipo TSDB
+GET {{baseUrl}}/external/tsdb/team-players/133604
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Historial de equipos de un jugador TSDB
+GET {{baseUrl}}/external/tsdb/player-teams/34145860
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Honores de un jugador TSDB
+GET {{baseUrl}}/external/tsdb/player-honours/34145860
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Hitos de un jugador TSDB
+GET {{baseUrl}}/external/tsdb/player-milestones/34145860
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Equipos de una liga TSDB (Premier League = 4328)
+GET {{baseUrl}}/external/tsdb/teams-by-league/4328
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Marcadores en vivo
+GET {{baseUrl}}/external/tsdb/live
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Programación TV por país
+GET {{baseUrl}}/external/tsdb/tv-country/Spain
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+
+# ================================================================
+# IA — Análisis de equipo
+# ================================================================
+
+### Analizar mi equipo con IA
+POST {{baseUrl}}/ai/analyze
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{}
+
+###
+
+
+# ================================================================
+# USUARIOS (solo master admin)
+# ================================================================
+
+### Listar todos los usuarios
+GET {{baseUrl}}/auth/users
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Asignar rol admin a un usuario
+POST {{baseUrl}}/auth/make-admin
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "uid": "UID_DEL_USUARIO"
+}
+
+###
+
+### Quitar rol admin
+POST {{baseUrl}}/auth/remove-admin
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "uid": "UID_DEL_USUARIO"
+}
+
+###
+
+### Activar/desactivar usuario
+POST {{baseUrl}}/auth/toggle-status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "uid": "UID_DEL_USUARIO"
+}
+
+###
+
+
+# ================================================================
+# STATUS (dashboard protegido)
+# ================================================================
+
+### Dashboard de estado (con clave)
+GET http://localhost:3000/status?key=futbol2526_status_key
+Accept: text/html
+
+###

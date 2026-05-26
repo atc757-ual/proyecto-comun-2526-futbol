@@ -4,6 +4,7 @@ import { Auth } from '@angular/fire/auth';
 import { environment } from '../../../../environments/environment';
 import { StorageService } from '../system/storage.service';
 import { AuthService } from '../auth/auth.service';
+import { LoggerService } from '../system/logger.service';
 import { firstValueFrom, map, Observable, switchMap, take, catchError, of, throwError } from 'rxjs';
 import { INewsService } from './news.service.interface';
 
@@ -15,9 +16,10 @@ export { NewsItem };
  */
 @Injectable({ providedIn: 'root' })
 export class NodeNewsService implements INewsService {
-  private http = inject(HttpClient);
-  private auth = inject(Auth);
+  private http        = inject(HttpClient);
+  private auth        = inject(Auth);
   private authService = inject(AuthService);
+  private logger      = inject(LoggerService);
   private apiUrl = environment.nodeApiUrl + '/news';
   private feedUrl = environment.nodeApiUrl + '/news'; 
   private featuredUrl = environment.nodeApiUrl + '/news'; 
@@ -65,8 +67,8 @@ export class NodeNewsService implements INewsService {
         const processed = (response.data || []).map((n: any) => this.mapToNews(n));
         return processed;
       }),
-      catchError((err: any) => {
-        console.error('[NewsService] Error crítico de conexión:', err);
+      catchError((err: unknown) => {
+        this.logger.error('[NewsService] Error crítico de conexión', err);
         return throwError(() => new Error('No se pudo conectar con el servidor de noticias'));
       })
     );
@@ -131,8 +133,8 @@ export class NodeNewsService implements INewsService {
 
     return this.http.get<any>(`${this.apiUrl}/${id}`, { headers }).pipe(
       map(response => this.mapToNews(response.data)),
-      catchError((err: any) => {
-        console.warn(`[NewsService] Error al obtener noticia ${id}`);
+      catchError((err: unknown) => {
+        this.logger.warn(`[NewsService] Error al obtener noticia ${id}`, err);
         return of(null);
       })
     );
@@ -154,7 +156,7 @@ export class NodeNewsService implements INewsService {
 
           // 1. Gestionar Imagen si hay archivo nuevo
           if (file) {
-            console.log('[NewsService] Subiendo nueva imagen a Storage...');
+            this.logger.log('[NewsService] Subiendo nueva imagen a Storage...');
             imageUrl = await this.storageService.uploadImage(file, 'news');
             
             // Borrado preventivo de la antigua (si aplica)

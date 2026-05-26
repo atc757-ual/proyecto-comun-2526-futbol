@@ -1,9 +1,18 @@
+/* CONTENEDOR BLANCO QUE AGRUPA EL GRID */
+.news-grid-section {
+  background: var(--color-neutral-0);
+  border-radius: var(--border-radius-soft);
+  border: 1px solid var(--color-neutral-2);
+  padding: var(--space-base);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
 /* GRID DINÁMICO RÍTMICO REFINADO (3-2-1 Desktop / 1-1 Mobile) */
 .news-dynamic-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: var(--space-base);
-  padding: 0 var(--space-base);
+  padding: 0;
   transition: opacity var(--transition-smooth);
 
   &.is-transitioning {
@@ -28,7 +37,6 @@
     /* Un mínimo razonable para que la foto luzca */
     background: var(--color-white);
     border-radius: var(--border-radius-soft);
-    /* Bordes exactos a 8px */
     overflow: hidden;
     cursor: pointer;
     transition: all var(--transition-smooth);
@@ -36,14 +44,14 @@
     flex-direction: column;
     text-decoration: none;
     color: inherit;
-    box-shadow: 0 4px 15px rgba(var(--ion-color-primary-rgb), 0.05);
-    border: 1px solid var(--color-neutral-1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+    border: 1px solid var(--color-neutral-2);
 
     &:hover,
     &.is-spotlight {
-      box-shadow: 0 8px 20px -5px rgba(var(--ion-color-primary-rgb), 0.25);
-      background: var(--color-neutral-0);
-      transform: translateY(-2px); // Pequeña elevación para dar foco
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      border-color: var(--color-neutral-3);
+      transform: translateY(-2px);
 
       .main-news-image-wrapper .main-news-img {
         transform: scale(1.06);
@@ -159,11 +167,11 @@
         position: absolute;
         top: 12px;
         left: 12px;
-        background: rgba(0, 0, 0, 0.7); // Color oscuro por defecto
-        color: white;
+        background: rgba(var(--color-dark-navy-rgb), 0.7);
+        color: var(--color-white);
         padding: 4px 10px;
         border-radius: 6px;
-        font-size: 10px;
+        font-size: var(--fs-10);
         font-weight: 800;
         text-transform: uppercase;
 
@@ -192,7 +200,7 @@
           top: 8px;
           left: 8px;
           padding: 2px 6px;
-          font-size: 8px;
+          font-size: var(--fs-8);
         }
       }
     }
@@ -216,7 +224,7 @@
       }
 
       .main-news-excerpt {
-        font-size: 14px;
+        font-size: var(--fs-14);
         color: var(--color-neutral-7);
         line-height: 1.2;
         display: -webkit-box;
@@ -238,49 +246,59 @@
   }
 
 
-  // <--- CERRAMOS EL GRID AQUÍ
+}
 
-  /* --- PAGINACIÓN PREMIUM (FUERA DEL GRID) --- */
-  .news-pagination-container {
+/* --- PAGINACIÓN --- */
+.news-pagination-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-white);
+  border: 1px solid var(--color-neutral-2);
+  border-radius: var(--border-radius-soft);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: var(--space-base);
+
+  .page-indicators {
     display: flex;
     align-items: center;
-    justify-content: center;
-    background-color: var(--color-neutral-0);
-    margin-top: var(--space-base);
-    border-top: 1px solid var(--color-neutral-1);
-    border-radius: var(--border-radius-soft);
+    gap: 4px;
 
-    .page-indicators {
-      display: flex;
-      align-items: center;
-      gap: 4px;
+    .page-btn {
+      --padding-start: 8px;
+      --padding-end: 8px;
+      --padding-top: 0;
+      --padding-bottom: 0;
+      font-weight: var(--fw-bold);
+      font-size: var(--fs-16);
+      height: 30px;
+      min-width: 30px;
+      margin: 0;
 
-      .page-btn {
-        --padding-start: 8px;
-        --padding-end: 8px;
-        --padding-top: 0;
-        --padding-bottom: 0;
-        font-weight: var(--fw-bold);
-        font-size: 16px;
-        height: 30px;
-        min-width: 30px;
-        margin: 0;
-
-        &.active {
-          --border-radius: 6px;
-        }
+      &.active {
+        --border-radius: 6px;
       }
     }
   }
 }
 
-/* ADMIN CARD EN SIDEBAR */
+/* SIDEBAR */
+.side-news-list {
+  --background: var(--color-white);
+  border-radius: var(--border-radius-soft);
+  border: 1px solid var(--color-neutral-2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  margin: 0 0 var(--space-base) 0;
+  padding: 0 0 var(--space-s) 0;
+}
+
 .col-4 ion-card {
   margin: 0;
-  box-shadow: 0 4px 15px rgba(var(--ion-color-primary-rgb), 0.05);
-  border: 1px solid var(--color-neutral-1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--color-neutral-2);
   --border-radius: var(--border-radius-soft);
-  
+
   ion-card-header {
     padding-bottom: 0;
   }

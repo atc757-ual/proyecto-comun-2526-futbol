@@ -72,7 +72,7 @@
 
   @media (min-width: 768px) {
     flex: 1 0 auto;
-    padding: var(--space-base) var(--container-padding-desktop) 0 var(--container-padding-desktop);
+    padding: var(--space-base) var(--container-padding-desktop);
     max-width: var(--container-max-width);
     margin: 0 auto;
   }
@@ -279,8 +279,8 @@
     ion-tab-button {
       --color: var(--color-neutral-6);
       --color-selected: var(--color-primary);
-      font-weight: 600;
-      font-size: 0.75rem;
+      font-weight: var(--fw-semibold);
+      font-size: var(--fs-12);
       position: relative;
 
       ion-icon {

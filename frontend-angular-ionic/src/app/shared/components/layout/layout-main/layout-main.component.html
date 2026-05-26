@@ -1,0 +1,32 @@
+<!-- === MOBILE APP === -->
+<div *ngIf="platformService.isMobileApp" class="mobile-wrapper" id="mobile-main-content">
+  <app-page-header mode="main"></app-page-header>
+  <div class="layout-router-container pb-xl">
+    <ion-router-outlet [animated]="false"></ion-router-outlet>
+  </div>
+  <app-page-tabs></app-page-tabs>
+</div>
+
+<!-- === WEB / DESKTOP === -->
+<ng-container *ngIf="!platformService.isMobileApp">
+  <app-page-navigation></app-page-navigation>
+  <!-- GLOBAL AI THINKING OVERLAY -->
+  <div *ngIf="layoutService.aiLoading()" class="ai-thinking-overlay animate-fade-in">
+    <div class="ai-core-container">
+      <div class="ai-core-orb"></div>
+      <div class="ai-core-ring"></div>
+      <div class="ai-core-ring delay-1"></div>
+      <div class="ai-core-ring delay-2"></div>
+    </div>
+    <h2 class="ai-thinking-text">{{ layoutService.aiThinkingText() }}</h2>
+    <p class="ai-thinking-subtext">Procesando tus datos en servidores neurales</p>
+  </div>
+
+  <div class="main-wrapper" id="main-content">
+    <app-page-header mode="main"></app-page-header>
+
+    <div class="layout-router-container pb-xl">
+      <ion-router-outlet [animated]="false"></ion-router-outlet>
+    </div>
+  </div>
+</ng-container>

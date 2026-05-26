@@ -38,30 +38,29 @@ public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
-            .csrf().disable()
-            .cors().and()
-            .exceptionHandling()
+            .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .exceptionHandling(ex -> ex
                 .authenticationEntryPoint(authenticationEntryPoint)
-                .accessDeniedHandler(accessDeniedHandler)
-            .and()
+                .accessDeniedHandler(accessDeniedHandler))
             .addFilterAt(jwtWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
-            .authorizeExchange()
-            // Rutas Públicas
-            .pathMatchers("/api/auth/**").permitAll()
-            .pathMatchers("/actuator/health").permitAll()
-            .pathMatchers("/actuator/**").authenticated()
-            .pathMatchers(HttpMethod.GET, "/api/players/public/**").permitAll()
-            .pathMatchers("/api/comments/public/**").permitAll()
-            // Rutas Protegidas (Requieren Login)
-            .pathMatchers(HttpMethod.GET, "/api/news/**").authenticated()
-            .pathMatchers(HttpMethod.POST, "/api/players").authenticated()
-            .pathMatchers(HttpMethod.PUT, "/api/players/**").authenticated()
-            .pathMatchers(HttpMethod.DELETE, "/api/players/**").authenticated()
-            .pathMatchers(HttpMethod.POST, "/api/players/*/comments").authenticated()
-            .pathMatchers(HttpMethod.GET, "/api/external/**").authenticated()
-            .pathMatchers(HttpMethod.POST, "/api/ai/analyze").authenticated()
-            // El resto requiere autenticación básica
-            .anyExchange().authenticated();
+            .authorizeExchange(exchange -> exchange
+                // Rutas Públicas
+                .pathMatchers("/api/auth/**").permitAll()
+                .pathMatchers("/actuator/health").permitAll()
+                .pathMatchers("/actuator/**").authenticated()
+                .pathMatchers(HttpMethod.GET, "/api/players/public/**").permitAll()
+                .pathMatchers("/api/comments/public/**").permitAll()
+                // Rutas Protegidas (Requieren Login)
+                .pathMatchers(HttpMethod.GET, "/api/news/**").authenticated()
+                .pathMatchers(HttpMethod.POST, "/api/players").authenticated()
+                .pathMatchers(HttpMethod.PUT, "/api/players/**").authenticated()
+                .pathMatchers(HttpMethod.DELETE, "/api/players/**").authenticated()
+                .pathMatchers(HttpMethod.POST, "/api/players/*/comments").authenticated()
+                .pathMatchers(HttpMethod.GET, "/api/external/**").authenticated()
+                .pathMatchers(HttpMethod.POST, "/api/ai/analyze").authenticated()
+                // El resto requiere autenticación básica
+                .anyExchange().authenticated());
 
         return http.build();
     }

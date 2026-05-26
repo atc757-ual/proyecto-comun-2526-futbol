@@ -1,0 +1,165 @@
+<!-- ============================= MOBILE APP HEADER ============================= -->
+<ng-container *ngIf="platformService.isMobileApp">
+  <ion-header mode="md" class="mobile-header ion-no-border">
+    <ion-toolbar class="mobile-toolbar content-container">
+
+      <!-- LEFT: menu toggle (main @ home) | back button -->
+      <ion-buttons slot="start">
+        <ng-container *ngIf="mode === 'main'">
+          <ng-container *ngIf="navService.isCurrentHome(); else mainMobileBack">
+            <ion-menu-toggle>
+              <ion-button class="menu-btn-minimal">
+                <ion-icon slot="icon-only" name="menu-outline"></ion-icon>
+              </ion-button>
+            </ion-menu-toggle>
+          </ng-container>
+          <ng-template #mainMobileBack>
+            <button (click)="navService.goBack()" class="back-btn-minimal" aria-label="Volver atrás">
+              <ion-icon name="arrow-back"></ion-icon>
+            </button>
+          </ng-template>
+        </ng-container>
+
+        <button *ngIf="mode === 'public'"
+                (click)="navService.goBack()" class="back-btn-minimal" aria-label="Volver atrás">
+          <ion-icon name="arrow-back"></ion-icon>
+        </button>
+      </ion-buttons>
+
+      <!-- CENTER: Logo -->
+      <ion-title class="mobile-title">
+        <div class="logo-box clickable"
+             [class.centered]="mode === 'public' || !navService.isCurrentHome()">
+          <div class="logo-ball-blue">
+            <ion-icon name="football"></ion-icon>
+          </div>
+          <span class="main-logo-text">Fútbol Club</span>
+        </div>
+      </ion-title>
+
+      <!-- RIGHT: profile + logout (main) | login + register (public, unauthenticated) -->
+      <ion-buttons class="auth-actions" slot="end">
+        <ng-container *ngIf="mode === 'main'">
+          <a routerLink="/profile" class="auth-btn clickable">
+            <ion-icon name="person-circle-outline" color="primary"></ion-icon>
+          </a>
+          <a (click)="logout()" class="auth-btn clickable">
+            <ion-icon name="log-out-outline" color="primary"></ion-icon>
+          </a>
+        </ng-container>
+
+        <ng-container *ngIf="mode === 'public' && !authService.userData()">
+          <a (click)="goTo('/auth/login')" class="auth-btn clickable">
+            <ion-icon name="log-in-outline" color="primary"></ion-icon>
+            <span class="hide-on-phone">Iniciar Sesión</span>
+          </a>
+          <a (click)="goTo('/auth/register')" class="auth-btn clickable">
+            <ion-icon name="person-add-outline" color="primary"></ion-icon>
+            <span class="hide-on-phone">¡Regístrate!</span>
+          </a>
+        </ng-container>
+      </ion-buttons>
+
+    </ion-toolbar>
+  </ion-header>
+</ng-container>
+
+<!-- ============================= WEB / DESKTOP HEADER ============================= -->
+<ng-container *ngIf="!platformService.isMobileApp">
+  <header class="main-header" [class.no-border]="layoutService.showHero()">
+
+    <!-- ROW 1: Branding & actions -->
+    <div class="top-header-row">
+      <div class="main-content header">
+
+        <!-- LEFT -->
+        <div class="header-left">
+          <!-- main: hamburger on webMobile, logo on desktop -->
+          <ng-container *ngIf="mode === 'main'">
+            <ion-menu-toggle *ngIf="platformService.isWebMobile">
+              <ion-icon name="menu-outline"
+                class="burger-icon hide-on-desktop clickable mr-s menu-btn-minimal"></ion-icon>
+            </ion-menu-toggle>
+            <div *ngIf="platformService.isDesktop" class="logo-box clickable" routerLink="/home">
+              <div class="d-flex gap-s ai-center">
+                <span class="logo-ball-blue"><ion-icon name="football"></ion-icon></span>
+                <span class="main-logo-text">Fútbol Club</span>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- public: logo navigates to home or login -->
+          <div *ngIf="mode === 'public'" class="logo-box clickable" (click)="onLogoClick($event)">
+            <div class="logo-ball-blue"><ion-icon name="football"></ion-icon></div>
+            <span class="main-logo-text">Fútbol Club</span>
+          </div>
+        </div>
+
+        <!-- CENTER: webMobile centered ball (main only) -->
+        <div *ngIf="mode === 'main'" class="header-center">
+          <div *ngIf="platformService.isWebMobile" class="header-center-icon hide-on-desktop">
+            <div routerLink="/home" class="central-ball-wrapper">
+              <ion-icon name="football"></ion-icon>
+            </div>
+            <ion-label class="central-text-wrapper">Fútbol Club</ion-label>
+          </div>
+        </div>
+
+        <!-- RIGHT: actions -->
+        <div class="header-right">
+          <div class="auth-actions">
+            <!-- main: profile + logout -->
+            <ng-container *ngIf="mode === 'main'">
+              <a class="auth-btn clickable" routerLink="/profile">
+                <ion-icon name="person-circle-outline"></ion-icon>
+                <span class="ml-xs hide-on-phone">Mi Perfil</span>
+              </a>
+              <a class="auth-btn logout clickable" (click)="logout()">
+                <ion-icon name="log-out-outline"></ion-icon>
+                <span class="ml-xs hide-on-phone">Cerrar Sesión</span>
+              </a>
+            </ng-container>
+
+            <!-- public: login/register or profile -->
+            <ng-container *ngIf="mode === 'public'">
+              <ng-container *ngIf="!authService.userData()">
+                <a (click)="goTo('/auth/login')" class="auth-btn clickable">
+                  <ion-icon name="log-in-outline" color="primary"></ion-icon>
+                  <span class="hide-on-phone">Iniciar Sesión</span>
+                </a>
+                <a (click)="goTo('/register')" class="auth-btn clickable">
+                  <ion-icon name="person-add-outline" color="primary"></ion-icon>
+                  <span class="hide-on-phone">¡Regístrate!</span>
+                </a>
+              </ng-container>
+              <ng-container *ngIf="authService.userData()">
+                <a (click)="goTo('/profile')" class="auth-btn clickable">
+                  <ion-icon name="person-circle-outline" color="primary"></ion-icon>
+                  <span class="hide-on-phone">Mi Perfil</span>
+                </a>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ROW 2: Nav links (desktop + main only) -->
+    <nav *ngIf="platformService.isDesktop && mode === 'main'" class="nav-header-row">
+      <div class="main-content content">
+        <ul class="nav-links-centered">
+          <ng-container *ngFor="let p of navService.pages">
+            <li [routerLink]="p.url"
+                [class.active]="navService.isTabActive(p.url)"
+                [class.nav-item-ai]="p.title === 'Fútbol AI'">
+              <ion-icon *ngIf="showNavIcon(p.icon)" [name]="p.icon" class="nav-icon-mini"></ion-icon>
+              {{ p.title }}
+            </li>
+          </ng-container>
+        </ul>
+      </div>
+    </nav>
+
+  </header>
+</ng-container>

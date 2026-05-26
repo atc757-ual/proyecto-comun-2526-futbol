@@ -18,9 +18,9 @@ import { AuthService } from 'src/app/core/services/auth/auth.service';
 import { PlatformService } from 'src/app/core/services/system/platform.service';
 import { ToastService } from 'src/app/core/services/ui/toast.service';
 import { Auth } from '@angular/fire/auth';
-import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
-import { PageHeaderComponent } from 'src/app/shared/components/page-header/page-header.component';
-import { PageFooterComponent } from 'src/app/shared/components/page-footer/page-footer.component';
+import { ConfirmModalComponent } from '../../shared/components/modals/confirm-modal/confirm-modal.component';
+import { PageFullContentComponent } from 'src/app/shared/components/layout/layout-elements/page-full-content/page-full-content.component';
+import { PageFooterComponent } from 'src/app/shared/components/layout/layout-elements/page-footer/page-footer.component';
 import { IonContent } from '@ionic/angular/standalone';
 
 type ProfileUserInfo = {
@@ -40,7 +40,7 @@ type ProfileUserInfo = {
     CommonModule, RouterModule,
     IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonItem, IonIcon,
     IonLabel, IonSpinner, IonBadge, IonButton, IonToggle,
-    PageHeaderComponent, PageFooterComponent, IonContent
+    PageFullContentComponent, PageFooterComponent, IonContent
   ]
 })
 export class ProfilePage implements OnInit {
@@ -235,3 +235,4 @@ export class ProfilePage implements OnInit {
       .join(' ');
   }
 }
+

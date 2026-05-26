@@ -1,10 +1,11 @@
-import { Component, OnInit, inject, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { forkJoin, of } from 'rxjs';
+import { forkJoin, of, Subject, takeUntil } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
+import { TsdbLeague, TsdbTeam, TsdbPlayer } from '../../../core/models/tsdb.model';
 import {
   IonButton, IonIcon, IonSearchbar, IonList, IonItem, IonLabel, IonCheckbox, IonSpinner,
   IonBadge, IonCard, IonCardContent, IonAvatar, IonSegment, IonSegmentButton, IonChip,
@@ -26,13 +27,13 @@ import { AuthService } from '../../../core/services/auth/auth.service';
 import { ToastService } from '../../../core/services/ui/toast.service';
 import { LocationPlugin } from '../../../core/plugins/location-plugin';
 import { MapPlugin } from '../../../core/plugins/maps-plugin';
-import { PermissionModalComponent } from '../../../shared/components/permission-modal/permission-modal.component';
+import { PermissionModalComponent } from '../../../shared/components/modals/permission-modal/permission-modal.component';
 import { PLAYER_SERVICE_TOKEN } from '../../../core/services/players/player.service.token';
 import { ConfettiService } from '../../../core/services/ui/confetti.service';
-import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
-import { GpsPermissionCardComponent } from '../../../shared/components/gps-permission-card/gps-permission-card.component';
-import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
-import { PageFooterComponent } from '../../../shared/components/page-footer/page-footer.component';
+import { PaginationComponent } from '../../../shared/components/ui/pagination/pagination.component';
+import { GpsPermissionCardComponent } from '../../../shared/components/ui/gps-permission-card/gps-permission-card.component';
+import { PageFullContentComponent } from '../../../shared/components/layout/layout-elements/page-full-content/page-full-content.component';
+import { PageFooterComponent } from '../../../shared/components/layout/layout-elements/page-footer/page-footer.component';
 
 @Component({
   selector: 'app-busqueda-list',
@@ -43,10 +44,10 @@ import { PageFooterComponent } from '../../../shared/components/page-footer/page
     CommonModule, FormsModule, RouterModule,
     IonButton, IonIcon, IonSearchbar, IonList, IonItem, IonLabel, IonCheckbox, IonSpinner,
     IonBadge, IonCard, IonCardContent, IonAvatar, IonSegment, IonSegmentButton, IonChip,
-    PaginationComponent, GpsPermissionCardComponent, IonContent, PageHeaderComponent, PageFooterComponent
+    PaginationComponent, GpsPermissionCardComponent, IonContent, PageFullContentComponent, PageFooterComponent
   ]
 })
-export class BusquedaListPage implements OnInit {
+export class BusquedaListPage implements OnInit, OnDestroy {
 
   // 1. INYECCIONES DE DEPENDENCIAS
 
@@ -73,14 +74,16 @@ export class BusquedaListPage implements OnInit {
   public currentAddress: string = 'Localizando...';
   public isRevGeocoding: boolean = false;
 
+  private readonly destroy$ = new Subject<void>();
+
   // -- Búsqueda --
   public searchType: 'player' | 'team' | 'league' = 'player';
   public apiSearchQuery = '';
-  public leagueResults: any[] = [];
-  public teamResults: any[] = [];
-  public players: any[] = [];
-  public selectedLeague: any = null;
-  public selectedTeam: any = null;
+  public leagueResults: TsdbLeague[] = [];
+  public teamResults: TsdbTeam[] = [];
+  public players: TsdbPlayer[] = [];
+  public selectedLeague: TsdbLeague | null = null;
+  public selectedTeam: TsdbTeam | null = null;
   public isLoading = false;
   public isSearchingAutocomplete = false;
 
@@ -88,7 +91,7 @@ export class BusquedaListPage implements OnInit {
   public myPlayers: any[] = [];
 
   // -- Basket de Selección --
-  public selectedPlayers: Map<string, any> = new Map<string, any>();
+  public selectedPlayers: Map<string, TsdbPlayer> = new Map<string, TsdbPlayer>();
   public isImporting = false;
 
   // -- Paginación --
@@ -151,6 +154,11 @@ export class BusquedaListPage implements OnInit {
     { label: 'Búsqueda', url: '' }
   ];
 
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   ngOnInit() {
 
     this.loadMyPlayers();
@@ -168,7 +176,7 @@ export class BusquedaListPage implements OnInit {
   // 5. INICIALIZACIÓN DE DATOS LOCALES
 
   loadMyPlayers() {
-    this.playerService.getPlayers().subscribe(data => this.myPlayers = data);
+    this.playerService.getPlayers().pipe(takeUntil(this.destroy$)).subscribe(data => this.myPlayers = data);
   }
 
 
@@ -208,8 +216,8 @@ export class BusquedaListPage implements OnInit {
       if (this.hasGeoPermission && !this.hasLocation) {
         this.captureLocation(true);
       }
-    } catch (error) {
-      console.error('[BUSQUEDA] Error al abrir modal de permisos:', error);
+    } catch {
+      // permisos no disponibles
     }
   }
 
@@ -218,59 +226,16 @@ export class BusquedaListPage implements OnInit {
     this.cdr.detectChanges();
 
     try {
-      navigator.geolocation.getCurrentPosition(
-        () => { }, () => { }, { timeout: 15000 }
-      );
-
-      if (navigator.permissions) {
-        try {
-          const status = await navigator.permissions.query({ name: 'geolocation' as any });
-          if (status.state === 'prompt') {
-            await new Promise<void>((resolve) => {
-              const onChange = () => {
-                status.removeEventListener('change', onChange);
-                resolve();
-              };
-              status.addEventListener('change', onChange);
-              setTimeout(resolve, 15000);
-            });
-          }
-
-          const finalStatus = await navigator.permissions.query({ name: 'geolocation' as any });
-
-          this.ngZone.run(async () => {
-            this.hasGeoPermission = finalStatus.state === 'granted';
-            this.isCapturingLocation = false;
-            if (this.hasGeoPermission) {
-              this.toastService.showSuccess('¡Permisos de ubicación activos!');
-              await this.captureLocation();
-            }
-            this.cdr.detectChanges();
-          });
-          return;
-        } catch (e) { }
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      navigator.geolocation.getCurrentPosition(
-        async () => {
-          this.ngZone.run(async () => {
-            this.hasGeoPermission = true;
-            this.isCapturingLocation = false;
-            this.toastService.showSuccess('¡Permisos de ubicación activos!');
-            await this.captureLocation();
-            this.cdr.detectChanges();
-          });
-        },
-        () => {
-          this.ngZone.run(() => {
-            this.hasGeoPermission = false;
-            this.isCapturingLocation = false;
-            this.cdr.detectChanges();
-          });
-        },
-        { timeout: 5000 }
-      );
+      const granted = await this.locationPlugin.requestGeolocationPermission();
+      this.ngZone.run(async () => {
+        this.hasGeoPermission = granted;
+        this.isCapturingLocation = false;
+        if (granted) {
+          this.toastService.showSuccess('¡Permisos de ubicación activos!');
+          await this.captureLocation();
+        }
+        this.cdr.detectChanges();
+      });
     } catch (error) {
       this.ngZone.run(() => {
         this.isCapturingLocation = false;
@@ -337,8 +302,8 @@ export class BusquedaListPage implements OnInit {
       });
 
       this.updateAddress();
-    } catch (err) {
-      console.error('[BUSQUEDA-LIST] Error al inicializar mapa:', err);
+    } catch {
+      // mapa no disponible
     }
   }
 
@@ -346,7 +311,7 @@ export class BusquedaListPage implements OnInit {
     if (this.currentLocation?.coordinates) {
       this.isRevGeocoding = true;
       const [lng, lat] = this.currentLocation.coordinates;
-      this.playerService.reverseGeocode(lat, lng).subscribe({
+      this.playerService.reverseGeocode(lat, lng).pipe(takeUntil(this.destroy$)).subscribe({
         next: (addr) => {
           this.currentAddress = addr;
           this.isRevGeocoding = false;
@@ -428,7 +393,7 @@ export class BusquedaListPage implements OnInit {
 
   searchLeagues() {
     this.isSearchingAutocomplete = true;
-    this.playerService.searchTSDBLeagues(this.apiSearchQuery).subscribe({
+    this.playerService.searchTSDBLeagues(this.apiSearchQuery).pipe(takeUntil(this.destroy$)).subscribe({
       next: (res) => {
         this.leagueResults = res;
         this.isSearchingAutocomplete = false;
@@ -439,7 +404,7 @@ export class BusquedaListPage implements OnInit {
 
   searchTeams() {
     this.isSearchingAutocomplete = true;
-    this.playerService.searchTSDBTeams(this.apiSearchQuery).subscribe({
+    this.playerService.searchTSDBTeams(this.apiSearchQuery).pipe(takeUntil(this.destroy$)).subscribe({
       next: (res) => {
         this.teamResults = (res || []).map((t: any) => this.normalizeBadge(t));
         this.isSearchingAutocomplete = false;
@@ -451,7 +416,7 @@ export class BusquedaListPage implements OnInit {
   searchPlayers() {
     this.isLoading = true;
     this.playerPage = 1;
-    this.playerService.searchTSDBPlayers(this.apiSearchQuery).subscribe({
+    this.playerService.searchTSDBPlayers(this.apiSearchQuery).pipe(takeUntil(this.destroy$)).subscribe({
       next: (res) => {
         const uniqueMap = new Map<string, any>();
         (res || []).forEach((p: any) => {
@@ -486,7 +451,7 @@ export class BusquedaListPage implements OnInit {
     this.teamPage = 1;
     this.playerPage = 1;
     this.isLoading = true;
-    this.playerService.getTeamsByLeague(league.idLeague).subscribe({
+    this.playerService.getTeamsByLeague(league.idLeague).pipe(takeUntil(this.destroy$)).subscribe({
       next: (res) => {
         this.teamResults = (res || []).map((t: any) => this.normalizeBadge(t));
         this.isLoading = false;
@@ -503,7 +468,8 @@ export class BusquedaListPage implements OnInit {
     this.isLoading = true;
 
     this.playerService.getTSDBPlayersByTeam(team.idTeam).pipe(
-      catchError(() => of([]))
+      catchError(() => of([])),
+      takeUntil(this.destroy$)
     ).subscribe({
       next: (results: any[]) => {
         const officialArr = Array.isArray(results) ? results : [];
@@ -610,10 +576,9 @@ export class BusquedaListPage implements OnInit {
     this.isImporting = true;
     const imports$ = playersToImport.map(p => this.importSinglePlayer$(p, locationPayload));
 
-    forkJoin(imports$).subscribe({
+    forkJoin(imports$).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => this.finishImport(),
-      error: (err) => {
-        console.error('[BUSQUEDA] Error en la importación masiva:', err);
+      error: () => {
         this.finishImport();
       }
     });
@@ -633,20 +598,14 @@ export class BusquedaListPage implements OnInit {
     };
 
     return this.playerService.lookupTSDBPlayer(p.idPlayer).pipe(
-      catchError(err => {
-        console.warn(`[BUSQUEDA] Falló lookup profundo para ${p.strPlayer}, usando datos básicos.`);
-        return of(null);
-      }),
+      catchError(() => of(null)),
       switchMap(details => {
         const mapped = this.playerService.mapTSDBToPlayer(details, p);
         const newPlayer: any = { ...mapped, ...metadata };
         newPlayer.league = newPlayer.league && newPlayer.league !== 'Liga externa' ? newPlayer.league : metadata.league;
         return this.playerService.addPlayer(newPlayer);
       }),
-      catchError(err => {
-        console.error(`[BUSQUEDA] Error final al guardar el jugador ${p.strPlayer}:`, err);
-        return of(null);
-      })
+      catchError(() => of(null))
     );
   }
 
@@ -690,4 +649,21 @@ export class BusquedaListPage implements OnInit {
   goToPage(page: number) {
     this.activePage = page;
   }
+
+  trackByLeagueId(index: number, league: TsdbLeague): string {
+    return league.idLeague || String(index);
+  }
+
+  trackByTeamId(index: number, team: TsdbTeam): string {
+    return team.idTeam || String(index);
+  }
+
+  trackByPlayerId(index: number, player: TsdbPlayer): string {
+    return player.idPlayer || String(index);
+  }
+
+  trackByStringId(_index: number, id: string): string {
+    return id;
+  }
 }
+

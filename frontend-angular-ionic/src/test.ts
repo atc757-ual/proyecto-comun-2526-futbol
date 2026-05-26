@@ -7,6 +7,12 @@ import {
   platformBrowserDynamicTesting
 } from '@angular/platform-browser-dynamic/testing';
 
+// Ionic constructs icon URLs with document.baseURI. In Karma (about:blank) this
+// fails with "Invalid base URL". Setting a <base> tag fixes it silently.
+const base = document.createElement('base');
+base.href = 'http://localhost:9876/';
+document.head.prepend(base);
+
 // First, initialize the Angular testing environment.
 getTestBed().initTestEnvironment(
   BrowserDynamicTestingModule,

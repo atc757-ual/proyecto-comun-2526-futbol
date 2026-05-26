@@ -78,7 +78,7 @@
 
     span.fs-16.f-bold.text-neutral-8.pr-s.ls-1 {
       display: inline-block;
-      margin-left: 10px;
+      margin-left: var(--space-10);
     }
   }
 
@@ -108,7 +108,7 @@
       z-index: 1;
 
       ion-icon {
-        font-size: 80px;
+        font-size: var(--fs-80);
         color: var(--color-neutral-3);
       }
     }
@@ -218,28 +218,28 @@
             background: var(--color-success) !important;
             border-color: var(--color-success) !important;
             color: var(--color-white) !important;
-            box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+            box-shadow: 0 4px 12px rgba(var(--color-success-rgb), 0.3);
           }
 
           &.favorite:hover {
             background: var(--color-primary) !important;
             border-color: var(--color-primary) !important;
             color: var(--color-white) !important;
-            box-shadow: 0 4px 12px rgba(56, 128, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
           }
 
           &.edit:hover {
             background: var(--color-warning) !important;
             border-color: var(--color-warning) !important;
             color: var(--color-white) !important;
-            box-shadow: 0 4px 12px rgba(255, 204, 0, 0.3);
+            box-shadow: 0 4px 12px rgba(var(--color-warning-rgb), 0.3);
           }
 
           &.delete:hover {
             background: var(--color-error) !important;
             border-color: var(--color-error) !important;
             color: var(--color-white) !important;
-            box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
+            box-shadow: 0 4px 12px rgba(var(--ion-color-error-rgb), 0.3);
           }
 
           &.active {
@@ -322,7 +322,7 @@
 .career-list,
 .honours-grid {
   display: grid;
-  gap: 16px;
+  gap: var(--space-base);
   grid-template-columns: repeat(2, 1fr);
 
   @media (min-width: 992px) {
@@ -372,7 +372,7 @@
 
       ion-icon {
         position: absolute;
-        font-size: 24px;
+        font-size: var(--fs-24);
         color: var(--color-neutral-3);
         z-index: 1;
         margin: 0;
@@ -406,7 +406,7 @@
 
       ion-icon {
         position: absolute;
-        font-size: 24px;
+        font-size: var(--fs-24);
         color: var(--color-neutral-3);
         z-index: 1;
       }
@@ -427,7 +427,7 @@
       width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: var(--space-xxs);
 
       h4,
       .name {
@@ -491,23 +491,23 @@
 /* --- CARD FLIP ACTION (COL 4) --- */
 .card-flip-action {
   position: absolute;
-  top: 16px;
-  left: 16px;
+  top: var(--space-base);
+  left: var(--space-base);
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.1);
+  gap: var(--space-s);
+  background: rgba(var(--color-white-rgb), 0.1);
   backdrop-filter: blur(12px);
   padding: 6px 14px;
-  border-radius: 100px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--border-radius-pill);
+  border: 1px solid rgba(var(--color-white-rgb), 0.2);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 10;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
   ion-icon {
-    font-size: 18px;
+    font-size: var(--fs-18);
     color: white;
   }
 
@@ -535,7 +535,7 @@
   background-size: contain !important;
   background-position: center bottom !important;
   background-repeat: no-repeat !important;
-  background-color: #0f172a; // Dark slate background for cutout
+  background-color: var(--color-dark-navy);
   filter: brightness(1.1) !important;
   animation: slideInUp 0.4s ease-out;
 }
@@ -1122,48 +1122,48 @@
       color: white;
       cursor: pointer;
       transition: all 0.3s ease;
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(var(--color-white-rgb), 0.15);
 
       ion-icon {
         font-size: 24px;
       }
 
       &.share:hover {
-        background: linear-gradient(135deg, #2ecc71, #27ae60);
+        background: linear-gradient(135deg, var(--color-success), var(--color-success-150));
         transform: scale(1.05);
-        border-color: #2ecc71;
-        box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+        border-color: var(--color-success);
+        box-shadow: 0 4px 15px rgba(var(--color-success-rgb), 0.4);
       }
 
       &.favorite:hover {
-        background: linear-gradient(135deg, #3880ff, #002eff);
+        background: linear-gradient(135deg, var(--blue-primary-075), var(--color-primary));
         transform: scale(1.05);
-        border-color: #3880ff;
-        box-shadow: 0 4px 15px rgba(56, 128, 255, 0.4);
+        border-color: var(--blue-primary-075);
+        box-shadow: 0 4px 15px rgba(var(--color-primary-rgb), 0.4);
       }
 
       &.edit:hover {
-        background: linear-gradient(135deg, #ffcc00, #ff9f0a);
+        background: linear-gradient(135deg, var(--color-warning), var(--color-warning-100));
         transform: scale(1.05);
-        border-color: #ffcc00;
-        box-shadow: 0 4px 15px rgba(255, 204, 0, 0.4);
+        border-color: var(--color-warning);
+        box-shadow: 0 4px 15px rgba(var(--color-warning-rgb), 0.4);
       }
 
       &.delete:hover {
-        background: linear-gradient(135deg, #ff3b30, #ff2d55);
+        background: linear-gradient(135deg, var(--color-error), var(--color-error-150));
         transform: scale(1.05);
-        border-color: #ff3b30;
-        box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4);
+        border-color: var(--color-error);
+        box-shadow: 0 4px 15px rgba(var(--ion-color-error-rgb), 0.4);
       }
 
       &.favorite.active {
-        background: linear-gradient(135deg, rgba(255, 59, 48, 0.14), rgba(255, 45, 85, 0.29));
+        background: linear-gradient(135deg, rgba(var(--ion-color-error-rgb), 0.14), rgba(var(--ion-color-error-rgb), 0.29));
         color: white;
-        border-color: #ff3b30;
-        box-shadow: 0 4px 12px rgba(255, 59, 48, 0.4);
+        border-color: var(--color-error);
+        box-shadow: 0 4px 12px rgba(var(--ion-color-error-rgb), 0.4);
 
         ion-icon {
-          filter: drop-shadow(0 0 5px rgba(255, 71, 87, 0.4));
+          filter: drop-shadow(0 0 5px rgba(var(--ion-color-error-rgb), 0.4));
           font-size: 24px;
         }
       }
@@ -1238,7 +1238,7 @@
 
 .author-signature {
   min-width: 80px;
-  animation: slideIn 0.3s ease-out;
+  animation: slideInRight 0.3s ease-out;
 
   .text-primary {
     color: var(--color-primary) !important;
@@ -1247,7 +1247,7 @@
   }
 }
 
-@keyframes slideIn {
+@keyframes slideInRight {
   from {
     opacity: 0;
     transform: translateX(10px);

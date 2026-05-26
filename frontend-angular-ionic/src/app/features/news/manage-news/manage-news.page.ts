@@ -7,8 +7,8 @@ import {
   IonCard, IonCardContent, IonCardHeader, IonCardTitle,
   NavController, ModalController, IonContent
 } from '@ionic/angular/standalone';
-import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
-import { PageFooterComponent } from '../../../shared/components/page-footer/page-footer.component';
+import { PageFullContentComponent } from '../../../shared/components/layout/layout-elements/page-full-content/page-full-content.component';
+import { PageFooterComponent } from '../../../shared/components/layout/layout-elements/page-footer/page-footer.component';
 import { addIcons } from 'ionicons';
 import {
   createOutline, trashOutline, eyeOutline,
@@ -22,7 +22,7 @@ import { NewsItem } from '../../../core/models/news.model';
 import { StorageService } from '../../../core/services/system/storage.service';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { LayoutService } from 'src/app/core/services/ui/layout.service';
-import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
+import { ConfirmModalComponent } from '../../../shared/components/modals/confirm-modal/confirm-modal.component';
 import { RouterModule } from '@angular/router';
 import { NEWS_SERVICE_TOKEN } from '../../../core/services/news/news.service.token';
 import { ToastService } from 'src/app/core/services/ui/toast.service';
@@ -37,7 +37,7 @@ import { ToastService } from 'src/app/core/services/ui/toast.service';
     IonItem, IonLabel, IonThumbnail,
     IonIcon, IonButton, IonSkeletonText, IonSearchbar, IonSpinner,
     IonCard, IonCardContent, IonCardHeader, IonCardTitle,
-    IonContent, PageHeaderComponent, PageFooterComponent
+    IonContent, PageFullContentComponent, PageFooterComponent
   ]
 })
 export class ManageNewsPage implements OnInit {
@@ -87,6 +87,10 @@ export class ManageNewsPage implements OnInit {
   ];
 
   ngOnInit() {
+    this.loadNews();
+  }
+
+  ionViewWillEnter() {
     this.loadNews();
   }
 
@@ -284,4 +288,13 @@ export class ManageNewsPage implements OnInit {
       this.toastService.showError(message);
     }
   }
+
+  trackByNewsId(_: number, news: NewsItem): string | undefined {
+    return news._id;
+  }
+
+  trackByIndex(index: number): number {
+    return index;
+  }
 }
+

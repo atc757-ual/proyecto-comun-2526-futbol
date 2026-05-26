@@ -1,5 +1,5 @@
 <ion-content class="flex-content">
-  <app-page-header [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle" [breadcrumbs]="breadcrumbs"></app-page-header>
+  <app-page-full-content [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle" [breadcrumbs]="breadcrumbs"></app-page-full-content>
   <div class="content-container">
     <form (ngSubmit)="onPublish()" #newsForm="ngForm">
       <div class="row">
@@ -61,8 +61,8 @@
                 <ion-textarea #contentModel="ngModel" mode="md" fill="outline" label="Contenido Completo"
                   labelPlacement="stacked" [(ngModel)]="newsData.content" name="content" required minlength="20"
                   maxlength="5000" counter="true" [counterFormatter]="contentCounterFormatter"
-                  placeholder="Escribe aquí el cuerpo completo de la noticia..." class="futbol-input" [autoGrow]="true"
-                  rows="5" helperText="Cuerpo principal de la noticia" errorText="Min. 20 carácteres"
+                  placeholder="Escribe aquí el cuerpo completo de la noticia..." class="futbol-input"
+                  [autoGrow]="true" rows="5" helperText="Cuerpo principal de la noticia" errorText="Min. 20 carácteres"
                   (ionFocus)="setFocus('content')" (ionBlur)="setFocus(null)"
                   [class.is-focused]="focusedField === 'content'"
                   [class.input-error]="contentModel.invalid && contentModel.touched">
@@ -173,7 +173,7 @@
               <!-- Image Upload Placeholder -->
               <!-- Previsualización de Imagen (Arriba) -->
               <div class="image-preview-container mb-base" *ngIf="previewImage">
-                <img [src]="previewImage" alt="Preview">
+                <img [src]="getSafeUrl(previewImage)" alt="Preview">
                 <div class="preview-actions">
                   <ion-button mode="ios" fill="clear" class="preview-fab reload-btn" (click)="fileInput.click()">
                     <ion-icon name="sync-outline" slot="icon-only"></ion-icon>

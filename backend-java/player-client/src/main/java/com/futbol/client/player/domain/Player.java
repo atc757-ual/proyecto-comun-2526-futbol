@@ -90,12 +90,15 @@ public class Player {
     @Column(columnDefinition = "TEXT")
     private String summary;
 
+    @Builder.Default
     @Column(name = "is_manual")
     private Boolean isManual = true;
 
+    @Builder.Default
     @Column(name = "is_favorite")
     private Boolean isFavorite = false;
 
+    @Builder.Default
     @Column(name = "is_featured")
     private Boolean isFeatured = false;
 

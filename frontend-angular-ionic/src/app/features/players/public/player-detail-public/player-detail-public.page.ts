@@ -8,7 +8,7 @@ import {
   IonInput, IonTextarea, IonContent
 } from '@ionic/angular/standalone';
 import { RouterModule } from '@angular/router';
-import { ConfirmModalComponent } from 'src/app/shared/components/confirm-modal/confirm-modal.component';
+import { ConfirmModalComponent } from 'src/app/shared/components/modals/confirm-modal/confirm-modal.component';
 import { addIcons } from 'ionicons';
 import {
   star, starOutline, football, footballOutline, shieldOutline,
@@ -22,7 +22,7 @@ import {
   walkOutline, barbellOutline, resizeOutline, chevronDown, chevronUp,
   peopleOutline, chatbubbleEllipsesOutline, paperPlaneOutline, logInOutline,
   chevronBackOutline, chevronForwardOutline, addCircleOutline, lockClosedOutline,
-  syncOutline
+  syncOutline, shareOutline, personAddOutline
 } from 'ionicons/icons';
 import { PLAYER_SERVICE_TOKEN } from '../../../../core/services/players/player.service.token';
 import { Player } from '../../../../core/models/player.model';
@@ -30,12 +30,12 @@ import { AuthService } from '../../../../core/services/auth/auth.service';
 import { LayoutService } from '../../../../core/services/ui/layout.service';
 import { ConfettiService } from '../../../../core/services/ui/confetti.service';
 import { ToastService } from '../../../../core/services/ui/toast.service';
-import { PermissionModalComponent } from 'src/app/shared/components/permission-modal/permission-modal.component';
+import { PermissionModalComponent } from 'src/app/shared/components/modals/permission-modal/permission-modal.component';
 import { LocationPlugin } from 'src/app/core/plugins/location-plugin';
 import { Geolocation } from '@capacitor/geolocation';
 import { register } from 'swiper/element/bundle';
-import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
-import { PageFooterComponent } from '../../../../shared/components/page-footer/page-footer.component';
+import { PageFullContentComponent } from '../../../../shared/components/layout/layout-elements/page-full-content/page-full-content.component';
+import { PageFooterComponent } from '../../../../shared/components/layout/layout-elements/page-footer/page-footer.component';
 
 @Component({
   selector: 'app-player-detail-public',
@@ -45,7 +45,7 @@ import { PageFooterComponent } from '../../../../shared/components/page-footer/p
   imports: [
     CommonModule, FormsModule, RouterModule,
     IonIcon, IonCard, IonCardContent, IonButton, IonAvatar,
-    IonSpinner, IonInput, IonTextarea, PageHeaderComponent, PageFooterComponent, IonContent
+    IonSpinner, IonInput, IonTextarea, PageFullContentComponent, PageFooterComponent, IonContent,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
@@ -140,7 +140,8 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
       timeOutline, clipboardOutline, businessOutline,
       walkOutline, barbellOutline, resizeOutline, chevronDown, chevronUp,
       peopleOutline, chatbubbleEllipsesOutline, paperPlaneOutline,
-      chevronBackOutline, chevronForwardOutline, addCircleOutline, lockClosedOutline
+      chevronBackOutline, chevronForwardOutline, addCircleOutline, lockClosedOutline,
+      shareOutline, personAddOutline
     });
   }
 
@@ -172,7 +173,6 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
    * Pide permiso DIRECTAMENTE sin pasar por el modal.
    */
   public async checkPermissionsOnboarding() {
-    console.log('[PLAYER-DETAIL-PUBLIC] Botón pulsado: Pidiendo permiso vía LocationPlugin...');
     this.isRequestingPermission = true;
     this.cdr.detectChanges();
 
@@ -181,14 +181,11 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
       this.hasGeoPermission.set(granted);
 
       if (granted) {
-        console.log('[PLAYER-DETAIL-PUBLIC] Permiso concedido vía plugin.');
         localStorage.setItem('last_permission_prompt_player_detail_public', Date.now().toString());
         this.captureUserLocation();
-      } else {
-        console.warn('[PLAYER-DETAIL-PUBLIC] Permiso denegado o cerrado silenciosamente.');
       }
-    } catch (err) {
-      console.error('[PLAYER-DETAIL-PUBLIC] Error solicitando permisos:', err);
+    } catch {
+      // permiso denegado o error silencioso
     } finally {
       this.isRequestingPermission = false;
       this.cdr.detectChanges();
@@ -242,16 +239,9 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
   }
 
   private async captureUserLocation() {
-    console.log('%c[GPS-PUBLIC] INTENTO DE CAPTURA...', 'color: #2dd36f; font-weight: bold; font-size: 12px;');
-
-    if (!this.hasGeoPermission()) {
-      console.warn('[GPS-PUBLIC] Captura abortada: No hay permisos concedidos aún.');
-      return;
-    }
+    if (!this.hasGeoPermission()) return;
 
     try {
-      console.log('%c[GPS-PUBLIC] PERMISOS OK. BUSCANDO SEÑAL...', 'color: #2dd36f; font-weight: bold; font-size: 12px;');
-
       const pos = await Geolocation.getCurrentPosition({
         enableHighAccuracy: false,
         timeout: 10000
@@ -259,35 +249,19 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
 
       if (pos && pos.coords) {
         this.userCoords.set({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        console.log('%c[GPS-PUBLIC] CAPTURADO CON ÉXITO (Capacitor)', 'background: #2dd36f; color: white; padding: 4px 8px; border-radius: 4px;');
-        console.table({
-          latitud: pos.coords.latitude,
-          longitud: pos.coords.longitude,
-          precision: pos.coords.accuracy + 'm'
-        });
       }
     } catch (err: any) {
-      console.warn('[GPS-PUBLIC] Capacitor falló, intentando fallback nativo...', err);
-
       if ('geolocation' in navigator) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
             this.userCoords.set({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-            console.log('%c[GPS-PUBLIC] CAPTURADO CON ÉXITO (Nativo)', 'background: #2dd36f; color: white; padding: 4px 8px; border-radius: 4px;');
-            console.table({
-              latitud: pos.coords.latitude,
-              longitud: pos.coords.longitude,
-              metodo: 'Nativo Navegador'
-            });
           },
-          (geoErr) => {
-            console.error('[GPS-PUBLIC] FALLO CRÍTICO:', geoErr.message);
+          () => {
             this.userCoords.set({ lat: 40.4168, lng: -3.7038 });
           },
           { enableHighAccuracy: false, timeout: 5000 }
         );
       } else {
-        console.error('[GPS-PUBLIC] Geolocation API no soportada por este navegador.');
         this.userCoords.set({ lat: 40.4168, lng: -3.7038 });
       }
     }
@@ -324,15 +298,13 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
           this.player = player;
           this.isLoading = false;
         },
-        error: (err) => {
-          console.error('[PlayerDetailPublic] Error crítico al cargar jugador:', err);
+        error: () => {
           this.toastService.showError('Jugador no encontrado o perfil no disponible');
           this.isLoading = false;
           this.navCtrl.navigateRoot('/players-public');
         }
       });
-    } catch (error) {
-      console.error('[PlayerDetailPublic] Excepción en loadPlayer:', error);
+    } catch {
       this.isLoading = false;
       this.navCtrl.navigateRoot('/players-public');
     }
@@ -372,11 +344,9 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
           type: 'Point',
           coordinates: [cachedCoords.lng, cachedCoords.lat]
         };
-        console.log('[PLAYER-DETAIL-PUBLIC] Enviando con ubicación capturada:', cachedCoords);
       } else {
         try {
           const coordinates = await Geolocation.getCurrentPosition({ timeout: 5000 });
-          console.log('[GEOLOCATION-PUBLIC] Coordenadas obtenidas en submit:', coordinates);
           this.userCoords.set({
             lat: coordinates.coords.latitude,
             lng: coordinates.coords.longitude
@@ -385,8 +355,8 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
             type: 'Point',
             coordinates: [coordinates.coords.longitude, coordinates.coords.latitude]
           };
-        } catch (err) {
-          console.warn('[PLAYER-DETAIL-PUBLIC] No se pudo obtener ubicación vía plugin:', err);
+        } catch {
+          // ubicación no disponible, el comentario se envía sin coordenadas
         }
       }
     }
@@ -509,4 +479,32 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
     event.target.onerror = null;
     event.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiB2aWV3Qm94PSIwIDAgODAwIDgwMCI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI4MDAiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgZm9udC1mYW1pbHk9InN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtc2l6ZT0iODAiIGZpbGw9IiM0NzU1NjkiPjQwNDwvdGV4dD48L3N2Zz4=';
   }
+
+  trackByIndex(index: number): number {
+    return index;
+  }
+
+  trackByCommentId(_: number, comment: { _id?: string; id?: string }): string | undefined {
+    return comment._id ?? comment.id;
+  }
+
+  async showRegisterModal(): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: ConfirmModalComponent,
+      cssClass: 'premium-modal',
+      componentProps: {
+        title: 'Únete a Fútbol Club',
+        message: 'Si quieres conocer todas las funcionalidades de nuestro sitio. ¡Regístrate ahora!',
+        confirmText: 'Sí, quiero registrarme',
+        cancelText: 'No, gracias',
+        type: 'info'
+      }
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data === true) {
+      this.navCtrl.navigateRoot('/auth/register', { animated: false });
+    }
+  }
 }
+

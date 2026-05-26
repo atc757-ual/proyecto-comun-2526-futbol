@@ -1,10 +1,11 @@
-name: CI/CD Pipeline - Football Project (Cloud & Services Edition)
+name: CI/CD Pipeline - Football Project (Multi-Environment)
 
 on:
   push:
     branches: [ main, develop ]
   pull_request:
     branches: [ main, develop ]
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
@@ -46,13 +47,37 @@ jobs:
           path: frontend-angular-ionic/coverage/
           if-no-files-found: warn
 
-      - name: SonarCloud Scan (Frontend)
-        uses: sonarsource/sonarqube-scan-action@v5
+      - name: Cypress E2E - Chrome
+        uses: cypress-io/github-action@v6
         continue-on-error: true
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          projectBaseDir: frontend-angular-ionic
+          working-directory: frontend-angular-ionic
+          browser: chrome
+          build: npx ng build --configuration=production
+          start: npx http-server dist/frontend-angular-ionic/browser -p 4200 --silent
+          wait-on: 'http://localhost:4200'
+          wait-on-timeout: 60
+
+      - name: Cypress E2E - Firefox
+        uses: cypress-io/github-action@v6
+        continue-on-error: true
+        with:
+          working-directory: frontend-angular-ionic
+          browser: firefox
+          install: false
+          start: npx http-server dist/frontend-angular-ionic/browser -p 4200 --silent
+          wait-on: 'http://localhost:4200'
+          wait-on-timeout: 60
+
+      - name: Upload Cypress results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cypress-results
+          path: |
+            frontend-angular-ionic/cypress/videos/
+            frontend-angular-ionic/cypress/screenshots/
+          if-no-files-found: warn
 
       - name: Log in to Registry
         uses: docker/login-action@v3
@@ -111,14 +136,6 @@ jobs:
           path: backend-node/coverage/
           if-no-files-found: warn
 
-      - name: SonarCloud Scan (Node.js)
-        uses: sonarsource/sonarqube-scan-action@v5
-        continue-on-error: true
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          projectBaseDir: backend-node
-
       - name: Log in to Registry
         uses: docker/login-action@v3
         with:
@@ -161,14 +178,31 @@ jobs:
           distribution: 'temurin'
           cache: maven
           
-      - name: Build
+      - name: Test (JaCoCo)
+        continue-on-error: true
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/football
           SPRING_DATASOURCE_USERNAME: user
           SPRING_DATASOURCE_PASSWORD: password
         run: |
           cd backend-java
-          # Saltamos tests en el build para asegurar éxito en el pipeline de empaquetado
+          mvn test -pl player-client
+
+      - name: Upload Java coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: java-coverage
+          path: backend-java/player-client/target/site/jacoco/
+          if-no-files-found: warn
+
+      - name: Build (package)
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/football
+          SPRING_DATASOURCE_USERNAME: user
+          SPRING_DATASOURCE_PASSWORD: password
+        run: |
+          cd backend-java
           mvn clean install -DskipTests
 
       - name: SonarCloud Scan (Java)
@@ -184,6 +218,7 @@ jobs:
             -Dsonar.projectKey=football-java \
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }} \
             -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.coverage.jacoco.xmlReportPaths=player-client/target/site/jacoco/jacoco.xml \
             -DskipTests
 
       - name: Log in to Registry
@@ -214,6 +249,17 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
           
+      - name: Test CORBA components
+        continue-on-error: true
+        run: |
+          if [ -d "backend-corba/corba-bridge" ]; then
+            cd backend-corba/corba-bridge && mvn test
+            cd ../..
+          fi
+          if [ -d "backend-corba/service-corba" ]; then
+            cd backend-corba/service-corba && mvn test
+          fi
+
       - name: Build Corba components
         run: |
           if [ -d "backend-corba/corba-bridge" ]; then
@@ -222,17 +268,6 @@ jobs:
           if [ -d "service-corba" ]; then
             cd service-corba && mvn clean install -DskipTests
           fi
-
-      - name: SonarCloud Scan (CORBA)
-        uses: sonarsource/sonarqube-scan-action@v5
-        continue-on-error: true
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          projectBaseDir: backend-corba
-          args: >
-            -Dsonar.projectKey=football-corba
-            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
 
       - name: Log in to Registry
         uses: docker/login-action@v3

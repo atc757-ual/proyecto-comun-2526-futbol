@@ -168,17 +168,6 @@
   }
 }
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
 .active-filters-row {
   ion-chip {
@@ -531,7 +520,7 @@
 }
 
 .limit-alert-top {
-  background: var(--blue-prinmary-010);
+  background: var(--blue-primary-010);
   margin: var(--space-xs) 0 var(--space-s) 0;
   padding: var(--space-xs) var(--space-base);
   border-radius: var(--border-radius-soft);

@@ -53,9 +53,8 @@ jobs:
           path: frontend-angular-ionic/coverage/
           if-no-files-found: warn
 
-      - name: Install http-server and Firefox
+      - name: Install Firefox
         run: |
-          npm install -g http-server
           sudo apt-get update
           sudo apt-get install -y firefox
 
@@ -66,7 +65,7 @@ jobs:
           working-directory: frontend-angular-ionic
           browser: chrome
           build: npx ng build --configuration=production
-          start: http-server dist/frontend-angular-ionic/browser -p 4200 --silent
+          start: node_modules/.bin/http-server dist/frontend-angular-ionic/browser -p 4200 --silent
           wait-on: 'http://localhost:4200'
           wait-on-timeout: 120
 
@@ -77,7 +76,7 @@ jobs:
           working-directory: frontend-angular-ionic
           browser: firefox
           install: false
-          start: http-server dist/frontend-angular-ionic/browser -p 4200 --silent
+          start: node_modules/.bin/http-server dist/frontend-angular-ionic/browser -p 4200 --silent
           wait-on: 'http://localhost:4200'
           wait-on-timeout: 120
 
@@ -314,7 +313,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
       - name: Deploy to VM via SSH
-        uses: appleboy/ssh-action@v1
+        uses: appleboy/ssh-action@v1.2.0
         env:
           REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REGISTRY_USER: ${{ github.actor }}

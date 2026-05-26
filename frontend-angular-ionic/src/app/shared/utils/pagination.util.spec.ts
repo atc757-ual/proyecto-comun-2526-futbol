@@ -12,38 +12,31 @@ describe('filterPlayersByTerm', () => {
     expect(filterPlayersByTerm(players, '').length).toBe(3);
   });
 
-  it('should filter by name (case insensitive)', () => {
-    const res = filterPlayersByTerm(players, 'messi');
-    expect(res.length).toBe(1);
-    expect(res[0].name).toBe('Lionel Messi');
-  });
-
-  it('should filter by team', () => {
-    const res = filterPlayersByTerm(players, 'barcelona');
-    expect(res.length).toBe(1);
-    expect(res[0].name).toBe('Pedri');
-  });
-
-  it('should filter by league', () => {
-    const res = filterPlayersByTerm(players, 'laliga');
-    expect(res.length).toBe(1);
-    expect(res[0].name).toBe('Pedri');
-  });
-
-  it('should filter by nationality', () => {
-    const res = filterPlayersByTerm(players, 'portugal');
-    expect(res.length).toBe(1);
-    expect(res[0].name).toBe('Cristiano Ronaldo');
-  });
-
   it('should return empty array when no match', () => {
     expect(filterPlayersByTerm(players, 'zzz').length).toBe(0);
+  });
+
+  [
+    { term: 'messi',     expectedName: 'Lionel Messi',      field: 'name'        },
+    { term: 'barcelona', expectedName: 'Pedri',             field: 'team'        },
+    { term: 'laliga',    expectedName: 'Pedri',             field: 'league'      },
+    { term: 'portugal',  expectedName: 'Cristiano Ronaldo', field: 'nationality' },
+  ].forEach(({ term, expectedName, field }) => {
+    it(`should filter by ${field} (case insensitive)`, () => {
+      const res = filterPlayersByTerm(players, term);
+      expect(res.length).toBe(1);
+      expect(res[0].name).toBe(expectedName);
+    });
   });
 });
 
 describe('buildPageNumbers', () => {
   it('should return all pages when total <= maxVisible', () => {
     expect(buildPageNumbers(3, 1)).toEqual([1, 2, 3]);
+  });
+
+  it('should return single page [1] for total=1', () => {
+    expect(buildPageNumbers(1, 1)).toEqual([1]);
   });
 
   it('should return maxVisible pages when total > maxVisible', () => {
@@ -61,9 +54,5 @@ describe('buildPageNumbers', () => {
   it('should not exceed total pages', () => {
     const pages = buildPageNumbers(10, 10);
     expect(pages[pages.length - 1]).toBe(10);
-  });
-
-  it('should return single page [1] for total=1', () => {
-    expect(buildPageNumbers(1, 1)).toEqual([1]);
   });
 });

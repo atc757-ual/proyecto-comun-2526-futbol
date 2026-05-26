@@ -14,6 +14,7 @@ import {
   IonCheckbox, IonList, IonBadge, IonImg, IonTextarea, ModalController, IonModal, IonContent
 } from '@ionic/angular/standalone';
 import { ToastService } from '@core/services/ui/toast.service';
+import { buildPageNumbers } from '../../../shared/utils/pagination.util';
 import { addIcons } from 'ionicons';
 import {
   cameraOutline, searchOutline, saveOutline,
@@ -152,20 +153,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   }
 
   getPages(): number[] {
-    const total = this.totalPages;
-    const current = this.currentPage;
-    const pages: number[] = [];
-    const maxVisible = 5;
-
-    if (total <= maxVisible) {
-      for (let i = 1; i <= total; i++) pages.push(i);
-    } else {
-      let start = Math.max(current - 2, 1);
-      let end = Math.min(start + maxVisible - 1, total);
-      if (end === total) start = Math.max(end - maxVisible + 1, 1);
-      for (let i = start; i <= end; i++) pages.push(i);
-    }
-    return pages;
+    return buildPageNumbers(this.totalPages, this.currentPage);
   }
 
   prevPage() {

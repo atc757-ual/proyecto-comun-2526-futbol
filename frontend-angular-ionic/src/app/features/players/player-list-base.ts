@@ -6,6 +6,7 @@ import { AuthService } from '../../core/services/auth/auth.service';
 import { LayoutService } from '../../core/services/ui/layout.service';
 import { ToastService } from '../../core/services/ui/toast.service';
 import { ConfirmModalComponent } from '../../shared/components/modals/confirm-modal/confirm-modal.component';
+import { buildPageNumbers } from '../../shared/utils/pagination.util';
 
 export abstract class PlayerListBase {
   protected readonly playerService = inject(PLAYER_SERVICE_TOKEN);
@@ -91,20 +92,7 @@ export abstract class PlayerListBase {
   }
 
   getPages(): number[] {
-    const total = this.totalPages();
-    const current = this.currentPage();
-    const pages: number[] = [];
-    const maxVisible = 5;
-
-    if (total <= maxVisible) {
-      for (let i = 1; i <= total; i++) pages.push(i);
-    } else {
-      let start = Math.max(current - 2, 1);
-      let end = Math.min(start + maxVisible - 1, total);
-      if (end === total) start = Math.max(end - maxVisible + 1, 1);
-      for (let i = start; i <= end; i++) pages.push(i);
-    }
-    return pages;
+    return buildPageNumbers(this.totalPages(), this.currentPage());
   }
 
   abstract loadPlayers(event?: any): void;

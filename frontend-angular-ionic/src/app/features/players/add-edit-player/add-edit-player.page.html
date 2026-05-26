@@ -447,7 +447,7 @@
 
                 <div class="multimedia-compact-list">
                   <!-- MODO URL: Formato de col 8 (3 columnas en desktop, 1 en móvil) -->
-                  <div class="row w-100 margin-none" *ngIf="globalMediaMode === 'url'">
+                  <div class="w-100 margin-none" *ngIf="globalMediaMode === 'url'">
                     <div class="form-item col-12 animate-fade-in url-input-item" *ngFor="let type of imageTypes">
                       <ion-input mode="md" fill="outline" [label]="type.label" labelPlacement="stacked"
                         [ngModel]="getPlayerImage(type.key)"

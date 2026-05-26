@@ -1,4 +1,4 @@
-describe('Leagues Page (desde /busqueda)', () => {
+describe('Leagues Page (from /busqueda)', () => {
   const loginUser = () => {
     cy.visit('/auth/login');
     cy.dismissUiBlockers();

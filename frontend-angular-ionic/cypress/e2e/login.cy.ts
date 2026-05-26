@@ -1,4 +1,4 @@
-describe('Login Flow - Casos Reales', () => {
+describe('Login Flow – Real Cases', () => {
   const emailInputSelector = 'ion-input[name="email"] input:not([disabled]):visible';
   const passwordInputSelector = 'ion-input[name="password"] input:not([disabled]):visible';
 
@@ -23,31 +23,31 @@ describe('Login Flow - Casos Reales', () => {
     cy.visit('/auth/login');
   });
 
-  it('muestra error cuando el correo no existe (no@existe.com)', () => {
+  it('shows error when email does not exist (no@existe.com)', () => {
     fillAndSubmitLogin('no@existe.com', 'password123');
     assertErrorToast();
     cy.url().should('include', '/auth/login');
   });
 
-  it('muestra error cuando el correo existe pero la clave es incorrecta', () => {
+  it('shows error when email exists but password is wrong', () => {
     fillAndSubmitLogin('alex142407@gmail.com', 'clave-inventada-123');
     assertErrorToast();
     cy.url().should('include', '/auth/login');
   });
 
-  it('muestra error para usuario inhabilitado (juanperez@gmail.com)', () => {
+  it('shows error for disabled user (juanperez@gmail.com)', () => {
     fillAndSubmitLogin('juanperez@gmail.com', 'clave-inventada-123');
     assertErrorToast();
     cy.url().should('include', '/auth/login');
   });
 
-  it('muestra error para usuario no verificado (testuser_1779357123840@test.com)', () => {
+  it('shows error for unverified user (testuser_1779357123840@test.com)', () => {
     fillAndSubmitLogin('testuser_1779357123840@test.com', '1q2w3e4r');
     assertErrorToastContains('Debes verificar tu correo electrónico antes de iniciar sesión');
     cy.url().should('include', '/auth/login');
   });
 
-  it('permite continuar con usuario existente válido', () => {
+  it('allows login with a valid existing user', () => {
     fillAndSubmitLogin('atc757@inlumine.ual.es', '1q2w3e4r');
     cy.url({ timeout: 15000 }).should('include', '/home');
   });

@@ -389,16 +389,26 @@ ion-item.action-item {
     &::part(wrapper) {
       width: 100% !important;
       transform: none !important;
-      border-radius: 0 !important;
+      border-radius: 0 0 10px 10px !important;
       left: 0 !important;
+      // El fondo cubre el notch; el padding empuja el contenido por debajo
+      padding-top: env(safe-area-inset-top, 0px);
     }
 
     &::part(container) {
-      height: 64px;
+      height: 58px;
       border: none !important;
       display: flex;
       align-items: center;
       justify-content: flex-start;
+    }
+
+    &::part(message) {
+      font-size: 14px;
+    }
+
+    &::part(icon) {
+      font-size: 20px;
     }
   }
 

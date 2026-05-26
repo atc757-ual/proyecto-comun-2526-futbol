@@ -46,11 +46,12 @@ Cypress.Commands.add('dismissUiBlockers', () => {
 			'.close-btn'
 		];
 
-		closeCandidates.forEach((selector) => {
+		for (const selector of closeCandidates) {
 			if ($body.find(selector).length > 0) {
 				cy.get(selector).first().click({ force: true });
+				break;
 			}
-		});
+		}
 	});
 });
 

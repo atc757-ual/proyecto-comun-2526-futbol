@@ -252,10 +252,10 @@ services:
       dockerfile: frontend-angular-ionic/Dockerfile
     container_name: football-frontend
     # En local: usa ports. En VM con nginx-proxy: comenta ports y descomenta expose
-    ports:
-      - "80:80"
-    # expose:
-    #   - "80"
+    # ports:
+    #   - "80:80"
+    expose:
+      - "80"
     environment:
       - VIRTUAL_HOST=futbolclub.duckdns.org      
       - LETSENCRYPT_HOST=futbolclub.duckdns.org 
@@ -335,6 +335,7 @@ services:
     profiles: ["vm"]
     environment:
       - DEFAULT_EMAIL=atc757@inlumine.ual.es
+      - NGINX_PROXY_CONTAINER=nginx-proxy
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./nginx/certs:/etc/nginx/certs

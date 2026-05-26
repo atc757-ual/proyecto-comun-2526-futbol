@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, NgZone } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+﻿import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, NgZone } from '@angular/core';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -85,10 +85,13 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   public pageSubtitle: string = '';
   public breadcrumbs: { label: string; url: string; icon?: string }[] = [];
 
-  getSafeUrl(url: string | null | undefined): SafeResourceUrl | string {
+  getSafeUrl(url: string | null | undefined): SafeUrl | string {
     if (!url) return '';
-    if (url.startsWith('data:image/') || url.startsWith('blob:')) {
-      return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    // data:image/ es seguro para <img src> en Angular sin bypass.
+    // Solo necesita bypass para esquemas no estándar como capacitor: o blob:
+    if (url.startsWith('data:image/')) return url;
+    if (url.startsWith('blob:') || url.startsWith('capacitor:')) {
+      return this.sanitizer.bypassSecurityTrustUrl(url);
     }
     return url;
   }
@@ -340,12 +343,12 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     if (this.playerId) {
       this.isEditMode = true;
       this.pageTitle = 'Editar jugador';
-      this.pageSubtitle = 'Edita la informaci�n de tu jugador';
+      this.pageSubtitle = 'Edita la información de tu jugador';
       this.loadPlayer(this.playerId);
       this.entryMode = 'manual'; // En edicion siempre manual
     } else {
       this.pageTitle = 'Nuevo jugador';
-      this.pageSubtitle = 'A�ade un nuevo jugador a tu base de datos';
+      this.pageSubtitle = 'Añade un nuevo jugador a tu base de datos';
     }
 
     this.breadcrumbs = [
@@ -357,7 +360,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     // Inicializar previsualizaciones si ya hay datos
     this.syncPreviews();
 
-    // Si ya tenemos permisos, capturamos ubicaci�n autom�ticamente. Si no, abrimos el onboarding explicativo.
+    // Si ya tenemos permisos, capturamos ubicación automáticamente. Si no, abrimos el onboarding explicativo.
     Promise.all([
       this.checkGeoPermission(),
       this.checkCameraPermission()
@@ -431,7 +434,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   loadLocalPlayers() {
     this.playerService.getPlayers().subscribe({
       next: (data) => this.localPlayers = data,
-      error: () => console.warn('No se pudieron cargar los jugadores locales para comparaci�n')
+      error: () => console.warn('No se pudieron cargar los jugadores locales para comparación')
     });
   }
 
@@ -482,7 +485,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     this.hasGeoPermission = granted;
     if (granted) {
       this.cdr.detectChanges();
-      this.showToast('Permisos de ubicacion activos!', 'success');
+      this.showToast('Permisos de ubicación activos!', 'success');
       await this.captureLocation();
     }
   }
@@ -503,7 +506,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       }
       this.hasCameraPermission = result;
       if (result) {
-        this.showToast('Permisos de camara activos!', 'success');
+        this.showToast('Permisos de cámara activos!', 'success');
       } else {
         this.showToast('Camara bloqueada! Usa el candado del navegador.', 'danger');
       }
@@ -545,7 +548,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         this.hasGeoPermission = granted;
         this.isCapturingLocation = false;
         if (granted) {
-          this.showToast('Permisos de ubicacion activos!', 'success');
+          this.showToast('Permisos de ubicación activos!', 'success');
           await this.captureLocation();
         }
         this.cdr.detectChanges();
@@ -585,9 +588,9 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     this.searchInExternalApi();
   }
 
-  handleImageError(event: any, key: string = 'image_url') {
-    const label = key === 'image_url' ? 'Foto Principal' : (key === 'cutout' ? 'Foto Sec.' : 'Banner');
-    event.target.src = `https://placehold.co/120x120/e2e8f0/3880ff?text=${label}`;
+  handleImageError(event: any, _key: string = 'image_url') {
+    event.target.onerror = null; // Corta el bucle: evita que el fallback también dispare error
+    event.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiB2aWV3Qm94PSIwIDAgMTIwIDEyMCI+PHJlY3Qgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSI1MCUiIHk9IjQyJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InN5c3RlbS11aSIgZm9udC1zaXplPSIxMSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiM5NGEzYjgiPlNpbiBpbWFnZW48L3RleHQ+PC9zdmc+';
   }
 
   private searchPlayersApi() {
@@ -679,16 +682,16 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     const isAlreadySelected = this.isSelected(apiPlayer);
 
     if (isAlreadySelected) {
-      // Quitar de la selecci�n filtrando por ID
+      // Quitar de la selección filtrando por ID
       this.selectedApiPlayers = this.selectedApiPlayers.filter(p => p.externalId !== apiPlayer.externalId);
     } else {
       // LIMITE DE 11 JUGADORES
       if (this.selectedApiPlayers.length >= 11) {
-        this.showToast('Solo puedes a�adir hasta 11 jugadores a la vez', 'warning');
+        this.showToast('Solo puedes añadir hasta 11 jugadores a la vez', 'warning');
         return;
       }
 
-      // A�adir a la selecci�n
+      // añadir a la selección
       this.selectedApiPlayers = [...this.selectedApiPlayers, apiPlayer];
 
       // Si no tiene los detalles aún, los cargamos en segundo plano
@@ -752,8 +755,8 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         const count = playersToImport.length;
         this.showToast(
           count === 1
-            ? 'Se ha registrado el jugador con �xito'
-            : `Se han registrado ${count} jugadores con �xito`,
+            ? 'Se ha registrado el jugador con éxito'
+            : `Se han registrado ${count} jugadores con éxito`,
           'success'
         );
         setTimeout(() => this.router.navigate(['/players']), 1000);
@@ -780,7 +783,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       const pos = await this.locationPlugin.getCurrentPosition({ useCache: false, enableHighAccuracy: false });
 
       if (!pos) {
-        throw new Error('No se obtuvo posici�n');
+        throw new Error('No se obtuvo posición');
       }
 
       this.player.location = {
@@ -798,10 +801,16 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       }, 500);
     } catch {
       this.isCapturingLocation = false;
-      this.player.location = { type: 'Point', coordinates: [-3.7038, 40.4168] };
-      this.hasLocation = true;
-      this.cdr.detectChanges();
-      setTimeout(() => this.initMap(), 500);
+      // Solo mostrar mapa con fallback si el permiso está concedido (GPS sin señal).
+      // Sin permiso, hasLocation queda false y la tarjeta GPS ya explica el motivo.
+      if (this.hasGeoPermission) {
+        this.player.location = { type: 'Point', coordinates: [-3.7038, 40.4168] };
+        this.hasLocation = true;
+        this.cdr.detectChanges();
+        setTimeout(() => this.initMap(), 500);
+      } else {
+        this.cdr.detectChanges();
+      }
     }
   }
 
@@ -812,7 +821,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
 
     // Inicializar el mapa
     const mapObj = await this.mapPlugin.initMap('player-map', lat, lng, 15);
-    const marker = this.mapPlugin.addMarker(lat, lng, 'Ubicaci�n del jugador', true);
+    const marker = this.mapPlugin.addMarker(lat, lng, 'ubicación del jugador', true);
 
     // Truco Leaflet: Forzar redibujo para evitar zonas grises
     setTimeout(() => {
@@ -844,7 +853,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
           this.cdr.detectChanges();
         },
         error: () => {
-          this.currentAddress = 'Ubicaci�n seleccionada';
+          this.currentAddress = 'ubicación seleccionada';
           this.isRevGeocoding = false;
           this.cdr.detectChanges();
         }
@@ -876,7 +885,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   clearSelection() {
     this.selectedApiPlayers = [];
     this.cdr.detectChanges();
-    this.showToast('Selecci�n limpiada', 'success');
+    this.showToast('selección limpiada', 'success');
   }
 
   updatePlayerImage(key: string, value: string) {
@@ -969,7 +978,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         this.isPublishing = false;
         this.confettiService.celebrate();
         if (res && (res._id || res.id)) {
-          this.showToast(`Jugador ${this.isEditMode ? 'actualizado' : 'creado'} con �xito`, 'success');
+          this.showToast(`Jugador ${this.isEditMode ? 'actualizado' : 'creado'} con éxito`, 'success');
           setTimeout(() => this.router.navigate(['/players']), 1000);
         }
       },

@@ -186,14 +186,18 @@ jobs:
           SPRING_DATASOURCE_PASSWORD: password
         run: |
           cd backend-java
-          mvn test -pl player-client
+          mvn test -pl player-client,comment-client -am
 
       - name: Upload Java coverage
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: java-coverage
-          path: backend-java/player-client/target/site/jacoco/
+          path: |
+            backend-java/player-client/target/site/jacoco/
+            backend-java/player-client/target/surefire-reports/
+            backend-java/comment-client/target/site/jacoco/
+            backend-java/comment-client/target/surefire-reports/
           if-no-files-found: warn
 
       - name: Build (package)
@@ -260,13 +264,23 @@ jobs:
             cd backend-corba/service-corba && mvn test
           fi
 
+      - name: Upload CORBA test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: corba-test-results
+          path: |
+            backend-corba/corba-bridge/target/surefire-reports/
+            backend-corba/service-corba/target/surefire-reports/
+          if-no-files-found: warn
+
       - name: Build Corba components
         run: |
           if [ -d "backend-corba/corba-bridge" ]; then
             cd backend-corba/corba-bridge && mvn clean install -DskipTests
           fi
-          if [ -d "service-corba" ]; then
-            cd service-corba && mvn clean install -DskipTests
+          if [ -d "backend-corba/service-corba" ]; then
+            cd backend-corba/service-corba && mvn clean install -DskipTests
           fi
 
       - name: Log in to Registry

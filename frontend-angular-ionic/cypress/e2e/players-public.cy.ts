@@ -1,9 +1,5 @@
 /**
- * Cypress E2E — Módulo Público de Jugadores
- *
- * Cubre:
- *  1. players-public: listado, búsqueda, paginación, CTA lateral
- *  2. player-detail-public: ficha, estadísticas, biografía, GPS, comentarios
+ * Cypress E2E — Public Players Module
  */
 
 // =============================================================================
@@ -57,40 +53,40 @@ const stubPlayerDetail = (alias = 'getPlayerDetail') => {
 };
 
 // =============================================================================
-// SUITE 1: PLAYERS-PUBLIC — LISTADO
+// SUITE 1: PLAYERS-PUBLIC — LIST
 // =============================================================================
-describe('Players Public — Listado', () => {
+describe('Players Public — List', () => {
   beforeEach(() => {
     stubPublicPlayers();
     cy.visit('/players-public');
     cy.wait('@getPublicPlayers');
   });
 
-  it('debería mostrar el buscador y la lista de jugadores', () => {
+  it('should show the searchbar and player list', () => {
     cy.get('ion-searchbar').should('exist');
     cy.get('.players-container').should('exist');
   });
 
-  it('debería renderizar las tarjetas de jugadores correctamente', () => {
+  it('should render player cards correctly', () => {
     cy.get('.player-premium-card, .player-mobile-item').should('have.length.at.least', 1);
   });
 
-  it('debería mostrar el nombre del jugador en la tarjeta', () => {
+  it('should show the player name on the card', () => {
     cy.get('.player-premium-card:visible, .player-mobile-item:visible')
       .first()
       .should('contain.text', 'Jugador');
   });
 
-  it('debería mostrar el badge de posición en cada tarjeta', () => {
+  it('should show the position badge on each card', () => {
     cy.get('.position-badge').first().should('contain', 'Delantero');
   });
 
-  it('debería mostrar la tarjeta CTA de registro en la columna lateral', () => {
+  it('should show the registration CTA card in the side column', () => {
     cy.contains('¿Quieres crear tu propia cantera?').should('exist');
     cy.get('.action-item.is-blue').should('exist');
   });
 
-  it('el botón de registro CTA debería navegar a /register', () => {
+  it('the CTA registration button should navigate to /register', () => {
     cy.get('.action-item.is-blue').click();
     cy.url().should((url) => {
       const ok = url.includes('/register') || url.includes('/home');
@@ -100,9 +96,9 @@ describe('Players Public — Listado', () => {
 });
 
 // =============================================================================
-// SUITE 2: PLAYERS-PUBLIC — BÚSQUEDA Y FILTRADO
+// SUITE 2: PLAYERS-PUBLIC — SEARCH
 // =============================================================================
-describe('Players Public — Búsqueda', () => {
+describe('Players Public — Search', () => {
   const searchInputSelector = 'ion-searchbar input:not([disabled]):visible';
 
   beforeEach(() => {
@@ -111,44 +107,43 @@ describe('Players Public — Búsqueda', () => {
     cy.wait('@getPublicPlayers');
   });
 
-  it('debería filtrar los resultados al escribir en el buscador', () => {
+  it('should filter results when typing in the searchbar', () => {
     cy.get(searchInputSelector).should('be.visible').click().clear().type('Jugador 0', { force: true });
     cy.get('.player-premium-card:visible, .player-mobile-item:visible').should('have.length.at.least', 1);
     cy.contains('Jugador 0').should('exist');
   });
 
-  it('debería mostrar el estado vacío si no hay resultados', () => {
+  it('should show empty state when there are no results', () => {
     cy.get(searchInputSelector).should('be.visible').click().clear().type('XZY_NO_EXISTE_9999', { force: true });
     cy.get('.empty-card').should('exist');
     cy.contains('Sin resultados').should('exist');
   });
 
-  it('debería filtrar por nacionalidad', () => {
+  it('should filter by nationality', () => {
     cy.get(searchInputSelector).should('be.visible').click().clear().type('España', { force: true });
     cy.get('.player-premium-card, .player-mobile-item').should('have.length.at.least', 1);
   });
 });
 
 // =============================================================================
-// SUITE 3: PLAYERS-PUBLIC — PAGINACIÓN
+// SUITE 3: PLAYERS-PUBLIC — PAGINATION
 // =============================================================================
-describe('Players Public — Paginación', () => {
+describe('Players Public — Pagination', () => {
   beforeEach(() => {
     stubPublicPlayers();
     cy.visit('/players-public');
     cy.wait('@getPublicPlayers');
   });
 
-  it('debería mostrar el componente de paginación cuando hay más de 8 jugadores', () => {
-    // 12 jugadores mock → 2 páginas
+  it('should show the pagination component when there are more than 8 players', () => {
     cy.get('app-pagination').should('exist');
   });
 
-  it('debería mostrar 8 jugadores en la primera página', () => {
+  it('should show at most 8 players on the first page', () => {
     cy.get('.player-premium-card').should('have.length.at.most', 8);
   });
 
-  it('debería navegar a la siguiente página al hacer click en el paginador', () => {
+  it('should navigate to the next page when clicking the paginator', () => {
     cy.get('app-pagination').within(() => {
       cy.contains('Siguiente').click();
     });
@@ -158,9 +153,9 @@ describe('Players Public — Paginación', () => {
 });
 
 // =============================================================================
-// SUITE 4: PLAYER-DETAIL-PUBLIC — FICHA BÁSICA
+// SUITE 4: PLAYER-DETAIL-PUBLIC — BASIC PROFILE
 // =============================================================================
-describe('Player Detail Public — Ficha Básica', () => {
+describe('Player Detail Public — Basic Profile', () => {
   beforeEach(() => {
     stubPublicPlayers();
     stubPlayerDetail();
@@ -168,45 +163,45 @@ describe('Player Detail Public — Ficha Básica', () => {
     cy.wait('@getPlayerDetail');
   });
 
-  it('debería mostrar el nombre del jugador', () => {
+  it('should show the player name', () => {
     cy.contains(mockPlayerDetail.name).should('exist');
   });
 
-  it('debería mostrar el dashboard de estadísticas (stats-dashboard)', () => {
+  it('should show the stats dashboard', () => {
     cy.get('.stats-dashboard').should('exist');
     cy.get('.stat-box').should('have.length.at.least', 3);
   });
 
-  it('debería mostrar el número de dorsal en el hero', () => {
+  it('should show the jersey number in the hero', () => {
     cy.get('.number-top-right').should('contain', `#${mockPlayerDetail.number}`);
   });
 
-  it('debería mostrar la sección de filas de detalle (nacionalidad, edad)', () => {
+  it('should show the detail rows section (nationality, age)', () => {
     cy.get('.detail-row').should('have.length.at.least', 2);
     cy.contains('España').should('exist');
   });
 
-  it('debería mostrar el banner de scouting global', () => {
+  it('should show the global scouting banner', () => {
     cy.get('.premium-scouting-banner.is-global').should('exist');
     cy.get('.banner-badge.global').should('contain', 'GLOBAL');
   });
 });
 
 // =============================================================================
-// SUITE 5: PLAYER-DETAIL-PUBLIC — BIOGRAFÍA
+// SUITE 5: PLAYER-DETAIL-PUBLIC — BIOGRAPHY
 // =============================================================================
-describe('Player Detail Public — Biografía', () => {
+describe('Player Detail Public — Biography', () => {
   beforeEach(() => {
     stubPlayerDetail();
     cy.visit(`/player-detail-public/${mockPlayerDetail._id}`);
     cy.wait('@getPlayerDetail');
   });
 
-  it('debería mostrar la sección de biografía', () => {
+  it('should show the biography section', () => {
     cy.contains('Biografía').should('exist');
   });
 
-  it('debería mostrar el botón "Leer biografía completa" si el texto es largo', () => {
+  it('should show the "Read full biography" button if text is long', () => {
     cy.get('body').then(($body) => {
       if ($body.text().includes('Leer biografía completa')) {
         cy.contains('Leer biografía completa').should('exist');
@@ -214,7 +209,7 @@ describe('Player Detail Public — Biografía', () => {
     });
   });
 
-  it('debería expandir la biografía al hacer click en el botón', () => {
+  it('should expand the biography when clicking the button', () => {
     cy.get('body').then(($body) => {
       if ($body.text().includes('Leer biografía completa')) {
         cy.contains('Leer biografía completa').click();
@@ -226,16 +221,16 @@ describe('Player Detail Public — Biografía', () => {
 });
 
 // =============================================================================
-// SUITE 6: PLAYER-DETAIL-PUBLIC — GPS Y COMENTARIOS
+// SUITE 6: PLAYER-DETAIL-PUBLIC — GPS AND COMMENTS
 // =============================================================================
-describe('Player Detail Public — GPS y Comentarios', () => {
+describe('Player Detail Public — GPS and Comments', () => {
   beforeEach(() => {
     stubPlayerDetail();
     cy.visit(`/player-detail-public/${mockPlayerDetail._id}`);
     cy.wait('@getPlayerDetail');
   });
 
-  it('debería mostrar el banner de permiso GPS si no hay permiso', () => {
+  it('should show GPS permission banner if permission is not granted', () => {
     cy.get('body').then(($body) => {
       if ($body.find('.permission-needed-box').length > 0) {
         cy.get('.permission-needed-box').should('exist');
@@ -246,7 +241,7 @@ describe('Player Detail Public — GPS y Comentarios', () => {
     });
   });
 
-  it('debería mostrar el botón "Autorizar Ubicación"', () => {
+  it('should show the "Authorize Location" button', () => {
     cy.get('body').then(($body) => {
       if ($body.find('.permission-needed-box ion-button').length > 0) {
         cy.get('.permission-needed-box ion-button').should('exist');
@@ -257,12 +252,12 @@ describe('Player Detail Public — GPS y Comentarios', () => {
     });
   });
 
-  it('debería mostrar el estado vacío de comentarios si no hay ninguno', () => {
+  it('should show empty comments state when there are none', () => {
     cy.get('.empty-reports-state').should('exist');
     cy.contains('Aún no hay opiniones').should('exist');
   });
 
-  it('el formulario de comentario debería estar oculto sin permiso GPS', () => {
+  it('the comment form should be hidden without GPS permission', () => {
     cy.get('body').then(($body) => {
       if ($body.find('.permission-needed-box').length > 0) {
         cy.get('.new-comment-form').should('not.exist');
@@ -274,9 +269,9 @@ describe('Player Detail Public — GPS y Comentarios', () => {
 });
 
 // =============================================================================
-// SUITE 7: PLAYER-DETAIL-PUBLIC — COMENTARIOS CON PAGINACIÓN
+// SUITE 7: PLAYER-DETAIL-PUBLIC — PAGINATED COMMENTS
 // =============================================================================
-describe('Player Detail Public — Comentarios Paginados', () => {
+describe('Player Detail Public — Paginated Comments', () => {
   const playerWithComments = {
     ...mockPlayerDetail,
     comments: Array.from({ length: 8 }, (_, i) => ({
@@ -298,28 +293,28 @@ describe('Player Detail Public — Comentarios Paginados', () => {
     cy.wait('@getPlayerWithComments');
   });
 
-  it('debería mostrar los comentarios existentes', () => {
+  it('should show existing comments', () => {
     cy.get('.comment-bubble').should('have.length.at.least', 1);
   });
 
-  it('debería mostrar la paginación cuando hay más de 5 comentarios', () => {
+  it('should show pagination when there are more than 5 comments', () => {
     cy.get('.news-pagination-container').should('exist');
   });
 
-  it('debería mostrar el rating de estrellas en cada comentario', () => {
+  it('should show star rating on each comment', () => {
     cy.get('.rating-mini').first().should('exist');
     cy.get('.rating-mini ion-icon').should('have.length.at.least', 5);
   });
 
-  it('debería mostrar el avatar del autor en cada comentario', () => {
+  it('should show the author avatar on each comment', () => {
     cy.get('.comment-bubble .mini-avatar').first().should('exist');
   });
 });
 
 // =============================================================================
-// SUITE 8: NAVEGACIÓN
+// SUITE 8: NAVIGATION
 // =============================================================================
-describe('Navegación entre páginas públicas', () => {
+describe('Navigation between public pages', () => {
   beforeEach(() => {
     stubPublicPlayers();
     stubPlayerDetail();
@@ -327,7 +322,7 @@ describe('Navegación entre páginas públicas', () => {
     cy.wait('@getPublicPlayers');
   });
 
-  it('debería navegar al detalle del jugador al hacer click en la tarjeta', () => {
+  it('should navigate to player detail when clicking the card', () => {
     cy.get('.player-premium-card:visible, .player-mobile-item:visible', { timeout: 10000 })
       .should('have.length.at.least', 1)
       .first()
@@ -336,7 +331,7 @@ describe('Navegación entre páginas públicas', () => {
     cy.url({ timeout: 15000 }).should('include', '/player-detail-public/');
   });
 
-  it('debería volver al listado al navegar con el breadcrumb', () => {
+  it('should return to the list when navigating with the breadcrumb', () => {
     stubPlayerDetail();
     cy.visit(`/player-detail-public/${mockPlayerDetail._id}`);
     cy.wait('@getPlayerDetail');

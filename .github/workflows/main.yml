@@ -30,6 +30,12 @@ jobs:
         with:
           node-version: '24'
           
+      - name: Build Stencil Library
+        run: |
+          cd stencil-library
+          npm install --no-package-lock
+          npm run build
+
       - name: Install
         run: |
           cd frontend-angular-ionic
@@ -57,6 +63,11 @@ jobs:
           start: npx http-server dist/frontend-angular-ionic/browser -p 4200 --silent
           wait-on: 'http://localhost:4200'
           wait-on-timeout: 60
+
+      - name: Install Firefox
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y firefox
 
       - name: Cypress E2E - Firefox
         uses: cypress-io/github-action@v6

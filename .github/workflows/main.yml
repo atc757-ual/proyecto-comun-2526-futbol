@@ -1,10 +1,11 @@
-name: CI/CD Pipeline - Football Project (Cloud & Services Edition)
+name: CI/CD Pipeline - Football Project (Multi-Environment)
 
 on:
   push:
     branches: [ main, develop ]
   pull_request:
     branches: [ main, develop ]
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
@@ -54,7 +55,7 @@ jobs:
         with:
           projectBaseDir: frontend-angular-ionic
 
-      - name: Cypress E2E — Chrome
+      - name: Cypress E2E - Chrome
         uses: cypress-io/github-action@v6
         continue-on-error: true
         with:
@@ -65,7 +66,7 @@ jobs:
           wait-on: 'http://localhost:4200'
           wait-on-timeout: 60
 
-      - name: Cypress E2E — Firefox
+      - name: Cypress E2E - Firefox
         uses: cypress-io/github-action@v6
         continue-on-error: true
         with:

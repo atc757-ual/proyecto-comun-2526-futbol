@@ -13,16 +13,18 @@
 
 // ─── Helper: login antes de cada suite ────────────────────────────────────────
 const login = () => {
-  const emailInputSelector = 'ion-input[name="email"] input:not([disabled]):visible';
-  const passwordInputSelector = 'ion-input[name="password"] input:not([disabled]):visible';
-
-  cy.visit('/auth/login');
-  cy.get(emailInputSelector).should('be.visible').clear().type('atc757@inlumine.ual.es');
-  cy.get(passwordInputSelector).should('be.visible').clear().type('1q2w3e4r');
-  cy.contains('ion-button', 'Iniciar Sesión').click();
-  cy.url({ timeout: 15000 }).should('include', '/home');
+  cy.window().then((win) => {
+    const header  = win.btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+    const payload = win.btoa(JSON.stringify({
+      firebaseUid: 'cypress-test-uid',
+      role: 'user',
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + 3600
+    }));
+    win.localStorage.setItem('jwt_token', `${header}.${payload}.cypress-fake-sig`);
+  });
   cy.visit('/busqueda');
-  cy.url().should('include', '/busqueda');
+  cy.url({ timeout: 10000 }).should('include', '/busqueda');
 };
 
 // ─── Stub de la API TheSportsDB para tests offline ────────────────────────────

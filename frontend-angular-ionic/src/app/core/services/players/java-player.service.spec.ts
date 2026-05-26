@@ -1,21 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { JavaPlayerService } from './java-player.service';
-import { StorageService } from '../system/storage.service';
-import { AuthService } from '../auth/auth.service';
-import { LoggerService } from '../system/logger.service';
 import { environment } from '../../../../environments/environment';
-
-const storageMock = {
-  uploadImage: jasmine.createSpy().and.returnValue(Promise.resolve('http://img.url')),
-  deleteImageByUrl: jasmine.createSpy().and.returnValue(Promise.resolve()),
-};
-const authServiceMock = {
-  currentUser: () => ({ uid: 'uid-1', email: 'test@test.com' }),
-  getUID: () => 'uid-1',
-  isAdmin: () => false,
-};
-const loggerMock = { log: jasmine.createSpy(), warn: jasmine.createSpy(), error: jasmine.createSpy() };
+import { configurePlayerTestBed, runCommonPlayerContractTests } from './player-service.mocks';
 
 describe('JavaPlayerService', () => {
   let service: JavaPlayerService;
@@ -23,33 +10,20 @@ describe('JavaPlayerService', () => {
   const base = `${environment.javaApiUrl}/players`;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [
-        JavaPlayerService,
-        { provide: StorageService, useValue: storageMock },
-        { provide: AuthService, useValue: authServiceMock },
-        { provide: LoggerService, useValue: loggerMock },
-      ]
-    });
+    configurePlayerTestBed(JavaPlayerService);
     service = TestBed.inject(JavaPlayerService);
     http = TestBed.inject(HttpTestingController);
   });
 
-  afterEach(() => http.verify());
-
-  it('should be created', () => {
-    expect(service).toBeTruthy();
-  });
+  runCommonPlayerContractTests(
+    () => service,
+    () => http,
+    `${environment.javaApiUrl}/players`
+  );
 
   it('getPlayers() should make GET and return sorted players', () => {
     service.getPlayers().subscribe(res => expect(Array.isArray(res)).toBeTrue());
     http.expectOne((req) => req.url === base).flush({ data: [] });
-  });
-
-  it('getPublicPlayers() should call /players/public', () => {
-    service.getPublicPlayers().subscribe(res => expect(res).toEqual([]));
-    http.expectOne(`${base}/public`).flush({ data: [] });
   });
 
   it('getPlayer() should call /players/:id and load comments', () => {

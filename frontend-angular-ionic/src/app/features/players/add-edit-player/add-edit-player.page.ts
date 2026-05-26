@@ -971,7 +971,28 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       await this.captureLocation();
     }
 
-    this.isPublishing = true;
+    // 2. Subir imagen a Firebase si es base64
+    if (this.player.image_url && this.player.image_url.startsWith('data:image/')) {
+      try {
+        // Convertir base64 a File
+        const arr = this.player.image_url.split(',');
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+        const file = new File([u8arr], `${this.player.name || 'player'}_${Date.now()}.jpg`, { type: mime });
+        const url = await this.storageService.uploadImage(file, 'players');
+        this.player.image_url = url;
+        this.selectedFile = null; // Ya no hace falta
+      } catch (e) {
+        this.showToast('Error al subir la imagen', 'danger');
+        this.isPublishing = false;
+        return;
+      }
+    }
 
     this.playerService.savePlayer(this.playerId, this.player, this.selectedFile, this.initialPreviewImage as string | null).subscribe({
       next: (res: any) => {

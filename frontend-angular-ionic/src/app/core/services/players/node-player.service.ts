@@ -170,7 +170,20 @@ export class NodePlayerService implements IPlayerService {
     );
   }
 
+
   // --- 2. OPERACIONES PRIVADAS (ESCRITURA Y MUTACIONES) ---
+
+  /**
+   * Borra un jugador y su imagen de Firebase si corresponde
+   */
+  deletePlayerAndImage(id: string, imageUrl: string | undefined | null): Observable<any> {
+    let obs = this.deletePlayer(id);
+    if (imageUrl && imageUrl.includes('firebasestorage.googleapis.com')) {
+      // Borrar imagen en background, no bloquear el flujo
+      this.storageService.deleteImageByUrl(imageUrl, 'players').catch(() => {});
+    }
+    return obs;
+  }
 
   /**
    * ORQUESTADOR CENTRAL: Guarda o actualiza un jugador manejando imágenes y auditoría

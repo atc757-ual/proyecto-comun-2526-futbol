@@ -18,6 +18,12 @@ jobs:
         with:
           node-version: 22
 
+      - name: Build Stencil Library
+        run: |
+          npm install --no-package-lock
+          npm run build
+        working-directory: ./stencil-library
+
       - name: Install dependencies
         run: npm install --no-package-lock
         working-directory: ./frontend-angular-ionic

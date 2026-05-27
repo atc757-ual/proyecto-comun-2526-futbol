@@ -16,9 +16,7 @@ import {
   checkmarkCircleOutline, serverOutline
 } from 'ionicons/icons';
 import { AuthService } from 'src/app/core/services/auth/auth.service';
-import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { Auth } from '@angular/fire/auth';
-import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-admin-security',
@@ -36,7 +34,6 @@ import { environment } from 'src/environments/environment';
 export class AdminSecurityPage implements OnInit {
   public authService = inject(AuthService);
   private readonly auth = inject(Auth);
-  private readonly layoutService = inject(LayoutService);
   private readonly toastController = inject(ToastController);
   public isLoading = signal(false);
   public firebaseClaims = signal<any>(null);

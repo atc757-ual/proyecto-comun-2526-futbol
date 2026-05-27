@@ -36,6 +36,10 @@ jobs:
         run: npx cap add android
         working-directory: ./frontend-angular-ionic
 
+      - name: Generate app icons from assets/icon.png
+        run: npx @capacitor/assets generate --android --resourcesDirectory assets
+        working-directory: ./frontend-angular-ionic
+
       - name: Inject Android permissions into AndroidManifest.xml
         working-directory: ./frontend-angular-ionic
         run: |

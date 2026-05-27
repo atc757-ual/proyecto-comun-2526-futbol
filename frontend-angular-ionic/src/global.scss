@@ -390,7 +390,7 @@ ion-item.action-item {
       width: 100% !important;
       transform: none !important;
       left: 0 !important;
-      // El fondo cubre el notch; el padding empuja el contenido por debajo
+      border-radius:none !important;
       padding-top: env(safe-area-inset-top, 0px);
     }
 
@@ -419,7 +419,6 @@ ion-item.action-item {
 
   &::part(container) {
     border: 2px solid var(--color-success);
-    border-radius: var(--space-s);
   }
 
   &::part(icon) {
@@ -432,7 +431,6 @@ ion-item.action-item {
 
   &::part(container) {
     border: 2px solid var(--color-error);
-    border-radius: var(--space-s);
   }
 
   &::part(icon) {

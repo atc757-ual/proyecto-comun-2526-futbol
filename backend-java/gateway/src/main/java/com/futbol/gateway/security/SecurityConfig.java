@@ -1,6 +1,5 @@
 package com.futbol.gateway.security;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -21,18 +20,15 @@ public class SecurityConfig {
     private final JsonAuthenticationEntryPoint authenticationEntryPoint;
     private final JsonAccessDeniedHandler accessDeniedHandler;
     private final JwtWebFilter jwtWebFilter;
-    private final List<String> allowedOrigins;
 
     public SecurityConfig(
         JsonAuthenticationEntryPoint authenticationEntryPoint,
         JsonAccessDeniedHandler accessDeniedHandler,
-        JwtWebFilter jwtWebFilter,
-        @Value("#{'${app.cors.allowed-origins:http://localhost:4200,http://localhost:8100}'.split(',')}") List<String> allowedOrigins
+        JwtWebFilter jwtWebFilter
     ) {
         this.authenticationEntryPoint = authenticationEntryPoint;
         this.accessDeniedHandler = accessDeniedHandler;
         this.jwtWebFilter = jwtWebFilter;
-        this.allowedOrigins = allowedOrigins;
     }
 
     @Bean
@@ -68,7 +64,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(allowedOrigins.stream().map(String::trim).filter(origin -> !origin.isEmpty()).toList());
+        configuration.setAllowedOriginPatterns(List.of("*"));
         configuration.addAllowedMethod("*");
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-User-Role", "X-Transaction-Id", "Accept"));
         configuration.setAllowCredentials(true);

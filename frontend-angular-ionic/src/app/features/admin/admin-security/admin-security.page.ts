@@ -51,6 +51,7 @@ export class AdminSecurityPage implements OnInit {
   public selectedUser = signal<any | null>(null);
   public breadcrumbs = [
     { label: '', url: '/home', icon: 'home-outline' },
+    {label:'Mi perfil', url: '/profile'},
     { label: 'Seguridad' }
   ];
 
@@ -157,13 +158,6 @@ export class AdminSecurityPage implements OnInit {
     } finally {
       this.isTogglingStatus.set(false);
     }
-  }
-
-  openStatusDashboard(): void {
-    const token = localStorage.getItem('jwt_token');
-    const base = environment.nodeApiUrl.replace(/\/api$/, '');
-    const url = token ? `${base}/status?token=${token}` : `${base}/status`;
-    window.open(url, '_blank');
   }
 
   async promoteSelf() {

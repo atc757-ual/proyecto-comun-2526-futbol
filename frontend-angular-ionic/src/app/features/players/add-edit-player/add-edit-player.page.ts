@@ -801,16 +801,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       }, 500);
     } catch {
       this.isCapturingLocation = false;
-      // Solo mostrar mapa con fallback si el permiso está concedido (GPS sin señal).
-      // Sin permiso, hasLocation queda false y la tarjeta GPS ya explica el motivo.
-      if (this.hasGeoPermission) {
-        this.player.location = { type: 'Point', coordinates: [-3.7038, 40.4168] };
-        this.hasLocation = true;
-        this.cdr.detectChanges();
-        setTimeout(() => this.initMap(), 500);
-      } else {
-        this.cdr.detectChanges();
-      }
+      this.cdr.detectChanges();
     }
   }
 

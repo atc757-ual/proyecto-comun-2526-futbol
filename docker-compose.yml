@@ -229,6 +229,7 @@ services:
     ports:
       - "3000:3000"
     environment:
+      - NODE_ENV=production
       - MONGO_URL=mongodb://football-mongo:27017/football
       - PORT=3000
       - FIREBASE_SERVICE_ACCOUNT=/app/firebase-credentials.json
@@ -236,6 +237,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - TSDB_API_KEY=${FOOTBALL_API_KEY}
       - CORBA_BRIDGE_URL=http://corba-bridge:8080/corba-bridge/api/noticias
+      - INITIAL_ADMIN_EMAIL=${INITIAL_ADMIN_EMAIL:-alex142407@gmail.com}
     volumes:
       - ./firebase-credentials.json:/app/firebase-credentials.json
       - ./backend-node/private_key.pem:/app/private_key.pem

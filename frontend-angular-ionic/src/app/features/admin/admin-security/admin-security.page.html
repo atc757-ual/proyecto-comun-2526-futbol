@@ -4,10 +4,6 @@
   <div class="content-container">
     <div class="row fl-col-rev-sm" *ngIf="isAdmin()">
       <div class="col-8 col-sm-12 pr-base pr-sm-0">
-        <ion-button mode="ios" shape="round" fill="outline" size="small" class="mb-s" (click)="openStatusDashboard()">
-          <ion-icon slot="start" name="server-outline"></ion-icon>
-          Dashboard de Estado
-        </ion-button>
         <ion-card class="premium-card">
           <ion-card-header>
             <div class="header-section">
@@ -15,8 +11,8 @@
                 <ion-icon name="shield-checkmark-outline" *ngIf="firebaseClaims()?.admin"></ion-icon>
                 <ion-icon name="shield-outline" *ngIf="!firebaseClaims()?.admin"></ion-icon>
               </div>
-              <h2>Estado de Protección</h2>
-              <p>Verificación de identidad y privilegios de Firebase Custom Claims</p>
+              <h5 class="text-neutral-8 fw-semibold">Estado de Protección</h5>
+              <p >Verificación de identidad y privilegios de Firebase Custom Claims</p>
             </div>
           </ion-card-header>
 

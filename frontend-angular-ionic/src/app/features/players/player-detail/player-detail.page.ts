@@ -80,7 +80,6 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
           { label: 'Detalle', url: '' }
         ];
       }
-      this.captureUserLocation();
     }
   }
 

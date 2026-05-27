@@ -334,6 +334,7 @@ jobs:
           envs: REGISTRY_TOKEN,REGISTRY_USER
           script: |
             cd $HOME/proyecto-comun-2526-futbol
+            git pull origin main
             echo "$REGISTRY_TOKEN" | docker login ghcr.io -u "$REGISTRY_USER" --password-stdin
             docker compose pull
             docker compose up -d --remove-orphans

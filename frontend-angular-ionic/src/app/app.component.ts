@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, NavigationStart } from '@angular/router';
 import { IonApp, IonRouterOutlet, IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
 import { Auth, user } from '@angular/fire/auth';
@@ -7,7 +7,7 @@ import { NetworkPlugin } from './core/plugins/network-plugin';
 import { CommonModule } from '@angular/common';
 import { addIcons } from 'ionicons';
 import { footballOutline, wifiOutline } from 'ionicons/icons';
-import { take } from 'rxjs/operators';
+import { take, filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -32,6 +32,11 @@ export class AppComponent implements OnInit {
   private user$ = user(this.auth);
 
   ngOnInit() {
+    // Blur del elemento activo al iniciar navegación para evitar aria-hidden en elemento enfocado
+    this.router.events.pipe(filter(e => e instanceof NavigationStart)).subscribe(() => {
+      (document.activeElement as HTMLElement)?.blur();
+    });
+
     // 1. Monitorear estado de red inicial y cambios
     this.initNetworkMonitoring();
 

@@ -239,7 +239,7 @@ export class NodePlayerService implements IPlayerService {
 
   private base64ToFile(dataUrl: string, filename: string): File {
     const [header, base64] = dataUrl.split(',');
-    const mime = header.match(/:([^;]+);/)?.[1] || 'image/jpeg';
+    const mime = header.split(':')[1]?.split(';')[0] || 'image/jpeg';
     const binary = atob(base64);
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) {

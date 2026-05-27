@@ -86,7 +86,7 @@ jobs:
           path: |
             frontend-angular-ionic/cypress/videos/
             frontend-angular-ionic/cypress/screenshots/
-          if-no-files-found: warn
+          if-no-files-found: ignore
 
       - name: Log in to Registry
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3

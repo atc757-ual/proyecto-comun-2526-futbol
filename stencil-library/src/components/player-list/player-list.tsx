@@ -1,5 +1,13 @@
 import { Component, Prop, Event, EventEmitter, h } from '@stencil/core';
 
+const FALLBACK_AVATAR = 'data:image/svg+xml;base64,' + btoa(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' +
+  '<rect width="100" height="100" fill="#e2e8f0"/>' +
+  '<circle cx="50" cy="34" r="20" fill="#94a3b8"/>' +
+  '<path d="M8 95 Q8 62 50 62 Q92 62 92 95Z" fill="#94a3b8"/>' +
+  '</svg>'
+);
+
 @Component({
   tag: 'player-list',
   styleUrl: 'player-list.css',
@@ -53,7 +61,7 @@ export class PlayerList {
           {displayPlayers.map((player) => (
             <div class="player-row clickable" onClick={() => this.playerClicked.emit(player)}>
               <div class="player-avatar">
-                <img src={player.image_url || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiB2aWV3Qm94PSIwIDAgODAwIDgwMCI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI4MDAiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgZm9udC1mYW1pbHk9InN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtc2l6ZT0iODAiIGZpbGw9IiM0NzU1NjkiPjQwNDwvdGV4dD48L3N2Zz4='} alt={player.name} onError={(e: any) => { e.target.onerror = null; e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiB2aWV3Qm94PSIwIDAgODAwIDgwMCI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI4MDAiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgZm9udC1mYW1pbHk9InN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtc2l6ZT0iODAiIGZpbGw9IiM0NzU1NjkiPjQwNDwvdGV4dD48L3N2Zz4='; }} />
+                <img src={player.image_url || FALLBACK_AVATAR} alt={player.name} onError={(e: any) => { e.target.onerror = null; e.target.src = FALLBACK_AVATAR; }} />
               </div>
               <div class="player-info">
                 <span class="player-name">{player.name}</span>

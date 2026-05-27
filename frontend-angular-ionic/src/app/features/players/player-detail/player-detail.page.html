@@ -506,7 +506,7 @@
           </div>
 
           <!-- INFO DEL CLUB (SWIPER) -->
-          <div class="mb-base" *ngIf="teamDetails.length > 0">
+          <div class="mt-base" *ngIf="teamDetails.length > 0">
             <swiper-container pagination="true" slides-per-view="1" space-between="16" class="team-swiper"
               observer="true" observe-parents="true">
               <swiper-slide *ngFor="let team of teamDetails">
@@ -536,7 +536,7 @@
           </div>
 
           <!-- UBICACIÓN DE REGISTRO (MAPA) -->
-          <ion-card class="player-card mb-base animate-fade-in overflow-hidden" *ngIf="player.location?.coordinates">
+          <ion-card class="player-card mt-base animate-fade-in overflow-hidden" *ngIf="player.location?.coordinates">
 
             <ng-container *ngIf="isOwner; else notOwnerTemplate">
               <!-- MAPA EN LA CABECERA DE LA CARD -->

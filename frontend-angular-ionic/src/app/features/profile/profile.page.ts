@@ -214,7 +214,7 @@ export class ProfilePage implements OnInit {
 
   openNodeStatusDashboard() {
     const token = localStorage.getItem('jwt_token');
-    const base = environment.nodeApiUrl.replace(/\/api$/, '');
+    const base = environment.nodeApiUrl.replace(/\/(node-api|api)\/?$/, '');
     const url = token ? `${base}/status?token=${token}` : `${base}/status`;
     window.open(url, '_blank', 'noopener,noreferrer');
   }

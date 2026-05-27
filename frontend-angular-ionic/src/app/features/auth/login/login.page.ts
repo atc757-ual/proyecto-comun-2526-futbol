@@ -99,6 +99,21 @@ export class LoginPage implements OnInit {
     const code = error?.code;
     const message = error?.message;
 
+    // Errores HTTP del backend (HttpErrorResponse: status numérico sin code de Firebase)
+    if (typeof error?.status === 'number') {
+      switch (error.status) {
+        case 401:
+          return 'No se pudo verificar tu identidad con el servidor. Inténtalo de nuevo.';
+        case 404:
+          return 'El servidor de autenticación no está disponible en este momento. Inténtalo más tarde.';
+        case 0:
+          return 'Sin conexión con el servidor. Comprueba tu conexión a internet.';
+        default:
+          return 'Error del servidor al iniciar sesión. Inténtalo más tarde.';
+      }
+    }
+
+    // Errores de Firebase Auth (tienen code tipo 'auth/...')
     switch (code) {
       case 'auth/email-not-verified':
         return 'Debes verificar tu correo electrónico antes de iniciar sesión. Por favor, revisa tu bandeja de entrada.';

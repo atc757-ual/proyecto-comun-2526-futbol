@@ -233,13 +233,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3
+
       - name: Docker Build & Push (Microservices)
         run: |
           services=("config-server" "eureka-server" "gateway" "player-client" "comment-client" "external-client" "external-feign")
           for service in "${services[@]}"; do
             echo "Building and pushing $service..."
-            docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PREFIX }}-$service:latest --build-arg SERVICE_NAME=$service ./backend-java
-            docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PREFIX }}-$service:latest
+            docker buildx build \
+              --provenance=false \
+              --push \
+              -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PREFIX }}-$service:latest \
+              --build-arg SERVICE_NAME=$service \
+              ./backend-java
           done
 
   # --- CORBA SERVICE JOB ---

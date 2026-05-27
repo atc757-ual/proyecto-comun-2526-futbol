@@ -195,15 +195,35 @@ export class NodePlayerService implements IPlayerService {
     if (file) {
       this.logger.log('[PlayerService] Subiendo nueva imagen a Storage...');
       imageUrl = await this.storageService.uploadImage(file, 'players');
-
       if (isEdit && oldImageUrl?.includes('firebasestorage') && oldImageUrl !== imageUrl) {
         await this.storageService.deleteImageByUrl(oldImageUrl, 'players');
+      }
+    } else if (imageUrl?.startsWith('data:image/')) {
+      this.logger.log('[PlayerService] Subiendo imagen base64 (cámara/FileReader) a Storage...');
+      const uploaded = await this.storageService.uploadImage(this.base64ToFile(imageUrl, 'player_main.jpg'), 'players');
+      if (isEdit && oldImageUrl?.includes('firebasestorage') && oldImageUrl !== uploaded) {
+        await this.storageService.deleteImageByUrl(oldImageUrl, 'players');
+      }
+      imageUrl = uploaded;
+    }
+
+    // Subir sub-imágenes (cutout, banner, etc.) si son base64
+    let images = player.images ? { ...player.images } : undefined;
+    if (images) {
+      for (const key of Object.keys(images) as Array<keyof NonNullable<Player['images']>>) {
+        const val = images[key];
+        if (typeof val === 'string' && val.startsWith('data:image/')) {
+          images[key] = await this.storageService.uploadImage(
+            this.base64ToFile(val, `player_${key}.jpg`), 'players'
+          );
+        }
       }
     }
 
     const finalPlayer: Player = {
       ...player,
       image_url: imageUrl,
+      ...(images ? { images } : {}),
       updated_by: adminEmail,
       updated_at: new Date()
     };
@@ -215,6 +235,17 @@ export class NodePlayerService implements IPlayerService {
     }
 
     return finalPlayer;
+  }
+
+  private base64ToFile(dataUrl: string, filename: string): File {
+    const [header, base64] = dataUrl.split(',');
+    const mime = header.split(':')[1]?.split(';')[0] || 'image/jpeg';
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return new File([bytes], filename, { type: mime });
   }
 
   addPlayer(player: Player): Observable<Player> {
@@ -238,7 +269,32 @@ export class NodePlayerService implements IPlayerService {
   }
 
   deletePlayer(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.getPlayer(id).pipe(
+      catchError(() => of(null as any)),
+      switchMap(player => {
+        const firebaseUrls = player ? this.collectFirebaseUrls(player) : [];
+        return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+          switchMap(() => from(this.deleteFirebaseImages(firebaseUrls)))
+        );
+      })
+    );
+  }
+
+  private collectFirebaseUrls(player: Player): string[] {
+    const urls: string[] = [];
+    if (player.image_url?.includes('firebasestorage')) urls.push(player.image_url);
+    if (player.images) {
+      Object.values(player.images).forEach((url: any) => {
+        if (typeof url === 'string' && url.includes('firebasestorage')) urls.push(url);
+      });
+    }
+    return urls;
+  }
+
+  private async deleteFirebaseImages(urls: string[]): Promise<void> {
+    for (const url of urls) {
+      await this.storageService.deleteImageByUrl(url, 'players');
+    }
   }
 
   addComment(playerId: string, comment: any): Observable<any> {

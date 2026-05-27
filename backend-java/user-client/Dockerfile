@@ -2,7 +2,8 @@ FROM maven:3.8.1-openjdk-11 as builder
 
 WORKDIR /app
 
-COPY . .
+COPY pom.xml .
+COPY src ./src
 
 RUN mvn clean package -DskipTests
 
@@ -11,6 +12,9 @@ FROM openjdk:11-jre-slim
 WORKDIR /app
 
 COPY --from=builder /app/target/*.jar app.jar
+
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
+USER appuser
 
 EXPOSE 8083
 

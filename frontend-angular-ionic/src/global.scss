@@ -417,10 +417,6 @@ ion-item.action-item {
 .toast-success {
   --background: var(--color-success-010);
 
-  &::part(container) {
-    border: 2px solid var(--color-success);
-  }
-
   &::part(icon) {
     color: var(--color-success);
   }
@@ -428,10 +424,6 @@ ion-item.action-item {
 
 .toast-error {
   --background: var(--color-error-010);
-
-  &::part(container) {
-    border: 2px solid var(--color-error);
-  }
 
   &::part(icon) {
     color: var(--color-error);

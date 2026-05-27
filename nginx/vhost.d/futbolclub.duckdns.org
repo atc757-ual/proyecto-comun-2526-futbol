@@ -1,5 +1,5 @@
 location /node-api/ {
-    proxy_pass http://football-backend-node:3000/;
+    proxy_pass http://football-backend-node:3000/api/;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -7,15 +7,15 @@ location /node-api/ {
 }
 
 location /java-api/ {
-    proxy_pass http://football-gateway:8080/;
+    proxy_pass http://football-gateway:8080/api/;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
 }
 
-location /corba-bridge/ {
-    proxy_pass http://football-corba-bridge:8080/;
+location /corba-api/ {
+    proxy_pass http://football-corba-bridge:8080/corba-bridge/api/;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

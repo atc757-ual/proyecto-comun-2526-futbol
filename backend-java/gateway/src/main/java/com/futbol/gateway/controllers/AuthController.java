@@ -85,9 +85,12 @@ public class AuthController {
         } catch (FirebaseAuthException e) {
             logger.error("Fallo validando token Firebase. code={} message={}", e.getAuthErrorCode(), e.getMessage(), e);
             return buildErrorResponse(401, "Token Firebase inválido o expirado");
+        } catch (feign.FeignException e) {
+            logger.error("Error comunicando con user-client (Feign): status={} message={}", e.status(), e.getMessage(), e);
+            return buildErrorResponse(502, "Error interno al sincronizar usuario con el servidor");
         } catch (Exception e) {
             logger.error("Error inesperado en /api/auth/signin: {}", e.getMessage(), e);
-            return buildErrorResponse(401, "Token Firebase inválido o expirado");
+            return buildErrorResponse(500, "Error interno del servidor al iniciar sesión");
         }
     }
 

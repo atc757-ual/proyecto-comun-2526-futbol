@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import { AuthService } from 'src/app/core/services/auth/auth.service';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { IonFooter, IonTabBar, IonTabButton, IonIcon, IonLabel } from '@ionic/angular/standalone';
@@ -17,6 +18,8 @@ import { NavigationService } from 'src/app/core/services/ui/navigation.service';
 })
 export class PageTabsComponent {
   public navService = inject(NavigationService);
+
+  public auth = inject(AuthService);
 
   constructor() {
     addIcons({ homeOutline, newspaperOutline, footballOutline, sparklesOutline, searchOutline });

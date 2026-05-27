@@ -35,8 +35,8 @@
           </p>
         </div>
         <div class="permission-action">
-          <ion-button *ngIf="!locationAccepted" class="action-btn-soft" [disabled]="isLoadingLocation"
-            (click)="requestLocation()">
+          <ion-button *ngIf="!locationAccepted" class="action-btn-soft" color="success" fill="outline"
+            [disabled]="isLoadingLocation" (click)="requestLocation()">
             <ion-spinner *ngIf="isLoadingLocation" name="crescent"></ion-spinner>
             <span *ngIf="!isLoadingLocation">Permitir</span>
           </ion-button>
@@ -46,7 +46,7 @@
 
       <!-- PERMISO: CÁMARA (Solo en modo players) -->
       <div class="permission-item is-blue mb-base" *ngIf="mode === 'players'" [class.accepted]="cameraAccepted">
-        <div class="icon-circle camera is-blue">
+        <div class="icon-circle camera">
           <ion-icon name="camera-outline"></ion-icon>
         </div>
         <div class="permission-text">
@@ -55,9 +55,9 @@
             Captura fotos de tus jugadores o sube imágenes de tu galería para completar su ficha técnica.
           </p>
         </div>
-        <div class="permission-action is-blue">
-          <ion-button *ngIf="!cameraAccepted" class="action-btn-soft is-blue" [disabled]="isLoadingCamera"
-            (click)="requestCamera()">
+        <div class="permission-action">
+          <ion-button *ngIf="!cameraAccepted" class="action-btn-soft" color="primary" fill="outline"
+            [disabled]="isLoadingCamera" (click)="requestCamera()">
             <ion-spinner *ngIf="isLoadingCamera" name="crescent" color="primary"></ion-spinner>
             <span *ngIf="!isLoadingCamera">Permitir</span>
           </ion-button>

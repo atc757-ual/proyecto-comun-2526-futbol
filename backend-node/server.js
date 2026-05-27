@@ -108,12 +108,20 @@ const renderStatusDashboard = async (req, res) => {
 const { authorizeRequest, isAdmin } = require('./app_api/middleware/auth.middleware');
 const statusAuth = (req, res, next) => {
   const apiKey = process.env.STATUS_API_KEY;
-  if (!apiKey || req.query.key === apiKey) return next();
+  if (apiKey && req.query.key === apiKey) return next();
 
-  // Permitir acceso con el JWT de admin del backend (pasado como ?token= o cabecera)
-  if (req.query.token) {
-    req.headers.authorization = `Bearer ${req.query.token}`;
+  const token = req.query.token ||
+    (req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.slice(7) : null);
+
+  if (!token) {
+    return res.status(401).render('status', {
+      error: 'Acceso no disponible. Se requiere sesión de administrador.',
+      port: null, env: null, uptime: null, dbState: null,
+      dbHost: null, dbName: null, totalPlayers: null, totalComments: null, totalUsers: null
+    });
   }
+
+  req.headers.authorization = `Bearer ${token}`;
   authorizeRequest(req, res, () => isAdmin(req, res, next));
 };
 

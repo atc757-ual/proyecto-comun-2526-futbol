@@ -86,7 +86,7 @@ jobs:
           path: |
             frontend-angular-ionic/cypress/videos/
             frontend-angular-ionic/cypress/screenshots/
-          if-no-files-found: warn
+          if-no-files-found: ignore
 
       - name: Log in to Registry
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
@@ -225,21 +225,6 @@ jobs:
           cd backend-java
           mvn clean install -DskipTests
 
-      - name: SonarCloud Scan (Java)
-        continue-on-error: true
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/football
-          SPRING_DATASOURCE_USERNAME: user
-          SPRING_DATASOURCE_PASSWORD: password
-        run: |
-          cd backend-java
-          mvn sonar:sonar \
-            -Dsonar.projectKey=football-java \
-            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }} \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.coverage.jacoco.xmlReportPaths=player-client/target/site/jacoco/jacoco.xml \
-            -DskipTests
 
       - name: Log in to Registry
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
@@ -334,6 +319,7 @@ jobs:
           envs: REGISTRY_TOKEN,REGISTRY_USER
           script: |
             cd $HOME/proyecto-comun-2526-futbol
+            git pull origin main
             echo "$REGISTRY_TOKEN" | docker login ghcr.io -u "$REGISTRY_USER" --password-stdin
             docker compose pull
             docker compose up -d --remove-orphans

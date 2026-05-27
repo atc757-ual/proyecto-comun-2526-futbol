@@ -213,8 +213,10 @@ export class ProfilePage implements OnInit {
   }
 
   openNodeStatusDashboard() {
-    const baseUrl = environment.nodeApiUrl.replace('/api', '');
-    window.open(`${baseUrl}/status`, '_blank', 'noopener,noreferrer');
+    const token = localStorage.getItem('jwt_token');
+    const base = environment.nodeApiUrl.replace(/\/api$/, '');
+    const url = token ? `${base}/status?token=${token}` : `${base}/status`;
+    window.open(url, '_blank', 'noopener,noreferrer');
   }
 
   handleAvatarError(event: any) {

@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync, fakeAsync, flushMicrotasks } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { PageHeaderComponent } from './page-header.component';
@@ -137,15 +137,16 @@ describe('PageHeaderComponent', () => {
       expect(component).toBeTruthy();
     });
 
-    it('logout() should call modalCtrl.create on desktop', async () => {
+    it('logout() should call modalCtrl.create on desktop', fakeAsync(() => {
       const modalMock = {
         present: jasmine.createSpy('present').and.returnValue(Promise.resolve()),
         onWillDismiss: jasmine.createSpy('onWillDismiss').and.returnValue(Promise.resolve({ data: false }))
       };
       modalCtrlSpy.create.and.returnValue(Promise.resolve(modalMock as any));
-      await component.logout();
+      component.logout();
+      flushMicrotasks();
       expect(modalCtrlSpy.create).toHaveBeenCalled();
-    });
+    }));
 
     it('logout() should call authService.logout when modal returns true', async () => {
       const modalMock = {

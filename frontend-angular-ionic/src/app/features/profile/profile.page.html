@@ -74,9 +74,9 @@
                 </div>
               </div>
 
-              <div class="separator my-s" *ngIf="!useSpringBoot"></div>
+              <div class="separator my-s" *ngIf="!useSpringBoot && isMaster"></div>
 
-              <ion-item *ngIf="!useSpringBoot" lines="none" class="action-item is-blue" detail="true" button
+              <ion-item *ngIf="!useSpringBoot && isMaster" lines="none" class="action-item is-blue" detail="true" button
                 (click)="openNodeStatusDashboard()">
                 <ion-icon slot="start" name="server-outline"></ion-icon>
                 <ion-label>

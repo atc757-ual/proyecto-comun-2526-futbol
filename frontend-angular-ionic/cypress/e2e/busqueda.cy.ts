@@ -45,7 +45,7 @@ const addMessiToBasket = () => {
 
 // ─── TheSportsDB API stubs for offline testing ────────────────────────────────
 const stubLeagueSearch = (alias = 'searchLeagues') => {
-  cy.intercept('GET', /.*(searchleagues|search-leagues|leagues\/search).*/, {
+  cy.intercept('GET', /(searchleagues|search-leagues|leagues\/search)/, {
     statusCode: 200,
     body: {
       data: [
@@ -61,7 +61,7 @@ const stubLeagueSearch = (alias = 'searchLeagues') => {
 };
 
 const stubTeamsByLeague = (alias = 'teamsByLeague') => {
-  cy.intercept('GET', /.*(lookup_all_teams|teams-by-league|league\/.*\/teams).*/, {
+  cy.intercept('GET', /(lookup_all_teams|teams-by-league|league\/[^/]+\/teams)/, {
     statusCode: 200,
     body: {
       data: [
@@ -77,7 +77,7 @@ const stubTeamsByLeague = (alias = 'teamsByLeague') => {
 };
 
 const stubPlayersByTeam = (alias = 'playersByTeam') => {
-  cy.intercept('GET', /.*(lookup_all_players|team-players|team\/.*\/players).*/, {
+  cy.intercept('GET', /(lookup_all_players|team-players|team\/[^/]+\/players)/, {
     statusCode: 200,
     body: {
       data: [
@@ -95,7 +95,7 @@ const stubPlayersByTeam = (alias = 'playersByTeam') => {
 };
 
 const stubPlayerSearch = (alias = 'searchPlayers') => {
-  cy.intercept('GET', /.*(searchplayers|search-players|\/players\?.*name=|players\/search).*/, {
+  cy.intercept('GET', /(searchplayers|search-players|\/players\?[^#]*name=|players\/search)/, {
     statusCode: 200,
     body: {
       data: [
@@ -111,7 +111,7 @@ const stubPlayerSearch = (alias = 'searchPlayers') => {
 };
 
 const stubTeamSearch = (alias = 'searchTeams') => {
-  cy.intercept('GET', /.*(searchteams|search-teams|teams\/search).*/, {
+  cy.intercept('GET', /(searchteams|search-teams|teams\/search)/, {
     statusCode: 200,
     body: {
       data: [

@@ -358,7 +358,9 @@ export class AddEditNewsPage implements OnInit {
       error: (err) => {
         this.isPublishing = false;
         console.error('[PUBLISH] Error al procesar noticia:', err);
-        this.showToast('Error al guardar la noticia (CORBA/Storage)', 'danger');
+        const serverMsg = err?.error?.result?.descriptionDetail;
+        const msg = serverMsg || err?.message || 'Error al guardar la noticia';
+        this.showToast(msg, 'danger');
       }
     });
   }

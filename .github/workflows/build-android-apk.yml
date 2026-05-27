@@ -1,0 +1,83 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend-angular-ionic/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./frontend-angular-ionic
+
+      - name: Build Angular app (production-android)
+        run: npm run build -- --configuration=production-android
+        working-directory: ./frontend-angular-ionic
+
+      - name: Add Android platform
+        run: npx cap add android
+        working-directory: ./frontend-angular-ionic
+
+      - name: Inject Android permissions into AndroidManifest.xml
+        working-directory: ./frontend-angular-ionic
+        run: |
+          node -e "
+          const fs = require('fs');
+          const path = 'android/app/src/main/AndroidManifest.xml';
+          let content = fs.readFileSync(path, 'utf8');
+          const perms = \`
+              <uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\" />
+              <uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\" />
+              <uses-permission android:name=\"android.permission.CAMERA\" />
+              <uses-permission android:name=\"android.permission.READ_MEDIA_IMAGES\" />
+              <uses-permission android:name=\"android.permission.READ_MEDIA_VIDEO\" />
+              <uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\" android:maxSdkVersion=\"32\" />
+              <uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\" android:maxSdkVersion=\"29\" />
+              <uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\" />\`;
+          const marker = '<uses-permission android:name=\"android.permission.INTERNET\" />';
+          if (!content.includes('ACCESS_FINE_LOCATION')) {
+            content = content.replace(marker, marker + perms);
+            fs.writeFileSync(path, content);
+            console.log('Permissions injected successfully');
+          } else {
+            console.log('Permissions already present, skipping');
+          }
+          "
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+        working-directory: ./frontend-angular-ionic
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --no-daemon
+        working-directory: ./frontend-angular-ionic/android
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-${{ github.sha }}
+          path: frontend-angular-ionic/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14

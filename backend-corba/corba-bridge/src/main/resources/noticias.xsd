@@ -67,10 +67,10 @@
         </xsd:restriction>
     </xsd:simpleType>
 
-    <!-- URL de imagen: debe empezar por http:// o https:// -->
+    <!-- URL de imagen: debe empezar por http/https, o vacío si no hay imagen -->
     <xsd:simpleType name="url_valid">
         <xsd:restriction base="xsd:string">
-            <xsd:pattern value="https?://\S+"/>
+            <xsd:pattern value="(https?://\S+)?"/>
         </xsd:restriction>
     </xsd:simpleType>
 

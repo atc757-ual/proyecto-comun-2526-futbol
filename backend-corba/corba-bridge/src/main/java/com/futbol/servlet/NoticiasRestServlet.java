@@ -253,16 +253,16 @@ public class NoticiasRestServlet extends HttpServlet {
                 return;
             }
 
-            if (this.newsService == null) conectarCorba();
             validarTamanoImagen(noticiaLimpia.imageUrl);
-            this.newsService.addNews(noticiaLimpia);
-            logger.info("[BRIDGE-POST] Noticia creada con éxito: {}", noticiaLimpia.id);
+            final NewsItem noticiaFinal = sanitizeParaCorba(noticiaLimpia);
+            ejecutarConRetry(() -> this.newsService.addNews(noticiaFinal));
+            logger.info("[BRIDGE-POST] Noticia creada con éxito: {}", noticiaFinal.id);
             enviarRespuesta(response, HttpServletResponse.SC_CREATED, true,
-                    "Noticia creada en CORBA", noticiaLimpia);
+                    "Noticia creada en CORBA", noticiaFinal);
         } catch (Exception e) {
             logger.error("[BRIDGE-POST] ERROR: {}", e.getMessage());
             enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false,
-                    "Error de validación: " + e.getMessage(), null);
+                    "Error al crear noticia: " + e.getMessage(), null);
         }
     }
 
@@ -286,13 +286,15 @@ public class NoticiasRestServlet extends HttpServlet {
                 return;
             }
 
-            if (this.newsService == null) conectarCorba();
             validarTamanoImagen(noticiaLimpia.imageUrl);
-            boolean success = this.newsService.updateNews(noticiaLimpia);
+            final NewsItem noticiaFinal = sanitizeParaCorba(noticiaLimpia);
+            boolean[] result = {false};
+            ejecutarConRetry(() -> result[0] = this.newsService.updateNews(noticiaFinal));
+            boolean success = result[0];
 
             if (success) {
                 enviarRespuesta(response, HttpServletResponse.SC_OK, true,
-                        "Procesamiento concluído exitosamente", noticiaLimpia);
+                        "Procesamiento concluído exitosamente", noticiaFinal);
             } else {
                 enviarRespuesta(response, HttpServletResponse.SC_NOT_FOUND, false,
                         "No se pudo actualizar la noticia", null);
@@ -335,6 +337,55 @@ public class NoticiasRestServlet extends HttpServlet {
             logger.error("[BRIDGE-DELETE] ERROR: {}", e.getMessage());
             enviarRespuesta(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, false,
                     e.getMessage(), null);
+        }
+    }
+
+    private NewsItem sanitizeParaCorba(NewsItem n) {
+        n.title     = sanitizarString(n.title);
+        n.content   = sanitizarString(n.content);
+        n.summary   = sanitizarString(n.summary);
+        n.author    = sanitizarString(n.author);
+        n.imageUrl  = sanitizarString(n.imageUrl);
+        n.category  = sanitizarString(n.category);
+        n.createdBy = sanitizarString(n.createdBy);
+        n.updatedBy = sanitizarString(n.updatedBy);
+        if (n.tags != null) {
+            for (int i = 0; i < n.tags.length; i++) n.tags[i] = sanitizarString(n.tags[i]);
+        }
+        return n;
+    }
+
+    private String sanitizarString(String text) {
+        if (text == null) return "";
+        return text
+            .replace("…", "...")   // … → ...
+            .replace("‘", "'")     // ' → '
+            .replace("’", "'")     // ' → '
+            .replace("“", "\"")    // " → "
+            .replace("”", "\"")    // " → "
+            .replace("–", "-")     // – → -
+            .replace("—", "--")    // — → --
+            .replace(" ", " ")     // espacio no-separable → espacio
+            .replaceAll("[^\\x00-\\xFF]", "?"); // resto de Unicode → ?
+    }
+
+    @FunctionalInterface
+    private interface CorbaAction {
+        void run() throws Exception;
+    }
+
+    private void ejecutarConRetry(CorbaAction action) throws Exception {
+        try {
+            if (this.newsService == null) conectarCorba();
+            action.run();
+        } catch (org.omg.CORBA.SystemException corbaEx) {
+            logger.warn("[BRIDGE-RETRY] Error CORBA ({}), reconectando...", corbaEx.getMessage());
+            this.newsService = null;
+            conectarCorba();
+            if (this.newsService == null) {
+                throw new Exception("Servicio CORBA no disponible tras reconexión");
+            }
+            action.run();
         }
     }
 

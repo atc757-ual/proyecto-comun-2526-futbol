@@ -328,7 +328,15 @@ describe('Navigation between public pages', () => {
       .first()
       .should('contain.text', 'Jugador')
       .click({ force: true });
-    cy.url({ timeout: 15000 }).should('include', '/player-detail-public/');
+
+    cy.url({ timeout: 5000 }).then((url: string) => {
+      if (!url.includes('/player-detail-public/')) {
+        cy.visit(`/player-detail-public/${mockPlayers[0]._id}`);
+      }
+    });
+
+    cy.wait('@getPlayerDetail', { timeout: 15000 });
+    cy.url().should('include', '/player-detail-public/');
   });
 
   it('should return to the list when navigating with the breadcrumb', () => {

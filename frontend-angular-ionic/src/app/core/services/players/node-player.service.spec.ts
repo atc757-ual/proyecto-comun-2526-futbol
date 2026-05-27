@@ -32,8 +32,9 @@ describe('NodePlayerService', () => {
     http.expectOne(`${base}/123`).flush({ data: { name: 'Messi' } });
   });
 
-  it('deletePlayer() should make DELETE to /players/:id', () => {
+  it('deletePlayer() should GET player then DELETE /players/:id', () => {
     service.deletePlayer('123').subscribe();
+    http.expectOne({ method: 'GET', url: `${base}/123` }).flush({ data: { name: 'TestPlayer', image_url: '' } });
     http.expectOne({ method: 'DELETE', url: `${base}/123` }).flush(null);
   });
 

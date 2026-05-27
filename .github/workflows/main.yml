@@ -61,6 +61,7 @@ jobs:
         with:
           working-directory: frontend-angular-ionic
           browser: chrome
+          install: false
           build: npx ng build --configuration=production
           start: node_modules/.bin/http-server dist/frontend-angular-ionic/browser -p 4200 --silent
           wait-on: 'http://localhost:4200'

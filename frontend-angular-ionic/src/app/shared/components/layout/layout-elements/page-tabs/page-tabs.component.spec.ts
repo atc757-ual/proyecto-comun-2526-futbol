@@ -82,13 +82,12 @@ describe('PageTabsComponent', () => {
   describe('isTabActive', () => {
     describe('with authenticated user', () => {
       let authFixture: ComponentFixture<PageTabsComponent>;
-      let authComponent: PageTabsComponent;
-      let authNavMock: jasmine.SpyObj<NavigationService> & { pages: typeof APP_PAGES };
+      let authNavMock: any;
 
       beforeEach(waitForAsync(() => {
         authNavMock = jasmine.createSpyObj('NavigationService', [
           'isTabActive', 'isCurrentHome', 'goBack'
-        ]) as jasmine.SpyObj<NavigationService> & { pages: typeof APP_PAGES };
+        ]);
         authNavMock.pages = APP_PAGES;
         authNavMock.isTabActive.and.returnValue(false);
 
@@ -110,7 +109,6 @@ describe('PageTabsComponent', () => {
         }).compileComponents();
 
         authFixture = TestBed.createComponent(PageTabsComponent);
-        authComponent = authFixture.componentInstance;
         authFixture.detectChanges();
       }));
 

@@ -10,7 +10,7 @@ import { addIcons } from 'ionicons';
 import { atOutline, lockClosedOutline, peopleOutline, cafeOutline, logoNodejs } from 'ionicons/icons';
 import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { ToastService } from 'src/app/core/services/ui/toast.service';
-
+import { LoggerService } from 'src/app/core/services/system/logger.service';
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html',
@@ -37,9 +37,8 @@ export class LoginPage {
   private readonly toastService = inject(ToastService);
   private readonly layoutService = inject(LayoutService);
   public platformService = inject(PlatformService);
-
+  private readonly logger = inject(LoggerService);
   // === CONSTRUCTOR Y CICLO DE VIDA ===
-
   constructor() {
     // Registro los iconos requeridos específicamente en esta pantalla
     addIcons({
@@ -71,7 +70,7 @@ export class LoginPage {
       await this.navCtrl.navigateRoot('/home', { animated: false });
 
     } catch (error: any) {
-      console.error('[LOGIN] Error en el proceso de login:', error);
+      this.logger.error('[LOGIN] Error en el proceso de login:', error);
       // Muestro el aviso de error adaptado utilizando el servicio global
       await this.toastService.showError(this.getErrorMessage(error));
     } finally {

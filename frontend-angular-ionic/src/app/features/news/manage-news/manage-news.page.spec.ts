@@ -36,7 +36,8 @@ const mockLayoutService = {
 
 const mockToastService = {
   showSuccess: jasmine.createSpy('showSuccess'),
-  showError: jasmine.createSpy('showError')
+  showError: jasmine.createSpy('showError'),
+  showWarning: jasmine.createSpy('showWarning').and.returnValue(Promise.resolve())
 };
 
 const mockNavCtrl = {
@@ -131,4 +132,8 @@ describe('ManageNewsPage', () => {
     expect(component.pagedNews.length).toBe(1);
     expect(component.pagedNews[0].title).toBe('News 2');
   });
+});
+
+afterEach(() => {
+  TestBed.resetTestingModule();
 });

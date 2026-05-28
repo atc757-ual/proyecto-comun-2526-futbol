@@ -11,7 +11,6 @@ import {
 } from '@ionic/angular/standalone';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { ConfirmModalComponent } from 'src/app/shared/components/modals/confirm-modal/confirm-modal.component';
-import { ToastService } from '../../../core/services/ui/toast.service';
 import { addIcons } from 'ionicons';
 import {
   star, starOutline, footballOutline, shieldOutline,
@@ -32,7 +31,6 @@ import { PLAYER_SERVICE_TOKEN } from '../../../core/services/players/player.serv
 import { Player } from '../../../core/models/player.model';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { Geolocation } from '@capacitor/geolocation';
-import { LayoutService } from '../../../core/services/ui/layout.service';
 import { ConfettiService } from 'src/app/core/services/ui/confetti.service';
 import { PermissionModalComponent } from 'src/app/shared/components/modals/permission-modal/permission-modal.component';
 import { LocationPlugin } from '../../../core/plugins/location-plugin';
@@ -42,9 +40,9 @@ import { HapticsPlugin } from '../../../core/plugins/haptics-plugin';
 import { PageFullContentComponent } from 'src/app/shared/components/layout/layout-elements/page-full-content/page-full-content.component';
 import { PageFooterComponent } from 'src/app/shared/components/layout/layout-elements/page-footer/page-footer.component';
 import { IonContent } from '@ionic/angular/standalone';
-
+import { LoggerService } from '../../../core/services/system/logger.service';
 import { register } from 'swiper/element/bundle';
-
+import { ToastService } from '../../../core/services/ui/toast.service';
 @Component({
   selector: 'app-player-detail',
   templateUrl: './player-detail.page.html',
@@ -87,9 +85,6 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
   public authService = inject(AuthService);
   private readonly loadingCtrl = inject(LoadingController);
   private readonly navCtrl = inject(NavController);
-  private readonly layoutService = inject(LayoutService);
-  private readonly alertCtrl = inject(AlertController);
-  private readonly toastService = inject(ToastService);
   private readonly modalCtrl = inject(ModalController);
   private activePermissionModal: HTMLIonModalElement | null = null;
   private readonly confettiService = inject(ConfettiService);
@@ -98,6 +93,7 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
   private readonly shareCardPlugin = inject(ShareCardPlugin);
   private readonly hapticsService = inject(HapticsPlugin);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly toastService = inject(ToastService);
 
   public player: Player | null = null;
   public honours: TsdbHonour[] = [];
@@ -373,7 +369,7 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
           if (err.status === 401 || err.status === 403) {
             this.navCtrl.navigateRoot(`/player-detail-public/${id}`);
           } else {
-            this.showToast('Error al cargar el perfil del jugador', 'danger');
+            this.toastService.showError('Error al cargar el perfil del jugador');
           }
         }
       });
@@ -433,7 +429,7 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
           this.teamDetails.push(res);
         }
       },
-      error: (err) => console.error('Error loading team 1 details:', err)
+      error: (err) => this.logger.error('Error loading team 1 details:', err)
     });
 
     if (teamId2) {
@@ -444,7 +440,7 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
             this.teamDetails.push(res);
           }
         },
-        error: (err) => console.error('Error loading team 2 details:', err)
+        error: (err) => this.logger.error('Error loading team 2 details:', err)
       });
     }
   }
@@ -452,7 +448,7 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
   loadLeagueInfo(leagueId: string) {
     this.playerService.lookupTSDBLeague(leagueId).pipe(takeUntil(this.destroy$)).subscribe({
       next: (res: TsdbLeague) => { this.leagueDetails = res; },
-      error: (err) => console.warn('Error loading league info:', err)
+      error: (err) => this.logger.warn('Error loading league info:', err)
     });
   }
 
@@ -471,11 +467,11 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
     this.playerService.toggleFavorite(this.player._id, newStatus).subscribe({
       next: (updatedPlayer) => {
         const msg = newStatus ? 'Añadido a tus favoritos' : 'Eliminado de favoritos';
-        this.showToast(msg, 'success');
+        this.toastService.showSuccess(msg);
       },
       error: () => {
         if (this.player) this.player.isFavorite = !newStatus;
-        this.showToast('Error al actualizar favorito', 'danger');
+        this.toastService.showError('Error al actualizar favorito');
       }
     });
   }
@@ -502,10 +498,10 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
     if (data === true) {
       this.playerService.deletePlayer(this.player._id!).subscribe({
         next: () => {
-          this.showToast('Ficha eliminada con éxito', 'success');
+          this.toastService.showSuccess('Ficha eliminada con éxito');
           this.navCtrl.navigateRoot('/players');
         },
-        error: () => this.showToast('Error al procesar la baja', 'danger')
+        error: () => this.toastService.showError('Error al procesar la baja')
       });
     }
   }
@@ -532,11 +528,11 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
       rating: this.editingRating
     }).subscribe({
       next: () => {
-        this.showToast('Comentario actualizado', 'success');
+        this.toastService.showSuccess('Comentario actualizado');
         this.editingCommentId = null;
         this.loadPlayer(this.player!._id!);
       },
-      error: () => this.showToast('Error al actualizar', 'danger')
+      error: () => this.toastService.showError('Error al actualizar')
     });
   }
 
@@ -561,10 +557,10 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
     if (data === true) {
       this.playerService.deleteComment(this.player._id!, commentId).subscribe({
         next: () => {
-          this.showToast('Eliminado', 'success');
+          this.toastService.showSuccess('Comentario eliminado correctamente');
           this.loadPlayer(this.player!._id!);
         },
-        error: () => this.showToast('Error al borrar', 'danger')
+        error: () => this.toastService.showError('Error al borrar el comentario')
       });
     }
   }
@@ -602,7 +598,7 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
       } else {
         try {
           const coordinates = await Geolocation.getCurrentPosition({ timeout: 5000 });
-          console.log('[GEOLOCATION] Coordenadas obtenidas en submit:', coordinates);
+          this.logger.log('[GEOLOCATION] Coordenadas obtenidas en submit:', coordinates);
           this.userCoords.set({
             lat: coordinates.coords.latitude,
             lng: coordinates.coords.longitude
@@ -612,21 +608,21 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
             coordinates: [coordinates.coords.longitude, coordinates.coords.latitude]
           };
         } catch (err) {
-          console.warn('[PLAYER-DETAIL] No se pudo obtener ubicación vía plugin:', err);
+          this.logger.warn('[PLAYER-DETAIL] No se pudo obtener ubicación vía plugin:', err);
         }
       }
     }
 
     this.playerService.addComment(this.player._id, commentData).subscribe({
       next: () => {
-        this.showToast('¡Gracias por tu comentario!', 'success');
+        this.toastService.showSuccess('¡Gracias por tu comentario!');
         this.newComment = '';
         this.newRating = 5;
         this.isSubmittingComment = false;
         this.loadPlayer(this.player!._id!);
       },
       error: () => {
-        this.showToast('No se pudo publicar', 'danger');
+        this.toastService.showError('No se pudo publicar el comentario');
         this.isSubmittingComment = false;
       }
     });
@@ -707,13 +703,6 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
     return stars;
   }
 
-  private showToast(message: string, color: string) {
-    if (color === 'success') {
-      this.toastService.showSuccess(message);
-    } else {
-      this.toastService.showError(message);
-    }
-  }
 
   private loadDescriptiveLocation(lat: number, lng: number) {
     this.isLoadingLocation = true;
@@ -731,6 +720,7 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
   }
 
   private readonly zone = inject(NgZone);
+  private readonly logger = inject(LoggerService);
 
   private initDetailMap(lat: number, lng: number, retryCount = 0) {
     if (!this.player?._id) return;
@@ -739,13 +729,13 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
 
     if (!mapContainer) {
       if (retryCount < 20) {
-        console.warn(`[PLAYER-DETAIL] Buscando contenedor #${retryCount + 1}... ID: ${elementId}`);
+        this.logger.warn(`[PLAYER-DETAIL] Buscando contenedor #${retryCount + 1}... ID: ${elementId}`);
         setTimeout(() => this.initDetailMap(lat, lng, retryCount + 1), 500);
       }
       return;
     }
 
-    console.log(`[PLAYER-DETAIL] Contenedor ${elementId} encontrado. Lat: ${lat}, Lng: ${lng}`);
+    this.logger.log(`[PLAYER-DETAIL] Contenedor ${elementId} encontrado. Lat: ${lat}, Lng: ${lng}`);
 
     try {
       this.zone.runOutsideAngular(async () => {
@@ -771,7 +761,7 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
         }
       });
     } catch (err) {
-      console.error('[PLAYER-DETAIL] Error inicializando mapa:', err);
+      this.logger.error('[PLAYER-DETAIL] Error inicializando mapa:', err);
     }
   }
 
@@ -793,7 +783,7 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
           (pos) => {
             this.userCoords.set({ lat: pos.coords.latitude, lng: pos.coords.longitude });
           },
-          () => {},
+          () => { },
           { timeout: 10000 }
         );
       }

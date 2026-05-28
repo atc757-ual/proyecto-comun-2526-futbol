@@ -26,6 +26,7 @@ import { ConfirmModalComponent } from '../../../shared/components/modals/confirm
 import { RouterModule } from '@angular/router';
 import { NEWS_SERVICE_TOKEN } from '../../../core/services/news/news.service.token';
 import { ToastService } from 'src/app/core/services/ui/toast.service';
+import { LoggerService } from '../../../core/services/system/logger.service';
 
 @Component({
   selector: 'app-manage-news',
@@ -48,6 +49,7 @@ export class ManageNewsPage implements OnInit {
   private readonly modalCtrl = inject(ModalController);
   private readonly toastService = inject(ToastService);
   private readonly navCtrl = inject(NavController);
+  private readonly logger = inject(LoggerService);
 
   news: NewsItem[] = [];
   filteredNews: NewsItem[] = [];
@@ -105,7 +107,7 @@ export class ManageNewsPage implements OnInit {
       },
       error: () => {
         this.isLoading = false;
-        this.showToast('Error al cargar noticias', 'danger', 'alert-circle-outline');
+        this.toastService.showError('Error al cargar noticias');
         if (event) event.target.complete();
       }
     });
@@ -178,7 +180,7 @@ export class ManageNewsPage implements OnInit {
 
   private async executeDeletion(item: NewsItem) {
     if (!this.authService.isAdmin()) {
-      this.showToast('No tienes permisos para ejecutar esta acción', 'danger', 'alert-circle-outline');
+      this.toastService.showError('No tienes permisos para ejecutar esta acción');
       return;
     }
 
@@ -189,11 +191,11 @@ export class ManageNewsPage implements OnInit {
     // 2. Borrar de CORBA
     this.newsService.deleteNews(item.id!).subscribe({
       next: async () => {
-        this.showToast('Noticia eliminada correctamente', 'success', 'checkmark-circle-outline');
+        this.toastService.showSuccess('Noticia eliminada correctamente');
         this.loadNews();
       },
       error: async (err) => {
-        this.showToast('Error al eliminar la noticia', 'danger', 'alert-circle-outline');
+        this.toastService.showError('Error al eliminar la noticia');
       }
     });
   }
@@ -238,7 +240,7 @@ export class ManageNewsPage implements OnInit {
 
         this.newsService.bulkAddNews(json).subscribe({
           next: () => {
-            this.showToast(`¡Éxito! ${json.length} noticias cargadas correctamente.`, 'success', 'checkmark-circle-outline');
+            this.toastService.showSuccess(`¡Éxito! ${json.length} noticias cargadas correctamente.`);
             this.isUploadingBulk = false;
             this.showBulkPanel = false;
             this.selectedBulkFile = null;
@@ -247,14 +249,13 @@ export class ManageNewsPage implements OnInit {
           },
           error: (err) => {
             this.isUploadingBulk = false;
-            const errorMsg = err.error?.result?.descriptionDetail || err.message || 'Error desconocido';
-            this.showToast(`Error: ${errorMsg}`, 'danger', 'alert-circle-outline');
-            console.error('[BULK] Error en el servidor:', err);
+            this.toastService.showError(`Ha ocurrido un error al subir las noticias`);
+            this.logger.error('[BULK] Error en el servidor:', err);
           }
         });
       } catch (err) {
         this.isUploadingBulk = false;
-        this.showToast('El archivo no tiene un formato JSON válido', 'danger', 'close-circle-outline');
+        this.toastService.showError('El archivo no tiene un formato JSON válido');
       }
     };
 
@@ -266,7 +267,7 @@ export class ManageNewsPage implements OnInit {
    */
   downloadNews() {
     if (this.news.length === 0) {
-      this.showToast('No hay noticias para descargar', 'warning', 'alert-circle-outline');
+      this.toastService.showWarning('No hay noticias para descargar');
       return;
     }
 
@@ -278,16 +279,9 @@ export class ManageNewsPage implements OnInit {
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
 
-    this.showToast('Exportación completada', 'success', 'checkmark-circle-outline');
+    this.toastService.showSuccess('Exportación completada');
   }
 
-  showToast(message: string, type: 'success' | 'danger' | 'warning' | 'info', icon: string) {
-    if (type === 'success') {
-      this.toastService.showSuccess(message);
-    } else {
-      this.toastService.showError(message);
-    }
-  }
 
   trackByNewsId(_: number, news: NewsItem): string | undefined {
     return news._id;

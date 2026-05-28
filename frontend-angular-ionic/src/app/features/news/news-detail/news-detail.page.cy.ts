@@ -28,7 +28,7 @@ describe('NewsDetailPage Component', () => {
         },
         { provide: LayoutService, useValue: { setHeader: () => {}, setBreadcrumbs: () => {} } },
         { provide: PlatformService, useValue: { isDesktop: true } },
-        { provide: ToastService, useValue: { showError: () => {} } },
+        { provide: ToastService, useValue: { showError: () => {}, showWarning: () => {} } },
         { provide: NavController, useValue: { navigateBack: () => {} } },
         { provide: Router, useValue: { navigate: () => {} } },
         { provide: ModalController, useValue: { create: () => Promise.resolve() } },

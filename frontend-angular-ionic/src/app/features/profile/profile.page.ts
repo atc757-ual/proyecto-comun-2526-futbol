@@ -22,7 +22,7 @@ import { ConfirmModalComponent } from '../../shared/components/modals/confirm-mo
 import { PageFullContentComponent } from 'src/app/shared/components/layout/layout-elements/page-full-content/page-full-content.component';
 import { PageFooterComponent } from 'src/app/shared/components/layout/layout-elements/page-footer/page-footer.component';
 import { IonContent } from '@ionic/angular/standalone';
-
+import { LoggerService } from '../../core/services/system/logger.service';
 type ProfileUserInfo = {
   name: string;
   email: string;
@@ -52,6 +52,7 @@ export class ProfilePage implements OnInit {
   private readonly actionSheetCtrl = inject(ActionSheetController);
   private readonly modalCtrl = inject(ModalController);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly logger = inject(LoggerService);
   public platformService = inject(PlatformService);
 
   private readonly fallbackAvatar = 'https://ui-avatars.com/api/?name=User&background=e2e8f0&color=0f172a&bold=true';
@@ -112,7 +113,7 @@ export class ProfilePage implements OnInit {
     try {
       await this.authService.syncUserWithBackend(targetVal, true);
     } catch (err) {
-      console.error('[PROFILE] Error de sincronización al cambiar backend:', err);
+      this.logger.error('[PROFILE] Error de sincronización al cambiar backend:', err);
       // Revertir el toggle visualmente: restaurar el valor anterior y forzar detección de cambios
       this.useSpringBoot = this.platformService.getUseJavaBackend();
       this.cdr.detectChanges();

@@ -30,8 +30,7 @@ import { PageFooterComponent } from '../../shared/components/layout/layout-eleme
   standalone: true,
   imports: [
     CommonModule, FormsModule, RouterModule,
-    IonContent, // added for ion-content usage
-    // Shared layout components
+    IonContent,
     PageFullContentComponent,
     PageFooterComponent,
     IonButton, IonIcon, IonCard, IonCardContent, IonCardHeader, IonCardTitle,
@@ -156,10 +155,8 @@ export class AiTeamPage implements OnInit {
         clearInterval(this.textInterval);
         this.layoutService.setAILoading(false);
         this.isGenerating = false;
-
-        // Extraer mensaje del backend si existe
-        const message = err.error?.result?.description || 'Error al conectar con la IA';
-        this.toastService.showError(message);
+        const errorMessage = err?.error?.result?.description || 'Error al conectar con la IA';
+        this.toastService.showError(errorMessage);
       }
     });
   }

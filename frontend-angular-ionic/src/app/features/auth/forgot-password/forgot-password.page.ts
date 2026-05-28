@@ -13,6 +13,7 @@ import {
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { LayoutService } from '../../../core/services/ui/layout.service';
 import { ToastService } from '../../../core/services/ui/toast.service';
+import { LoggerService } from '../../../core/services/system/logger.service';
 
 @Component({
   selector: 'app-forgot-password',
@@ -65,6 +66,7 @@ export class ForgotPasswordPage implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly layoutService = inject(LayoutService);
   private readonly toastService = inject(ToastService);
+  private readonly logger = inject(LoggerService);
 
   // === CONSTRUCTOR Y CICLO DE VIDA ===
 
@@ -91,8 +93,8 @@ export class ForgotPasswordPage implements OnInit {
       this.oobCode = params['oobCode'] || params['code'] || null;
 
       const title = this.oobCode ? 'Nueva Contraseña' : 'Recuperar acceso';
-      const subtitle = this.oobCode 
-        ? 'Estás a un paso de recuperar tu cuenta.' 
+      const subtitle = this.oobCode
+        ? 'Estás a un paso de recuperar tu cuenta.'
         : 'Te enviaremos un enlace para restablecer tu clave.';
 
       this.layoutService.setAuth({
@@ -128,7 +130,7 @@ export class ForgotPasswordPage implements OnInit {
       this.startCountdown();
       await this.toastService.showSuccess('¡Enlace enviado! Revisa tu correo.');
     } catch (error: any) {
-      console.error('[FORGOT] Error al enviar el correo de recuperación:', error);
+      this.logger.error('[FORGOT] Error al enviar el correo de recuperación:', error as any);
       await this.toastService.showError('Error al enviar el email. Inténtalo de nuevo.');
     } finally {
       this.isLoading = false;
@@ -148,7 +150,7 @@ export class ForgotPasswordPage implements OnInit {
       this.currentStep = 2;
       await this.toastService.showSuccess('Contraseña actualizada correctamente');
     } catch (error: any) {
-      console.error('[FORGOT] Error al confirmar cambio de clave:', error);
+      this.logger.error('[FORGOT] Error al confirmar cambio de clave:', error as any);
       await this.toastService.showError('El enlace ha expirado o es inválido.');
     } finally {
       this.isLoading = false;

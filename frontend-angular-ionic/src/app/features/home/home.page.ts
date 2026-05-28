@@ -26,7 +26,7 @@ import { PLAYER_SERVICE_TOKEN } from 'src/app/core/services/players/player.servi
 import { NEWS_SERVICE_TOKEN } from 'src/app/core/services/news/news.service.token';
 import { LocationPlugin } from 'src/app/core/plugins/location-plugin';
 import { TourService } from 'src/app/core/services/ui/tour.service';
-
+import { LoggerService } from '../../core/services/system/logger.service';
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
@@ -48,6 +48,7 @@ export class HomePage implements OnInit, OnDestroy {
   private readonly auth = inject(Auth);
   private readonly locationPlugin = inject(LocationPlugin);
   private readonly tourService = inject(TourService);
+  private readonly logger = inject(LoggerService);
   private refreshSub?: Subscription;
   private readonly destroy$ = new Subject<void>();
   // Propiedades públicas de estado
@@ -200,7 +201,7 @@ export class HomePage implements OnInit, OnDestroy {
         return;
       }
     } catch (e) {
-      console.warn('Error al consultar permisos, abriendo modal:', e);
+      this.logger.warn('Error al consultar permisos, abriendo modal:', e);
     }
 
     const modal = await this.modalCtrl.create({

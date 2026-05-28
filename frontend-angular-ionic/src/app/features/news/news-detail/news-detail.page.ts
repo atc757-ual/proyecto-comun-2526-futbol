@@ -68,7 +68,7 @@ export class NewsDetailPage {
       next: (data) => {
         if (!data) {
           this.isLoading = false;
-          this.showToast('No se encontró la noticia solicitada', 'warning', 'alert-circle-outline');
+          this.toastService.showWarning('No se encontró la noticia solicitada');
           this.navCtrl.navigateBack('/news');
           return;
         }
@@ -92,18 +92,10 @@ export class NewsDetailPage {
       },
       error: () => {
         this.isLoading = false;
-        this.showToast('Error de conexión. Intentando cargar modo offline...', 'danger', 'alert-circle-outline');
+        this.toastService.showError('Error de conexión');
         if (this.newsList.length === 0) this.loadSidebarList();
       }
     });
-  }
-
-  showToast(message: string, color: string, icon: string) {
-    if (color === 'success') {
-      this.toastService.showSuccess(message);
-    } else {
-      this.toastService.showError(message);
-    }
   }
 
   private loadSidebarList() {
@@ -167,16 +159,12 @@ export class NewsDetailPage {
       next: () => {
         if (this.selectedNew) this.selectedNew.isActive = updatedStatus;
         this.isUpdatingStatus = false;
-
         const message = updatedStatus ? '¡Noticia publicada con éxito!' : 'Noticia movida a borradores';
-        const icon = updatedStatus ? 'cloud-done-outline' : 'cloud-offline-outline';
-        const color = updatedStatus ? 'success' : 'medium';
-
-        this.showToast(message, color, icon);
+        this.toastService.showSuccess(message);
       },
       error: () => {
         this.isUpdatingStatus = false;
-        this.showToast('Error al actualizar el estado', 'danger', 'alert-circle-outline');
+        this.toastService.showError('Error al actualizar el estado');
       }
     });
   }

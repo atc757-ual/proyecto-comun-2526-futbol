@@ -48,6 +48,7 @@ const mockMapPlugin = {
 const mockToastService = {
   showSuccess: jasmine.createSpy('showSuccess'),
   showError: jasmine.createSpy('showError'),
+  showWarning: jasmine.createSpy('showWarning').and.returnValue(Promise.resolve()),
 };
 
 const mockConfettiService = {
@@ -395,4 +396,8 @@ describe('BusquedaListPage', () => {
       expect(component.teamResults[0].strTeamBadge).toBe('https://existing-url.com/badge.png');
     });
   });
+});
+
+afterEach(() => {
+  TestBed.resetTestingModule();
 });

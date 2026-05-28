@@ -1,5 +1,6 @@
 <ion-content class="flex-content">
-  <app-page-full-content [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle" [breadcrumbs]="breadcrumbs"></app-page-full-content>
+  <app-page-full-content [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle"
+    [breadcrumbs]="breadcrumbs"></app-page-full-content>
   <div class="content-container">
     <div class="row" *ngIf=" isAdmin">
       <div class="col-8 col-sm-12 pr-base pr-sm-0">
@@ -110,9 +111,9 @@
               </ion-button>
 
               <div class="page-indicators">
-                <ion-button mode="ios" *ngFor="let page of getPages(); trackBy: trackByIndex" [fill]="currentPage === page ? 'solid' : 'clear'"
-                  [color]="currentPage === page ? 'primary' : 'dark'" class="page-btn"
-                  [class.active]="currentPage === page" (click)="goToPage(page)">
+                <ion-button mode="ios" *ngFor="let page of getPages(); trackBy: trackByIndex"
+                  [fill]="currentPage === page ? 'solid' : 'clear'" [color]="currentPage === page ? 'primary' : 'dark'"
+                  class="page-btn" [class.active]="currentPage === page" (click)="goToPage(page)">
                   {{ page }}
                 </ion-button>
               </div>
@@ -130,7 +131,7 @@
         <!-- ADMIN CARD -->
         <ion-card>
           <ion-card-header>
-            <ion-card-title class="fs-20 fs-sm-18 f-semibold">Administrador</ion-card-title>
+            <ion-card-title class="f-semibold fs-20 fs-sm-18 text-neutral-8">Administrador</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <ion-item [button]="true" lines="none" detail="true" class="action-item is-blue" routerLink="/add-news">

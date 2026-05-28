@@ -1,5 +1,6 @@
 <ion-content class="flex-content">
-  <app-page-full-content [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle" [breadcrumbs]="breadcrumbs"></app-page-full-content>
+  <app-page-full-content [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle"
+    [breadcrumbs]="breadcrumbs"></app-page-full-content>
   <div class="content-container">
     <div class="row">
       <!-- COLUMNA PRINCIPAL (8): Listado Público -->
@@ -70,7 +71,8 @@
                           </div>
 
                           <div class="mt-xxs">
-                            <span class="fs-12 text-neutral-7 f-medium">{{ player.nationality }} • {{ player.age || '?' }} años</span>
+                            <span class="fs-12 text-neutral-7 f-medium">{{ player.nationality }} • {{ player.age || '?'
+                              }} años</span>
                           </div>
                           <div class="mt-xxs">
                             <span class="fs-12 text-neutral-7 f-medium">Posición: {{ player.position || 'N/A' }}</span>
@@ -103,7 +105,8 @@
       <div class="col-4 col-sm-12">
         <ion-card class=" welcome-card">
           <ion-card-header>
-            <ion-card-title class="f-semibold mb-base fs-18 text-neutral-8">¿Quieres crear tu propia cantera?</ion-card-title>
+            <ion-card-title class="f-semibold fs-20 fs-sm-18 text-neutral-8">¿Quieres crear tu propia
+              cantera?</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <p class="text-neutral-7 mb-base">Únete a nuestra comunidad para gestionar tus propios jugadores, obtener el
@@ -122,5 +125,5 @@
       </div>
     </div>
   </div>
-    <app-page-footer></app-page-footer>
+  <app-page-footer></app-page-footer>
 </ion-content>

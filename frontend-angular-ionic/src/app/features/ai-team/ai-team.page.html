@@ -1,8 +1,9 @@
 <ion-content class="flex-content">
-  <app-page-full-content [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle" [breadcrumbs]="breadcrumbs"></app-page-full-content>
+  <app-page-full-content [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle"
+    [breadcrumbs]="breadcrumbs"></app-page-full-content>
   <div class="content-container">
     <div class="row animate-fade-in">
-    
+
       <div class="col-8 col-sm-12 pr-base pr-sm-0">
         <!-- Info Card de IA -->
         <ion-card>
@@ -54,7 +55,8 @@
                     <ion-icon name="alert-circle-outline" class="fs-24 text-warning"></ion-icon>
                     <p class="text-warning-dark f-medium m-0">
                       Necesitas al menos <strong>11 jugadores</strong> registrados para activar el análisis de la IA
-                      (actualmente tienes <strong>{{ localPlayers.length }}</strong>). ¡Añade o importa más jugadores para
+                      (actualmente tienes <strong>{{ localPlayers.length }}</strong>). ¡Añade o importa más jugadores
+                      para
                       completar tu alineación de gala! ⚽
                     </p>
                   </div>
@@ -77,9 +79,11 @@
                 <ion-icon name="star" color="warning"></ion-icon>
                 <span>Jugador Estrella</span>
               </div>
-              <div class="star-content px-base pb-base pt-m bg-primary text-white border-radius-medium shadow-m d-flex ai-center gap-base">
+              <div
+                class="star-content px-base pb-base pt-m bg-primary text-white border-radius-medium shadow-m d-flex ai-center gap-base">
                 <ion-avatar class="star-avatar">
-                  <img [src]="analysisData.starPlayerImage || 'https://ui-avatars.com/api/?name=' + analysisData.starPlayer + '&background=ffffff&color=3880ff'"
+                  <img
+                    [src]="analysisData.starPlayerImage || 'https://ui-avatars.com/api/?name=' + analysisData.starPlayer + '&background=ffffff&color=3880ff'"
                     [alt]="analysisData.starPlayer" />
                 </ion-avatar>
                 <div class="star-info">
@@ -105,28 +109,32 @@
                     <div class="football-pitch">
                       <!-- Área de ataque (Delanteros) -->
                       <div class="pitch-zone zone-forwards">
-                        <div *ngFor="let p of getPlayersByZone('DL'); trackBy: trackByAIPlayerName" class="player-marker">
+                        <div *ngFor="let p of getPlayersByZone('DL'); trackBy: trackByAIPlayerName"
+                          class="player-marker">
                           <div class="player-shirt dl">DL</div>
                           <span class="player-name">{{ p.name }}</span>
                         </div>
                       </div>
                       <!-- Área de creación (Mediocampo) -->
                       <div class="pitch-zone zone-midfield">
-                        <div *ngFor="let p of getPlayersByZone('MC'); trackBy: trackByAIPlayerName" class="player-marker">
+                        <div *ngFor="let p of getPlayersByZone('MC'); trackBy: trackByAIPlayerName"
+                          class="player-marker">
                           <div class="player-shirt mc">MC</div>
                           <span class="player-name">{{ p.name }}</span>
                         </div>
                       </div>
                       <!-- Área defensiva (Defensas) -->
                       <div class="pitch-zone zone-defense">
-                        <div *ngFor="let p of getPlayersByZone('DF'); trackBy: trackByAIPlayerName" class="player-marker">
+                        <div *ngFor="let p of getPlayersByZone('DF'); trackBy: trackByAIPlayerName"
+                          class="player-marker">
                           <div class="player-shirt df">DF</div>
                           <span class="player-name">{{ p.name }}</span>
                         </div>
                       </div>
                       <!-- Portería -->
                       <div class="pitch-zone zone-goalkeeper">
-                        <div *ngFor="let p of getPlayersByZone('PO'); trackBy: trackByAIPlayerName" class="player-marker">
+                        <div *ngFor="let p of getPlayersByZone('PO'); trackBy: trackByAIPlayerName"
+                          class="player-marker">
                           <div class="player-shirt po">PO</div>
                           <span class="player-name">{{ p.name }}</span>
                         </div>
@@ -138,16 +146,19 @@
                 <div class="col-5 col-sm-12">
                   <!-- Once Ideal (Lista Detallada) -->
                   <h3 class="f-bold fs-18 mb-base text-neutral-9 ">Once Ideal Sugerido</h3>
-                  <ng-container *ngFor="let p of analysisData.idealEleven; trackBy: trackByAIPlayerName; last as isLast">
+                  <ng-container
+                    *ngFor="let p of analysisData.idealEleven; trackBy: trackByAIPlayerName; last as isLast">
                     <ion-item class="ai-player-item py-xs" [lines]="isLast ? 'none' : 'full'">
                       <ion-avatar slot="start" class="mr-s">
-                        <img [src]="(p.image_url ? p.image_url : ('https://ui-avatars.com/api/?name=' + (p.name || 'Jugador') + '&background=random'))"
+                        <img
+                          [src]="(p.image_url ? p.image_url : ('https://ui-avatars.com/api/?name=' + (p.name || 'Jugador') + '&background=random'))"
                           [alt]="p.name || 'Jugador'" />
                       </ion-avatar>
                       <ion-label>
                         <h3 class="f-bold fs-16">{{ p.name }}</h3>
                       </ion-label>
-                      <ion-badge slot="end" class="fs-12 bg-primary px-s py-xs f-medium" mode="ios">{{ getPositionLabel(p.position) }}</ion-badge>
+                      <ion-badge slot="end" class="fs-12 bg-primary px-s py-xs f-medium" mode="ios">{{
+                        getPositionLabel(p.position) }}</ion-badge>
                     </ion-item>
                   </ng-container>
                 </div>
@@ -167,7 +178,8 @@
               <!-- Recomendaciones -->
               <h3 class="f-bold fs-18 mb-base text-neutral-9 ">Consejos Tácticos</h3>
               <div class="row gap-s">
-                <div class="col-12 mb-xs" *ngFor="let rec of analysisData.tacticalRecommendations; let i = index; trackBy: trackByIndex">
+                <div class="col-12 mb-xs"
+                  *ngFor="let rec of analysisData.tacticalRecommendations; let i = index; trackBy: trackByIndex">
                   <span class="f-bold text-primary mr-xs">{{ i + 1 }}.</span>
                   <span class="fs-14 text-neutral-7">{{ rec }}</span>
                 </div>
@@ -181,7 +193,7 @@
         <!-- Card: Crear Jugador -->
         <ion-card>
           <ion-card-header>
-            <ion-card-title class="f-semibold mb-base fs-18 text-neutral-8">Opciones recomendadas</ion-card-title>
+            <ion-card-title class="f-semibold fs-20 fs-sm-18 text-neutral-8">Opciones recomendadas</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <ion-list lines="none" class="py-0">

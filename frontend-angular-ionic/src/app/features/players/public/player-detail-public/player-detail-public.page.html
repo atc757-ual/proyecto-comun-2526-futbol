@@ -279,16 +279,14 @@
 
               <!-- IMAGEN PRINCIPAL (CLUB - TEAM 1) -->
               <div class="hero-image-wrapper" [class.is-hidden]="showCutout">
-                <div class="hero-bg"
-                  [style.background-image]="'url(' + getSafeImageUrl(player.images?.cutout || player.image_url || player.photo) + ')'">
-                </div>
+                <img class="hero-bg-img" [src]="getSafeImageUrl(player.images?.cutout || player.image_url || player.photo)"
+                  [alt]="player.name" crossorigin="anonymous" (error)="handleImageError($event)">
               </div>
 
               <!-- IMAGEN DE ACCIÓN (PAÍS - TEAM 2) -->
               <div class="hero-image-wrapper cutout-wrapper" [class.is-visible]="showCutout">
-                <div class="hero-bg action-bg"
-                  [style.background-image]="'url(' + getSafeImageUrl(player.image_url || player.photo) + ')'">
-                </div>
+                <img class="hero-bg-img action-bg" [src]="getSafeImageUrl(player.image_url || player.photo)" [alt]="player.name"
+                  crossorigin="anonymous" (error)="handleImageError($event)">
               </div>
 
               <div class="hero-overlay"></div>

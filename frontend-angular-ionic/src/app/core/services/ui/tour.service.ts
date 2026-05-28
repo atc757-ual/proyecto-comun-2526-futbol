@@ -71,7 +71,6 @@ export class TourService {
       useModalOverlay: true,
       defaultStepOptions: {
         classes: 'fc-shepherd-step',
-        cancelIcon: { enabled: true },
         scrollTo: false,
         modalOverlayOpeningRadius: 8,
         modalOverlayOpeningPadding: 2
@@ -91,6 +90,7 @@ export class TourService {
         title: step.title,
         text: `<p class="tour-step-text">${step.text}</p>`,
         ...(el ? { attachTo: { element: `#tab-${step.tabId}`, on: 'top' } } : {}),
+        cancelIcon: { enabled: !isLast },
         buttons: [
           {
             text: 'Anterior',
@@ -99,7 +99,7 @@ export class TourService {
           },
           {
             text: `${i + 1} / ${total}`,
-            action: () => {},
+            action: () => { },
             classes: 'shepherd-btn-count'
           },
           {
@@ -141,7 +141,7 @@ export class TourService {
     });
 
     this.tour.on('complete', () => { this.cleanTourStyle(); this.enableAllTabs(); this.markDone(); });
-    this.tour.on('cancel',   () => { this.cleanTourStyle(); this.enableAllTabs(); this.markDone(); });
+    this.tour.on('cancel', () => { this.cleanTourStyle(); this.enableAllTabs(); this.markDone(); });
     this.tour.start();
   }
 

@@ -4,8 +4,7 @@
     <ng-container *ngIf="auth.currentUser() as user; else emptyTabs">
       <ng-container *ngFor="let p of navService.pages; let i = index">
         <ion-tab-button [id]="'tab-' + p.tab" [tab]="p.title" [routerLink]="p.url"
-                        [class.tab-selected]="navService.isTabActive(p.url)"
-                        [class.ai-tab-special]="i === 2">
+          [class.tab-selected]="navService.isTabActive(p.url)" [class.ai-tab-special]="i === 2">
 
           <ion-icon *ngIf="i !== 2" [name]="p.icon"></ion-icon>
 
@@ -20,7 +19,7 @@
     <ng-template #emptyTabs>
       <div class="footer-empty-message">
         <ion-icon name="lock-closed-outline"></ion-icon>
-        <span>Inicia sesión para navegar</span>
+        <span class="fs-14">Inicia sesión para navegar</span>
       </div>
     </ng-template>
   </ion-tab-bar>

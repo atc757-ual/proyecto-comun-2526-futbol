@@ -1,10 +1,9 @@
 import { Component, inject, OnInit, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {
-  IonCard, IonCardHeader, IonCardTitle,
+import { IonCard, IonCardHeader, IonCardTitle,
   IonCardContent, IonItem, IonLabel, IonIcon, IonBadge,
-  IonButton, IonSpinner, IonList, IonInput, ToastController, IonContent
+  IonButton, IonSpinner, IonList, IonInput, IonContent
 } from '@ionic/angular/standalone';
 import { PageFullContentComponent } from 'src/app/shared/components/layout/layout-elements/page-full-content/page-full-content.component';
 import { PageFooterComponent } from 'src/app/shared/components/layout/layout-elements/page-footer/page-footer.component';

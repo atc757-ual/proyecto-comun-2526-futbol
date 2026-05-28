@@ -83,7 +83,7 @@ public class AIConfig {
                 resolvedKey != null && !resolvedKey.isEmpty() ? resolvedKey.substring(0, 4) + "..." : "MISSING");
         return GoogleAiGeminiChatModel.builder()
                 .apiKey(resolvedKey)
-                .modelName("gemini-flash-latest")
+                .modelName("gemini-3.5-flash")
                 .build();
     }
 

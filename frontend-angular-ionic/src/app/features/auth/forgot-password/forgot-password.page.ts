@@ -129,8 +129,8 @@ export class ForgotPasswordPage implements OnInit {
       this.currentStep = 2;
       this.startCountdown();
       await this.toastService.showSuccess('¡Enlace enviado! Revisa tu correo.');
-    } catch (error: any) {
-      this.logger.error('[FORGOT] Error al enviar el correo de recuperación:', error as any);
+    } catch (error) {
+      this.logger.error('[FORGOT] Error al enviar el correo de recuperación:', error);
       await this.toastService.showError('Error al enviar el email. Inténtalo de nuevo.');
     } finally {
       this.isLoading = false;

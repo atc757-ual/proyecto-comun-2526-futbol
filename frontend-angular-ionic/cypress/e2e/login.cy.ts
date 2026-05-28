@@ -42,7 +42,7 @@ describe('Login Flow – Real Cases', () => {
   });
 
   it('shows error for unverified user (testuser_1779357123840@test.com)', () => {
-    fillAndSubmitLogin('testuser_1779357123840@test.com', '1q2w3e4r');
+    fillAndSubmitLogin('testuser_1779932582143@test.com', '1q2w3e4r');
     assertErrorToastContains('Debes verificar tu correo electrónico antes de iniciar sesión');
     cy.url().should('include', '/auth/login');
   });

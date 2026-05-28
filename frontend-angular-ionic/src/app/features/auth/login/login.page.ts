@@ -111,7 +111,7 @@ export class LoginPage {
     // Errores de Firebase Auth (tienen code tipo 'auth/...')
     switch (code) {
       case 'auth/email-not-verified':
-        return 'Debes verificar tu correo electrónico antes de iniciar sesión. Por favor, revisa tu bandeja de entrada.';
+        return 'Debes verificar tu correo electrónico antes de iniciar sesión';
       case 'auth/user-disabled':
         return 'Tu cuenta ha sido inhabilitada. Por favor, ponte en contacto con el administrador.';
       case 'auth/invalid-credential':

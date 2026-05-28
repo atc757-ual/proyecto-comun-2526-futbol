@@ -11,8 +11,10 @@ describe('PageTabsComponent', () => {
   let component: PageTabsComponent;
   let fixture: ComponentFixture<PageTabsComponent>;
   let navServiceMock: jasmine.SpyObj<NavigationService> & { pages: typeof APP_PAGES };
+  let currentUserValue: any = null;
 
   beforeEach(waitForAsync(() => {
+    currentUserValue = null;
     navServiceMock = jasmine.createSpyObj('NavigationService', [
       'isTabActive', 'isCurrentHome', 'goBack'
     ]) as jasmine.SpyObj<NavigationService> & { pages: typeof APP_PAGES };
@@ -28,7 +30,7 @@ describe('PageTabsComponent', () => {
           useValue: jasmine.createSpyObj('AuthService', ['logout'], {
             user$: of(null),
             userData: () => null,
-            currentUser: () => null
+            currentUser: () => currentUserValue
           })
         }
       ],
@@ -81,49 +83,25 @@ describe('PageTabsComponent', () => {
 
   describe('isTabActive', () => {
     describe('with authenticated user', () => {
-      let authFixture: ComponentFixture<PageTabsComponent>;
-      let authNavMock: any;
-
-      beforeEach(waitForAsync(() => {
-        authNavMock = jasmine.createSpyObj('NavigationService', [
-          'isTabActive', 'isCurrentHome', 'goBack'
-        ]);
-        authNavMock.pages = APP_PAGES;
-        authNavMock.isTabActive.and.returnValue(false);
-
-        TestBed.resetTestingModule();
-        TestBed.configureTestingModule({
-          imports: [PageTabsComponent, RouterTestingModule, HttpClientTestingModule],
-          providers: [
-            { provide: NavigationService, useValue: authNavMock },
-            {
-              provide: AuthService,
-              useValue: jasmine.createSpyObj('AuthService', ['logout'], {
-                user$: of({ uid: 'test-uid', email: 'test@test.com' }),
-                userData: () => null,
-                currentUser: () => ({ uid: 'test-uid', email: 'test@test.com' })
-              })
-            }
-          ],
-          schemas: [CUSTOM_ELEMENTS_SCHEMA]
-        }).compileComponents();
-
-        authFixture = TestBed.createComponent(PageTabsComponent);
-        authFixture.detectChanges();
-      }));
+      beforeEach(() => {
+        currentUserValue = { uid: 'test-uid', email: 'test@test.com' };
+        navServiceMock.isTabActive.calls.reset();
+        fixture.detectChanges();
+      });
 
       afterEach(() => {
-        authFixture.destroy();
-        TestBed.resetTestingModule();
+        currentUserValue = null;
+        fixture.detectChanges();
       });
 
       it('should call isTabActive when user is logged in and tabs are rendered', () => {
-        expect(authNavMock.isTabActive).toHaveBeenCalled();
+        expect(navServiceMock.isTabActive).toHaveBeenCalled();
       });
     });
 
     it('should NOT call isTabActive when there is no session (shows login message)', () => {
-      // Por defecto currentUser() = null → no se renderizan las tabs
+      // Por defecto currentUserValue = null → no se renderizan las tabs
+      currentUserValue = null;
       navServiceMock.isTabActive.calls.reset();
       fixture.detectChanges();
       expect(navServiceMock.isTabActive).not.toHaveBeenCalled();

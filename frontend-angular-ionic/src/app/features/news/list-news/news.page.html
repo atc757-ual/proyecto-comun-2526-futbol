@@ -1,5 +1,6 @@
 <ion-content class="flex-content">
-  <app-page-full-content [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle" [breadcrumbs]="breadcrumbs"></app-page-full-content>
+  <app-page-full-content [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle"
+    [breadcrumbs]="breadcrumbs"></app-page-full-content>
   <div class="content-container">
     <div class="row">
       <!-- COLUMNA PRINCIPAL: Ahora ocupa más espacio para estirarse -->
@@ -24,8 +25,9 @@
         <!-- Grid de Noticias Dinámico (Mezcla de Grande y Pequeño) -->
         <div *ngIf="!isLoading && totalNews.length > 0" class="news-grid-section animate-fade-in">
           <div class="news-dynamic-grid" [class.is-transitioning]="isChangingPage">
-            <a class="main-news-card animate-fade-in" *ngFor="let news of newsList; let i = index; trackBy: trackByNewsId"
-              [routerLink]="['/news', news.id]" [class.is-spotlight]="i === activeSpotlightIndex">
+            <a class="main-news-card animate-fade-in"
+              *ngFor="let news of newsList; let i = index; trackBy: trackByNewsId" [routerLink]="['/news', news.id]"
+              [class.is-spotlight]="i === activeSpotlightIndex">
               <div class="main-news-image-wrapper">
                 <img
                   [src]="news.imageUrl || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiB2aWV3Qm94PSIwIDAgODAwIDgwMCI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI4MDAiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgZm9udC1mYW1pbHk9InN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtc2l6ZT0iODAiIGZpbGw9IiM0NzU1NjkiPjQwNDwvdGV4dD48L3N2Zz4='"
@@ -53,9 +55,9 @@
           </ion-button>
 
           <div class="page-indicators">
-            <ion-button *ngFor="let page of getPages(); trackBy: trackByPage" [fill]="currentPage === page ? 'solid' : 'clear'"
-              [color]="currentPage === page ? 'primary' : 'dark'" class="page-btn" [class.active]="currentPage === page"
-              (click)="goToPage(page)">
+            <ion-button *ngFor="let page of getPages(); trackBy: trackByPage"
+              [fill]="currentPage === page ? 'solid' : 'clear'" [color]="currentPage === page ? 'primary' : 'dark'"
+              class="page-btn" [class.active]="currentPage === page" (click)="goToPage(page)" (keyup.enter)="goToPage(page)">
               {{ page }}
             </ion-button>
           </div>
@@ -79,7 +81,7 @@
         <!-- LISTA REAL DE NOTICIAS DESTACADAS -->
         <ion-list *ngIf="!isLoading && featuredNews.length > 0" lines="none" class="side-news-list">
           <ion-list-header>
-            <ion-label class="f-semibold mb-base fs-18 text-neutral-8">Noticias Destacadas</ion-label>
+            <ion-label class="f-semibold fs-20 fs-sm-18 text-neutral-8">Noticias Destacadas</ion-label>
           </ion-list-header>
           <ng-container *ngFor="let news of featuredNews; let i = index; trackBy: trackByNewsId">
             <ion-item button detail="false" class="side-news-item" [class.active]="news.id === selectedNew?.id"
@@ -94,7 +96,7 @@
         </ion-list>
         <ion-card *ngIf="isAdmin">
           <ion-card-header>
-            <ion-card-title class="f-semibold mb-base fs-18 text-neutral-8">Administrador</ion-card-title>
+            <ion-card-title class="f-semibold fs-20 fs-sm-18 text-neutral-8">Administrador</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <ion-item [button]="true" lines="none" detail="true" class="action-item is-blue"

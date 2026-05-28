@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -18,7 +18,7 @@ import { ToastService } from 'src/app/core/services/ui/toast.service';
   standalone: true,
   imports: [CommonModule, IonicModule, FormsModule, RouterModule]
 })
-export class LoginPage implements OnInit {
+export class LoginPage {
 
   // Inicializo las variables de campos y estados del formulario
   userEmail: string = '';
@@ -47,13 +47,9 @@ export class LoginPage implements OnInit {
     });
   }
 
-  ngOnInit() {
-    // Configuro el layout de autenticación de forma dinámica al cargar la pantalla
-    this.layoutService.setAuth({
-      title: '¡Bienvenido!',
-      subtitle: 'Inicia sesión para gestionar tus jugadores.',
-      isLogin: true
-    });
+  ionViewWillEnter() {
+    // Ensure the layout knows we are on the login screen each time the view is entered (covers back navigation)
+    this.layoutService.setAuth({ isLogin: true });
   }
 
   // === FUNCIONES PRINCIPALES ===

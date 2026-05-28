@@ -14,22 +14,17 @@
             </ion-menu-toggle>
           </ng-container>
           <ng-template #mainMobileBack>
-            <button (click)="navService.goBack()" class="back-btn-minimal" aria-label="Volver atrás">
-              <ion-icon name="arrow-back"></ion-icon>
-            </button>
+            <ion-back-button routerLink="/home" defaultHref="/home" icon="arrow-back"
+              class="back-link-minimal"></ion-back-button>
           </ng-template>
         </ng-container>
-
-        <button *ngIf="mode === 'public'"
-                (click)="navService.goBack()" class="back-btn-minimal" aria-label="Volver atrás">
-          <ion-icon name="arrow-back"></ion-icon>
-        </button>
+        <ion-back-button *ngIf="mode === 'public'" defaultHref="/auth/login" icon="arrow-back"
+          class="back-link-minimal"></ion-back-button>
       </ion-buttons>
 
       <!-- CENTER: Logo -->
       <ion-title class="mobile-title">
-        <div class="logo-box clickable"
-             [class.centered]="mode === 'public' || !navService.isCurrentHome()">
+        <div class="logo-box clickable" [class.centered]="mode === 'public' || !navService.isCurrentHome()">
           <div class="logo-ball-blue">
             <ion-icon name="football"></ion-icon>
           </div>
@@ -150,9 +145,8 @@
       <div class="main-content content">
         <ul class="nav-links-centered">
           <ng-container *ngFor="let p of navService.pages">
-            <li [routerLink]="p.url"
-                [class.active]="navService.isTabActive(p.url)"
-                [class.nav-item-ai]="p.title === 'Fútbol AI'">
+            <li [routerLink]="p.url" [class.active]="navService.isTabActive(p.url)"
+              [class.nav-item-ai]="p.title === 'Fútbol AI'">
               <ion-icon *ngIf="showNavIcon(p.icon)" [name]="p.icon" class="nav-icon-mini"></ion-icon>
               {{ p.title }}
             </li>

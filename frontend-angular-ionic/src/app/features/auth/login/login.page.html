@@ -54,9 +54,8 @@
           <ion-icon *ngIf="!platformService.getUseJavaBackend()" name="logo-nodejs" class="text-white fs-24"></ion-icon>
         </div>
         <div class="fl-direction-column">
-          <div class="fs-14 f-bold text-neutral-8 mr-xs ">{{ platformService.getUseJavaBackend() ? 'Java Microservicios'
-            : 'Node.js
-            Express' }}</div>
+          <div class="fs-14 f-bold text-neutral-8 mr-xs ">{{ platformService.getUseJavaBackend() ? 'Java
+            Microservicios' : 'Node.js Express' }}</div>
           <div class="fs-12 text-neutral-7">Backend seleccionado</div>
 
         </div>
@@ -76,14 +75,16 @@
 
   <!-- OPCIONES EXTRA -->
   <div class="text-center mt-m ">
-    <a class="text-primary f-semibold fs-16 pointer no-underline" routerLink="/auth/forgot-password">¿Olvidaste
-      tu contraseña?</a>
+    <a routerLink="/auth/forgot-password" routerDirection="forward"
+      class="text-primary f-semibold fs-16 pointer no-underline link-button">
+      ¿Olvidaste tu contraseña?</a>
   </div>
 
   <!-- REGISTRO -->
   <div class="mt-m text-center">
     <p class="fs-16 text-neutral-7">¿Aún no tienes cuenta?
-      <a class="text-primary f-semibold pointer no-underline" routerLink="/auth/register">Regístrate aquí</a>
+      <a class="text-primary f-semibold pointer no-underline" routerLink="/auth/register"
+        routerDirection="forward">Regístrate aquí</a>
     </p>
   </div>
 

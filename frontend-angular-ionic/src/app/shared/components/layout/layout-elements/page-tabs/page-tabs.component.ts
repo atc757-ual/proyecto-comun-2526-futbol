@@ -5,7 +5,7 @@ import { RouterModule } from '@angular/router';
 import { IonFooter, IonTabBar, IonTabButton, IonIcon, IonLabel } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
-  homeOutline, newspaperOutline, footballOutline, sparklesOutline, searchOutline
+  homeOutline, newspaperOutline, footballOutline, sparklesOutline, searchOutline, lockClosedOutline
 } from 'ionicons/icons';
 import { NavigationService } from 'src/app/core/services/ui/navigation.service';
 
@@ -22,6 +22,6 @@ export class PageTabsComponent {
   public auth = inject(AuthService);
 
   constructor() {
-    addIcons({ homeOutline, newspaperOutline, footballOutline, sparklesOutline, searchOutline });
+    addIcons({ homeOutline, newspaperOutline, footballOutline, sparklesOutline, searchOutline, lockClosedOutline });
   }
 }

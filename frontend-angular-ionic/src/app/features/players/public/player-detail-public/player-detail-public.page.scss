@@ -187,6 +187,22 @@
     }
   }
 
+  .hero-bg-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 20%;
+    filter: brightness(0.85);
+    transition: transform var(--transition-slow, 0.5s) ease-out;
+    z-index: 1;
+
+    &.action-bg {
+      object-fit: cover;
+    }
+  }
+
   .hero-overlay {
     position: absolute;
     inset: 0;

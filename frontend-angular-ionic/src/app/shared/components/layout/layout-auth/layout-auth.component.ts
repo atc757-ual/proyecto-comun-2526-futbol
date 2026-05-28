@@ -22,4 +22,5 @@ export class LayoutAuthComponent {
   constructor() {
     addIcons({ arrowBack, logoLinkedin, logoGithub });
   }
+
 }

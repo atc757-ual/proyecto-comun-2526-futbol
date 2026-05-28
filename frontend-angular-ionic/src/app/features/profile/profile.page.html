@@ -1,12 +1,13 @@
 <ion-content class="flex-content">
-  <app-page-full-content [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle" [breadcrumbs]="breadcrumbs"></app-page-full-content>
+  <app-page-full-content [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle"
+    [breadcrumbs]="breadcrumbs"></app-page-full-content>
   <div class="content-container">
     <div class="row fl-col-rev-sm profile-page">
       <!-- COLUMNA IZQUIERDA (8): Configuración y Seguridad -->
       <div class="col-8 col-sm-12 pr-base pr-sm-0">
         <ion-card class="premium-card">
           <ion-card-header>
-            <ion-card-title class="f-bold fs-18">Seguridad y Acceso</ion-card-title>
+            <ion-card-title class="f-semibold fs-20 fs-sm-18 text-neutral-8">Seguridad y Acceso</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <div class="settings-list">
@@ -14,7 +15,7 @@
               <ion-item lines="none" class="action-item is-blue mb-s no-click">
                 <ion-icon slot="start" name="time-outline"></ion-icon>
                 <ion-label>
-                  <h3 class="f-bold">Último acceso</h3>
+                  <h3>Último acceso</h3>
                   <p>{{ currentUserInfo.lastLogin }}</p>
                 </ion-label>
               </ion-item>
@@ -26,7 +27,7 @@
                 routerLink="/admin-security">
                 <ion-icon slot="start" name="shield-checkmark-outline"></ion-icon>
                 <ion-label>
-                  <h3 class="f-semibold mb-base fs-18 text-neutral-8">Seguridad de Red</h3>
+                  <h3>Seguridad de Red</h3>
                   <p>Gestión de accesos y registros globales</p>
                 </ion-label>
               </ion-item>
@@ -50,7 +51,7 @@
 
         <ion-card class="premium-card mt-base">
           <ion-card-header>
-            <ion-card-title class="f-bold mb-base fs-18 text-neutral-8">Preferencias del Sistema</ion-card-title>
+            <ion-card-title class="f-semibold fs-20 fs-sm-18 text-neutral-8">Preferencias del Sistema</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <div class="settings-list">
@@ -64,9 +65,9 @@
                       <ion-icon *ngIf="!useSpringBoot" name="logo-nodejs" class="text-white fs-24"></ion-icon>
                     </div>
                     <div class="fl-direction-column">
-                      <div class="fs-14 f-bold text-neutral-8 mr-xs ">{{ useSpringBoot ? 'Java Microservicios' :
+                      <div class="f-medium text-neutral-8 mr-xs ">{{ useSpringBoot ? 'Java Microservicios' :
                         'Node.js Express' }}</div>
-                      <div class="fs-12 text-neutral-7">Backend seleccionado</div>
+                      <div class="fs-14 text-neutral-7">Backend seleccionado</div>
                     </div>
                   </div>
                   <ion-toggle mode="ios" [color]="useSpringBoot ? 'primary' : 'success'" [checked]="useSpringBoot"
@@ -80,7 +81,7 @@
                 (click)="openNodeStatusDashboard()">
                 <ion-icon slot="start" name="server-outline"></ion-icon>
                 <ion-label>
-                  <h3 class="f-bold">Dashboard de Estado Node</h3>
+                  <h3>Dashboard de Estado Node</h3>
                   <p>Abre /status en una pestaña nueva</p>
                 </ion-label>
               </ion-item>

@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import {
   IonHeader, IonToolbar, IonButtons, IonMenuToggle, IonButton,
-  IonIcon, IonTitle, IonLabel,
-  ActionSheetController, ModalController, NavController
+  IonIcon, IonTitle, IonLabel, IonBackButton,
+  NavController, ModalController, ActionSheetController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -12,33 +12,32 @@ import {
   personCircleOutline, logOutOutline,
   logInOutline, personAddOutline
 } from 'ionicons/icons';
-import { AuthService }      from 'src/app/core/services/auth/auth.service';
-import { PlatformService }  from 'src/app/core/services/system/platform.service';
-import { LayoutService }    from 'src/app/core/services/ui/layout.service';
-import { NavigationService }from 'src/app/core/services/ui/navigation.service';
+import { AuthService } from 'src/app/core/services/auth/auth.service';
+import { PlatformService } from 'src/app/core/services/system/platform.service';
+import { LayoutService } from 'src/app/core/services/ui/layout.service';
+import { NavigationService } from 'src/app/core/services/ui/navigation.service';
 import { ConfirmModalComponent } from '../../../modals/confirm-modal/confirm-modal.component';
 
 @Component({
   selector: 'app-page-header',
   templateUrl: './page-header.component.html',
-  styleUrls: ['./page-header.component.scss'],
   standalone: true,
   imports: [
     CommonModule, RouterModule,
     IonHeader, IonToolbar, IonButtons, IonMenuToggle, IonButton,
-    IonIcon, IonTitle, IonLabel
+    IonIcon, IonTitle, IonLabel, IonBackButton
   ]
 })
 export class PageHeaderComponent {
   @Input() mode: 'main' | 'public' = 'main';
 
-  public authService     = inject(AuthService);
+  public authService = inject(AuthService);
   public platformService = inject(PlatformService);
-  public layoutService   = inject(LayoutService);
-  public navService      = inject(NavigationService);
-  private navCtrl        = inject(NavController);
-  private modalCtrl      = inject(ModalController);
-  private actionSheetCtrl= inject(ActionSheetController);
+  public layoutService = inject(LayoutService);
+  public navService = inject(NavigationService);
+  private navCtrl = inject(NavController);
+  private modalCtrl = inject(ModalController);
+  private actionSheetCtrl = inject(ActionSheetController);
 
   constructor() {
     addIcons({

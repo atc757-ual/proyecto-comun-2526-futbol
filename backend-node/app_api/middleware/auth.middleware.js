@@ -29,7 +29,7 @@ const authorizeRequest = async (req, res, next) => {
 
     if (!header || !header.startsWith("Bearer ")) {
         // Si la petición espera HTML, renderizamos la vista de status con mensaje
-        if (req.headers.accept && req.headers.accept.includes('text/html')) {
+        if (req.headers?.accept?.includes('text/html')) {
           return res.status(401).render('status', { error: 'Acceso no autorizado' });
         }
         return sendApiResult(res, 401, "Acceso no autorizado");

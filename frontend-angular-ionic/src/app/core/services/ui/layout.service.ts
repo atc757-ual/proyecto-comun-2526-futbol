@@ -45,7 +45,7 @@ export class LayoutService {
   aiThinkingText = this._aiThinkingText.asReadonly();
 
   // --- Métodos de Asistente de IA ---
-  
+
   setAILoading(loading: boolean, text: string = '') {
     this._aiLoading.set(loading);
     this._aiThinkingText.set(text);

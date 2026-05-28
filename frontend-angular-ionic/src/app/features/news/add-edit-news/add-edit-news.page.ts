@@ -21,6 +21,7 @@ import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { PlatformService } from 'src/app/core/services/system/platform.service';
 import { NEWS_SERVICE_TOKEN } from '../../../core/services/news/news.service.token';
 import { ToastService } from 'src/app/core/services/ui/toast.service';
+import { LoggerService } from '../../../core/services/system/logger.service';
 
 @Component({
   selector: 'app-add-edit-news',
@@ -28,16 +29,18 @@ import { ToastService } from 'src/app/core/services/ui/toast.service';
   styleUrls: ['./add-edit-news.page.scss'],
   standalone: true,
   imports: [IonicModule, CommonModule, FormsModule, RouterModule, PageFullContentComponent, PageFooterComponent]
+
 })
 export class AddEditNewsPage implements OnInit {
-  private newsService   = inject(NEWS_SERVICE_TOKEN);
-  public  authService   = inject(AuthService);
-  private toastService  = inject(ToastService);
-  private navCtrl       = inject(NavController);
+  private newsService = inject(NEWS_SERVICE_TOKEN);
+  public authService = inject(AuthService);
+  private toastService = inject(ToastService);
+  private navCtrl = inject(NavController);
   private readonly layoutService = inject(LayoutService);
-  private route         = inject(ActivatedRoute);
-  public  platformService = inject(PlatformService);
-  private sanitizer     = inject(DomSanitizer);
+  private readonly logger = inject(LoggerService);
+  private route = inject(ActivatedRoute);
+  public platformService = inject(PlatformService);
+  private sanitizer = inject(DomSanitizer);
 
   getSafeUrl(url: string | null | undefined): SafeResourceUrl | string {
     if (!url) return '';
@@ -231,7 +234,7 @@ export class AddEditNewsPage implements OnInit {
           if (this.newsData.date && this.newsData.date.includes('T')) {
             this.newsData.date = this.newsData.date.split('T')[0];
           }
-          
+
           this.previewImage = news.imageUrl || '';
 
           // Guardar estado inicial para detección de cambios reales
@@ -251,7 +254,7 @@ export class AddEditNewsPage implements OnInit {
       },
       error: (err) => {
         this.isLoading = false;
-        this.showToast('Error al cargar la noticia', 'danger');
+        this.toastService.showError('Error al cargar la noticia');
         this.navCtrl.navigateBack('/manage-news');
       }
     });
@@ -263,7 +266,7 @@ export class AddEditNewsPage implements OnInit {
       // Validación de tamaño (100KB = 100 * 1024 bytes)
       const maxSize = 100 * 1024;
       if (file.size > maxSize) {
-        this.showToast('La imagen es demasiado pesada. Máximo 100KB', 'danger');
+        this.toastService.showWarning('La imagen es demasiado pesada. Máximo 100KB');
         event.target.value = ''; // Limpiar el input para permitir re-seleccionar
         return;
       }
@@ -337,12 +340,12 @@ export class AddEditNewsPage implements OnInit {
 
   async onPublish() {
     if (!this.newsData.title || !this.newsData.content) {
-      this.showToast('Por favor, completa los campos obligatorios', 'warning');
+      this.toastService.showError('Por favor, completa los campos obligatorios');
       return;
     }
 
     if (this.isEditMode && !this.hasChanges) {
-      this.showToast('No se han detectado cambios para actualizar', 'warning');
+      this.toastService.showError('No se han detectado cambios para actualizar');
       return;
     }
 
@@ -352,15 +355,13 @@ export class AddEditNewsPage implements OnInit {
       next: (res) => {
         this.isPublishing = false;
         const msg = this.isEditMode ? '¡Noticia actualizada con éxito!' : '¡Noticia publicada con éxito en CORBA!';
-        this.showToast(msg, 'success');
+        this.toastService.showSuccess(msg);
         this.navCtrl.navigateRoot('/manage-news');
       },
       error: (err) => {
         this.isPublishing = false;
-        console.error('[PUBLISH] Error al procesar noticia:', err);
-        const serverMsg = err?.error?.result?.descriptionDetail;
-        const msg = serverMsg || err?.message || 'Error al guardar la noticia';
-        this.showToast(msg, 'danger');
+        this.logger.error('[PUBLISH] Error al procesar noticia:', err);
+        this.toastService.showError("Error al guardar la noticia");
       }
     });
   }
@@ -369,13 +370,6 @@ export class AddEditNewsPage implements OnInit {
     this.navCtrl.back();
   }
 
-  private showToast(message: string, type: 'success' | 'error' | 'warning' | 'danger') {
-    if (type === 'success') {
-      this.toastService.showSuccess(message);
-    } else {
-      this.toastService.showError(message);
-    }
-  }
 
 }
 

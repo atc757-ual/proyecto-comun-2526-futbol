@@ -38,7 +38,8 @@ const mockPlatformService = {
 
 const mockToastService = {
   showError: jasmine.createSpy('showError'),
-  showSuccess: jasmine.createSpy('showSuccess')
+  showSuccess: jasmine.createSpy('showSuccess'),
+  showWarning: jasmine.createSpy('showWarning').and.returnValue(Promise.resolve())
 };
 
 const mockNavCtrl = {
@@ -102,4 +103,8 @@ describe('NewsPage', () => {
     component.selectNews(news);
     expect(mockNavCtrl.navigateForward).toHaveBeenCalledWith(['/news', news.id]);
   });
+});
+
+afterEach(() => {
+  TestBed.resetTestingModule();
 });

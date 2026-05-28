@@ -43,7 +43,8 @@ const mockAuthService = {
 
 const mockToastService = {
   showSuccess: jasmine.createSpy('showSuccess'),
-  showError: jasmine.createSpy('showError')
+  showError: jasmine.createSpy('showError'),
+  showWarning: jasmine.createSpy('showWarning').and.returnValue(Promise.resolve())
 };
 
 const mockLayoutService = {
@@ -284,4 +285,8 @@ describe('AddEditPlayerPage', () => {
     component.ngOnDestroy();
     expect(mockMapPlugin.destroyMap).toHaveBeenCalled();
   });
+});
+
+afterEach(() => {
+  TestBed.resetTestingModule();
 });

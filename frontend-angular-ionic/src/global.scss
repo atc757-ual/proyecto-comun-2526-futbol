@@ -429,6 +429,14 @@ ion-item.action-item {
   }
 }
 
+.toast-warning {
+  --background: var(--yellow-010);
+
+  &::part(icon) {
+    color: var(--yellow-100);
+  }
+}
+
 /** --- ANIMACIONES REUTILIZABLES --- **/
 @keyframes popIn {
   0% {

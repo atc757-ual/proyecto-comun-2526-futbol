@@ -37,8 +37,9 @@ const mockPlatformService = {
 };
 
 const mockToastService = {
+  showSuccess: jasmine.createSpy('showSuccess').and.returnValue(Promise.resolve()),
   showError: jasmine.createSpy('showError').and.returnValue(Promise.resolve()),
-  showSuccess: jasmine.createSpy('showSuccess').and.returnValue(Promise.resolve())
+  showWarning: jasmine.createSpy('showWarning').and.returnValue(Promise.resolve())
 };
 
 const mockNavCtrl = {
@@ -108,7 +109,7 @@ describe('NewsDetailPage', () => {
     tick(100);
     expect(mockNewsService.updateNews).toHaveBeenCalled();
     expect(component.selectedNew?.isActive).toBeFalse();
-    expect(mockToastService.showError).toHaveBeenCalled();
+    expect(mockToastService.showSuccess).toHaveBeenCalled();
   }));
 
   it('should confirm and delete news', async () => {
@@ -118,4 +119,8 @@ describe('NewsDetailPage', () => {
     fixture.detectChanges();
     await fixture.whenStable();
   });
+});
+
+afterEach(() => {
+  TestBed.resetTestingModule();
 });

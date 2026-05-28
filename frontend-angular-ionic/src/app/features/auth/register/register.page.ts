@@ -19,7 +19,7 @@ import { LayoutService } from '../../../core/services/ui/layout.service';
 import { PlatformService } from '../../../core/services/system/platform.service';
 import { ToastService } from '../../../core/services/ui/toast.service';
 import { ConfirmModalComponent } from '../../../shared/components/modals/confirm-modal/confirm-modal.component';
-
+import { LoggerService } from '../../../core/services/system/logger.service';
 @Component({
   selector: 'app-register',
   templateUrl: './register.page.html',
@@ -81,6 +81,7 @@ export class RegisterPage implements OnInit {
   private readonly layoutService = inject(LayoutService);
   private readonly toastService = inject(ToastService);
   private readonly modalCtrl = inject(ModalController);
+  private readonly logger = inject(LoggerService);
 
   // === CONSTRUCTOR Y CICLO DE VIDA ===
 
@@ -147,13 +148,13 @@ export class RegisterPage implements OnInit {
         this.navCtrl.navigateRoot('/login', { animated: false });
 
       } catch (modalErr) {
-        console.error('[REGISTER] Error al instanciar el modal:', modalErr);
+        this.logger.error('[REGISTER] Error al instanciar el modal:', modalErr);
         this.navCtrl.navigateRoot('/login', { animated: false });
       }
 
     } catch (error: any) {
       this.isLoading = false;
-      console.error('[REGISTER] Error al crear la cuenta:', error);
+      this.logger.error('[REGISTER] Error al crear la cuenta:', error);
       await this.toastService.showError(this.getErrorMessage(error.code));
     }
   }

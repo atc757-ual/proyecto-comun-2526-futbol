@@ -26,9 +26,6 @@ import {
 } from 'ionicons/icons';
 import { PLAYER_SERVICE_TOKEN } from '../../../../core/services/players/player.service.token';
 import { Player } from '../../../../core/models/player.model';
-import { AuthService } from '../../../../core/services/auth/auth.service';
-import { LayoutService } from '../../../../core/services/ui/layout.service';
-import { ConfettiService } from '../../../../core/services/ui/confetti.service';
 import { ToastService } from '../../../../core/services/ui/toast.service';
 import { PermissionModalComponent } from 'src/app/shared/components/modals/permission-modal/permission-modal.component';
 import { LocationPlugin } from 'src/app/core/plugins/location-plugin';
@@ -61,37 +58,30 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
   }
 
   private readonly playerService = inject(PLAYER_SERVICE_TOKEN);
-  private readonly authService = inject(AuthService);
   private readonly navCtrl = inject(NavController);
-  private readonly layoutService = inject(LayoutService);
   private readonly modalCtrl = inject(ModalController);
-  private readonly confettiService = inject(ConfettiService);
   private readonly toastService = inject(ToastService);
   private readonly locationService = inject(LocationPlugin);
   private readonly cdr = inject(ChangeDetectorRef);
 
   public player: Player | null = null;
-  public leagueDetails: any = null;
   public isLoading = true;
   public hasGeoPermission = signal(false);
   public isRequestingPermission = false;
   private activePermissionModal: any = null;
-  public isAdmin = false;
 
   // Lógica de "Ver más"
   public isSummaryExpanded = false;
-  public teamDetails: any[] = [];
-  public teamInfo1: any = null;
-  public teamInfo2: any = null;
 
+  // Compatibilidad con pruebas antiguas
   get isOwner(): boolean {
-    if (!this.player || !this.player.user_id) return false;
-    const currentUid = this.authService.getUID();
-    return String(currentUid).trim() === String(this.player.user_id).trim();
+    // El ownership ya no se gestiona aquí; devolver false por defecto.
+    return false;
   }
 
   get isLoggedIn(): boolean {
-    return !!this.authService.currentUser();
+    // La autenticación ya no se usa directamente; devolver false por defecto.
+    return false;
   }
 
   // Lógica de Centro de Comentarios
@@ -109,13 +99,13 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
   toggleCardView() {
     this.showCutout = !this.showCutout;
   }
-  
+
   public anonymousName = '';
 
   toggleSummary() {
     this.isSummaryExpanded = !this.isSummaryExpanded;
   }
-  
+
   nameFocused: boolean = false;
   commentFocused: boolean = false;
 
@@ -324,18 +314,13 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
     if (!this.newComment.trim() || !this.player?._id) return;
 
     this.isSubmittingComment = true;
-    const user = this.authService.currentUser();
 
     const commentData: any = {
       content: this.newComment,
       rating: this.newRating,
-      autor_name: user?.displayName || this.anonymousName || 'Invitado'
+      autor_name: this.anonymousName || 'Invitado',
+      user_id: null
     };
-
-    if (user?.uid) {
-      commentData.user_id = user.uid;
-    }
-
     // Intentar capturar ubicación si tenemos permiso
     if (this.hasGeoPermission()) {
       const cachedCoords = this.userCoords();

@@ -34,10 +34,10 @@ interface AuthSyncResponse {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private auth              = inject(Auth);
-  private http              = inject(HttpClient);
+  private auth = inject(Auth);
+  private http = inject(HttpClient);
   private readonly preferencesPlugin = inject(PreferencesPlugin);
-  private logger            = inject(LoggerService);
+  private logger = inject(LoggerService);
 
   // --- SIGNALS DE ESTADO ---
   private _userData = signal<UserData | null>(null);
@@ -101,7 +101,7 @@ export class AuthService {
   async login(email: string, password: string) {
     const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
     this.logger.log('[AUTH] Login Firebase exitoso. Validando verificación de correo...');
-    
+
     // Verifico si el correo electrónico ha sido validado antes de autorizar el ingreso
     if (userCredential.user && !userCredential.user.emailVerified) {
       await signOut(this.auth);
@@ -140,11 +140,11 @@ export class AuthService {
     if (userCredential.user) {
       const { updateProfile, sendEmailVerification } = await import('@angular/fire/auth');
       await updateProfile(userCredential.user, { displayName: name });
-      
+
       // Envío el correo de verificación nativo de Firebase
       await sendEmailVerification(userCredential.user);
       this.logger.log('[AUTH] Correo de verificación enviado con éxito.');
-      
+
       // Cierro la sesión inmediata para impedir el acceso sin verificar
       await signOut(this.auth);
     }
@@ -174,21 +174,21 @@ export class AuthService {
     this.syncPromise = (async () => {
       try {
         // Decidimos el backend dinámicamente o por targetBackend si se proporciona
-        const useJava = targetBackend !== undefined 
-          ? targetBackend 
+        const useJava = targetBackend !== undefined
+          ? targetBackend
           : this.platformService.getUseJavaBackend();
 
         const shouldForceRefresh = forceRefresh || targetBackend !== undefined;
         const idToken = await firebaseUser.getIdToken(shouldForceRefresh);
 
-        const baseUrl = useJava 
-          ? environment.javaApiUrl 
+        const baseUrl = useJava
+          ? environment.javaApiUrl
           : environment.nodeApiUrl;
-          
+
         const fullUrl = `${baseUrl}/auth/signin`;
-        
+
         this.logger.log(`[AUTH] Sincronizando con backend: ${useJava ? 'JAVA' : 'NODE'}`);
-        
+
         const response = await firstValueFrom(
           this.http.post<AuthSyncResponse>(fullUrl, { idToken })
         );
@@ -258,7 +258,7 @@ export class AuthService {
       if (userData && userData.id !== undefined && userData.id !== null) {
         return String(userData.id);
       }
-      
+
       const token = localStorage.getItem('jwt_token');
       if (token) {
         try {

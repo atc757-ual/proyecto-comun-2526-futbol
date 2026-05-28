@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, NgZone } from '@angular/core';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -47,6 +47,7 @@ import { PermissionModalComponent } from 'src/app/shared/components/modals/permi
 import { GpsPermissionCardComponent } from 'src/app/shared/components/ui/gps-permission-card/gps-permission-card.component';
 import { PageFullContentComponent } from 'src/app/shared/components/layout/layout-elements/page-full-content/page-full-content.component';
 import { PageFooterComponent } from 'src/app/shared/components/layout/layout-elements/page-footer/page-footer.component';
+import { LoggerService } from '@core/services/system/logger.service';
 
 @Component({
   selector: 'app-add-edit-player',
@@ -80,6 +81,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly modalCtrl = inject(ModalController);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly logger = inject(LoggerService);
   public activePermissionModal: HTMLIonModalElement | null = null;
   public pageTitle: string = '';
   public pageSubtitle: string = '';
@@ -434,7 +436,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   loadLocalPlayers() {
     this.playerService.getPlayers().subscribe({
       next: (data) => this.localPlayers = data,
-      error: () => console.warn('No se pudieron cargar los jugadores locales para comparación')
+      error: () => this.logger.warn('No se pudieron cargar los jugadores locales para comparación')
     });
   }
 
@@ -466,7 +468,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         this.syncPreviews();
       },
       error: () => {
-        this.showToast('Error al cargar el jugador', 'danger');
+        this.toastService.showError('Error al cargar el jugador');
         this.isDataLoading = false;
         this.navCtrl.back();
       }
@@ -485,7 +487,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     this.hasGeoPermission = granted;
     if (granted) {
       this.cdr.detectChanges();
-      this.showToast('Permisos de ubicación activos!', 'success');
+      this.toastService.showSuccess('Permisos de ubicación activos!');
       await this.captureLocation();
     }
   }
@@ -506,13 +508,13 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       }
       this.hasCameraPermission = result;
       if (result) {
-        this.showToast('Permisos de cámara activos!', 'success');
+        this.toastService.showSuccess('Permisos de cámara activos!');
       } else {
-        this.showToast('Camara bloqueada! Usa el candado del navegador.', 'danger');
+        this.toastService.showError('Camara bloqueada! Usa el candado del navegador.');
       }
       return result;
     } catch {
-      this.showToast('Camara bloqueada! Usa el candado del navegador.', 'danger');
+      this.toastService.showError('Camara bloqueada! Usa el candado del navegador.');
       return false;
     }
   }
@@ -548,7 +550,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         this.hasGeoPermission = granted;
         this.isCapturingLocation = false;
         if (granted) {
-          this.showToast('Permisos de ubicación activos!', 'success');
+          this.toastService.showSuccess('Permisos de ubicación activos!');
           await this.captureLocation();
         }
         this.cdr.detectChanges();
@@ -619,7 +621,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         this.hasSearchedApi = true;
       },
       error: (err) => {
-        this.showToast('Error al conectar con el servicio de scouting', 'danger');
+        this.toastService.showError('Error al conectar con el servicio de jugadores');
       }
     });
   }
@@ -653,7 +655,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         }
       }
     } catch (e) {
-      console.warn('Error al completar datos desde TSDB:', e);
+      this.logger.warn('Error al completar datos desde TSDB:', e);
     }
 
     this.previewImage = this.player.image_url;
@@ -662,7 +664,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     this.entryMode = 'manual';
     this.cdr.detectChanges();
     loading.dismiss();
-    this.showToast('Datos profesionales importados', 'success');
+    this.toastService.showSuccess('Datos profesionales importados');
   }
 
   isSelected(apiPlayer: any): boolean {
@@ -675,7 +677,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
 
   async toggleApiSelection(apiPlayer: any) {
     if (!this.isSelected(apiPlayer) && this.selectedApiPlayers.length >= 11) {
-      this.showToast('Has alcanzado el limite de 11 jugadores', 'warning');
+      this.toastService.showWarning('Has alcanzado el limite de 11 jugadores');
       return;
     }
 
@@ -687,7 +689,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     } else {
       // LIMITE DE 11 JUGADORES
       if (this.selectedApiPlayers.length >= 11) {
-        this.showToast('Solo puedes añadir hasta 11 jugadores a la vez', 'warning');
+        this.toastService.showWarning('Solo puedes añadir hasta 11 jugadores a la vez');
         return;
       }
 
@@ -702,7 +704,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
             apiPlayer.details = details;
           }
         } catch (e) {
-          console.warn(`No se pudieron cargar detalles para ${apiPlayer.name}`, e);
+          this.logger.warn(`No se pudieron cargar detalles para ${apiPlayer.name}`, e);
         }
       }
     }
@@ -723,7 +725,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   async importSelectedPlayers() {
     if (this.selectedApiPlayers.length === 0) return;
     if (!this.hasLocation || !this.player.location?.coordinates) {
-      this.showToast('Activa el GPS antes de guardar jugadores.', 'warning');
+      this.toastService.showWarning('Activa el GPS antes de guardar jugadores.');
       return;
     }
 
@@ -753,22 +755,20 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         this.apiSearchQuery = '';
         this.confettiService.celebrate();
         const count = playersToImport.length;
-        this.showToast(
+        this.toastService.showSuccess(
           count === 1
             ? 'Se ha registrado el jugador con éxito'
             : `Se han registrado ${count} jugadores con éxito`,
-          'success'
         );
         setTimeout(() => this.router.navigate(['/players']), 1000);
       },
       error: (err: any) => {
         this.isImporting = false;
         const count = playersToImport.length;
-        this.showToast(
+        this.toastService.showError(
           count === 1
             ? 'Error al registrar el jugador'
             : 'Error al registrar los jugadores',
-          'danger'
         );
       }
     });
@@ -870,13 +870,13 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     this.previewImage = null;
     this.syncPreviews();
     this.cdr.detectChanges();
-    this.showToast('Multimedia limpiada', 'success');
+    this.toastService.showSuccess('Multimedia limpiada');
   }
 
   clearSelection() {
     this.selectedApiPlayers = [];
     this.cdr.detectChanges();
-    this.showToast('selección limpiada', 'success');
+    this.toastService.showSuccess('selección limpiada');
   }
 
   updatePlayerImage(key: string, value: string) {
@@ -905,7 +905,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     const file = event.target.files[0];
     if (file) {
       if (file.size > 102400) { // 100KB
-        this.showToast('La imagen supera los 100KB', 'danger');
+        this.toastService.showError('La imagen supera los 100KB');
         return;
       }
 
@@ -944,9 +944,10 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     this.previews[key] = null;
     this.cdr.detectChanges();
   }
+
   async onSave() {
     if (!this.player.name || !this.player.team) {
-      this.showToast('Nombre y Equipo son obligatorios', 'warning');
+      this.toastService.showError('Nombre y Equipo son obligatorios');
       return;
     }
 
@@ -969,13 +970,13 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         this.isPublishing = false;
         this.confettiService.celebrate();
         if (res && (res._id || res.id)) {
-          this.showToast(`Jugador ${this.isEditMode ? 'actualizado' : 'creado'} con éxito`, 'success');
+          this.toastService.showSuccess(`Jugador ${this.isEditMode ? 'actualizado' : 'creado'} con éxito`);
           setTimeout(() => this.router.navigate(['/players']), 1000);
         }
       },
       error: () => {
         this.isPublishing = false;
-        this.showToast('Error al guardar el crack', 'danger');
+        this.toastService.showError('Error al guardar el crack');
       }
     });
   }
@@ -1003,14 +1004,6 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.mapPlugin.destroyMap();
-  }
-
-  private showToast(message: string, type: 'success' | 'danger' | 'warning') {
-    if (type === 'success') {
-      this.toastService.showSuccess(message);
-    } else {
-      this.toastService.showError(message);
-    }
   }
 
   trackByPlayerId(_: number, player: { _id?: string; external_id?: number }): string | number | undefined {

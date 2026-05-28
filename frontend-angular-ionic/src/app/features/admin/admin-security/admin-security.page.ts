@@ -1,10 +1,9 @@
 import { Component, inject, OnInit, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {
-  IonCard, IonCardHeader, IonCardTitle,
+import { IonCard, IonCardHeader, IonCardTitle,
   IonCardContent, IonItem, IonLabel, IonIcon, IonBadge,
-  IonButton, IonSpinner, IonList, IonInput, ToastController, IonContent
+  IonButton, IonSpinner, IonList, IonInput, IonContent
 } from '@ionic/angular/standalone';
 import { PageFullContentComponent } from 'src/app/shared/components/layout/layout-elements/page-full-content/page-full-content.component';
 import { PageFooterComponent } from 'src/app/shared/components/layout/layout-elements/page-footer/page-footer.component';
@@ -17,6 +16,8 @@ import {
 } from 'ionicons/icons';
 import { AuthService } from 'src/app/core/services/auth/auth.service';
 import { Auth } from '@angular/fire/auth';
+import { LoggerService } from '../../../core/services/system/logger.service';
+import { ToastService } from 'src/app/core/services/ui/toast.service';
 
 @Component({
   selector: 'app-admin-security',
@@ -34,7 +35,8 @@ import { Auth } from '@angular/fire/auth';
 export class AdminSecurityPage implements OnInit {
   public authService = inject(AuthService);
   private readonly auth = inject(Auth);
-  private readonly toastController = inject(ToastController);
+  private readonly logger = inject(LoggerService);
+  private readonly toastService = inject(ToastService);
   public isLoading = signal(false);
   public firebaseClaims = signal<any>(null);
   public backendIsAdmin = signal<boolean>(false);
@@ -48,7 +50,7 @@ export class AdminSecurityPage implements OnInit {
   public selectedUser = signal<any | null>(null);
   public breadcrumbs = [
     { label: '', url: '/home', icon: 'home-outline' },
-    {label:'Mi perfil', url: '/profile'},
+    { label: 'Mi perfil', url: '/profile' },
     { label: 'Seguridad' }
   ];
 
@@ -86,7 +88,7 @@ export class AdminSecurityPage implements OnInit {
         if (fbUser) {
           const tokenResult = await fbUser.getIdTokenResult(true); // Fuerzo el refresco del token para reflejar cambios inmediatos
           this.firebaseClaims.set(tokenResult.claims);
-          console.log('[SECURITY] Claims detectados:', tokenResult.claims);
+          this.logger.log('[SECURITY] Claims detectados:', tokenResult.claims);
         }
       }
 
@@ -95,7 +97,7 @@ export class AdminSecurityPage implements OnInit {
 
       this.lastChecked.set(new Date());
     } catch (error) {
-      console.error('Error al verificar seguridad:', error);
+      this.logger.error('Error al verificar seguridad:', error);
     } finally {
       this.isLoading.set(false);
     }
@@ -109,12 +111,12 @@ export class AdminSecurityPage implements OnInit {
     this.isPromoting.set(true);
     try {
       await this.authService.promoteUserToAdmin(email);
-      this.presentToast(`Usuario ${email} promovido exitosamente.`, 'success');
+      this.toastService.showSuccess(`Usuario ${email} promovido exitosamente.`);
       this.targetEmail = '';
       this.selectedUser.set(null);
       this.checkSecurityStatus();
     } catch (error: any) {
-      this.presentToast(this.getFriendlyErrorMessage(error), 'danger');
+      this.toastService.showError(this.getErrorMessage(error));
     } finally {
       this.isPromoting.set(false);
     }
@@ -127,12 +129,12 @@ export class AdminSecurityPage implements OnInit {
     this.isPromoting.set(true);
     try {
       await this.authService.removeAdminRole(email);
-      this.presentToast(`Permisos revocados a ${email}.`, 'success');
+      this.toastService.showSuccess(`Permisos revocados a ${email}.`);
       this.targetEmail = '';
       this.selectedUser.set(null);
       this.checkSecurityStatus();
     } catch (error: any) {
-      this.presentToast(this.getFriendlyErrorMessage(error), 'danger');
+      this.toastService.showError(this.getErrorMessage(error));
     } finally {
       this.isPromoting.set(false);
     }
@@ -146,12 +148,12 @@ export class AdminSecurityPage implements OnInit {
     try {
       await this.authService.toggleUserStatus(email, disabled);
       const action = disabled ? 'inhabilitado' : 'habilitado';
-      this.presentToast(`Usuario ${action} correctamente.`, 'success');
+      this.toastService.showSuccess(`Usuario ${action} correctamente.`);
       this.targetEmail = '';
       this.selectedUser.set(null);
       this.checkSecurityStatus();
     } catch (error: any) {
-      this.presentToast(this.getFriendlyErrorMessage(error), 'danger');
+      this.toastService.showError(this.getErrorMessage(error));
     } finally {
       this.isTogglingStatus.set(false);
     }
@@ -167,7 +169,7 @@ export class AdminSecurityPage implements OnInit {
 
   async onSearchInput(event: any) {
     const val = event.detail.value;
-    console.log('[SECURITY] Buscando:', val);
+    this.logger.log('[SECURITY] Buscando:', val);
     this.selectedUser.set(null); // Limpio la selección al escribir de nuevo
 
     if (!val || val.length < 2) {
@@ -177,15 +179,15 @@ export class AdminSecurityPage implements OnInit {
 
     try {
       const response: any = await this.authService.searchUsers(val);
-      console.log('[SECURITY] Respuesta usuarios:', response);
+      this.logger.log('[SECURITY] Respuesta usuarios:', response);
       this.suggestedUsers.set(response.data || []);
     } catch (error) {
-      console.error('[SECURITY] Error al buscar usuarios:', error);
+      this.logger.error('[SECURITY] Error al buscar usuarios:', error);
     }
   }
 
   selectUser(user: any) {
-    console.log('[SECURITY] Usuario seleccionado:', user);
+    this.logger.log('[SECURITY] Usuario seleccionado:', user);
     this.targetEmail = user.email;
     this.selectedUser.set(user);
     this.suggestedUsers.set([]);
@@ -197,32 +199,18 @@ export class AdminSecurityPage implements OnInit {
     this.suggestedUsers.set([]);
   }
 
-  async presentToast(message: string, color: 'success' | 'danger') {
-    const toast = await this.toastController.create({
-      message: message,
-      duration: 3000,
-      position: 'top',
-      cssClass: color === 'success' ? 'toast-success' : 'toast-error',
-      icon: color === 'success' ? 'checkmark-circle-outline' : 'alert-circle-outline',
-      buttons: [{ role: 'cancel', icon: 'close-outline' }]
-    });
-    await toast.present();
-  }
-
-  private getFriendlyErrorMessage(error: any): string {
+  private getErrorMessage(error: any): string {
     const detail = error.error?.result?.descriptionDetail || error.message || '';
 
     // Mapeo de errores conocidos y técnicos
     if (detail.includes('no user record corresponding')) {
       return 'El usuario no tiene una cuenta de autenticación activa.';
     }
-
     // Remuevo prefijos repetitivos del backend
     let cleanDetail = detail;
     if (cleanDetail.startsWith('Error al procesar la solicitud:')) {
       cleanDetail = cleanDetail.replace('Error al procesar la solicitud:', '').trim();
     }
-
     return cleanDetail || 'Ocurrió un error inesperado al procesar la solicitud.';
   }
 }

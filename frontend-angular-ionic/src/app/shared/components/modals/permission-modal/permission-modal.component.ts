@@ -8,7 +8,7 @@ import { cameraOutline, pinOutline, locationOutline, closeOutline, shieldCheckma
 import { AuthService } from 'src/app/core/services/auth/auth.service';
 import { ToastService } from 'src/app/core/services/ui/toast.service';
 import { LocationPlugin } from 'src/app/core/plugins/location-plugin';
-
+import { LoggerService } from '../../../../core/services/system/logger.service';
 export type PermissionMode = 'players' | 'commenting';
 
 @Component({
@@ -17,6 +17,7 @@ export type PermissionMode = 'players' | 'commenting';
   styleUrls: ['./permission-modal.component.scss'],
   standalone: true,
   imports: [CommonModule, IonIcon, IonButton, IonSpinner]
+
 })
 export class PermissionModalComponent implements OnInit {
   private readonly modalCtrl = inject(ModalController);
@@ -25,6 +26,7 @@ export class PermissionModalComponent implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly ngZone = inject(NgZone);
   private readonly locationPlugin = inject(LocationPlugin);
+  private readonly logger = inject(LoggerService);
 
   @Input() mode: PermissionMode = 'commenting';
 
@@ -65,7 +67,7 @@ export class PermissionModalComponent implements OnInit {
         }
       }
     } catch (error) {
-      console.warn('[MODAL-PERMISOS] Error verificando permisos iniciales:', error);
+      this.logger.warn('[MODAL-PERMISOS] Error verificando permisos iniciales:', error);
     }
   }
 
@@ -90,7 +92,7 @@ export class PermissionModalComponent implements OnInit {
       const granted = await this.locationPlugin.requestGeolocationPermission();
       await this.finishLocationRequest(granted);
     } catch (error) {
-      console.error('[MODAL-PERMISOS] Error geolocalización:', error);
+      this.logger.error('[MODAL-PERMISOS] Error geolocalización:', error);
       await this.finishLocationRequest(false);
     }
   }
@@ -106,7 +108,7 @@ export class PermissionModalComponent implements OnInit {
       if (navigator.mediaDevices) {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         stream.getTracks().forEach(track => track.stop());
-        
+
         this.ngZone.run(async () => {
           this.cameraAccepted = true;
           this.isLoadingCamera = false;

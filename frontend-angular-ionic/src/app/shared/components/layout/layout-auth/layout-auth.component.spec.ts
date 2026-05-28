@@ -79,7 +79,7 @@ describe('LayoutAuthComponent', () => {
     it('back link should point to /auth/login', waitForAsync(async () => {
       fixture = await createFixture({ isLogin: false });
       const backLink = fixture.debugElement.query(By.css('.back-link-minimal'));
-      expect(backLink.nativeElement.getAttribute('ng-reflect-router-link')).toBe('/auth/login');
+      expect(backLink.nativeElement.getAttribute('default-href') || backLink.nativeElement.getAttribute('ng-reflect-default-href') || backLink.nativeElement.defaultHref).toBe('/auth/login');
     }));
   });
 

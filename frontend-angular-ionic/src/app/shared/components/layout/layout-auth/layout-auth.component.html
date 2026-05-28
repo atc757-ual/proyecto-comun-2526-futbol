@@ -9,9 +9,8 @@
 
           <!-- Back Link Placeholder (Mantiene la altura fija haya o no botón) -->
           <div class="back-btn-placeholder">
-            <a *ngIf="!layoutService.isLogin()" routerLink="/auth/login" class="back-link-minimal">
-              <ion-icon name="arrow-back"></ion-icon>
-            </a>
+            <ion-back-button *ngIf="!layoutService.isLogin()" defaultHref="/auth/login" routerDirection="back"
+              icon="arrow-back" class="back-link-minimal"></ion-back-button>
           </div>
 
           <!-- Logo superior (Margen fijo para que no salte) -->
@@ -29,8 +28,8 @@
           </div>
 
           <!-- ÁREA DE CONTENIDO -->
-          <div class="dynamic-content-area animate-fade-in">
-            <router-outlet></router-outlet>
+          <div class="dynamic-content-area">
+            <ion-router-outlet [animated]="false"></ion-router-outlet>
           </div>
 
           <!-- FOOTER NATIVO APP (MÍNIMO - SOLO EN NATIVO APP) -->

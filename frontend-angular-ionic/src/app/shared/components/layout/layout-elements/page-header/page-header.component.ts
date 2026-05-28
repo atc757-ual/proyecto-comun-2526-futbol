@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import {
   IonHeader, IonToolbar, IonButtons, IonMenuToggle, IonButton,
-  IonIcon, IonTitle, IonLabel,
-  ActionSheetController, ModalController, NavController
+  IonIcon, IonTitle, IonLabel, IonBackButton,
+  NavController, ModalController, ActionSheetController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -26,7 +26,7 @@ import { ConfirmModalComponent } from '../../../modals/confirm-modal/confirm-mod
   imports: [
     CommonModule, RouterModule,
     IonHeader, IonToolbar, IonButtons, IonMenuToggle, IonButton,
-    IonIcon, IonTitle, IonLabel
+    IonIcon, IonTitle, IonLabel, IonBackButton
   ]
 })
 export class PageHeaderComponent {

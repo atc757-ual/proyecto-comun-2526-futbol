@@ -165,37 +165,7 @@
     --color: var(--color-primary);
   }
 
-  .back-btn-minimal {
-    background: transparent;
-    border: none;
-    outline: none;
-    padding: 0;
-    margin: 0;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start !important;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    transition: transform 0.1s ease, opacity 0.1s ease, background-color 0.2s ease;
-    color: var(--color-primary);
 
-    &:hover {
-      background-color: transparent;
-    }
-
-    &:active {
-      transform: scale(0.9);
-      opacity: 0.7;
-    }
-
-    ion-icon {
-      color: var(--color-primary) !important;
-      font-size: 28px;
-      margin-left: -4px;
-    }
-  }
 
   .mobile-title {
     font-size: var(--fs-18);

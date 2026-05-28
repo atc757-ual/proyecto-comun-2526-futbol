@@ -73,10 +73,23 @@ ion-content {
   .dynamic-content-area {
     width: 100%;
     flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
 
-    >* {
-      display: block;
-      width: 100%;
+    /* Forzar a ion-router-outlet y a sus páginas a respetar el DOM relativo
+       para que no colapsen el scroll nativo del layout */
+    ion-router-outlet {
+      position: relative;
+      flex: 1;
+      contain: none;
+
+      ::ng-deep>.ion-page:not(.ion-page-hidden) {
+        position: relative !important;
+        contain: none !important;
+        height: auto !important;
+        display: block !important;
+      }
     }
   }
 
@@ -103,7 +116,13 @@ ion-content {
   (max-height: 780px) {
     .form-wrapper {
       padding: var(--space-m) var(--space-base) var(--space-xxxl) var(--space-base) !important;
+
+      &.is-mobile-app {
+        margin: var(--space-base) 0;
+      }
+
     }
+
 
     .back-btn-placeholder {
       height: var(--space-xl) !important;

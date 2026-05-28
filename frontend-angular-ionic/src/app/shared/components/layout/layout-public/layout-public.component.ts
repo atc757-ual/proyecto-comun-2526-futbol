@@ -15,6 +15,7 @@ import { PlatformService }  from 'src/app/core/services/system/platform.service'
 import { NavigationService }from 'src/app/core/services/ui/navigation.service';
 import { PageHeaderComponent } from '../layout-elements/page-header/page-header.component';
 import { ConfirmModalComponent } from '../../modals/confirm-modal/confirm-modal.component';
+import { PageTabsComponent } from '../layout-elements/page-tabs/page-tabs.component';
 
 @Component({
   selector: 'app-layout-public',
@@ -23,7 +24,8 @@ import { ConfirmModalComponent } from '../../modals/confirm-modal/confirm-modal.
   standalone: true,
   imports: [
     CommonModule, RouterModule, 
-    IonRouterOutlet, PageHeaderComponent
+    IonRouterOutlet, PageHeaderComponent,
+    PageTabsComponent
   ]
 })
 export class LayoutPublicComponent implements OnInit, OnDestroy {

@@ -1,3 +1,15 @@
+// Mensaje para el footer vacío (sin sesión)
+.footer-empty-message {
+  width: 100%;
+  text-align: center;
+  color: var(--ion-color-medium);
+  padding: 12px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 1.1em;
+  gap: 4px;
+}
 // MOBILE BOTTOM BAR
 .mobile-tab-footer {
   background: transparent;

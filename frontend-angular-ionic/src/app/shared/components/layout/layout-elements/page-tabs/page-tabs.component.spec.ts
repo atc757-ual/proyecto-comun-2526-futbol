@@ -3,6 +3,9 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import { PageTabsComponent } from './page-tabs.component';
 import { NavigationService, APP_PAGES } from 'src/app/core/services/ui/navigation.service';
+import { AuthService } from 'src/app/core/services/auth/auth.service';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { of } from 'rxjs';
 
 describe('PageTabsComponent', () => {
   let component: PageTabsComponent;
@@ -17,8 +20,18 @@ describe('PageTabsComponent', () => {
     navServiceMock.isTabActive.and.returnValue(false);
 
     TestBed.configureTestingModule({
-      imports: [PageTabsComponent, RouterTestingModule],
-      providers: [{ provide: NavigationService, useValue: navServiceMock }],
+      imports: [PageTabsComponent, RouterTestingModule, HttpClientTestingModule],
+      providers: [
+        { provide: NavigationService, useValue: navServiceMock },
+        {
+          provide: AuthService,
+          useValue: jasmine.createSpyObj('AuthService', ['logout'], {
+            user$: of(null),
+            userData: () => null,
+            currentUser: () => null
+          })
+        }
+      ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
     }).compileComponents();
 
@@ -26,6 +39,10 @@ describe('PageTabsComponent', () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));
+
+  afterEach(() => {
+    fixture.destroy();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();
@@ -63,8 +80,53 @@ describe('PageTabsComponent', () => {
   });
 
   describe('isTabActive', () => {
-    it('should call isTabActive when rendering tabs', () => {
-      expect(navServiceMock.isTabActive).toHaveBeenCalled();
+    describe('with authenticated user', () => {
+      let authFixture: ComponentFixture<PageTabsComponent>;
+      let authNavMock: any;
+
+      beforeEach(waitForAsync(() => {
+        authNavMock = jasmine.createSpyObj('NavigationService', [
+          'isTabActive', 'isCurrentHome', 'goBack'
+        ]);
+        authNavMock.pages = APP_PAGES;
+        authNavMock.isTabActive.and.returnValue(false);
+
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({
+          imports: [PageTabsComponent, RouterTestingModule, HttpClientTestingModule],
+          providers: [
+            { provide: NavigationService, useValue: authNavMock },
+            {
+              provide: AuthService,
+              useValue: jasmine.createSpyObj('AuthService', ['logout'], {
+                user$: of({ uid: 'test-uid', email: 'test@test.com' }),
+                userData: () => null,
+                currentUser: () => ({ uid: 'test-uid', email: 'test@test.com' })
+              })
+            }
+          ],
+          schemas: [CUSTOM_ELEMENTS_SCHEMA]
+        }).compileComponents();
+
+        authFixture = TestBed.createComponent(PageTabsComponent);
+        authFixture.detectChanges();
+      }));
+
+      afterEach(() => {
+        authFixture.destroy();
+        TestBed.resetTestingModule();
+      });
+
+      it('should call isTabActive when user is logged in and tabs are rendered', () => {
+        expect(authNavMock.isTabActive).toHaveBeenCalled();
+      });
+    });
+
+    it('should NOT call isTabActive when there is no session (shows login message)', () => {
+      // Por defecto currentUser() = null → no se renderizan las tabs
+      navServiceMock.isTabActive.calls.reset();
+      fixture.detectChanges();
+      expect(navServiceMock.isTabActive).not.toHaveBeenCalled();
     });
 
     it('should return true for the currently active tab', () => {

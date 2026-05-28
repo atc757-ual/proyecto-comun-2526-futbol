@@ -79,7 +79,7 @@
         <!-- LISTA REAL DE NOTICIAS DESTACADAS -->
         <ion-list *ngIf="!isLoading && featuredNews.length > 0" lines="none" class="side-news-list">
           <ion-list-header>
-            <ion-label class="f-bold mb-base fs-18 text-neutral-8">Noticias Destacadas</ion-label>
+            <ion-label class="f-semibold mb-base fs-18 text-neutral-8">Noticias Destacadas</ion-label>
           </ion-list-header>
           <ng-container *ngFor="let news of featuredNews; let i = index; trackBy: trackByNewsId">
             <ion-item button detail="false" class="side-news-item" [class.active]="news.id === selectedNew?.id"
@@ -94,7 +94,7 @@
         </ion-list>
         <ion-card *ngIf="isAdmin">
           <ion-card-header>
-            <ion-card-title class="fs-20 fs-sm-18 f-semibold">Administrador</ion-card-title>
+            <ion-card-title class="f-semibold mb-base fs-18 text-neutral-8">Administrador</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <ion-item [button]="true" lines="none" detail="true" class="action-item is-blue"

@@ -6,7 +6,7 @@ import { TsdbHonour, TsdbCareer, TsdbMilestone, TsdbTeam, TsdbLeague, Breadcrumb
 import { Comment, CommentPayload } from '../../../core/models/comment.model';
 import {
   IonIcon, IonCard, IonCardContent, IonButton, IonAvatar, IonSegment, IonSegmentButton, IonLabel,
-  IonSpinner, LoadingController, NavController, AlertController, ModalController,
+  IonSpinner, LoadingController, NavController, ModalController,
   IonTextarea
 } from '@ionic/angular/standalone';
 import { RouterModule, ActivatedRoute } from '@angular/router';

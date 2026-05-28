@@ -150,7 +150,7 @@ export class ForgotPasswordPage implements OnInit {
       this.currentStep = 2;
       await this.toastService.showSuccess('Contraseña actualizada correctamente');
     } catch (error: any) {
-      this.logger.error('[FORGOT] Error al confirmar cambio de clave:', error as any);
+      this.logger.error('[FORGOT] Error al confirmar cambio de clave:', error);
       await this.toastService.showError('El enlace ha expirado o es inválido.');
     } finally {
       this.isLoading = false;

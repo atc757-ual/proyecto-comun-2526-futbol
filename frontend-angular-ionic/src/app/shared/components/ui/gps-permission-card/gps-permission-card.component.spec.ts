@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { By } from '@angular/platform-browser';
@@ -10,12 +11,17 @@ describe('GpsPermissionCardComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [IonicModule.forRoot(), GpsPermissionCardComponent]
+      imports: [IonicModule.forRoot(), GpsPermissionCardComponent],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA]
     }).compileComponents();
 
     fixture = TestBed.createComponent(GpsPermissionCardComponent);
     component = fixture.componentInstance;
   }));
+
+  afterEach(() => {
+    fixture.destroy();
+  });
 
   // =========================================================================
   // VISIBILIDAD

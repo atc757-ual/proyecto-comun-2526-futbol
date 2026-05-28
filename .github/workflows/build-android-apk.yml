@@ -37,7 +37,7 @@ jobs:
         working-directory: ./frontend-angular-ionic
 
       - name: Generate app icons from assets/icon.png
-        run: npx @capacitor/assets generate --android --resourcesDirectory assets
+        run: npx @capacitor/assets generate --android
         working-directory: ./frontend-angular-ionic
 
       - name: Inject Android permissions into AndroidManifest.xml

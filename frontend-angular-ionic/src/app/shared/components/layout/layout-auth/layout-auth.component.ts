@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
@@ -15,7 +15,7 @@ import { PageFooterComponent } from '../layout-elements/page-footer/page-footer.
   standalone: true,
   imports: [CommonModule, IonicModule, RouterModule, PageFooterComponent]
 })
-export class LayoutAuthComponent implements OnInit {
+export class LayoutAuthComponent {
   public layoutService = inject(LayoutService);
   public platformService = inject(PlatformService);
 
@@ -23,6 +23,4 @@ export class LayoutAuthComponent implements OnInit {
     addIcons({ arrowBack, logoLinkedin, logoGithub });
   }
 
-  ngOnInit() {
-  }
 }

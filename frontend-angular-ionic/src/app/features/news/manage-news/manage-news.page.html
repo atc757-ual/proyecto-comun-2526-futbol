@@ -113,7 +113,7 @@
               <div class="page-indicators">
                 <ion-button mode="ios" *ngFor="let page of getPages(); trackBy: trackByIndex"
                   [fill]="currentPage === page ? 'solid' : 'clear'" [color]="currentPage === page ? 'primary' : 'dark'"
-                  class="page-btn" [class.active]="currentPage === page" (click)="goToPage(page)">
+                  class="page-btn" [class.active]="currentPage === page" (click)="goToPage(page)" (keyup.enter)="goToPage(page)">
                   {{ page }}
                 </ion-button>
               </div>

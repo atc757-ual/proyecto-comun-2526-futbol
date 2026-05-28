@@ -12,16 +12,15 @@ import {
   personCircleOutline, logOutOutline,
   logInOutline, personAddOutline
 } from 'ionicons/icons';
-import { AuthService }      from 'src/app/core/services/auth/auth.service';
-import { PlatformService }  from 'src/app/core/services/system/platform.service';
-import { LayoutService }    from 'src/app/core/services/ui/layout.service';
-import { NavigationService }from 'src/app/core/services/ui/navigation.service';
+import { AuthService } from 'src/app/core/services/auth/auth.service';
+import { PlatformService } from 'src/app/core/services/system/platform.service';
+import { LayoutService } from 'src/app/core/services/ui/layout.service';
+import { NavigationService } from 'src/app/core/services/ui/navigation.service';
 import { ConfirmModalComponent } from '../../../modals/confirm-modal/confirm-modal.component';
 
 @Component({
   selector: 'app-page-header',
   templateUrl: './page-header.component.html',
-  styleUrls: ['./page-header.component.scss'],
   standalone: true,
   imports: [
     CommonModule, RouterModule,
@@ -32,13 +31,13 @@ import { ConfirmModalComponent } from '../../../modals/confirm-modal/confirm-mod
 export class PageHeaderComponent {
   @Input() mode: 'main' | 'public' = 'main';
 
-  public authService     = inject(AuthService);
+  public authService = inject(AuthService);
   public platformService = inject(PlatformService);
-  public layoutService   = inject(LayoutService);
-  public navService      = inject(NavigationService);
-  private navCtrl        = inject(NavController);
-  private modalCtrl      = inject(ModalController);
-  private actionSheetCtrl= inject(ActionSheetController);
+  public layoutService = inject(LayoutService);
+  public navService = inject(NavigationService);
+  private navCtrl = inject(NavController);
+  private modalCtrl = inject(ModalController);
+  private actionSheetCtrl = inject(ActionSheetController);
 
   constructor() {
     addIcons({

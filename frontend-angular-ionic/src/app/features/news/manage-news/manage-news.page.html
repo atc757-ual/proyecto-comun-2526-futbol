@@ -93,11 +93,11 @@
                   </div>
 
                   <div class="item-actions">
-                    <ion-button fill="clear" (click)="editNews(item)" class="btn-action edit" title="Editar"
+                    <ion-button fill="clear" (click)="editNews(item)" (keydown.enter)="editNews(item)" class="btn-action edit" title="Editar"
                       *ngIf="!isExpired(item)">
                       <ion-icon name="create-outline"></ion-icon>
                     </ion-button>
-                    <ion-button fill="clear" (click)="deleteNews(item)" class="btn-action delete" title="Borrar">
+                    <ion-button fill="clear" (click)="deleteNews(item)" (keydown.enter)="deleteNews(item)" class="btn-action delete" title="Borrar">
                       <ion-icon name="trash-outline"></ion-icon>
                     </ion-button>
                   </div>

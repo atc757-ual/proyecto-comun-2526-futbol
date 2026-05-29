@@ -98,7 +98,7 @@
             </ion-item>
             <div class="separator my-s"></div>
             <ion-item *ngIf="selectedNew && !isExpired(selectedNew)" [button]="true" lines="none" detail="true" class="action-item is-green"
-              (click)="editNews()">
+              (click)="editNews()" (keydown.enter)="editNews()">
               <ion-icon slot="start" aria-hidden="true" name="create-outline"></ion-icon>
               <ion-label>Editar contenido</ion-label>
             </ion-item>

@@ -5,6 +5,7 @@ import { IonicModule, IonContent, AlertController, NavController, ModalControlle
 import { Router, RouterModule } from '@angular/router';
 import { ConfirmModalComponent } from 'src/app/shared/components/modals/confirm-modal/confirm-modal.component';
 import { NewsItem } from 'src/app/core/models/news.model';
+import { FALLBACK_NEWS_IMG, hasValidImage } from '../../../core/services/news/news.utils';
 import { AuthService } from 'src/app/core/services/auth/auth.service';
 import { PlatformService } from 'src/app/core/services/system/platform.service';
 import { addIcons } from 'ionicons';
@@ -169,20 +170,10 @@ export class NewsDetailPage {
     });
   }
 
-  readonly FALLBACK_NEWS_IMG = 'data:image/svg+xml;base64,' + btoa(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">' +
-    '<rect width="800" height="450" fill="#e2e8f0"/>' +
-    '<rect x="260" y="120" width="280" height="210" rx="12" fill="#94a3b8"/>' +
-    '<rect x="280" y="140" width="240" height="130" rx="6" fill="#cbd5e1"/>' +
-    '<rect x="280" y="285" width="160" height="16" rx="4" fill="#64748b"/>' +
-    '<rect x="280" y="310" width="110" height="12" rx="4" fill="#94a3b8"/>' +
-    '</svg>'
-  );
+  readonly FALLBACK_NEWS_IMG = FALLBACK_NEWS_IMG;
 
   hasValidImage(news: NewsItem | null): boolean {
-    if (!news?.imageUrl) return false;
-    if (news.imageUrl.startsWith('data:')) return false;
-    return true;
+    return hasValidImage(news?.imageUrl);
   }
 
   isExpired(news: NewsItem | null): boolean {

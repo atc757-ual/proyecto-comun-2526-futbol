@@ -21,8 +21,8 @@ export class NodeNewsService implements INewsService {
   private readonly authService = inject(AuthService);
   private logger      = inject(LoggerService);
   private apiUrl = environment.nodeApiUrl + '/news';
-  private feedUrl = environment.nodeApiUrl + '/news'; 
-  private featuredUrl = environment.nodeApiUrl + '/news'; 
+  private feedUrl = environment.nodeApiUrl + '/news';
+  private featuredUrl = environment.nodeApiUrl + '/news/featured';
 
   private normalizeDateForApi(dateValue?: string): string {
     if (!dateValue) return '';
@@ -40,7 +40,8 @@ export class NodeNewsService implements INewsService {
   private normalizeNewsForApi(news: NewsItem): NewsItem {
     return {
       ...news,
-      date: this.normalizeDateForApi(news.date)
+      date: this.normalizeDateForApi(news.date),
+      expiryDate: this.normalizeDateForApi(news.expiryDate)
     };
   }
 
@@ -116,6 +117,10 @@ export class NodeNewsService implements INewsService {
     if (news.date && news.date.includes('/')) {
       const [day, month, year] = news.date.split('/');
       news.date = `${year}-${month}-${day}`;
+    }
+    if (news.expiryDate && news.expiryDate.includes('/')) {
+      const [day, month, year] = news.expiryDate.split('/');
+      news.expiryDate = `${year}-${month}-${day}`;
     }
 
     // NORMALIZACIÓN DE ESTADO (Crucial para el diseño)

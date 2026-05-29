@@ -86,6 +86,7 @@ public class XMLValidatorTest {
         NewsItem n = new NewsItem();
         n.id = "001";
         n.date = "30/04/2026";
+        n.expiryDate = "31/12/2099";
         n.title = "Bellingham anota un hat-trick";
         n.author = "Carlos Pérez Redactor";
         n.summary = "Bellingham marcó tres goles decisivos en la victoria del Real Madrid.";

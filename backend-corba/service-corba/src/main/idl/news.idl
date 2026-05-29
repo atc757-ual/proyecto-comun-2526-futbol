@@ -11,7 +11,8 @@ module BufferApp {
         string imageUrl;
         string category;
         TagList tags;     
-        string date;      
+        string date;
+        string expiryDate;
         boolean isActive;
         boolean isFeatured;
         string createdBy;

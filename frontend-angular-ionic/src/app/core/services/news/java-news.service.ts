@@ -37,7 +37,8 @@ export class JavaNewsService implements INewsService {
   private normalizeNewsForApi(news: NewsItem): NewsItem {
     return {
       ...news,
-      date: this.normalizeDateForApi(news.date)
+      date: this.normalizeDateForApi(news.date),
+      expiryDate: this.normalizeDateForApi(news.expiryDate)
     };
   }
 
@@ -70,9 +71,9 @@ export class JavaNewsService implements INewsService {
   }
 
   getFeatured(): Observable<NewsItem[]> {
-    // En Java usamos el mismo feed pero filtrado por importancia si aplica
-    return this.getFeed().pipe(
-      map(news => news.filter(n => n.isActive))
+    return this.http.get<any>(`${this.apiUrl}/featured`).pipe(
+      map(response => (response.data || []).map((n: any) => this.mapToNews(n))),
+      catchError(() => of([]))
     );
   }
 
@@ -139,6 +140,10 @@ export class JavaNewsService implements INewsService {
     if (news.date && news.date.includes('/')) {
       const [day, month, year] = news.date.split('/');
       news.date = `${year}-${month}-${day}`;
+    }
+    if (news.expiryDate && news.expiryDate.includes('/')) {
+      const [day, month, year] = news.expiryDate.split('/');
+      news.expiryDate = `${year}-${month}-${day}`;
     }
     news.isActive = (item.isActive === true || item.isActive === 1 || item.isActive === 'true' || item.active === true);
     return news as NewsItem;

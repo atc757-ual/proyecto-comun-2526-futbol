@@ -24,9 +24,10 @@
 
         <ion-card class="main-article" *ngIf="selectedNew">
           <div class="article-image-container">
-            <img
-              [src]="selectedNew.imageUrl || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiB2aWV3Qm94PSIwIDAgODAwIDgwMCI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI4MDAiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgZm9udC1mYW1pbHk9InN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtc2l6ZT0iODAiIGZpbGw9IiM0NzU1NjkiPjQwNDwvdGV4dD48L3N2Zz4='"
-              onerror="this.onerror=null;this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiB2aWV3Qm94PSIwIDAgODAwIDgwMCI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI4MDAiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgZm9udC1mYW1pbHk9InN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtc2l6ZT0iODAiIGZpbGw9IiM0NzU1NjkiPjQwNDwvdGV4dD48L3N2Zz4='">
+            <img [src]="hasValidImage(selectedNew) ? selectedNew.imageUrl : FALLBACK_NEWS_IMG"
+              [style.object-fit]="hasValidImage(selectedNew) ? 'cover' : 'contain'"
+              onerror="this.src=this.getAttribute('data-fallback')"
+              [attr.data-fallback]="FALLBACK_NEWS_IMG">
             <div class="article-badge" [style.background]="getCategoryColor(selectedNew.category)">
               {{ selectedNew.category }}
             </div>
@@ -96,12 +97,12 @@
               <ion-label>Nueva noticia</ion-label>
             </ion-item>
             <div class="separator my-s"></div>
-            <ion-item *ngIf="selectedNew" [button]="true" lines="none" detail="true" class="action-item is-green"
+            <ion-item *ngIf="selectedNew && !isExpired(selectedNew)" [button]="true" lines="none" detail="true" class="action-item is-green"
               (click)="editNews()">
               <ion-icon slot="start" aria-hidden="true" name="create-outline"></ion-icon>
               <ion-label>Editar contenido</ion-label>
             </ion-item>
-            <div class="separator my-s"></div>
+            <div *ngIf="selectedNew && !isExpired(selectedNew)" class="separator my-s"></div>
             <ion-item *ngIf="selectedNew" [button]="true" lines="none" detail="true" class="action-item is-red"
               (click)="confirmDelete()">
               <ion-icon slot="start" aria-hidden="true" name="trash-outline"></ion-icon>
@@ -109,7 +110,7 @@
             </ion-item>
              <div class="separator my-s"></div>
             <!-- Widget de Estado -->
-            <div class="status-widget" [class.is-published]="selectedNew?.isActive">
+            <div *ngIf="!isExpired(selectedNew)"class="status-widget" [class.is-published]="selectedNew?.isActive">
               <div class="status-header">
                 <div>
                   <span class="status-tag mb-xs">
@@ -128,7 +129,11 @@
                   [disabled]="isUpdatingStatus">
                 </ion-toggle>
               </div>
-            </div>        
+            </div> 
+            <ion-item *ngIf="isExpired(selectedNew) " lines="none" class="action-item">
+              <ion-icon slot="start" name="alert-circle-outline" color="danger"></ion-icon>
+              <ion-label color="danger">Noticia vencida</ion-label>
+            </ion-item>       
           </ion-card-content>
         </ion-card>
 
@@ -139,7 +144,7 @@
           </ion-card-header>
           <ion-card-content>
           <div *ngFor="let news of newsList; let i = index; trackBy: trackByNewsId">
-            <ion-item button detail="false" class="side-news-item" [class.active]="news.id === selectedNew?.id"
+            <ion-item lines="none" button detail="false" class="side-news-item" [class.active]="news.id === selectedNew?.id"
               (click)="selectNews(news)">
               <div class="side-news-rank" slot="start">{{ i + 1 }}</div>
               <ion-label>

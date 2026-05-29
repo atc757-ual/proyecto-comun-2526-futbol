@@ -16,6 +16,7 @@ public class XMLCoderTest {
 
         assertTrue(xml.contains("<id>"), "Debe contener etiqueta <id>");
         assertTrue(xml.contains("<date>"), "Debe contener etiqueta <date>");
+        assertTrue(xml.contains("<expiryDate>"), "Debe contener etiqueta <expiryDate>");
         assertTrue(xml.contains("<title>"), "Debe contener etiqueta <title>");
         assertTrue(xml.contains("<author>"), "Debe contener etiqueta <author>");
         assertTrue(xml.contains("<content>"), "Debe contener etiqueta <content>");
@@ -53,12 +54,18 @@ public class XMLCoderTest {
         NewsItem n = new NewsItem();
         n.id = "001";
         n.date = "30/04/2026";
+        n.expiryDate = "31/12/2099";
         n.title = "Bellingham anota un hat-trick";
         n.author = "Carlos Pérez Redactor";
+        n.summary = "Resumen de la noticia sobre el hat-trick de Bellingham";
         n.content = "El centrocampista inglés Jude Bellingham anotó tres goles en la victoria del Real Madrid";
         n.imageUrl = "https://img.futbol.com/bellingham.jpg";
         n.category = "Resultados";
         n.tags = new String[]{"futbol", "champions"};
+        n.createdBy = "";
+        n.updatedBy = "";
+        n.createdAt = "";
+        n.updatedAt = "";
         return n;
     }
 }

@@ -19,6 +19,7 @@ public class XMLCoder {
         xml.append("    <content>").append(escapeXML(noticia.content)).append("</content>\n");
         xml.append("    <imageUrl>").append(escapeXML(noticia.imageUrl)).append("</imageUrl>\n");
         xml.append("    <category>").append(escapeXML(noticia.category)).append("</category>\n");
+        xml.append("    <expiryDate>").append(escapeXML(noticia.expiryDate)).append("</expiryDate>\n");
         xml.append("    <isActive>").append(noticia.isActive).append("</isActive>\n");
         xml.append("    <isFeatured>").append(noticia.isFeatured).append("</isFeatured>\n");
         

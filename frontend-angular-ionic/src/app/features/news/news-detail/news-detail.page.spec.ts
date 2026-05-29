@@ -112,13 +112,14 @@ describe('NewsDetailPage', () => {
     expect(mockToastService.showSuccess).toHaveBeenCalled();
   }));
 
-  it('should confirm and delete news', async () => {
+  it('should delete news when confirmed', fakeAsync(() => {
+    mockNewsService.deleteNews.calls.reset();
     component.selectedNew = { ...mockNews, imageUrl: 'firebasestorage.something' };
-    component.confirmDelete();
-    await fixture.whenStable();
-    fixture.detectChanges();
-    await fixture.whenStable();
-  });
+    spyOn(component as any, 'deleteNews').and.callThrough();
+    (component as any).deleteNews();
+    tick();
+    expect(mockNewsService.deleteNews).toHaveBeenCalledWith('1');
+  }));
 });
 
 afterEach(() => {

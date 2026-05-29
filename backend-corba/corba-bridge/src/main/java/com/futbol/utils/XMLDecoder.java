@@ -34,6 +34,7 @@ public class XMLDecoder {
         noticia.content  = XMLParser.getText(doc, "content");
         noticia.imageUrl = XMLParser.getText(doc, "imageUrl");
         noticia.category = XMLParser.getText(doc, "category");
+        noticia.expiryDate = XMLParser.getText(doc, "expiryDate");
         String isActiveStr = XMLParser.getText(doc, "isActive");
         noticia.isActive = isActiveStr != null && isActiveStr.equalsIgnoreCase("true");
         String isFeaturedStr = XMLParser.getText(doc, "isFeatured");

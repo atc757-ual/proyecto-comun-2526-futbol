@@ -49,6 +49,7 @@ public class XMLDecoderTest {
         assertEquals(original.content, resultado.content);
         assertEquals(original.author, resultado.author);
         assertEquals(original.date, resultado.date);
+        assertEquals(original.expiryDate, resultado.expiryDate);
         assertEquals(original.category, resultado.category);
         assertEquals(original.imageUrl, resultado.imageUrl);
         assertArrayEquals(original.tags, resultado.tags);
@@ -58,12 +59,18 @@ public class XMLDecoderTest {
         NewsItem n = new NewsItem();
         n.id = "001";
         n.date = "30/04/2026";
+        n.expiryDate = "31/12/2099";
         n.title = "Bellingham anota un hat-trick";
         n.author = "Carlos Pérez Redactor";
+        n.summary = "Resumen de la noticia sobre el hat-trick de Bellingham";
         n.content = "El centrocampista inglés Jude Bellingham anotó tres goles en la victoria del Real Madrid";
         n.imageUrl = "https://img.futbol.com/bellingham.jpg";
         n.category = "Resultados";
         n.tags = new String[]{"futbol", "champions"};
+        n.createdBy = "";
+        n.updatedBy = "";
+        n.createdAt = "";
+        n.updatedAt = "";
         return n;
     }
 }

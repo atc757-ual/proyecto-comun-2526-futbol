@@ -159,7 +159,7 @@ describe('AiTeamPage (Karma/Jasmine)', () => {
 
   it('should handle AI analysis errors and present error toast', fakeAsync(() => {
     mockAiService.analyzeMyTeam.and.returnValue(throwError(() => ({
-      error: { result: { description: 'Fallo simulado de la IA' } }
+      error: { result: { descriptionDetail: 'Fallo simulado de la IA' } }
     })));
 
     component.generateTeam();

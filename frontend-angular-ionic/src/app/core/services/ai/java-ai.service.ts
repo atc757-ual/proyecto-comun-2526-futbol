@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { IAIService, AIAnalysisResponse } from './ai.service.interface';
 
@@ -26,7 +27,12 @@ export class JavaAIService implements IAIService {
     });
 
     return this.http.post<any>(`${this.apiUrl}/analyze`, {}, { headers }).pipe(
-      map(res => res.data)
+      switchMap(res => {
+        if (!res.data || res.result?.code !== '200') {
+          return throwError(() => ({ error: res }));
+        }
+        return [res.data];
+      })
     );
   }
 }

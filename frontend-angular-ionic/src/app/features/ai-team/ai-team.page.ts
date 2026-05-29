@@ -155,10 +155,13 @@ export class AiTeamPage implements OnInit {
         clearInterval(this.textInterval);
         this.layoutService.setAILoading(false);
         this.isGenerating = false;
-        // Prioriza mensaje directo, luego descriptionDetail, description, y otros campos posibles
-        const errorMessage =
-          err?.error?.result?.descriptionDetail
-          || 'Error al conectar con la IA';
+        const detail: string = err?.error?.result?.descriptionDetail || '';
+        let errorMessage = 'El servicio de IA no está disponible ahora mismo';
+        if (detail.includes('429') || detail.includes('RESOURCE_EXHAUSTED')) {
+          errorMessage = 'Límite de uso de IA alcanzado, inténtalo más tarde';
+        } else if (detail.includes('404') || detail.includes('NOT_FOUND')) {
+          errorMessage = 'Modelo de IA no disponible';
+        }
         this.toastService.showError(errorMessage);
       }
     });

@@ -48,8 +48,8 @@ eureka:
 google:
   api:
     key: ${GOOGLE_API_KEY}
-    model: ${GEMINI_MODEL:gemini-2.0-flash}
-    version: ${GEMINI_API_VERSION:v1}
+    model: ${GEMINI_MODEL_JAVA:gemini-2.0-flash}
+    version: ${GEMINI_API_VERSION_JAVA:v1}
 
 app:
   cors:

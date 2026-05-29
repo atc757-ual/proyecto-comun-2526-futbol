@@ -15,7 +15,7 @@ public class AiConfig {
     @Value("${google.api.key}")
     private String apiKey;
 
-    @Value("${google.api.model:gemini-2.5-flash}")
+    @Value("${google.api.model:gemini-2.0-flash}")
     private String modelName;
 
     @Bean

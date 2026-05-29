@@ -88,9 +88,26 @@
         <!-- ADMIN CARD -->
         <ion-card *ngIf="isAdmin" class="mb-base">
           <ion-card-header>
-            <ion-card-title class="fs-18 f-bold">Control de Publicación</ion-card-title>
+            <ion-card-title class="f-semibold fs-20 fs-sm-18 text-neutral-8">Control de Publicación</ion-card-title>
           </ion-card-header>
           <ion-card-content>
+            <ion-item [button]="true" lines="none" detail="true" class="action-item is-blue" routerLink="/add-news">
+              <ion-icon slot="start" aria-hidden="true" name="add-circle-outline"></ion-icon>
+              <ion-label>Nueva noticia</ion-label>
+            </ion-item>
+            <div class="separator my-s"></div>
+            <ion-item *ngIf="selectedNew" [button]="true" lines="none" detail="true" class="action-item is-green"
+              (click)="editNews()">
+              <ion-icon slot="start" aria-hidden="true" name="create-outline"></ion-icon>
+              <ion-label>Editar contenido</ion-label>
+            </ion-item>
+            <div class="separator my-s"></div>
+            <ion-item *ngIf="selectedNew" [button]="true" lines="none" detail="true" class="action-item is-red"
+              (click)="confirmDelete()">
+              <ion-icon slot="start" aria-hidden="true" name="trash-outline"></ion-icon>
+              <ion-label>Eliminar permanente</ion-label>
+            </ion-item>
+             <div class="separator my-s"></div>
             <!-- Widget de Estado -->
             <div class="status-widget" [class.is-published]="selectedNew?.isActive">
               <div class="status-header">
@@ -111,36 +128,16 @@
                   [disabled]="isUpdatingStatus">
                 </ion-toggle>
               </div>
-
-            </div>
-
-            <div class="separator my-s"></div>
-
-            <ion-item [button]="true" lines="none" detail="true" class="action-item is-blue" routerLink="/add-news">
-              <ion-icon slot="start" aria-hidden="true" name="add-circle-outline"></ion-icon>
-              <ion-label>Nueva noticia</ion-label>
-            </ion-item>
-            <div class="separator my-s"></div>
-            <ion-item *ngIf="selectedNew" [button]="true" lines="none" detail="true" class="action-item is-green"
-              (click)="editNews()">
-              <ion-icon slot="start" aria-hidden="true" name="create-outline"></ion-icon>
-              <ion-label>Editar contenido</ion-label>
-            </ion-item>
-            <div class="separator my-s"></div>
-            <ion-item *ngIf="selectedNew" [button]="true" lines="none" detail="true" class="action-item is-red"
-              (click)="confirmDelete()">
-              <ion-icon slot="start" aria-hidden="true" name="trash-outline"></ion-icon>
-              <ion-label>Eliminar permanente</ion-label>
-            </ion-item>
+            </div>        
           </ion-card-content>
         </ion-card>
 
         <!-- LISTA REAL -->
-        <ion-list class="side-news-list" *ngIf="!isLoading && newsList.length > 0" lines="none">
-          <ion-list-header>
+        <ion-card *ngIf="!isLoading && newsList.length > 0" lines="none">
+          <ion-card-header>
             <ion-label class="f-semibold fs-20 fs-sm-18 text-neutral-8">Noticias Destacadas</ion-label>
-          </ion-list-header>
-          <ng-container *ngFor="let news of newsList; let i = index; trackBy: trackByNewsId">
+          </ion-card-header>
+          <ion-card-content *ngFor="let news of newsList; let i = index; trackBy: trackByNewsId">
             <ion-item button detail="false" class="side-news-item" [class.active]="news.id === selectedNew?.id"
               (click)="selectNews(news)">
               <div class="side-news-rank" slot="start">{{ i + 1 }}</div>
@@ -149,8 +146,8 @@
               </ion-label>
             </ion-item>
             <div *ngIf="i < newsList.length - 1" class="separator my-s"></div>
-          </ng-container>
-        </ion-list>
+          </ion-card-content>
+        </ion-card>
       </div>
     </div>
   </div>

@@ -30,7 +30,7 @@ const authorizeRequest = async (req, res, next) => {
     if (!header || !header.startsWith("Bearer ")) {
         // Si la petición espera HTML, renderizamos la vista de status con mensaje
         if (req.headers?.accept?.includes('text/html')) {
-          return res.status(401).render('status', { error: 'Acceso no autorizado' });
+            return res.status(401).render('status', { error: 'Acceso no autorizado' });
         }
         return sendApiResult(res, 401, "Acceso no autorizado");
     }
@@ -41,32 +41,32 @@ const authorizeRequest = async (req, res, next) => {
 
 
 
-        jwt.verify(token, secretOrKey, { algorithms: [jwtAlgorithm] }, async (err, decoded) => {
-            if (err) {
-                console.error('JWT Verify Error:', err.message);
-                return sendApiResult(res, 401, "No autorizado: Token inválido o expirado");
+    jwt.verify(token, secretOrKey, { algorithms: [jwtAlgorithm] }, async (err, decoded) => {
+        if (err) {
+            console.error('JWT Verify Error:', err.message);
+            return sendApiResult(res, 401, "No autorizado: Token inválido o expirado");
+        }
+
+        try {
+            let user = await User.findOne({
+                firebaseUid: decoded.id || decoded.sub,
+                is_active: true,
+                blocked: false
+            }).select('-password');
+
+            if (!user) {
+                return sendApiResult(res, 401, "No autorizado: El usuario no existe");
             }
 
-            try {
-                let user = await User.findOne({
-                    firebaseUid: decoded.id || decoded.sub, 
-                    is_active: true,
-                    blocked: false 
-                }).select('-password');
+            // Inyectamos el usuario de BD y los claims del token
+            req.user = user;
+            req.tokenClaims = decoded;
 
-                if (!user) {
-                    return sendApiResult(res, 401, "No autorizado: El usuario no existe");
-                }
-
-                // Inyectamos el usuario de BD y los claims del token
-                req.user = user;
-                req.tokenClaims = decoded; 
-
-                return next();
-            } catch (error) {
-                return sendApiResult(res, 500, "Error interno al verificar autorización");
-            }
-        });
+            return next();
+        } catch (error) {
+            return sendApiResult(res, 500, "Error interno al verificar autorización");
+        }
+    });
 };
 
 /**

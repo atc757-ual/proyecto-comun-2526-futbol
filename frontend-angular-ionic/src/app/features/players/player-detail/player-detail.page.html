@@ -1,6 +1,6 @@
 <ion-content class="flex-content">
   <app-page-full-content [pageTitle]="pageTitle" [pageSubtitle]="pageSubtitle" [breadcrumbs]="breadcrumbs"></app-page-full-content>
-  <div class="content-container pb-xl">
+  <div class="content-container">
     <div *ngIf="player">
       <!-- COMPACT SCOUTING BANNER -->
       <div class="premium-scouting-banner mb-base" [class.is-owner]="isOwner" [class.is-global]="!isOwner">
@@ -220,7 +220,7 @@
           </ion-card>
 
           <!-- COMUNIDAD Y OPINIONES PREMIUM -->
-          <ion-card class="mb-base overflow-hidden">
+          <ion-card class="overflow-hidden">
             <ion-card-content class="p-base">
               <!-- Scouting Helper -->
               <div class="scouting-helper-box mb-base">

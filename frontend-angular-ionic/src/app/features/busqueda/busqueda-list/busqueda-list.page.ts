@@ -258,11 +258,9 @@ export class BusquedaListPage implements OnInit, OnDestroy {
       this.isCapturingLocation = false;
       this.cdr.detectChanges();
       setTimeout(() => this.initMap(), 500);
-    } catch (error: any) {
+    } catch {
       this.isCapturingLocation = false;
-      this.hasGeoPermission = false;
-      this.hasLocation = false;
-      this.currentLocation = null;
+      this.cdr.detectChanges();
     }
   }
 

@@ -2,7 +2,6 @@ import { ComponentFixture, TestBed, waitForAsync, fakeAsync, tick } from '@angul
 import { LayoutPublicComponent } from './layout-public.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { IonicModule } from '@ionic/angular';
 import { MenuController, NavController, ModalController, IonRouterOutlet } from '@ionic/angular/standalone';
 import { PlatformService } from 'src/app/core/services/system/platform.service';
 import { NavigationService, APP_PAGES } from 'src/app/core/services/ui/navigation.service';
@@ -36,7 +35,7 @@ describe('LayoutPublicComponent', () => {
     navServiceMock.isTabActive.and.returnValue(false);
 
     TestBed.configureTestingModule({
-      imports: [IonicModule.forRoot(), RouterTestingModule, HttpClientTestingModule, LayoutPublicComponent],
+      imports: [RouterTestingModule, HttpClientTestingModule, LayoutPublicComponent],
       providers: [
         { provide: MenuController,  useValue: menuCtrl   },
         { provide: NavController,   useValue: navCtrl    },

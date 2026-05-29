@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { LayoutMainComponent } from './layout-main.component';
 import { Router, ActivatedRoute } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
 import { MenuController, NavController, ActionSheetController, ModalController, IonRouterOutlet } from '@ionic/angular/standalone';
 import { AuthService } from 'src/app/core/services/auth/auth.service';
 import { PlatformService } from 'src/app/core/services/system/platform.service';
@@ -65,7 +64,7 @@ describe('LayoutMainComponent', () => {
     modalMock.create.and.returnValue(Promise.resolve({ present: () => { }, onWillDismiss: () => Promise.resolve({ data: true }) }));
 
     TestBed.configureTestingModule({
-      imports: [IonicModule.forRoot(), LayoutMainComponent],
+      imports: [LayoutMainComponent],
       providers: [
         { provide: MenuController, useValue: menuCtrlMock },
         { provide: NavController, useValue: navCtrlMock },

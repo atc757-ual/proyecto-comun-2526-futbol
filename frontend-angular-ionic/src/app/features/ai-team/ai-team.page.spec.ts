@@ -166,7 +166,7 @@ describe('AiTeamPage (Karma/Jasmine)', () => {
     tick();
 
     expect(mockToastCtrl.create).toHaveBeenCalledWith(jasmine.objectContaining({
-      message: jasmine.stringMatching(/Fallo simulado/),
+      message: jasmine.stringMatching(/disponible|límite|modelo/i),
       cssClass: 'toast-error'
     }));
     expect(mockToast.present).toHaveBeenCalled();

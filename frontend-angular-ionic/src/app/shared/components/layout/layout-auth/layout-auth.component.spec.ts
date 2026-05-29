@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { LayoutAuthComponent } from './layout-auth.component';
 import { RouterTestingModule } from '@angular/router/testing';
-import { IonicModule } from '@ionic/angular';
 import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { PlatformService } from 'src/app/core/services/system/platform.service';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -27,7 +26,7 @@ function buildMocks(options: {
 async function createFixture(options: Parameters<typeof buildMocks>[0]) {
   const mocks = buildMocks(options);
   await TestBed.configureTestingModule({
-    imports: [LayoutAuthComponent, IonicModule.forRoot(), RouterTestingModule],
+    imports: [LayoutAuthComponent, RouterTestingModule],
     providers: [
       { provide: LayoutService, useValue: mocks.layout },
       { provide: PlatformService, useValue: mocks.platform }

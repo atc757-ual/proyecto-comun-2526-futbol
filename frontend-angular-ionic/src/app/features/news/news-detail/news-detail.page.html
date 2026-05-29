@@ -104,7 +104,7 @@
             </ion-item>
             <div *ngIf="selectedNew && !isExpired(selectedNew)" class="separator my-s"></div>
             <ion-item *ngIf="selectedNew" [button]="true" lines="none" detail="true" class="action-item is-red"
-              (click)="confirmDelete()">
+              (click)="confirmDelete()" (keydown.enter)="confirmDelete()">
               <ion-icon slot="start" aria-hidden="true" name="trash-outline"></ion-icon>
               <ion-label>Eliminar permanente</ion-label>
             </ion-item>
@@ -145,7 +145,7 @@
           <ion-card-content>
           <div *ngFor="let news of newsList; let i = index; trackBy: trackByNewsId">
             <ion-item lines="none" button detail="false" class="side-news-item" [class.active]="news.id === selectedNew?.id"
-              (click)="selectNews(news)">
+              (click)="selectNews(news)" (keydown.enter)="selectNews(news)">
               <div class="side-news-rank" slot="start">{{ i + 1 }}</div>
               <ion-label>
                 <h2 class="side-news-title">{{ news.title }}</h2>

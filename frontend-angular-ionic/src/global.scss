@@ -350,7 +350,8 @@ ion-item.action-item {
 
 /** --- TOASTS PREMIUM --- **/
 .toast-success,
-.toast-error {
+.toast-error,
+.toast-warning {
   --box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
   font-family: var(--font-primary);
   font-weight: var(--fw-medium);
@@ -384,6 +385,8 @@ ion-item.action-item {
     --width: 100% !important;
     margin: 0 !important;
     top: 0;
+    --border-radius: 0 !important;
+    /* Anula por completo las esquinas redondeadas en móviles */
 
     &::part(wrapper) {
       width: 100% !important;
@@ -409,8 +412,6 @@ ion-item.action-item {
       font-size: 20px;
     }
   }
-
-
 }
 
 .toast-success {
@@ -1069,7 +1070,7 @@ ion-segment {
 }
 
 .ai-thinking-text {
-  font-size: var(--fs-22) !important;
+  font-size: var(--fs-18) !important;
   font-weight: var(--fw-bold);
   line-height: var(--lh-tight);
   margin: 24px 0 12px;

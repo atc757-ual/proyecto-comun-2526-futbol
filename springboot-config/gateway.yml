@@ -22,6 +22,12 @@ spring:
           filters:
             - RewritePath=/api/external/football/(?<segment>.*), /api/external/players/${segment}
 
+        # Java AI Analysis (delegated to external-client)
+        - id: ai-client-route
+          uri: lb://EXTERNAL-CLIENT
+          predicates:
+            - Path=/api/ai, /api/ai/**
+
         # Java External Client (Orchestrator, AI, TV, Live, Players etc)
         - id: external-client-route
           uri: lb://EXTERNAL-CLIENT

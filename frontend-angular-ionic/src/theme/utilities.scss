@@ -329,6 +329,12 @@
 }
 
 /* --- SKELETON LOADERS --- */
+ion-skeleton-text {
+    --background: rgba(0, 46, 255, 0.07) !important;
+    --background-focused: rgba(0, 46, 255, 0.15) !important;
+    --border-radius: var(--border-radius-soft, 8px) !important;
+}
+
 /* Width utilities (%) */
 .sk-w-30  { width: 30%  !important; }
 .sk-w-40  { width: 40%  !important; }

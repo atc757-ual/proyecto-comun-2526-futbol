@@ -6,7 +6,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: splashFadeIn var(--transition-fast);
 }
 
 .splash-center {
@@ -115,4 +114,11 @@
   color: var(--color-neutral-7);
   margin: 0;
   line-height: 1.5;
+}
+
+ion-app,
+ion-content,
+body {
+  background-color: var(--color-neutral-0) !important;
+  height: 100vh !important;
 }

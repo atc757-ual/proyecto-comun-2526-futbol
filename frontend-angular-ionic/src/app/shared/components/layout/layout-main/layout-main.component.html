@@ -7,9 +7,16 @@
   <app-page-tabs></app-page-tabs>
 </div>
 
+
 <!-- === WEB / DESKTOP === -->
 <ng-container *ngIf="!platformService.isMobileApp">
   <app-page-navigation></app-page-navigation>
+  <div class="main-wrapper" id="main-content">
+    <app-page-header mode="main"></app-page-header>
+    <div class="layout-router-container pb-xl">
+      <ion-router-outlet [animated]="false"></ion-router-outlet>
+    </div>
+  </div>
 </ng-container>
 
 <!-- GLOBAL AI THINKING OVERLAY -->
@@ -22,12 +29,4 @@
   </div>
   <h2 class="ai-thinking-text">{{ layoutService.aiThinkingText() }}</h2>
   <p class="ai-thinking-subtext">Procesando tus datos en servidores neurales</p>
-</div>
-
-<div class="main-wrapper" id="main-content">
-  <app-page-header mode="main"></app-page-header>
-
-  <div class="layout-router-container pb-xl">
-    <ion-router-outlet [animated]="false"></ion-router-outlet>
-  </div>
 </div>

@@ -155,7 +155,13 @@ export class AiTeamPage implements OnInit {
         clearInterval(this.textInterval);
         this.layoutService.setAILoading(false);
         this.isGenerating = false;
-        const errorMessage = err?.error?.result?.description || 'Error al conectar con la IA';
+        // Prioriza mensaje directo, luego descriptionDetail, description, y otros campos posibles
+        const errorMessage = err?.message
+          || err?.error?.result?.descriptionDetail
+          || err?.error?.result?.description
+          || err?.error?.description
+          || err?.error?.message
+          || 'Error al conectar con la IA';
         this.toastService.showError(errorMessage);
       }
     });

@@ -1,10 +1,15 @@
 /* ITEM DE NOTICIA ADMIN PRO - DISEÑO COMPACTO */
 .news-admin-item {
-  background: var(--color-neutral-0);
+  background: var(--color-white);
   display: flex;
   align-items: center;
   gap: var(--space-s);
   position: relative;
+  padding: var(--space-s);
+  border-radius: var(--border-radius-soft);
+  border: 1px solid var(--color-neutral-2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  margin-bottom: var(--space-s);
 
   /* 1. MEDIA (Miniatura Compacta) */
   .item-media {
@@ -14,6 +19,7 @@
     position: relative;
     overflow: hidden;
     cursor: pointer;
+    border-radius: var(--border-radius-soft);
 
     .item-img {
       width: 100%;
@@ -202,10 +208,11 @@
 @media (min-width: 768px) {
   .news-admin-item {
     .item-media {
-      width: 90px;
-      height: 90px;
-      min-width: 90px;
+      width: 100px;
+      height: 100px;
+      min-width: 100px;
       gap: var(--space-base);
+      border-radius: var(--border-radius-soft);
 
       .item-badge {
         font-size: var(--fs-10);

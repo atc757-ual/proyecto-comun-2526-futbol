@@ -31,7 +31,7 @@ tsdb:
 google:
   api:
     key: ${GOOGLE_API_KEY}
-    model: ${GEMINI_MODEL:gemini-2.5-flash}
+    model: ${GEMINI_MODEL:gemini-2.0-flash}
     version: ${GEMINI_API_VERSION:v1}
 
 logging:

@@ -156,11 +156,8 @@ export class AiTeamPage implements OnInit {
         this.layoutService.setAILoading(false);
         this.isGenerating = false;
         // Prioriza mensaje directo, luego descriptionDetail, description, y otros campos posibles
-        const errorMessage = err?.message
-          || err?.error?.result?.descriptionDetail
-          || err?.error?.result?.description
-          || err?.error?.description
-          || err?.error?.message
+        const errorMessage =
+          err?.error?.result?.descriptionDetail
           || 'Error al conectar con la IA';
         this.toastService.showError(errorMessage);
       }

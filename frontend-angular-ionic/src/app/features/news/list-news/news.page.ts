@@ -8,6 +8,7 @@ import { PageFullContentComponent } from '../../../shared/components/layout/layo
 import { PageFooterComponent } from '../../../shared/components/layout/layout-elements/page-footer/page-footer.component';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { NewsItem } from '../../../core/models/news.model';
+import { FALLBACK_NEWS_IMG, hasValidImage } from '../../../core/services/news/news.utils';
 import { NEWS_SERVICE_TOKEN } from '../../../core/services/news/news.service.token';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { PlatformService } from 'src/app/core/services/system/platform.service';
@@ -32,6 +33,9 @@ export class NewsPage implements OnInit, OnDestroy {
   public layoutService = inject(LayoutService);
   private readonly navCtrl = inject(NavController);
   private readonly toastService = inject(ToastService);
+
+  readonly FALLBACK_NEWS_IMG = FALLBACK_NEWS_IMG;
+  hasValidImage = hasValidImage;
 
   newsList: NewsItem[] = [];
   featuredNews: NewsItem[] = []; // Nueva lista para el sidebar

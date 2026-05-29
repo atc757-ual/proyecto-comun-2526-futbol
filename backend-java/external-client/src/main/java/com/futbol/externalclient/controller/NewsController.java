@@ -48,6 +48,15 @@ public class NewsController {
         return newsClient.getFeed(auth, page, limit);
     }
 
+    @GetMapping("/featured")
+    @Operation(summary = "Obtener noticias destacadas")
+    public ApiResult<List<NewsDTO>> getFeatured(
+            @RequestHeader(value = "Authorization", required = false) String auth,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer limit) {
+        return newsClient.getFeatured(auth, page, limit);
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Obtener noticia por ID")
     public ApiResult<NewsDTO> getNewsById(
@@ -99,20 +108,20 @@ public class NewsController {
     }
 
     private void normalizeDate(NewsDTO news) {
-        if (news == null || news.getDate() == null) {
-            return;
-        }
-        String rawDate = news.getDate().trim();
-        if (rawDate.isEmpty()) {
-            return;
-        }
-        if (CORBA_DATE_PATTERN.matcher(rawDate).matches()) {
-            return;
-        }
-        String dateOnly = rawDate.contains("T") ? rawDate.split("T")[0] : rawDate;
+        if (news == null) return;
+        news.setDate(convertToCorbaDate(news.getDate()));
+        news.setExpiryDate(convertToCorbaDate(news.getExpiryDate()));
+    }
+
+    private String convertToCorbaDate(String raw) {
+        if (raw == null || raw.trim().isEmpty()) return raw;
+        String trimmed = raw.trim();
+        if (CORBA_DATE_PATTERN.matcher(trimmed).matches()) return trimmed;
+        String dateOnly = trimmed.contains("T") ? trimmed.split("T")[0] : trimmed;
         if (ISO_DATE_PATTERN.matcher(dateOnly).matches()) {
             String[] parts = dateOnly.split("-");
-            news.setDate(parts[2] + "/" + parts[1] + "/" + parts[0]);
+            return parts[2] + "/" + parts[1] + "/" + parts[0];
         }
+        return trimmed;
     }
 }

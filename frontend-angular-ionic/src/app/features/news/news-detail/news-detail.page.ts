@@ -5,6 +5,7 @@ import { IonicModule, IonContent, AlertController, NavController, ModalControlle
 import { Router, RouterModule } from '@angular/router';
 import { ConfirmModalComponent } from 'src/app/shared/components/modals/confirm-modal/confirm-modal.component';
 import { NewsItem } from 'src/app/core/models/news.model';
+import { FALLBACK_NEWS_IMG, hasValidImage } from '../../../core/services/news/news.utils';
 import { AuthService } from 'src/app/core/services/auth/auth.service';
 import { PlatformService } from 'src/app/core/services/system/platform.service';
 import { addIcons } from 'ionicons';
@@ -167,6 +168,17 @@ export class NewsDetailPage {
         this.toastService.showError('Error al actualizar el estado');
       }
     });
+  }
+
+  readonly FALLBACK_NEWS_IMG = FALLBACK_NEWS_IMG;
+
+  hasValidImage(news: NewsItem | null): boolean {
+    return hasValidImage(news?.imageUrl);
+  }
+
+  isExpired(news: NewsItem | null): boolean {
+    if (!news?.expiryDate) return false;
+    return new Date(news.expiryDate) < new Date(new Date().setHours(0, 0, 0, 0));
   }
 
   editNews() {

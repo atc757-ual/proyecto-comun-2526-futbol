@@ -22,6 +22,15 @@ const getNews = async (req, res) => {
     }
 };
 
+const getFeaturedNews = async (req, res) => {
+    try {
+        const { data } = await newsService.findFeatured(req);
+        sendApiResult(res, 200, "Procesamiento concluído exitosamente", data);
+    } catch (error) {
+        sendApiResult(res, 500, "Error en Bridge CORBA: " + error.message);
+    }
+};
+
 const getNewsById = async (req, res) => {
     try {
         const data = await newsService.findOne(req.params.id, req);
@@ -69,6 +78,7 @@ const bulkCreateNews = async (req, res) => {
 
 module.exports = {
     getNews,
+    getFeaturedNews,
     getNewsById,
     createNews,
     updateNews,

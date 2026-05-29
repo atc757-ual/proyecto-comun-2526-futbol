@@ -23,6 +23,12 @@ public interface NewsFeignClient {
             @RequestParam(value = "page", required = false) Integer page,
             @RequestParam(value = "limit", required = false) Integer limit);
 
+    @GetMapping("/featured")
+    ApiResult<List<NewsDTO>> getFeatured(
+            @RequestHeader(value = "Authorization", required = false) String auth,
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "limit", required = false) Integer limit);
+
     @GetMapping("/{id}")
     ApiResult<NewsDTO> findById(
             @RequestHeader(value = "Authorization", required = false) String auth,

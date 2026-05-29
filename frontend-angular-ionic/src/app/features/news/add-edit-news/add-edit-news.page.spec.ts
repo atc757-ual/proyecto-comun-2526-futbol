@@ -12,7 +12,7 @@ import { of, throwError } from 'rxjs';
 import { NewsItem } from '../../../core/models/news.model';
 
 const mockNews: NewsItem = {
-  id: '1', title: 'News 1', content: 'Content 1', summary: 'summary text here', author: 'A', date: '2025-01-01', category: 'fichajes', tags: ['tag1'], isActive: true, createdAt: '2025-01-01', updatedAt: '2025-01-01', imageUrl: '', isFeatured: false
+  id: '1', title: 'News 1', content: 'Content 1', summary: 'summary text here', author: 'A', date: '2025-01-01', expiryDate: '2099-12-31', category: 'fichajes', tags: ['tag1'], isActive: true, createdAt: '2025-01-01', updatedAt: '2025-01-01', imageUrl: '', isFeatured: false
 };
 
 const mockNewsService = {

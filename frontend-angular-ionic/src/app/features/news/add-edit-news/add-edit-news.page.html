@@ -121,6 +121,21 @@
                     *ngIf="newsData.date"></ion-icon></ion-input>
               </div>
 
+              <!-- Expiry Date -->
+              <div class="form-item mb-base date-wrapper">
+                <ion-input mode="md" fill="outline" label="Fecha de Cese" labelPlacement="stacked"
+                  [(ngModel)]="newsData.expiryDate" name="expiryDate" type="date" [min]="minDate" required class="futbol-input"
+                  (ionFocus)="setFocus('expiryDate')" (ionBlur)="setFocus(null)"
+                  [class.is-focused]="focusedField === 'expiryDate'"
+                  helperText="La noticia dejará de mostrarse tras esta fecha"
+                  errorText="La fecha de cese es obligatoria">
+                  <ion-icon class="fs-20" slot="start" icon="calendar-outline"
+                    [color]="focusedField === 'expiryDate' ? 'primary' : 'medium'"></ion-icon>
+                  <ion-icon class="fs-20" slot="end" icon="checkmark-circle-outline" color="primary"
+                    *ngIf="newsData.expiryDate"></ion-icon>
+                </ion-input>
+              </div>
+
               <!-- Category -->
               <div class="form-item mb-base category-wrapper">
                 <ion-select #catModel="ngModel" interface="popover" [interfaceOptions]="categoryPopoverOptions"

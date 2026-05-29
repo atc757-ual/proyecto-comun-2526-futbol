@@ -9,6 +9,7 @@ import { firstValueFrom, map, Observable, switchMap, take, catchError, of, throw
 import { INewsService } from './news.service.interface';
 
 import { NewsItem } from '../../models/news.model';
+import { normalizeNewsForApi, mapDateFromCorba } from './news.utils';
 export { NewsItem };
 
 /**
@@ -21,27 +22,11 @@ export class NodeNewsService implements INewsService {
   private readonly authService = inject(AuthService);
   private logger      = inject(LoggerService);
   private apiUrl = environment.nodeApiUrl + '/news';
-  private feedUrl = environment.nodeApiUrl + '/news'; 
-  private featuredUrl = environment.nodeApiUrl + '/news'; 
-
-  private normalizeDateForApi(dateValue?: string): string {
-    if (!dateValue) return '';
-
-    // UI input type="date" typically uses YYYY-MM-DD
-    if (dateValue.includes('-')) {
-      const [year, month, day] = dateValue.split('T')[0].split('-');
-      if (year && month && day) return `${day}/${month}/${year}`;
-    }
-
-    // Already in expected CORBA format DD/MM/YYYY
-    return dateValue;
-  }
+  private feedUrl = environment.nodeApiUrl + '/news';
+  private readonly featuredUrl = environment.nodeApiUrl + '/news/featured';
 
   private normalizeNewsForApi(news: NewsItem): NewsItem {
-    return {
-      ...news,
-      date: this.normalizeDateForApi(news.date)
-    };
+    return normalizeNewsForApi(news);
   }
 
   private getUserRoleHeader(): string {
@@ -113,10 +98,8 @@ export class NodeNewsService implements INewsService {
     news.id = item.id || item._id;
 
     // Normalización de fecha (DD/MM/YYYY -> YYYY-MM-DD para inputs de Angular)
-    if (news.date && news.date.includes('/')) {
-      const [day, month, year] = news.date.split('/');
-      news.date = `${year}-${month}-${day}`;
-    }
+    news.date = mapDateFromCorba(news.date) || news.date;
+    news.expiryDate = mapDateFromCorba(news.expiryDate) || news.expiryDate;
 
     // NORMALIZACIÓN DE ESTADO (Crucial para el diseño)
     // Aceptamos true, 1 (CORBA), o "true" (String)

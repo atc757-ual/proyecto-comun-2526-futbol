@@ -79,7 +79,8 @@ export class AddEditNewsPage implements OnInit {
     date: new Date().toISOString().split('T')[0],
     tags: [],
     isActive: false,
-    isFeatured: false
+    isFeatured: false,
+    expiryDate: ''
   }
 
   tagInput: string = '';

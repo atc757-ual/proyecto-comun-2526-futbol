@@ -58,32 +58,42 @@
       }
     }
 
-    .inactive-badge {
+    .inactive-badge,
+    .expired-badge {
       position: absolute;
       top: 0;
       left: 0;
       right: 0;
-      bottom: 0;
-      background: rgba(255, 255, 255, 0.4);
-      backdrop-filter: blur(1px);
-      display: flex;
-      align-items: flex-start;
-      justify-content: flex-end;
-      padding: 4px;
-      pointer-events: none;
-      z-index: 10;
-
-      span {
-        background: var(--color-neutral-8);
-        color: white;
-        font-size: 8px;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.4);
+        backdrop-filter: blur(1px);
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-end;
+        padding: 4px;
+        pointer-events: none;
+        z-index: 10;
+      }
+      span{
+          font-size: 8px;
         font-weight: bold;
         padding: 2px 6px;
         border-radius: 4px;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
       }
-    }
-  }
+      
+      .inactive-badge span {
+        background: var(--blue-primary-010);
+        color: var(--color-primary);
+      
+      }
+      
+      
+      .expired-badge span {
+        background: var(--red-100);
+        color: var(--color-neutral-0);
+      }
+      }
 
   /* 2. INFO CENTRAL */
   .item-info {

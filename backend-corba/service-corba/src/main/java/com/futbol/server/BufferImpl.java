@@ -1,5 +1,6 @@
 package com.futbol.server;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import BufferApp.*;
@@ -65,18 +66,39 @@ public class BufferImpl extends _NewsServiceImplBase {
 
     @Override
     public synchronized NewsItem[] getVisibleNews() {
+        LocalDate today = LocalDate.now();
         return noticias.stream()
                 .filter(n -> n.isActive)
+                .filter(n -> !isExpired(n.expiryDate, today))
                 .sorted((a, b) -> b.date.compareTo(a.date))
                 .toArray(NewsItem[]::new);
     }
 
     @Override
     public synchronized NewsItem[] getFeaturedNews() {
+        LocalDate today = LocalDate.now();
         return noticias.stream()
                 .filter(n -> n.isActive && n.isFeatured)
+                .filter(n -> !isExpired(n.expiryDate, today))
                 .sorted((a, b) -> b.date.compareTo(a.date))
                 .toArray(NewsItem[]::new);
+    }
+
+    // expiryDate en formato DD/MM/YYYY — retorna true si la noticia ya caducó
+    private boolean isExpired(String expiryDate, LocalDate today) {
+        if (expiryDate == null || expiryDate.isEmpty()) return false;
+        try {
+            String[] parts = expiryDate.split("/");
+            LocalDate expiry = LocalDate.of(
+                Integer.parseInt(parts[2]),
+                Integer.parseInt(parts[1]),
+                Integer.parseInt(parts[0])
+            );
+            return expiry.isBefore(today);
+        } catch (Exception e) {
+            logger.warn("[FILTER] Fecha de cese inválida ignorada: {}", expiryDate);
+            return false;
+        }
     }
 
     @Override

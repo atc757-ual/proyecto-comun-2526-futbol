@@ -173,6 +173,7 @@ router.post('/news', authorizeRequest, isAdmin, ctrlNews.createNews);
  *       204:
  *         description: Noticia eliminada
  */
+router.get('/news/featured', authorizeRequest, ctrlNews.getFeaturedNews);
 router.get('/news/:id', authorizeRequest, ctrlNews.getNewsById);
 router.put('/news/:id', authorizeRequest, isAdmin, ctrlNews.updateNews);
 router.delete('/news/:id', authorizeRequest, isAdmin, ctrlNews.deleteNews);

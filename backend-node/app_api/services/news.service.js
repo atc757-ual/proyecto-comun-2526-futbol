@@ -49,6 +49,11 @@ const findAll = async (req) => {
     };
 };
 
+const findFeatured = async (req) => {
+    const response = await axios.get(`${CORBA_BRIDGE_URL}/featured`, { headers: getHeaders(req) });
+    return { data: response.data.data };
+};
+
 const findOne = async (id, req) => {
     const response = await axios.get(`${CORBA_BRIDGE_URL}/${id}`, { headers: getHeaders(req) });
     return response.data.data;
@@ -70,6 +75,7 @@ const create = async (newsData, req) => {
         category: newsData.category,
         tags: newsData.tags || [],
         date: formatToCorbaDate(newsData.date) || displayDate,
+        expiryDate: formatToCorbaDate(newsData.expiryDate) || '',
         isActive: newsData.isActive !== undefined ? newsData.isActive : true,
         isFeatured: newsData.isFeatured !== undefined ? newsData.isFeatured : false,
         createdBy: adminName,
@@ -88,6 +94,7 @@ const update = async (id, newsData, req) => {
         id: id,
         ...newsData,
         date: formatToCorbaDate(newsData.date),
+        expiryDate: formatToCorbaDate(newsData.expiryDate) || '',
         updatedBy: req.user?.email || 'Admin',
         updatedAt: isoDate
     };
@@ -125,6 +132,7 @@ const bulkCreate = async (newsList, req = {}) => {
         category: n.category || 'Internacional',
         tags: n.tags || [],
         date: formatToCorbaDate(n.date) || displayDate,
+        expiryDate: formatToCorbaDate(n.expiryDate) || '',
         isActive: n.isActive !== undefined ? n.isActive : true,
         isFeatured: n.isFeatured !== undefined ? n.isFeatured : false,
         createdBy: adminName,
@@ -156,6 +164,7 @@ const bulkCreate = async (newsList, req = {}) => {
 
 module.exports = {
     findAll,
+    findFeatured,
     findOne,
     create,
     update,

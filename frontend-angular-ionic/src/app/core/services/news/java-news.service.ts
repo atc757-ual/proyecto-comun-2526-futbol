@@ -5,6 +5,7 @@ import { environment } from '../../../../environments/environment';
 import { StorageService } from '../system/storage.service';
 import { AuthService } from '../auth/auth.service';
 import { firstValueFrom, map, Observable, catchError, of, throwError } from 'rxjs';
+import { normalizeNewsForApi, mapDateFromCorba } from './news.utils';
 import { INewsService } from './news.service.interface';
 import { NewsItem } from '../../models/news.model';
 
@@ -21,24 +22,8 @@ export class JavaNewsService implements INewsService {
   
   private apiUrl = environment.javaApiUrl + '/news';
 
-  private normalizeDateForApi(dateValue?: string): string {
-    if (!dateValue) return '';
-
-    // UI input type="date" typically uses YYYY-MM-DD
-    if (dateValue.includes('-')) {
-      const [year, month, day] = dateValue.split('T')[0].split('-');
-      if (year && month && day) return `${day}/${month}/${year}`;
-    }
-
-    // Already in expected CORBA format DD/MM/YYYY
-    return dateValue;
-  }
-
   private normalizeNewsForApi(news: NewsItem): NewsItem {
-    return {
-      ...news,
-      date: this.normalizeDateForApi(news.date)
-    };
+    return normalizeNewsForApi(news);
   }
 
   private getUserRoleHeader(): string {
@@ -70,9 +55,9 @@ export class JavaNewsService implements INewsService {
   }
 
   getFeatured(): Observable<NewsItem[]> {
-    // En Java usamos el mismo feed pero filtrado por importancia si aplica
-    return this.getFeed().pipe(
-      map(news => news.filter(n => n.isActive))
+    return this.http.get<any>(`${this.apiUrl}/featured`).pipe(
+      map(response => (response.data || []).map((n: any) => this.mapToNews(n))),
+      catchError(() => of([]))
     );
   }
 
@@ -136,10 +121,8 @@ export class JavaNewsService implements INewsService {
     if (!item) return {} as NewsItem;
     const news = { ...item };
     news.id = item.id || item._id;
-    if (news.date && news.date.includes('/')) {
-      const [day, month, year] = news.date.split('/');
-      news.date = `${year}-${month}-${day}`;
-    }
+    news.date = mapDateFromCorba(news.date) || news.date;
+    news.expiryDate = mapDateFromCorba(news.expiryDate) || news.expiryDate;
     news.isActive = (item.isActive === true || item.isActive === 1 || item.isActive === 'true' || item.active === true);
     return news as NewsItem;
   }

@@ -11,6 +11,7 @@ export interface NewsItem {
   tags: string[];
   isActive: boolean;
   isFeatured: boolean;
+  expiryDate?: string;
   createdBy?: string;
   createdAt?: string;
   updatedBy?: string;

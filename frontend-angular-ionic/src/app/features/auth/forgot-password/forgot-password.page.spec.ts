@@ -5,6 +5,7 @@ import { NavController } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToastService } from '../../../core/services/ui/toast.service';
 import { of, BehaviorSubject } from 'rxjs';
+import { LoggerService } from '../../../core/services/system/logger.service';
 
 describe('ForgotPasswordPage Karma Unit Tests', () => {
   let component: ForgotPasswordPage;
@@ -18,6 +19,7 @@ describe('ForgotPasswordPage Karma Unit Tests', () => {
   beforeEach(async () => {
     // Configuro los espías de los servicios en primera persona
     authServiceMock = jasmine.createSpyObj('AuthService', ['sendResetPasswordEmail', 'confirmReset']);
+    const loggerMock = jasmine.createSpyObj('LoggerService', ['log', 'warn', 'error', 'info']);
     navCtrlMock = jasmine.createSpyObj('NavController', ['navigateRoot']);
     toastServiceMock = jasmine.createSpyObj('ToastService', ['showSuccess', 'showError']);
     routerMock = jasmine.createSpyObj('Router', ['navigate']);
@@ -30,6 +32,7 @@ describe('ForgotPasswordPage Karma Unit Tests', () => {
         { provide: NavController, useValue: navCtrlMock },
         { provide: ToastService, useValue: toastServiceMock },
         { provide: Router, useValue: routerMock },
+        { provide: LoggerService, useValue: loggerMock },
         {
           provide: ActivatedRoute,
           useValue: {

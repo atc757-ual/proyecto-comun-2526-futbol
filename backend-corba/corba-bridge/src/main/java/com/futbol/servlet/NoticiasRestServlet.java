@@ -193,6 +193,7 @@ public class NoticiasRestServlet extends HttpServlet {
                 if (n.imageUrl == null) n.imageUrl = "";
                 if (n.category == null) n.category = "";
                 if (n.date == null) n.date = "";
+                if (n.expiryDate == null) n.expiryDate = "";
                 if (n.tags == null) n.tags = new String[0];
                 if (n.createdBy == null) n.createdBy = "Admin";
                 if (n.updatedBy == null) n.updatedBy = "Admin";
@@ -341,14 +342,15 @@ public class NoticiasRestServlet extends HttpServlet {
     }
 
     private NewsItem sanitizeParaCorba(NewsItem n) {
-        n.title     = sanitizarString(n.title);
-        n.content   = sanitizarString(n.content);
-        n.summary   = sanitizarString(n.summary);
-        n.author    = sanitizarString(n.author);
-        n.imageUrl  = sanitizarString(n.imageUrl);
-        n.category  = sanitizarString(n.category);
-        n.createdBy = sanitizarString(n.createdBy);
-        n.updatedBy = sanitizarString(n.updatedBy);
+        n.title      = sanitizarString(n.title);
+        n.content    = sanitizarString(n.content);
+        n.summary    = sanitizarString(n.summary);
+        n.author     = sanitizarString(n.author);
+        n.imageUrl   = sanitizarString(n.imageUrl);
+        n.category   = sanitizarString(n.category);
+        n.expiryDate = sanitizarString(n.expiryDate);
+        n.createdBy  = sanitizarString(n.createdBy);
+        n.updatedBy  = sanitizarString(n.updatedBy);
         if (n.tags != null) {
             for (int i = 0; i < n.tags.length; i++) n.tags[i] = sanitizarString(n.tags[i]);
         }

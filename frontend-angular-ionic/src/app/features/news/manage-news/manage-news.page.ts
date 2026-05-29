@@ -19,6 +19,7 @@ import {
   documentTextOutline, downloadOutline
 } from 'ionicons/icons';
 import { NewsItem } from '../../../core/models/news.model';
+import { FALLBACK_NEWS_IMG, hasValidImage } from '../../../core/services/news/news.utils';
 import { StorageService } from '../../../core/services/system/storage.service';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { LayoutService } from 'src/app/core/services/ui/layout.service';
@@ -50,6 +51,9 @@ export class ManageNewsPage implements OnInit {
   private readonly toastService = inject(ToastService);
   private readonly navCtrl = inject(NavController);
   private readonly logger = inject(LoggerService);
+
+  readonly FALLBACK_NEWS_IMG = FALLBACK_NEWS_IMG;
+  hasValidImage = hasValidImage;
 
   news: NewsItem[] = [];
   filteredNews: NewsItem[] = [];
@@ -125,6 +129,17 @@ export class ManageNewsPage implements OnInit {
         item.category.toLowerCase().includes(term)
       );
     }
+
+    result.sort((a, b) => {
+      const aExpired = this.isExpired(a) ? 1 : 0;
+      const bExpired = this.isExpired(b) ? 1 : 0;
+      if (aExpired !== bExpired) return aExpired - bExpired;
+      const aDate = a.createdAt || '';
+      const bDate = b.createdAt || '';
+      if (aDate < bDate) return 1;
+      if (aDate > bDate) return -1;
+      return 0;
+    });
 
     this.filteredNews = result;
     this.totalPages = Math.ceil(this.filteredNews.length / this.itemsPerPage);
@@ -282,6 +297,14 @@ export class ManageNewsPage implements OnInit {
     this.toastService.showSuccess('Exportación completada');
   }
 
+
+  isExpired(item: NewsItem): boolean {
+    if (!item.expiryDate) return false;
+    // expiryDate llega en ISO YYYY-MM-DD tras mapToNews
+    const today = new Date(new Date().setHours(0, 0, 0, 0));
+    const expiry = new Date(item.expiryDate);
+    return expiry < today;
+  }
 
   trackByNewsId(_: number, news: NewsItem): string | undefined {
     return news._id;

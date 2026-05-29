@@ -123,6 +123,8 @@ services:
       INITIAL_ADMIN_EMAIL: ${INITIAL_ADMIN_EMAIL}
       FIREBASE_SERVICE_ACCOUNT: "/app/firebase-credentials.json"
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      GEMINI_API_VERSION: ${GEMINI_API_VERSION:-v1}
       SPRING_AI_GEMINI_API_KEY: ${GOOGLE_API_KEY}
       SPRING_APPLICATION_JSON: '{"google":{"api":{"key":"${GOOGLE_API_KEY}"}}}'
       SPRING_CLOUD_GATEWAY_GRPC_ENABLED: "false"
@@ -207,6 +209,8 @@ services:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
       FOOTBALL_API_KEY: "${FOOTBALL_API_KEY}"
       GOOGLE_API_KEY: "${GOOGLE_API_KEY}"
+      GEMINI_MODEL: "${GEMINI_MODEL:-gemini-2.5-flash}"
+      GEMINI_API_VERSION: "${GEMINI_API_VERSION:-v1}"
       TSDB_BASE_URL: "${TSDB_BASE_URL:-https://www.thesportsdb.com/api/v2/json}"
       SERVER_PORT: 8085
       CORBA_BRIDGE_URL: "http://corba-bridge:8080/corba-bridge/api/noticias"

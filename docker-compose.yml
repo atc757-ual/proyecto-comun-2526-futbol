@@ -262,9 +262,10 @@ services:
     expose:
       - "80"
     environment:
-      - VIRTUAL_HOST=futbolclub.duckdns.org      
-      - LETSENCRYPT_HOST=futbolclub.duckdns.org 
-      - LETSENCRYPT_EMAIL=atc757@inlumine.ual.es    
+      - VIRTUAL_HOST=futbolclub.duckdns.org
+      - VIRTUAL_PORT=80
+      - LETSENCRYPT_HOST=futbolclub.duckdns.org
+      - LETSENCRYPT_EMAIL=atc757@inlumine.ual.es
     depends_on:
       backend-node:
         condition: service_started

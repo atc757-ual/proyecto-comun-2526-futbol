@@ -83,7 +83,8 @@
           <ion-card-header>
             <ion-label class="f-semibold fs-20 fs-sm-18 text-neutral-8">Noticias Destacadas</ion-label>
           </ion-card-header>
-          <ion-card-content *ngFor="let news of featuredNews; let i = index; trackBy: trackByNewsId">
+          <ion-card-content>
+          <div *ngFor="let news of featuredNews; let i = index; trackBy: trackByNewsId">
             <ion-item button detail="false" class="side-news-item" [class.active]="news.id === selectedNew?.id"
               (click)="selectNews(news)">
               <div class="side-news-rank" slot="start">{{ i + 1 }}</div>
@@ -92,6 +93,7 @@
               </ion-label>
             </ion-item>
             <div *ngIf="i < featuredNews.length - 1" class="separator my-s"></div>
+          </div>
           </ion-card-content>
         </ion-card>
         <ion-card *ngIf="isAdmin">

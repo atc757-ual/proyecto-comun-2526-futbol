@@ -235,6 +235,7 @@ services:
       - PORT=3000
       - FIREBASE_SERVICE_ACCOUNT=/app/firebase-credentials.json
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL_NODE:-gemini-3.5-flash}
       - JWT_SECRET=${JWT_SECRET}
       - TSDB_API_KEY=${FOOTBALL_API_KEY}
       - CORBA_BRIDGE_URL=http://corba-bridge:8080/corba-bridge/api/noticias

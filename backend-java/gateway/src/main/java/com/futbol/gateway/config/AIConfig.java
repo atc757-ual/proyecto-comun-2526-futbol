@@ -27,6 +27,7 @@ public class AIConfig {
         return GoogleAiGeminiChatModel.builder()
                 .apiKey(apiKey)
                 .modelName(modelName)
+                .maxRetries(3)
                 .build();
     }
 

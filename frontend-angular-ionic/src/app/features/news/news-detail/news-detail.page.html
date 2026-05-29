@@ -76,15 +76,17 @@
 
       <!-- COLUMNA 4: LATERAL -->
       <div class="col-4 col-sm-12">
-        <ion-list *ngIf="isLoading">
-          <div *ngFor="let i of [1,2]" class="d-flex gap-base h-100px">
-            <ion-skeleton-text animated class="sk-thumb"></ion-skeleton-text>
-            <div class="flex-1 py-s">
-              <ion-skeleton-text animated class="sk-w-85 sk-h-16 mb-s"></ion-skeleton-text>
-              <ion-skeleton-text animated class="sk-w-70 sk-h-14"></ion-skeleton-text>
+        <ion-card *ngIf="isLoading" class="mb-base">
+          <ion-card-content>
+            <div *ngFor="let i of [1,2,3]" class="d-flex gap-base h-100px">
+              <ion-skeleton-text animated class="sk-thumb"></ion-skeleton-text>
+              <div class="flex-1 py-s">
+                <ion-skeleton-text animated class="sk-w-85 sk-h-16 mb-s"></ion-skeleton-text>
+                <ion-skeleton-text animated class="sk-w-70 sk-h-14"></ion-skeleton-text>
+              </div>
             </div>
-          </div>
-        </ion-list>
+          </ion-card-content>
+        </ion-card>
 
         <!-- ADMIN CARD -->
         <ion-card *ngIf="isAdmin" class="mb-base">

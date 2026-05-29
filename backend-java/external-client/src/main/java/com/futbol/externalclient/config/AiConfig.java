@@ -25,6 +25,7 @@ public class AiConfig {
         return GoogleAiGeminiChatModel.builder()
                 .apiKey(apiKey)
                 .modelName(modelName)
+                .logRequestsAndResponses(true)
                 .build();
     }
 }

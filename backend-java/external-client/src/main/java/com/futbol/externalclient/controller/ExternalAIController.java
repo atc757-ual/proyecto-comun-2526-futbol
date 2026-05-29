@@ -6,6 +6,8 @@ import com.futbol.player.feign.model.PlayerDTO;
 import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,6 +17,8 @@ import java.util.List;
 @RequestMapping("/api/ai")
 @Tag(name = "External AI Orchestrator", description = "Orquesta datos locales con Gemini AI")
 public class ExternalAIController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ExternalAIController.class);
 
     private final PlayerClient playerClient;
     private final GoogleAiGeminiChatModel geminiModel;
@@ -78,6 +82,7 @@ public class ExternalAIController {
             return ApiResult.success("Análisis de equipo local (Java) completado", analysis);
 
         } catch (Exception e) {
+            logger.error("[AI] Error llamando a Gemini: {}", e.getMessage(), e);
             return ApiResult.error("500", "Error orquestando IA local (Java): " + e.getMessage());
         }
     }

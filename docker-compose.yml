@@ -120,7 +120,7 @@ services:
       JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       SPRING_CONFIG_IMPORT: "optional:configserver:http://football-config-server:8888"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://football-eureka-server:8761/eureka/"
-      INITIAL_ADMIN_EMAIL: ${INITIAL_ADMIN_EMAIL:-alex142407@gmail.com}
+      INITIAL_ADMIN_EMAIL: ${INITIAL_ADMIN_EMAIL}
       FIREBASE_SERVICE_ACCOUNT: "/app/firebase-credentials.json"
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
       SPRING_AI_GEMINI_API_KEY: ${GOOGLE_API_KEY}
@@ -129,8 +129,8 @@ services:
       JWT_SECRET: ${JWT_SECRET}
     volumes:
       - ./firebase-credentials.json:/app/firebase-credentials.json
-      - ./backend-node/private_key.pem:/app/private_key.pem
-      - ./public_key.pem:/app/public.key
+      - ./backend-java/private_key.pem:/app/private_key.pem
+      - ./backend-java/public_key.pem:/app/public.key
     depends_on:
       config-server:
         condition: service_healthy
@@ -207,6 +207,7 @@ services:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
       FOOTBALL_API_KEY: "${FOOTBALL_API_KEY}"
       GOOGLE_API_KEY: "${GOOGLE_API_KEY}"
+      TSDB_BASE_URL: "${TSDB_BASE_URL:-https://www.thesportsdb.com/api/v2/json}"
       SERVER_PORT: 8085
       CORBA_BRIDGE_URL: "http://corba-bridge:8080/corba-bridge/api/noticias"
     ports:
@@ -237,7 +238,8 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - TSDB_API_KEY=${FOOTBALL_API_KEY}
       - CORBA_BRIDGE_URL=http://corba-bridge:8080/corba-bridge/api/noticias
-      - INITIAL_ADMIN_EMAIL=${INITIAL_ADMIN_EMAIL:-alex142407@gmail.com}
+      - INITIAL_ADMIN_EMAIL=${INITIAL_ADMIN_EMAIL}
+      - STATUS_API_KEY=${STATUS_API_KEY}
     volumes:
       - ./firebase-credentials.json:/app/firebase-credentials.json
       - ./backend-node/private_key.pem:/app/private_key.pem

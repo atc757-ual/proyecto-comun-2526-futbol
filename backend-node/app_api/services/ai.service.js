@@ -13,7 +13,7 @@ class AIService {
             const { ChatGoogleGenerativeAI } = require("@langchain/google-genai");
 
             this.model = new ChatGoogleGenerativeAI({
-                model: "gemini-3.5-flash",
+                model: process.env.GEMINI_MODEL || "gemini-3.5-flash",
                 apiKey: process.env.GOOGLE_API_KEY,
                 apiVersion: "v1beta",
                 temperature: 0.2,

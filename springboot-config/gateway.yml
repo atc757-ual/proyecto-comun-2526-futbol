@@ -48,7 +48,9 @@ eureka:
 google:
   api:
     key: ${GOOGLE_API_KEY}
+    model: ${GEMINI_MODEL:gemini-3.5-flash}
 
 app:
   cors:
     allowed-origins: "http://localhost,http://localhost:4200,http://localhost:8100,http://35.255.218.37,https://futbolclub.duckdns.org"
+

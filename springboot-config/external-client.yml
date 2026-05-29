@@ -26,10 +26,12 @@ football:
 tsdb:
   api:
     key: ${FOOTBALL_API_KEY}
+    url: ${TSDB_BASE_URL:https://www.thesportsdb.com/api/v2/json}
 
 google:
   api:
     key: ${GOOGLE_API_KEY}
+    model: ${GEMINI_MODEL:gemini-3.5-flash}
 
 logging:
   level:

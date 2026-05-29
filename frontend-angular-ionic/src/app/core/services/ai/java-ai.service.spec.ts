@@ -39,6 +39,6 @@ describe('JavaAIService', () => {
     const req = http.expectOne(`${environment.javaApiUrl}/ai/analyze`);
     expect(req.request.method).toBe('POST');
     expect(req.request.headers.get('Authorization')).toContain('Bearer');
-    req.flush({ data: mockResponse });
+    req.flush({ result: { code: '200' }, data: mockResponse });
   });
 });

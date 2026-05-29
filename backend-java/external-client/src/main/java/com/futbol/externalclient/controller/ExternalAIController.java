@@ -31,13 +31,18 @@ public class ExternalAIController {
     @PostMapping("/analyze")
     @Operation(summary = "Analiza los jugadores guardados en la BD local usando IA")
     public ApiResult<com.futbol.externalclient.dto.PlayerAnalysisResponse> analyzeLocalTeam() {
+        logger.info("[AI] Iniciando análisis de equipo local");
         try {
             // 1. Obtener jugadores de la BD local
+            logger.info("[AI] Obteniendo jugadores del microservicio player-client");
             ApiResult<List<PlayerDTO>> result = playerClient.getAllPlayers(null, null, null);
-            
+
             if (result.getData() == null || result.getData().isEmpty()) {
+                logger.warn("[AI] No hay jugadores en la BD para analizar");
                 return ApiResult.error("404", "No hay jugadores en la base de datos local para analizar");
             }
+
+            logger.info("[AI] {} jugadores obtenidos. Construyendo prompt...", result.getData().size());
 
             // 2. Construir Prompt profesional (Homologado con Node)
             StringBuilder prompt = new StringBuilder("Eres un Director Tecnico de Elite y experto analista de Big Data futbolistico.\n");
@@ -67,22 +72,25 @@ public class ExternalAIController {
             });
 
             // 3. Llamar a Gemini
+            logger.info("[AI] Llamando a Gemini con modelo configurado...");
             String jsonResponse = geminiModel.generate(prompt.toString());
+            logger.info("[AI] Respuesta recibida de Gemini ({} chars)", jsonResponse != null ? jsonResponse.length() : 0);
 
             // 4. Limpieza de respuesta (JSON puro)
             String cleanJson = jsonResponse.replaceAll("```json", "").replaceAll("```", "").trim();
             if (cleanJson.contains("{")) {
                 cleanJson = cleanJson.substring(cleanJson.indexOf("{"), cleanJson.lastIndexOf("}") + 1);
             }
-            
+
             com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
             mapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             com.futbol.externalclient.dto.PlayerAnalysisResponse analysis = mapper.readValue(cleanJson, com.futbol.externalclient.dto.PlayerAnalysisResponse.class);
 
+            logger.info("[AI] Análisis completado exitosamente. Formación: {}", analysis.getFormation());
             return ApiResult.success("Análisis de equipo local (Java) completado", analysis);
 
         } catch (Exception e) {
-            logger.error("[AI] Error llamando a Gemini: {}", e.getMessage(), e);
+            logger.error("[AI] Error en análisis - Tipo: {}, Mensaje: {}", e.getClass().getSimpleName(), e.getMessage(), e);
             return ApiResult.error("500", "Error orquestando IA local (Java): " + e.getMessage());
         }
     }

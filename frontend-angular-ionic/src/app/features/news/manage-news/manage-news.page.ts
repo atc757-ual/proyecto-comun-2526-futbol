@@ -131,14 +131,14 @@ export class ManageNewsPage implements OnInit {
     }
 
     result.sort((a, b) => {
-      // 1. No vencidas primero, vencidas al final
       const aExpired = this.isExpired(a) ? 1 : 0;
       const bExpired = this.isExpired(b) ? 1 : 0;
       if (aExpired !== bExpired) return aExpired - bExpired;
-      // 2. Dentro de cada grupo: fecha de creación descendente (más reciente primero)
       const aDate = a.createdAt || '';
       const bDate = b.createdAt || '';
-      return aDate < bDate ? 1 : aDate > bDate ? -1 : 0;
+      if (aDate < bDate) return 1;
+      if (aDate > bDate) return -1;
+      return 0;
     });
 
     this.filteredNews = result;

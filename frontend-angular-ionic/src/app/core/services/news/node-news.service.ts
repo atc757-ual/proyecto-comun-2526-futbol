@@ -9,7 +9,7 @@ import { firstValueFrom, map, Observable, switchMap, take, catchError, of, throw
 import { INewsService } from './news.service.interface';
 
 import { NewsItem } from '../../models/news.model';
-import { normalizeDateToCorba, normalizeNewsForApi, mapDateFromCorba } from './news.utils';
+import { normalizeNewsForApi, mapDateFromCorba } from './news.utils';
 export { NewsItem };
 
 /**
@@ -23,7 +23,7 @@ export class NodeNewsService implements INewsService {
   private logger      = inject(LoggerService);
   private apiUrl = environment.nodeApiUrl + '/news';
   private feedUrl = environment.nodeApiUrl + '/news';
-  private featuredUrl = environment.nodeApiUrl + '/news/featured';
+  private readonly featuredUrl = environment.nodeApiUrl + '/news/featured';
 
   private normalizeNewsForApi(news: NewsItem): NewsItem {
     return normalizeNewsForApi(news);

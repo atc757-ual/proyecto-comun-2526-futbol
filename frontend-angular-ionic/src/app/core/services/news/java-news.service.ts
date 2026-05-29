@@ -5,7 +5,7 @@ import { environment } from '../../../../environments/environment';
 import { StorageService } from '../system/storage.service';
 import { AuthService } from '../auth/auth.service';
 import { firstValueFrom, map, Observable, catchError, of, throwError } from 'rxjs';
-import { normalizeDateToCorba, normalizeNewsForApi, mapDateFromCorba } from './news.utils';
+import { normalizeNewsForApi, mapDateFromCorba } from './news.utils';
 import { INewsService } from './news.service.interface';
 import { NewsItem } from '../../models/news.model';
 

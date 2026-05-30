@@ -165,10 +165,10 @@ export class BusquedaListPage implements OnInit, OnDestroy {
 
     // Permisos y Localización inicial
     this.checkGeoPermission().then(() => {
-      this.checkPermissionsOnboarding();
       if (this.hasGeoPermission) {
         this.captureLocation(true);
       }
+      // No lanzar el modal automáticamente — solo cuando el usuario lo solicite
     });
   }
 

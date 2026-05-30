@@ -367,13 +367,10 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       this.checkGeoPermission(),
       this.checkCameraPermission()
     ]).then(() => {
-      if (this.hasGeoPermission) {
-        if (!this.isEditMode) {
-          this.captureLocation();
-        }
-      } else {
-        this.checkPermissionsOnboarding();
+      if (this.hasGeoPermission && !this.isEditMode) {
+        this.captureLocation();
       }
+      // No lanzar el modal automáticamente — solo cuando el usuario lo solicite explícitamente
     });
 
     this.loadLocalPlayers();

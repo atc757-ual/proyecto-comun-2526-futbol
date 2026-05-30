@@ -35,7 +35,9 @@ describe('NodePlayerService', () => {
   it('deletePlayer() should GET player then DELETE /players/:id', () => {
     service.deletePlayer('123').subscribe();
     http.expectOne({ method: 'GET', url: `${base}/123` }).flush({ data: { name: 'TestPlayer', image_url: '' } });
-    http.expectOne({ method: 'DELETE', url: `${base}/123` }).flush(null);
+    const req = http.expectOne({ method: 'DELETE', url: `${base}/123` });
+    req.flush(null);
+    expect(req.request.method).toBe('DELETE');
   });
 
   it('mapTSDBToPlayer() should map API data to player model', () => {

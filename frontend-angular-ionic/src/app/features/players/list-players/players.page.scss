@@ -183,6 +183,12 @@
     margin-left: var(--space-s);
   }
 
+  .favorite-static {
+    background: rgba(235, 68, 90, 0.25) !important;
+    cursor: default;
+    pointer-events: none;
+  }
+
   .mobile-item-actions {
     display: flex;
     gap: 4px;

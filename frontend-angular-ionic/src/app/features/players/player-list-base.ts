@@ -24,9 +24,17 @@ export abstract class PlayerListBase {
   protected itemsPerPage = signal<number>(8);
   protected totalPlayersCount = signal<number>(0);
 
-  protected filteredPlayers = computed(() =>
-    filterPlayersByTerm(this._allPlayers(), this.searchTerm())
-  );
+  protected filteredPlayers = computed(() => {
+    const filtered = filterPlayersByTerm(this._allPlayers(), this.searchTerm());
+    return filtered.sort((a, b) => {
+      const aFav = a.isFavorite || a.is_favorite ? 1 : 0;
+      const bFav = b.isFavorite || b.is_favorite ? 1 : 0;
+      if (bFav !== aFav) return bFav - aFav;
+      const aDate = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const bDate = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return bDate - aDate;
+    });
+  });
 
   protected totalPages = computed(() =>
     Math.ceil(this.filteredPlayers().length / this.itemsPerPage())

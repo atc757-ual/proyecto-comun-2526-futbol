@@ -66,6 +66,7 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
 
   public player: Player | null = null;
   public isLoading = true;
+  public commentCityMap = new Map<string, string>();
   public hasGeoPermission = signal(false);
   public isRequestingPermission = false;
   private activePermissionModal: any = null;
@@ -86,7 +87,7 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
 
   // Lógica de Centro de Comentarios
   public newComment = '';
-  public newRating = 5;
+  public newRating = 0;
   public isSubmittingComment = false;
   public userCoords = signal<{ lat: number; lng: number } | null>(null);
   public editingCommentId: string | null = null;
@@ -350,7 +351,7 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
       next: () => {
         this.toastService.showSuccess('¡Gracias por tu comentario!');
         this.newComment = '';
-        this.newRating = 5;
+        this.newRating = 0;
         this.isSubmittingComment = false;
         this.loadPlayer(this.player!._id!);
       },

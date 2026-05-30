@@ -131,9 +131,11 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
 
   // Lógica de Centro de Comentarios
   public newComment = '';
-  public newRating = 5;
+  public newRating = 0;
   public isSubmittingComment = false;
   public userCoords = signal<{ lat: number; lng: number } | null>(null);
+  public userCityLabel = signal<string>('');
+  public commentCityMap = new Map<string, string>();
   public editingCommentId: string | null = null;
   public editingContent = '';
   public editingRating = 5;
@@ -357,6 +359,19 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
           if (reallyIsOwner && player.location?.coordinates && player.location.coordinates.length >= 2) {
             this.loadDescriptiveLocation(player.location.coordinates[1], player.location.coordinates[0]);
           }
+
+          // Geocoding inverso para comentarios con coordenadas
+          (player.comments || []).forEach((comment: any) => {
+            const commentId = comment.id || comment._id;
+            const lat = comment.location?.coordinates?.[1] ?? comment.latitude;
+            const lng = comment.location?.coordinates?.[0] ?? comment.longitude;
+            if (commentId && lat != null && lng != null) {
+              this.playerService.reverseGeocode(lat, lng).pipe(takeUntil(this.destroy$)).subscribe({
+                next: (addr) => this.commentCityMap.set(commentId + '', this.extractCityCountry(addr)),
+                error: () => {}
+              });
+            }
+          });
 
           setTimeout(() => {
             this.startStatsAutoplay();
@@ -617,7 +632,7 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
       next: () => {
         this.toastService.showSuccess('¡Gracias por tu comentario!');
         this.newComment = '';
-        this.newRating = 5;
+        this.newRating = 0;
         this.isSubmittingComment = false;
         this.loadPlayer(this.player!._id!);
       },
@@ -775,19 +790,37 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
       });
 
       if (pos?.coords) {
-        this.userCoords.set({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        this.userCoords.set({ lat, lng });
+        this.playerService.reverseGeocode(lat, lng).pipe(takeUntil(this.destroy$)).subscribe({
+          next: (addr) => this.userCityLabel.set(this.extractCityCountry(addr)),
+          error: () => {}
+        });
       }
     } catch {
       if ('geolocation' in navigator) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
-            this.userCoords.set({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            this.userCoords.set({ lat, lng });
+            this.playerService.reverseGeocode(lat, lng).pipe(takeUntil(this.destroy$)).subscribe({
+              next: (addr) => this.userCityLabel.set(this.extractCityCountry(addr)),
+              error: () => {}
+            });
           },
           () => { },
           { timeout: 10000 }
         );
       }
     }
+  }
+
+  private extractCityCountry(address: string): string {
+    const parts = address.split(',').map(p => p.trim()).filter(p => p.length > 0);
+    if (parts.length >= 2) return `${parts[parts.length - 2]}, ${parts[parts.length - 1]}`;
+    return address;
   }
 
   getSafeImageUrl(url: string | undefined): string {

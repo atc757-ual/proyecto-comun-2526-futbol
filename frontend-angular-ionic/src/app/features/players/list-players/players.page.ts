@@ -12,7 +12,7 @@ import {
   addOutline, filterOutline, personOutline, happyOutline,
   thumbsUpOutline, sadOutline, shieldOutline, searchOutline, trashOutline, createOutline,
   personAddOutline, optionsOutline, flagOutline, chevronForwardOutline, calendarOutline, settingsOutline,
-  closeCircleOutline, chevronBackOutline, eyeOutline, peopleOutline, homeOutline
+  closeCircleOutline, chevronBackOutline, eyeOutline, peopleOutline, homeOutline, heart
 } from 'ionicons/icons';
 import { PlayerListBase } from '../player-list-base';
 import { PageFullContentComponent } from '../../../shared/components/layout/layout-elements/page-full-content/page-full-content.component';
@@ -36,7 +36,7 @@ export class PlayersPage extends PlayerListBase implements OnInit {
     super();
     addIcons({
       addOutline, filterOutline, personOutline, shieldOutline,
-      searchOutline, trashOutline, createOutline, personAddOutline,
+      searchOutline, trashOutline, createOutline, personAddOutline, heart,
       optionsOutline, flagOutline, chevronForwardOutline, calendarOutline,
       settingsOutline, closeCircleOutline, chevronBackOutline, eyeOutline,
       happyOutline, thumbsUpOutline, sadOutline, peopleOutline, homeOutline

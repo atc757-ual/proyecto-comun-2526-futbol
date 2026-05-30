@@ -118,8 +118,8 @@ services:
       - "8080:8080"
     environment:
       JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
-      SPRING_CONFIG_IMPORT: "optional:configserver:http://football-config-server:8888"
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://football-eureka-server:8761/eureka/"
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
       INITIAL_ADMIN_EMAIL: ${INITIAL_ADMIN_EMAIL}
       FIREBASE_SERVICE_ACCOUNT: "/app/firebase-credentials.json"
       GOOGLE_API_KEY: ${GOOGLE_API_KEY_JAVA}

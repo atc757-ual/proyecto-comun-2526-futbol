@@ -13,7 +13,7 @@ import {
   thumbsUpOutline, sadOutline, shieldOutline, searchOutline, trashOutline, createOutline,
   personAddOutline, optionsOutline, flagOutline, chevronForwardOutline, calendarOutline, settingsOutline,
   closeCircleOutline, closeCircle, chevronBackOutline, eyeOutline, alertCircleOutline,
-  checkmarkCircleOutline, checkmarkCircle, peopleOutline, homeOutline, closeOutline
+  checkmarkCircleOutline, checkmarkCircle, peopleOutline, homeOutline, closeOutline, heart
 } from 'ionicons/icons';
 import { Player } from '../../../core/models/player.model';
 import { PlayerListBase } from '../player-list-base';
@@ -54,7 +54,7 @@ export class PlayersAllPage extends PlayerListBase implements OnInit {
       searchOutline, trashOutline, createOutline, personAddOutline,
       optionsOutline, flagOutline, chevronForwardOutline, calendarOutline,
       settingsOutline, closeCircleOutline, closeCircle, chevronBackOutline, eyeOutline,
-      alertCircleOutline, checkmarkCircleOutline, checkmarkCircle, happyOutline,
+      alertCircleOutline, checkmarkCircleOutline, checkmarkCircle, happyOutline, heart,
       thumbsUpOutline, sadOutline, peopleOutline, homeOutline, closeOutline
     });
   }

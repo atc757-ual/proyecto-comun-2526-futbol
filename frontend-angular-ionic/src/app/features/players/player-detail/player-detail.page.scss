@@ -956,6 +956,20 @@
       filter: drop-shadow(0 0 4px rgba(245, 178, 7, 0.4));
     }
   }
+
+  &.stars-hint ion-icon {
+    animation: star-pulse 2s ease-in-out infinite;
+  }
+
+  &.stars-hint ion-icon:nth-child(2) { animation-delay: 0.1s; }
+  &.stars-hint ion-icon:nth-child(3) { animation-delay: 0.2s; }
+  &.stars-hint ion-icon:nth-child(4) { animation-delay: 0.3s; }
+  &.stars-hint ion-icon:nth-child(5) { animation-delay: 0.4s; }
+}
+
+@keyframes star-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.1); color: var(--color-warning); }
 }
 
 /* --- PLAYER HERO CONTAINER (CROSS-FADE) --- */

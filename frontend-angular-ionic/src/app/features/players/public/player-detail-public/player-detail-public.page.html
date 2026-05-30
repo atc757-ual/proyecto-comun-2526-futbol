@@ -128,7 +128,7 @@
                     <!-- CABECERA: RATING + TAG -->
                     <div class="d-flex ai-center mb-base">
                       <span class="f-medium fs-12 text-neutral-8 pr-xs">Rating:</span>
-                      <div class="rating-stars-input">
+                      <div class="rating-stars-input" [class.stars-hint]="newRating === 0">
                         <ion-icon *ngFor="let i of [1,2,3,4,5]" [name]="i <= newRating ? 'star' : 'star-outline'"
                           [class.active]="i <= newRating" (click)="setRating(i)"></ion-icon>
                       </div>
@@ -153,7 +153,7 @@
                         class="futbol-input" [(ngModel)]="newComment" [counter]="true" maxlength="1000" rows="4"
                         (ionFocus)="commentFocused = true" (ionBlur)="commentFocused = false"
                         [class.is-focused]="commentFocused"
-                        [helperText]="userCoords() ? '📍 Ubicación verificada: ' + (userCoords()?.lat | number:'1.1-4') + ', ' + (userCoords()?.lng | number:'1.1-4') : '⏳ Capturando señal GPS...'">
+                        [helperText]="userCoords() ? '📍' + (userCoords()?.lat | number:'1.1-4') + ', ' + (userCoords()?.lng | number:'1.1-4') : '⏳ Capturando señal GPS...'">
                       </ion-textarea>
                     </div>
 

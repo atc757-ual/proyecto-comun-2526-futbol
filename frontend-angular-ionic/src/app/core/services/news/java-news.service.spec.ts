@@ -51,7 +51,7 @@ describe('JavaNewsService', () => {
   });
 
   it('getNewsById() should call /news/:id', () => {
-    service.getNewsById('1').subscribe();
+    service.getNewsById('1').subscribe(res => expect(res).not.toBeUndefined());
     http.expectOne(`${base}/1`).flush({ data: { id: '1' } });
   });
 

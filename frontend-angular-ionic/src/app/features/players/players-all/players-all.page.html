@@ -36,7 +36,7 @@
                           [class.is-mine]="isMine(player)" [routerLink]="['/player-detail', player._id]"
                           [queryParams]="{ from: 'universe' }">
                           <div class="card-image-container">
-                            <img [src]="player.image_url" [alt]="player.name" loading="lazy"
+                            <img [src]="getPlayerImage(player.image_url)" [alt]="player.name" loading="lazy"
                               (error)="handleImageError($event)" />
                             <div class="card-overlay"></div>
                             <div class="position-badge">{{ player.position || 'N/A' }}</div>
@@ -83,7 +83,7 @@
                           [class.is-mine]="isMine(player)" lines="none" [routerLink]="['/player-detail', player._id]"
                           [queryParams]="{ from: 'universe' }">
                           <ion-thumbnail slot="start" class="mobile-thumb">
-                            <img [src]="player.image_url" [alt]="player.name" loading="lazy"
+                            <img [src]="getPlayerImage(player.image_url)" [alt]="player.name" loading="lazy"
                               (error)="handleImageError($event)" />
                           </ion-thumbnail>
 

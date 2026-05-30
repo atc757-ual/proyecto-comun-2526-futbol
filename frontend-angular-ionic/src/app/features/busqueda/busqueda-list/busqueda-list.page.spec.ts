@@ -319,7 +319,7 @@ describe('BusquedaListPage', () => {
     });
 
     it('debería calcular el total de páginas correctamente', () => {
-      expect(component.totalPages).toBe(3); // 20 jugadores / 8 por página = 3 páginas
+      expect(component.totalPages).toBe(2); // 20 jugadores / 11 por página = 2 páginas
     });
 
     it('goToPage() debería cambiar la página activa', () => {
@@ -329,7 +329,7 @@ describe('BusquedaListPage', () => {
 
     it('pagedResults debería devolver solo los items de la página actual', () => {
       component.goToPage(1);
-      expect(component.pagedResults.length).toBe(8);
+      expect(component.pagedResults.length).toBe(11);
     });
   });
 

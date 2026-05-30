@@ -1,4 +1,4 @@
-import { Component, Input, inject, OnInit, OnDestroy, ChangeDetectorRef, effect, signal, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+﻿import { Component, Input, inject, OnInit, OnDestroy, ChangeDetectorRef, effect, signal, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -71,21 +71,21 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
   public isRequestingPermission = false;
   private activePermissionModal: any = null;
 
-  // Lógica de "Ver más"
+  // LÃ³gica de "Ver mÃ¡s"
   public isSummaryExpanded = false;
 
   // Compatibilidad con pruebas antiguas
   get isOwner(): boolean {
-    // El ownership ya no se gestiona aquí; devolver false por defecto.
+    // El ownership ya no se gestiona aquÃ­; devolver false por defecto.
     return false;
   }
 
   get isLoggedIn(): boolean {
-    // La autenticación ya no se usa directamente; devolver false por defecto.
+    // La autenticaciÃ³n ya no se usa directamente; devolver false por defecto.
     return false;
   }
 
-  // Lógica de Centro de Comentarios
+  // LÃ³gica de Centro de Comentarios
   public newComment = '';
   public newRating = 0;
   public isSubmittingComment = false;
@@ -94,7 +94,7 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
   public editingContent = '';
   public editingRating = 5;
 
-  // Lógica de Media Flip
+  // LÃ³gica de Media Flip
   public showCutout = false;
 
   toggleCardView() {
@@ -110,7 +110,7 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
   nameFocused: boolean = false;
   commentFocused: boolean = false;
 
-  // Paginación de comentarios (Estilo Players)
+  // PaginaciÃ³n de comentarios (Estilo Players)
   currentPage: number = 1;
   pageSize: number = 5;
 
@@ -145,7 +145,7 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
 
 
   pageTitle = 'Detalle de Jugador';
-  pageSubtitle = 'Información básica del jugador';
+  pageSubtitle = 'InformaciÃ³n bÃ¡sica del jugador';
   breadcrumbs = [
     { label: '', url: '/auth/login', icon: 'log-in-outline' },
     { label: 'Jugadores', url: '/players-public', icon: '' },
@@ -155,12 +155,12 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
   async ngOnInit() {
     // Iniciar Autoplay de Stats
     this.startStatsAutoplay();
-    // Verificar permisos de geolocalización iniciales
+    // Verificar permisos de geolocalizaciÃ³n iniciales
     this.checkGeoPermission();
   }
 
   /**
-   * Lógica disparada por el BOTÓN de la card.
+   * LÃ³gica disparada por el BOTÃ“N de la card.
    * Pide permiso DIRECTAMENTE sin pasar por el modal.
    */
   public async checkPermissionsOnboarding() {
@@ -191,14 +191,14 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
     const lastPrompt = localStorage.getItem('last_permission_prompt_player_detail_public');
     const now = Date.now();
 
-    // 1. RE-VERIFICACIÓN REAL: Consultar al navegador directamente antes de abrir
+    // 1. RE-VERIFICACIÃ“N REAL: Consultar al navegador directamente antes de abrir
     const isGrantedReal = await this.locationService.isGeolocationPermissionGranted();
     if (isGrantedReal) {
       this.hasGeoPermission.set(true);
       return;
     }
 
-    // 2. Si es automático y hay cooldown de 24h, no molestamos
+    // 2. Si es automÃ¡tico y hay cooldown de 24h, no molestamos
     if (isAuto && lastPrompt && (now - parseInt(lastPrompt)) < 24 * 60 * 60 * 1000) {
       return;
     }
@@ -219,7 +219,7 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Verifica el estado real de la geolocalización en el navegador
+   * Verifica el estado real de la geolocalizaciÃ³n en el navegador
    */
   async checkGeoPermission() {
     const granted = await this.locationService.isGeolocationPermissionGranted();
@@ -322,7 +322,7 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
       autor_name: this.anonymousName || 'Invitado',
       user_id: null
     };
-    // Intentar capturar ubicación si tenemos permiso
+    // Intentar capturar ubicaciÃ³n si tenemos permiso
     if (this.hasGeoPermission()) {
       const cachedCoords = this.userCoords();
       if (cachedCoords) {
@@ -342,14 +342,14 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
             coordinates: [coordinates.coords.longitude, coordinates.coords.latitude]
           };
         } catch {
-          // ubicación no disponible, el comentario se envía sin coordenadas
+          // ubicaciÃ³n no disponible, el comentario se envÃ­a sin coordenadas
         }
       }
     }
 
     this.playerService.addPublicComment(this.player._id, commentData).subscribe({
       next: () => {
-        this.toastService.showSuccess('¡Gracias por tu comentario!');
+        this.toastService.showSuccess('Â¡Gracias por tu comentario!');
         this.newComment = '';
         this.newRating = 0;
         this.isSubmittingComment = false;
@@ -363,7 +363,7 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
   }
 
 
-  // --- LÓGICA DE PAGINACIÓN (Estilo Players) ---
+  // --- LÃ“GICA DE PAGINACIÃ“N (Estilo Players) ---
   totalPages(): number {
     if (!this.player?.comments) return 0;
     return Math.ceil(this.player.comments.length / this.pageSize);
@@ -405,7 +405,7 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
     this.startStatsAutoplay();
   }
 
-  // --- LÓGICA DE DRAG PARA ESCRITORIO ---
+  // --- LÃ“GICA DE DRAG PARA ESCRITORIO ---
   isDragging = false;
   startX = 0;
   scrollLeftStart = 0;
@@ -454,7 +454,7 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
 
 
   getSafeImageUrl(url: string | undefined): string {
-    if (!url) return '';
+    if (!url || url.includes('dummyimage.com')) return 'assets/img/placeholder.jpg';
     if (url.includes('thesportsdb.com') || url.startsWith('http')) {
       return `https://images.weserv.nl/?url=${encodeURIComponent(url)}`;
     }
@@ -463,7 +463,7 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
 
   handleImageError(event: any) {
     event.target.onerror = null;
-    event.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiB2aWV3Qm94PSIwIDAgODAwIDgwMCI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI4MDAiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtc2l6ZT0iODAiIGZpbGw9IiM0NzU1NjkiPjQwNDwvdGV4dD48L3N2Zz4=';
+    event.target.src = 'assets/img/placeholder.jpg';
   }
 
   trackByIndex(index: number): number {
@@ -479,9 +479,9 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
       component: ConfirmModalComponent,
       cssClass: 'premium-modal',
       componentProps: {
-        title: 'Únete a Fútbol Club',
-        message: 'Si quieres conocer todas las funcionalidades de nuestro sitio. ¡Regístrate ahora!',
-        confirmText: 'Sí, quiero registrarme',
+        title: 'Ãšnete a FÃºtbol Club',
+        message: 'Si quieres conocer todas las funcionalidades de nuestro sitio. Â¡RegÃ­strate ahora!',
+        confirmText: 'SÃ­, quiero registrarme',
         cancelText: 'No, gracias',
         type: 'info'
       }
@@ -493,4 +493,5 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
     }
   }
 }
+
 

@@ -98,7 +98,7 @@ export class BusquedaListPage implements OnInit, OnDestroy {
   public leaguePage = 1;
   public teamPage = 1;
   public playerPage = 1;
-  public pageSize = 8;
+  public pageSize = 11;
 
 
   // 3. GETTERS Y SETTERS (Paginación)

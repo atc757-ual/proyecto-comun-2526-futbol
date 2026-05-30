@@ -94,7 +94,7 @@ export class LocationPlugin {
       }
     }
     const geoPerm = await Geolocation.checkPermissions();
-    return geoPerm.location === 'granted' || geoPerm.location === 'limited';
+    return geoPerm.location === 'granted';
   }
 
   /**

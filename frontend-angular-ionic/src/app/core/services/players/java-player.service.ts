@@ -421,7 +421,7 @@ export class JavaPlayerService implements IPlayerService {
   }
 
   updateComment(playerId: string, commentId: string, comment: any): Observable<any> {
-    return this.http.put<any>(`${environment.javaApiUrl}/comments`, { ...comment, id: commentId, playerId }).pipe(
+    return this.http.put<any>(`${environment.javaApiUrl}/comments/${commentId}`, { ...comment, id: commentId, playerId }).pipe(
       map(res => res.data)
     );
   }

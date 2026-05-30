@@ -1604,7 +1604,8 @@ ion-button:focus,
 
   .bubble-footer {
     display: flex;
-    justify-content: flex-end;
+    align-items: center;
+    justify-content: space-between;
     margin-top: var(--space-xs);
 
     .actions {

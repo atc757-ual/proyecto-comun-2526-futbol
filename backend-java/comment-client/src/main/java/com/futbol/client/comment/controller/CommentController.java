@@ -73,6 +73,17 @@ public class CommentController {
                 .body(ApiResult.success("Comentario público procesado exitosamente", savedComment));
     }
 
+    @Operation(summary = "Actualizar un comentario", description = "Actualiza el contenido y rating de un comentario existente")
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResult<Comment>> updateComment(@PathVariable Long id, @RequestBody Comment comment) {
+        Comment existing = commentRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Comentario no encontrado con ID: " + id));
+        existing.setContent(comment.getContent());
+        existing.setRating(comment.getRating());
+        Comment updated = commentRepository.save(existing);
+        return ResponseEntity.ok(ApiResult.success("Comentario actualizado exitosamente", updated));
+    }
+
     @Operation(summary = "Eliminar un comentario", description = "Borra permanentemente un comentario por su ID")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResult<Void>> deleteComment(@PathVariable Long id) {

@@ -233,7 +233,7 @@ describe('PlayerDetailPublicPage', () => {
       mockPlayerService.addPublicComment.and.returnValue(of({}));
       await component.submitComment();
       expect(component.newComment).toBe('');
-      expect(component.newRating).toBe(5);
+      expect(component.newRating).toBe(0);
     });
   });
 

@@ -124,6 +124,12 @@
       }
     }
 
+    .favorite-static {
+      background: rgba(235, 68, 90, 0.25) !important;
+      cursor: default;
+      pointer-events: none;
+    }
+
     .admin-actions-floating {
       position: absolute;
       top: 8px;

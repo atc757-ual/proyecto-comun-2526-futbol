@@ -49,6 +49,9 @@
 
                             <!-- Acciones Flotantes -->
                             <div class="admin-actions-floating" (click)="$event.stopPropagation()">
+                              <div *ngIf="player.isFavorite || player.is_favorite" class="action-fab favorite-static">
+                                <ion-icon class="fs-20" name="heart" color="danger"></ion-icon>
+                              </div>
                               <button class="action-fab edit" *ngIf="isAdmin"
                                 [routerLink]="['/player-edit', player._id]" aria-label="Editar jugador">
                                 <ion-icon class="fs-20" name="create-outline"></ion-icon>
@@ -105,6 +108,9 @@
                                   Mi Plantilla
                                 </div>
                                 <div class="mobile-item-actions" (click)="$event.stopPropagation()">
+                                  <ion-button *ngIf="player.isFavorite || player.is_favorite" fill="clear" class="favorite-btn" disabled>
+                                    <ion-icon class="fs-20" name="heart" color="danger" slot="icon-only"></ion-icon>
+                                  </ion-button>
                                   <ion-button fill="clear" [routerLink]="['/player-edit', player._id]" class="edit-btn"
                                     *ngIf="isAdmin">
                                     <ion-icon class="fs-20" name="create-outline" slot="icon-only"></ion-icon>

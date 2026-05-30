@@ -243,7 +243,7 @@
                     <!-- CABECERA: RATING + TAG -->
                     <div class="d-flex ai-center mb-base">
                       <span class="f-medium fs-12 text-neutral-8 pr-s">Rating:</span>
-                      <div class="rating-stars-input">
+                      <div class="rating-stars-input" [class.stars-hint]="newRating === 0">
                         <ion-icon *ngFor="let i of [1,2,3,4,5]" [name]="i <= newRating ? 'star' : 'star-outline'"
                           [class.active]="i <= newRating" (click)="setRating(i)"></ion-icon>
                       </div>
@@ -255,12 +255,12 @@
 
                     <!-- CUERPO: TEXTAREA -->
                     <div class="mb-xs">
-                      <ion-textarea mode="md" fill="outline" label="Tu Opinión Técnica" labelPlacement="stacked"
-                        placeholder="Escribe aquí tu valoración técnica sobre el rendimiento del jugador..."
+                      <ion-textarea mode="md" fill="outline" label="Tu Opinión" labelPlacement="stacked"
+                        placeholder="Escribe aquí tu valoración sobre el jugador..."
                         class="futbol-input" [(ngModel)]="newComment" [counter]="true" maxlength="1000" rows="4"
                         (ionFocus)="commentFocused = true" (ionBlur)="commentFocused = false"
                         [class.is-focused]="commentFocused"
-                        [helperText]="userCoords() ? '📍 Ubicación verificada: ' + (userCoords()?.lat | number:'1.1-4') + ', ' + (userCoords()?.lng | number:'1.1-4') : '⏳ Capturando señal GPS...'">
+                        [helperText]="userCoords() ? '📍 ' + (userCityLabel() || 'Ubicación verificada') : '⏳ Capturando señal GPS...'">
                       </ion-textarea>
                     </div>
 
@@ -350,18 +350,23 @@
                           </div>
                         </div>
                         <div class="rating-mini">
-                          <ion-icon [name]="s" class="fs-16" [class.active]="s === 'star'"
+                          <ion-icon [name]="s" class="fs-14" [class.active]="s === 'star'"
                             *ngFor="let s of getRatingStars(comment.rating)"></ion-icon>
                         </div>
                       </div>
                       <p class="content">{{ comment.content }}</p>
-                      <div class="bubble-footer" *ngIf="canDeleteComment(comment)">
-                        <span></span>
-                        <div class="actions">
-                          <button (click)="startEditing(comment)" title="Editar"><ion-icon
-                              name="create-outline"></ion-icon></button>
-                          <button class="delete" (click)="deleteComment(comment.id || comment._id!)"
-                            title="Eliminar"><ion-icon name="trash-outline"></ion-icon></button>
+                      <div class="bubble-footer">
+                        <span class="display-flex ai-center fs-12 text-neutral-6">
+                          <ng-container *ngIf="commentCityMap.get((comment.id || comment._id) + '')">
+                            <ion-icon name="location-outline" class="fs-12"></ion-icon>
+                            {{ commentCityMap.get((comment.id || comment._id) + '') }}
+                          </ng-container>
+                        </span>
+                        <div class="actions" *ngIf="canDeleteComment(comment)">
+                          <button (click)="startEditing(comment)" title="Editar">
+                            <ion-icon name="create-outline" class="fs-18"></ion-icon></button>
+                          <button class="delete" (click)="deleteComment(comment.id || comment._id!)" title="Eliminar">
+                            <ion-icon name="trash-outline" class="fs-18"></ion-icon></button>
                         </div>
                       </div>
                     </ng-container>
@@ -375,10 +380,10 @@
                       <ion-textarea mode="md" fill="outline" class="futbol-input mb-s" [(ngModel)]="editingContent"
                         maxlength="1000" rows="5"></ion-textarea>
                       <div class="edit-actions d-flex gap-s">
-                        <ion-button fill="clear" color="medium" (click)="cancelEditing()"
-                          mode="ios">Cancelar</ion-button>
-                        <ion-button fill="solid" color="primary" (click)="saveCommentEdit()" mode="ios"
-                          shape="round">Actualizar</ion-button>
+                        <ion-button fill="clear" size="small" color="medium" (click)="cancelEditing()"
+                          (keydown.enter)="cancelEditing()" mode="ios">Cancelar</ion-button>
+                        <ion-button fill="solid" size="small" color="primary" (click)="saveCommentEdit()"
+                          (keydown.enter)="saveCommentEdit()" mode="ios" shape="round">Actualizar</ion-button>
                       </div>
                     </ng-container>
                   </div>

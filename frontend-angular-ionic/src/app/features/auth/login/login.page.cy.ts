@@ -193,6 +193,75 @@ describe('LoginPage Component Tests with Cypress', () => {
     cy.get('@toastErrorStub').should('have.been.calledWith', 'El correo o la contraseña son incorrectos.');
   });
 
+  it('should display error toast when email is not verified', () => {
+    const error = { code: 'auth/email-not-verified', message: 'Email not verified' };
+    authServiceMock.login.rejects(error);
+
+    cy.mount(LoginPage, {
+      imports: [IonicModule.forRoot(), RouterTestingModule],
+      providers: [
+        { provide: AuthService, useValue: authServiceMock },
+        { provide: NavController, useValue: navCtrlMock },
+        { provide: LayoutService, useValue: layoutServiceMock },
+        { provide: PlatformService, useValue: platformServiceMock },
+        { provide: ToastService, useValue: toastServiceMock },
+        { provide: ActivatedRoute, useValue: { snapshot: { queryParams: {}, paramMap: { get: () => null } } } }
+      ]
+    });
+
+    cy.get(emailInputSelector).type('alex@test.com');
+    cy.get(passwordInputSelector).type('password123');
+    cy.get('ion-button[type="submit"]').click();
+
+    cy.get('@toastErrorStub').should('have.been.calledWith', 'Debes verificar tu correo electrónico antes de iniciar sesión');
+  });
+
+  it('should display error toast when user is disabled', () => {
+    const error = { code: 'auth/user-disabled', message: 'User disabled' };
+    authServiceMock.login.rejects(error);
+
+    cy.mount(LoginPage, {
+      imports: [IonicModule.forRoot(), RouterTestingModule],
+      providers: [
+        { provide: AuthService, useValue: authServiceMock },
+        { provide: NavController, useValue: navCtrlMock },
+        { provide: LayoutService, useValue: layoutServiceMock },
+        { provide: PlatformService, useValue: platformServiceMock },
+        { provide: ToastService, useValue: toastServiceMock },
+        { provide: ActivatedRoute, useValue: { snapshot: { queryParams: {}, paramMap: { get: () => null } } } }
+      ]
+    });
+
+    cy.get(emailInputSelector).type('alex@test.com');
+    cy.get(passwordInputSelector).type('password123');
+    cy.get('ion-button[type="submit"]').click();
+
+    cy.get('@toastErrorStub').should('have.been.calledWith', 'Tu cuenta ha sido inhabilitada. Por favor, ponte en contacto con el administrador.');
+  });
+
+  it('should display error toast when user is not found', () => {
+    const error = { code: 'auth/user-not-found', message: 'User not found' };
+    authServiceMock.login.rejects(error);
+
+    cy.mount(LoginPage, {
+      imports: [IonicModule.forRoot(), RouterTestingModule],
+      providers: [
+        { provide: AuthService, useValue: authServiceMock },
+        { provide: NavController, useValue: navCtrlMock },
+        { provide: LayoutService, useValue: layoutServiceMock },
+        { provide: PlatformService, useValue: platformServiceMock },
+        { provide: ToastService, useValue: toastServiceMock },
+        { provide: ActivatedRoute, useValue: { snapshot: { queryParams: {}, paramMap: { get: () => null } } } }
+      ]
+    });
+
+    cy.get(emailInputSelector).type('noexiste@test.com');
+    cy.get(passwordInputSelector).type('password123');
+    cy.get('ion-button[type="submit"]').click();
+
+    cy.get('@toastErrorStub').should('have.been.calledWith', 'El correo ingresado no está registrado.');
+  });
+
   // --- Evalúo la alternancia de backend ---
 
   it('should toggle backend switcher on ionChange', () => {

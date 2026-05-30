@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, NgZone } from '@angular/core';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -90,7 +90,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   getSafeUrl(url: string | null | undefined): SafeUrl | string {
     if (!url) return '';
     // data:image/ es seguro para <img src> en Angular sin bypass.
-    // Solo necesita bypass para esquemas no estÃ¡ndar como capacitor: o blob:
+    // Solo necesita bypass para esquemas no estándar como capacitor: o blob:
     if (url.startsWith('data:image/')) return url;
     if (url.startsWith('blob:') || url.startsWith('capacitor:')) {
       return this.sanitizer.bypassSecurityTrustUrl(url); // NOSONAR: only blob: and capacitor: URLs are bypassed, never user input
@@ -114,7 +114,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   public isRevGeocoding: boolean = false;
   public isDataLoading = false;
 
-  // PaginaciÃ³n
+  // Paginación
   public currentPage = 1;
   public pageSize = 11;
 
@@ -246,25 +246,25 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
 
   feet = ['Right', 'Left', 'Ambidextrous'];
 
-  // Estados de los inputs (PatrÃ³n Noticias)
+  // Estados de los inputs (Patrón Noticias)
   focusedField: string | null = null;
   nameTouched = false;
   teamTouched = false;
   leagueTouched = false;
   imageTouched = false;
 
-  // Manejo de ImÃ¡genes (PatrÃ³n Noticias)
+  // Manejo de Imágenes (Patrón Noticias)
   selectedFile: File | null = null;
   previewImage: string | undefined | null = null;
   initialPreviewImage: string | undefined | null = null;
   isPublishing = false;
 
-  // Mapa y UbicaciÃ³n
+  // Mapa y Ubicación
   public hasLocation = false;
   public isCapturingLocation = false;
   public isCheckingGeo = true;
 
-  // GestiÃ³n Multimedia Avanzada
+  // Gestión Multimedia Avanzada
   public imageTypes = [
     { key: 'image_url', label: 'Foto Principal', icon: 'person-outline', helper: 'Imagen principal para el avatar y listas.' },
     { key: 'cutout', label: 'Foto Secundaria', icon: 'sparkles-outline', helper: 'Foto sin fondo para el efecto de volteo.' },
@@ -273,10 +273,10 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
 
   public globalMediaMode: 'upload' | 'url' = 'url';
 
-  // Previsualizaciones especÃ­ficas para cada tipo
+  // Previsualizaciones específicas para cada tipo
   public previews: { [key: string]: string | null } = {};
 
-  // Visor de imÃ¡genes en pantalla completa
+  // Visor de imágenes en pantalla completa
   public activeViewerImage: string | null = null;
   public activeViewerTitle: string | null = null;
 
@@ -303,7 +303,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     }
     this.previews = {};
 
-    // Si pasamos a upload y no hay cÃ¡mara, lanzamos onboarding
+    // Si pasamos a upload y no hay cámara, lanzamos onboarding
     if (mode === 'upload' && !this.hasCameraPermission) {
       this.checkPermissionsOnboarding();
     }
@@ -345,12 +345,12 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     if (this.playerId) {
       this.isEditMode = true;
       this.pageTitle = 'Editar jugador';
-      this.pageSubtitle = 'Edita la informaciÃ³n de tu jugador';
+      this.pageSubtitle = 'Edita la información de tu jugador';
       this.loadPlayer(this.playerId);
       this.entryMode = 'manual'; // En edicion siempre manual
     } else {
       this.pageTitle = 'Nuevo jugador';
-      this.pageSubtitle = 'AÃ±ade un nuevo jugador a tu base de datos';
+      this.pageSubtitle = 'Añade un nuevo jugador a tu base de datos';
     }
 
     this.breadcrumbs = [
@@ -362,7 +362,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     // Inicializar previsualizaciones si ya hay datos
     this.syncPreviews();
 
-    // Si ya tenemos permisos, capturamos ubicaciÃ³n automÃ¡ticamente. Si no, abrimos el onboarding explicativo.
+    // Si ya tenemos permisos, capturamos ubicación automáticamente. Si no, abrimos el onboarding explicativo.
     Promise.all([
       this.checkGeoPermission(),
       this.checkCameraPermission()
@@ -389,7 +389,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       return;
     }
 
-    // 2. VerificaciÃ³n de permisos reales
+    // 2. Verificación de permisos reales
     try {
       const geoResult = await navigator.permissions.query({ name: 'geolocation' as any });
       let cameraState: PermissionState = 'prompt';
@@ -436,7 +436,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   loadLocalPlayers() {
     this.playerService.getPlayers().subscribe({
       next: (data) => this.localPlayers = data,
-      error: () => this.logger.warn('No se pudieron cargar los jugadores locales para comparaciÃ³n')
+      error: () => this.logger.warn('No se pudieron cargar los jugadores locales para comparación')
     });
   }
 
@@ -487,7 +487,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     this.hasGeoPermission = granted;
     if (granted) {
       this.cdr.detectChanges();
-      this.toastService.showSuccess('Permisos de ubicaciÃ³n activos!');
+      this.toastService.showSuccess('Permisos de ubicación activos!');
       await this.captureLocation();
     }
   }
@@ -508,7 +508,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       }
       this.hasCameraPermission = result;
       if (result) {
-        this.toastService.showSuccess('Permisos de cÃ¡mara activos!');
+        this.toastService.showSuccess('Permisos de cámara activos!');
       } else {
         this.toastService.showError('Camara bloqueada! Usa el candado del navegador.');
       }
@@ -550,7 +550,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         this.hasGeoPermission = granted;
         this.isCapturingLocation = false;
         if (granted) {
-          this.toastService.showSuccess('Permisos de ubicaciÃ³n activos!');
+          this.toastService.showSuccess('Permisos de ubicación activos!');
           await this.captureLocation();
         }
         this.cdr.detectChanges();
@@ -573,14 +573,14 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   segmentChanged(event: any) {
     this.entryMode = event.detail.value;
 
-    // Si cambiamos a manual, reseteamos los valores de bÃºsqueda de IA y lanzamos onboarding si hace falta
+    // Si cambiamos a manual, reseteamos los valores de búsqueda de IA y lanzamos onboarding si hace falta
     if (this.entryMode === 'manual') {
       this.apiSearchQuery = '';
       this.apiResults = [];
       this.selectedApiPlayers = [];
       this.currentPage = 1;
 
-      // Lanzamos onboarding solo aquÃ­ para no molestar en la bÃºsqueda inicial
+      // Lanzamos onboarding solo aquí para no molestar en la búsqueda inicial
       this.checkPermissionsOnboarding();
     }
   }
@@ -591,8 +591,8 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   }
 
   handleImageError(event: any, _key: string = 'image_url') {
-    event.target.onerror = null; // Corta el bucle: evita que el fallback tambiÃ©n dispare error
-    event.target.src = 'assets/img/placeholder.jpg';
+    event.target.onerror = null; // Corta el bucle: evita que el fallback también dispare error
+    event.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiB2aWV3Qm94PSIwIDAgMTIwIDEyMCI+PHJlY3Qgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSI1MCUiIHk9IjQyJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InN5c3RlbS11aSIgZm9udC1zaXplPSIxMSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiM5NGEzYjgiPlNpbiBpbWFnZW48L3RleHQ+PC9zdmc+';
   }
 
   private searchPlayersApi() {
@@ -684,19 +684,19 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     const isAlreadySelected = this.isSelected(apiPlayer);
 
     if (isAlreadySelected) {
-      // Quitar de la selecciÃ³n filtrando por ID
+      // Quitar de la selección filtrando por ID
       this.selectedApiPlayers = this.selectedApiPlayers.filter(p => p.externalId !== apiPlayer.externalId);
     } else {
       // LIMITE DE 11 JUGADORES
       if (this.selectedApiPlayers.length >= 11) {
-        this.toastService.showWarning('Solo puedes aÃ±adir hasta 11 jugadores a la vez');
+        this.toastService.showWarning('Solo puedes añadir hasta 11 jugadores a la vez');
         return;
       }
 
-      // aÃ±adir a la selecciÃ³n
+      // añadir a la selección
       this.selectedApiPlayers = [...this.selectedApiPlayers, apiPlayer];
 
-      // Si no tiene los detalles aÃºn, los cargamos en segundo plano
+      // Si no tiene los detalles aún, los cargamos en segundo plano
       if (!apiPlayer.details) {
         try {
           const details = await firstValueFrom(this.playerService.lookupTSDBPlayer(apiPlayer.externalId)) as any;
@@ -731,7 +731,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
 
     this.isImporting = true;
 
-    // Construir el payload GeoJSON explÃ­cito para la BD
+    // Construir el payload GeoJSON explícito para la BD
     const locationPayload = {
       type: 'Point' as const,
       coordinates: [
@@ -740,7 +740,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       ]
     };
 
-    // Preparar los datos con ubicaciÃ³n y user_id
+    // Preparar los datos con ubicación y user_id
     const playersToImport = this.getSelectedPlayersArray().map(p => ({
       ...p,
       location: locationPayload,
@@ -757,8 +757,8 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         const count = playersToImport.length;
         this.toastService.showSuccess(
           count === 1
-            ? 'Se ha registrado el jugador con Ã©xito'
-            : `Se han registrado ${count} jugadores con Ã©xito`,
+            ? 'Se ha registrado el jugador con éxito'
+            : `Se han registrado ${count} jugadores con éxito`,
         );
         setTimeout(() => this.router.navigate(['/players']), 1000);
       },
@@ -783,7 +783,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       const pos = await this.locationPlugin.getCurrentPosition({ useCache: false, enableHighAccuracy: false });
 
       if (!pos) {
-        throw new Error('No se obtuvo posiciÃ³n');
+        throw new Error('No se obtuvo posición');
       }
 
       this.player.location = {
@@ -812,7 +812,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
 
     // Inicializar el mapa
     const mapObj = await this.mapPlugin.initMap('player-map', lat, lng, 15);
-    const marker = this.mapPlugin.addMarker(lat, lng, 'ubicaciÃ³n del jugador', true);
+    const marker = this.mapPlugin.addMarker(lat, lng, 'ubicación del jugador', true);
 
     // Truco Leaflet: Forzar redibujo para evitar zonas grises
     setTimeout(() => {
@@ -829,7 +829,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       this.updateAddress();
     });
 
-    // Carga inicial de direcciÃ³n
+    // Carga inicial de dirección
     this.updateAddress();
   }
 
@@ -844,7 +844,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
           this.cdr.detectChanges();
         },
         error: () => {
-          this.currentAddress = 'ubicaciÃ³n seleccionada';
+          this.currentAddress = 'ubicación seleccionada';
           this.isRevGeocoding = false;
           this.cdr.detectChanges();
         }
@@ -876,7 +876,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
   clearSelection() {
     this.selectedApiPlayers = [];
     this.cdr.detectChanges();
-    this.toastService.showSuccess('selecciÃ³n limpiada');
+    this.toastService.showSuccess('selección limpiada');
   }
 
   updatePlayerImage(key: string, value: string) {
@@ -935,7 +935,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       }
     } catch {
-      // cÃ¡mara no disponible
+      // cámara no disponible
     }
   }
 
@@ -958,7 +958,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
       this.player.is_manual = true;
     }
 
-    // 1. Asegurar ubicaciÃ³n (si no es ediciÃ³n)
+    // 1. Asegurar ubicación (si no es edición)
     if (!this.isEditMode && !this.player.location) {
       await this.captureLocation();
     }
@@ -970,7 +970,7 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
         this.isPublishing = false;
         this.confettiService.celebrate();
         if (res && (res._id || res.id)) {
-          this.toastService.showSuccess(`Jugador ${this.isEditMode ? 'actualizado' : 'creado'} con Ã©xito`);
+          this.toastService.showSuccess(`Jugador ${this.isEditMode ? 'actualizado' : 'creado'} con éxito`);
           setTimeout(() => this.router.navigate(['/players']), 1000);
         }
       },
@@ -1014,5 +1014,4 @@ export class AddEditPlayerPage implements OnInit, OnDestroy {
     return index;
   }
 }
-
 

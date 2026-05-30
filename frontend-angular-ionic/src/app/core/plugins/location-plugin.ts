@@ -84,13 +84,17 @@ export class LocationPlugin {
     if (Capacitor.getPlatform() === 'web') {
       try {
         const result = await navigator.permissions.query({ name: 'geolocation' });
-        return result.state === 'granted';
+        // 'granted' = permiso permanente
+        // 'prompt' con posición en caché = "Solo esta vez" concedido previamente
+        if (result.state === 'granted') return true;
+        if (result.state === 'prompt' && this.lastPosition && this.isPositionValid(this.lastPosition)) return true;
+        return false;
       } catch (e) {
         return false;
       }
     }
     const geoPerm = await Geolocation.checkPermissions();
-    return geoPerm.location === 'granted';
+    return geoPerm.location === 'granted' || geoPerm.location === 'limited';
   }
 
   /**

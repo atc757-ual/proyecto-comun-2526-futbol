@@ -144,7 +144,7 @@ describe('RegisterPage Component Tests with Cypress', () => {
 
     // 5. Simulo hacer scroll hasta el final del contenido interno de Ionic
     cy.get('ion-content.inner-scroll').then(async ($el) => {
-      const scrollEl = await ($el[0] as any).getScrollElement();
+      const scrollEl = await ($el[0] as HTMLIonContentElement).getScrollElement();
       // Desplazo el puntero hasta el fondo
       scrollEl.scrollTop = scrollEl.scrollHeight;
       // Disparo el evento de scroll en el DOM para actualizar la vista de Angular
@@ -184,7 +184,7 @@ describe('RegisterPage Component Tests with Cypress', () => {
     cy.get('ion-label a').click();
     cy.get('.custom-overlay').should('exist');
     cy.get('ion-content.inner-scroll').then(async ($el) => {
-      const scrollEl = await ($el[0] as any).getScrollElement();
+      const scrollEl = await ($el[0] as HTMLIonContentElement).getScrollElement();
       scrollEl.scrollTop = scrollEl.scrollHeight;
       $el[0].dispatchEvent(new CustomEvent('ionScroll'));
     });

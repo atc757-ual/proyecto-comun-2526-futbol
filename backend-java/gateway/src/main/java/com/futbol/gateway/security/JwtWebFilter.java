@@ -36,16 +36,21 @@ public class JwtWebFilter implements WebFilter {
                 if (jwtUtil.validateToken(token)) {
                     Claims claims = jwtUtil.getAllClaimsFromToken(token);
                     String role = claims.get("role", String.class);
-                    
+
                     List<GrantedAuthority> authorities = Collections.singletonList(
                         new SimpleGrantedAuthority("ROLE_" + role)
                     );
-                    
+
                     UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                         claims.getSubject(), null, authorities
                     );
-                    
-                    return chain.filter(exchange)
+
+                    ServerWebExchange mutatedExchange = exchange.mutate()
+                        .request(r -> r.header("X-Gateway-Validated", "true")
+                                       .header("X-User-Role", role != null ? role : "user"))
+                        .build();
+
+                    return chain.filter(mutatedExchange)
                             .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth));
                 }
             } catch (Exception e) {

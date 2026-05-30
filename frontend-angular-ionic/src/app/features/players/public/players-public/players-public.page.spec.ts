@@ -117,13 +117,15 @@ describe('PlayersPublicPage', () => {
       expect(component.currentPage()).toBe(1);
     });
 
-    it('clearFilters() debería limpiar el término y resetear la página', () => {
-      component.searchTerm.set('algo');
-      component.currentPage.set(3);
-      component.clearFilters();
-      expect(component.searchTerm()).toBe('');
-      expect(component.currentPage()).toBe(1);
-    });
+    it('clearFilters() debería limpiar el término y resetear la página', waitForAsync(() => {
+      fixture.whenStable().then(() => {
+        component.searchTerm.set('algo');
+        component.currentPage.set(3);
+        component.clearFilters();
+        expect(component.searchTerm()).toBe('');
+        expect(component.currentPage()).toBe(1);
+      });
+    }));
   });
 
   // =========================================================================
@@ -155,7 +157,7 @@ describe('PlayersPublicPage', () => {
   // REDIRECCIÓN
   // =========================================================================
   describe('Redirección', () => {
-    it('debería cargar jugadores al inicializar incluso con sesión activa', () => {
+    it('debería cargar jugadores al inicializar incluso con sesión activa', waitForAsync(() => {
       // Recrear con usuario logueado
       TestBed.resetTestingModule();
       const layoutServiceMock2 = jasmine.createSpyObj('LayoutService', ['setHeader', 'setBreadcrumbs']);
@@ -176,6 +178,6 @@ describe('PlayersPublicPage', () => {
       // Verificamos que el título coincida exactamente con lo definido en el componente
       expect(f2.componentInstance.pageTitle).toBe('Nuestros jugadores');
       expect(mockPlayerService.getPublicPlayers).toHaveBeenCalled();
-    });
+    }));
   });
 });

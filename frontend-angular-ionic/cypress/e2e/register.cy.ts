@@ -26,7 +26,8 @@ describe('Register Page E2E Flow – Real Cases', () => {
     cy.get('ion-button[type="submit"]').click();
 
     cy.get('ion-toast', { timeout: 12000 }).should('exist');
-    cy.get('ion-toast').shadow().find('.toast-message').should('not.be.empty');
+    cy.get('ion-toast').shadow().find('.toast-message')
+      .should('contain.text', 'El email ya está registrado.');
     cy.url().should('include', '/auth/register');
   });
 

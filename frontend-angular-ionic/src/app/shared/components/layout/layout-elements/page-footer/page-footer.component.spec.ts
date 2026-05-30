@@ -47,10 +47,12 @@ describe('PageFooterComponent', () => {
       expect(link).toBeTruthy();
     });
 
-    it('should render a GitHub social link', () => {
-      const link = fixture.debugElement.query(By.css('a[href*="github"]'));
-      expect(link).toBeTruthy();
-    });
+    it('should render a GitHub social link', waitForAsync(() => {
+      fixture.whenStable().then(() => {
+        const link = fixture.debugElement.query(By.css('a[href*="github"]'));
+        expect(link).toBeTruthy();
+      });
+    }));
 
     it('social links should open in a new tab', () => {
       const links = fixture.debugElement.queryAll(By.css('a.social-icon'));

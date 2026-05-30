@@ -94,7 +94,11 @@ export class LocationPlugin {
       }
     }
     const geoPerm = await Geolocation.checkPermissions();
-    return geoPerm.location === 'granted';
+    // 'granted' = permiso permanente
+    // 'prompt' con posición en caché = "Solo esta vez" concedido en esta sesión
+    if (geoPerm.location === 'granted') return true;
+    if (geoPerm.location === 'prompt' && this.lastPosition && this.isPositionValid(this.lastPosition)) return true;
+    return false;
   }
 
   /**

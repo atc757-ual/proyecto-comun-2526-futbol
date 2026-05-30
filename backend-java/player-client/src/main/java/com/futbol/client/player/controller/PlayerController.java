@@ -8,6 +8,7 @@ import com.futbol.common.dto.ApiResult;
 import com.futbol.player.feign.dto.PlayerPublicDTO;
 import org.springframework.http.HttpStatus;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -35,6 +36,7 @@ public class PlayerController {
         this.commentClient = commentClient;
     }
 
+    @SecurityRequirements({})
     @Operation(summary = "Listar jugadores (Vista Pública)", description = "Obtiene 10 jugadores aleatorios con información mínima (Nombre, Foto) sin necesidad de token")
     @GetMapping("/public")
     public ResponseEntity<ApiResult<List<PlayerPublicDTO>>> getAllPlayersPublic() {
@@ -53,6 +55,7 @@ public class PlayerController {
         return ResponseEntity.ok(ApiResult.success("Vista pública aleatoria recuperada", publicPlayers));
     }
 
+    @SecurityRequirements({})
     @Operation(summary = "Obtener detalle de jugador (Vista Pública)", description = "Obtiene el detalle de un jugador por su ID sin necesidad de token")
     @GetMapping("/public/{id}")
     public ResponseEntity<ApiResult<Player>> getPlayerByIdPublic(@PathVariable Long id) {

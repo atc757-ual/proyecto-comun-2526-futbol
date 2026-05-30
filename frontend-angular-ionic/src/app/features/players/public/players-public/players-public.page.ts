@@ -134,5 +134,10 @@ export class PlayersPublicPage implements OnInit {
   trackByIndex(index: number): number {
     return index;
   }
+
+  getPlayerImage(url: string | null | undefined): string {
+    if (!url || url.includes('dummyimage.com')) return 'assets/img/placeholder.jpg';
+    return url;
+  }
 }
 

@@ -71,21 +71,16 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
   public isRequestingPermission = false;
   private activePermissionModal: any = null;
 
-  // Lógica de "Ver más"
   public isSummaryExpanded = false;
 
-  // Compatibilidad con pruebas antiguas
   get isOwner(): boolean {
-    // El ownership ya no se gestiona aquí; devolver false por defecto.
     return false;
   }
 
   get isLoggedIn(): boolean {
-    // La autenticación ya no se usa directamente; devolver false por defecto.
     return false;
   }
 
-  // Lógica de Centro de Comentarios
   public newComment = '';
   public newRating = 0;
   public isSubmittingComment = false;
@@ -94,7 +89,6 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
   public editingContent = '';
   public editingRating = 5;
 
-  // Lógica de Media Flip
   public showCutout = false;
 
   toggleCardView() {
@@ -110,11 +104,9 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
   nameFocused: boolean = false;
   commentFocused: boolean = false;
 
-  // Paginación de comentarios (Estilo Players)
   currentPage: number = 1;
   pageSize: number = 5;
 
-  // Control de Swiper de Stats
   currentStatPage: number = 0;
   private statsInterval: any;
 
@@ -153,9 +145,7 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
   ];
 
   async ngOnInit() {
-    // Iniciar Autoplay de Stats
     this.startStatsAutoplay();
-    // Verificar permisos de geolocalización iniciales
     this.checkGeoPermission();
   }
 
@@ -191,14 +181,12 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
     const lastPrompt = localStorage.getItem('last_permission_prompt_player_detail_public');
     const now = Date.now();
 
-    // 1. RE-VERIFICACIÓN REAL: Consultar al navegador directamente antes de abrir
     const isGrantedReal = await this.locationService.isGeolocationPermissionGranted();
     if (isGrantedReal) {
       this.hasGeoPermission.set(true);
       return;
     }
 
-    // 2. Si es automático y hay cooldown de 24h, no molestamos
     if (isAuto && lastPrompt && (now - parseInt(lastPrompt)) < 24 * 60 * 60 * 1000) {
       return;
     }
@@ -342,7 +330,6 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
             coordinates: [coordinates.coords.longitude, coordinates.coords.latitude]
           };
         } catch {
-          // ubicación no disponible, el comentario se envía sin coordenadas
         }
       }
     }
@@ -363,7 +350,6 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
   }
 
 
-  // --- LÓGICA DE PAGINACIÓN (Estilo Players) ---
   totalPages(): number {
     if (!this.player?.comments) return 0;
     return Math.ceil(this.player.comments.length / this.pageSize);
@@ -401,11 +387,9 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
     const width = event.target.offsetWidth;
     this.currentStatPage = Math.round(scrollLeft / (width * 0.9)); // Ajuste por el gap
 
-    // Si el usuario hace scroll manual, pausamos y reiniciamos el autoplay
     this.startStatsAutoplay();
   }
 
-  // --- LÓGICA DE DRAG PARA ESCRITORIO ---
   isDragging = false;
   startX = 0;
   scrollLeftStart = 0;
@@ -454,7 +438,7 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
 
 
   getSafeImageUrl(url: string | undefined): string {
-    if (!url) return '';
+    if (!url || url.includes('dummyimage.com')) return 'assets/img/placeholder.jpg';
     if (url.includes('thesportsdb.com') || url.startsWith('http')) {
       return `https://images.weserv.nl/?url=${encodeURIComponent(url)}`;
     }
@@ -463,7 +447,7 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
 
   handleImageError(event: any) {
     event.target.onerror = null;
-    event.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiB2aWV3Qm94PSIwIDAgODAwIDgwMCI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI4MDAiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtc2l6ZT0iODAiIGZpbGw9IiM0NzU1NjkiPjQwNDwvdGV4dD48L3N2Zz4=';
+    event.target.src = 'assets/img/placeholder.jpg';
   }
 
   trackByIndex(index: number): number {
@@ -493,4 +477,5 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
     }
   }
 }
+
 

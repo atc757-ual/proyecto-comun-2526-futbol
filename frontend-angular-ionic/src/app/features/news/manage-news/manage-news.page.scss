@@ -275,6 +275,35 @@
   }
 }
 
+/* SKELETON LOADING */
+.skeleton-card {
+  margin: 0 0 var(--space-s) 0;
+  border-radius: var(--border-radius-soft);
+  border: 1px solid var(--color-neutral-2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  --background: var(--color-white);
+
+  ion-card-content {
+    padding: var(--space-s);
+  }
+}
+
+.skeleton-thumb {
+  --size: 70px;
+  width: 70px;
+  height: 90px;
+  min-width: 70px;
+  border-radius: var(--border-radius-soft);
+  overflow: hidden;
+
+  @media (min-width: 768px) {
+    --size: 100px;
+    width: 100px;
+    height: 100px;
+    min-width: 100px;
+  }
+}
+
 /* CARGA MASIVA - PANEL DESPLEGABLE */
 .bulk-upload-panel {
   background: var(--green-010);

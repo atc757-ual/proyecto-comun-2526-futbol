@@ -197,8 +197,8 @@ describe('PlayerDetailPage', () => {
     expect(safeUrl).toContain('weserv');
   });
 
-  it('should return empty string for undefined image URL', () => {
-    expect(component.getSafeImageUrl(undefined)).toBe('');
+  it('should return placeholder for undefined image URL', () => {
+    expect(component.getSafeImageUrl(undefined)).toBe('assets/img/placeholder.jpg');
   });
 
   it('ngOnInit should configure header and check permissions', async () => {

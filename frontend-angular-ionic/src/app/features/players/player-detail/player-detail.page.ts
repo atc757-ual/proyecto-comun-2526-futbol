@@ -824,7 +824,7 @@ export class PlayerDetailPage implements OnInit, OnDestroy {
   }
 
   getSafeImageUrl(url: string | undefined): string {
-    if (!url) return '';
+    if (!url || url.includes('dummyimage.com')) return 'assets/img/placeholder.jpg';
     if (url.includes('thesportsdb.com') || url.startsWith('http')) {
       return `https://images.weserv.nl/?url=${encodeURIComponent(url)}`;
     }

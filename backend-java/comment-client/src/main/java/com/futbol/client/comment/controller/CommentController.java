@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +46,7 @@ public class CommentController {
         return ResponseEntity.ok(ApiResult.success("Procesamiento concluído exitosamente", comments));
     }
 
+    @SecurityRequirements({})
     @Operation(summary = "Obtener comentarios por jugador (Público)", description = "Busca todos los comentarios asociados a un ID de jugador sin token")
     @GetMapping("/public/player/{playerId}")
     public ResponseEntity<ApiResult<List<Comment>>> getCommentsByPlayerPublic(@PathVariable Long playerId) {
@@ -64,6 +66,7 @@ public class CommentController {
                 .body(ApiResult.success("Procesamiento concluído exitosamente", savedComment));
     }
 
+    @SecurityRequirements({})
     @Operation(summary = "Añadir un comentario público", description = "Guarda un nuevo comentario de forma pública sin requerir token")
     @PostMapping("/public")
     public ResponseEntity<ApiResult<Comment>> createPublicComment(@Valid @RequestBody Comment comment) {

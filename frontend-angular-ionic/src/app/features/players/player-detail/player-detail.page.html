@@ -381,9 +381,9 @@
                         maxlength="1000" rows="5"></ion-textarea>
                       <div class="edit-actions d-flex gap-s">
                         <ion-button fill="clear" size="small" color="medium" (click)="cancelEditing()"
-                          mode="ios">Cancelar</ion-button>
-                        <ion-button fill="solid" size="small" color="primary" (click)="saveCommentEdit()" mode="ios"
-                          shape="round">Actualizar</ion-button>
+                          (keydown.enter)="cancelEditing()" mode="ios">Cancelar</ion-button>
+                        <ion-button fill="solid" size="small" color="primary" (click)="saveCommentEdit()"
+                          (keydown.enter)="saveCommentEdit()" mode="ios" shape="round">Actualizar</ion-button>
                       </div>
                     </ng-container>
                   </div>

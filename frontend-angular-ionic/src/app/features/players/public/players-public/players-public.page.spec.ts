@@ -155,7 +155,7 @@ describe('PlayersPublicPage', () => {
   // REDIRECCIÓN
   // =========================================================================
   describe('Redirección', () => {
-    it('debería cargar jugadores al inicializar incluso con sesión activa', () => {
+    it('debería cargar jugadores al inicializar incluso con sesión activa', waitForAsync(() => {
       // Recrear con usuario logueado
       TestBed.resetTestingModule();
       const layoutServiceMock2 = jasmine.createSpyObj('LayoutService', ['setHeader', 'setBreadcrumbs']);
@@ -176,6 +176,6 @@ describe('PlayersPublicPage', () => {
       // Verificamos que el título coincida exactamente con lo definido en el componente
       expect(f2.componentInstance.pageTitle).toBe('Nuestros jugadores');
       expect(mockPlayerService.getPublicPlayers).toHaveBeenCalled();
-    });
+    }));
   });
 });

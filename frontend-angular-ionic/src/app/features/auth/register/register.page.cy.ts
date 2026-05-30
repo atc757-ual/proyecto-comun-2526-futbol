@@ -161,4 +161,74 @@ describe('RegisterPage Component Tests with Cypress', () => {
     cy.get('.custom-overlay').should('not.exist');
     cy.get('ion-checkbox[name="acceptTerms"]').should('have.class', 'checkbox-checked');
   });
+
+  // --- Helper: aceptar términos via modal de scroll ---
+
+  function mountAndFillForm(email: string) {
+    const providers = [
+      { provide: AuthService, useValue: authServiceMock },
+      { provide: NavController, useValue: navCtrlMock },
+      { provide: ToastService, useValue: toastServiceMock },
+      { provide: ModalController, useValue: modalCtrlMock },
+      { provide: LayoutService, useValue: layoutServiceMock },
+      { provide: PlatformService, useValue: platformServiceMock }
+    ];
+    cy.mount(RegisterPage, { imports: [IonicModule.forRoot()], providers });
+
+    cy.get('ion-input[name="fullName"] input').type('Alex Test');
+    cy.get('ion-input[name="email"] input').type(email);
+    cy.get('ion-input[name="password"] input').type('password123');
+    cy.get('ion-input[name="confirmPassword"] input').type('password123');
+
+    // Abrir modal de términos y aceptarlos via scroll
+    cy.get('ion-label a').click();
+    cy.get('.custom-overlay').should('exist');
+    cy.get('ion-content.inner-scroll').then(async ($el) => {
+      const scrollEl = await ($el[0] as any).getScrollElement();
+      scrollEl.scrollTop = scrollEl.scrollHeight;
+      $el[0].dispatchEvent(new CustomEvent('ionScroll'));
+    });
+    cy.get('.terms-action-wrapper ion-button').should('not.be.disabled').click();
+    cy.get('.custom-overlay').should('not.exist');
+    cy.get('ion-checkbox[name="acceptTerms"]').should('have.class', 'checkbox-checked');
+  }
+
+  // --- Validación del Flujo de Registro ---
+
+  it('should register successfully and show success toast', () => {
+    authServiceMock.register.resolves();
+    mountAndFillForm('nuevo@test.com');
+    cy.get('ion-button[type="submit"]').click();
+    cy.get('@registerStub').should('have.been.calledWith', 'Alex Test', 'nuevo@test.com', 'password123');
+    cy.get('@toastSuccessStub').should('have.been.called');
+  });
+
+  it('should show error toast when email is already registered', () => {
+    authServiceMock.register.rejects({ code: 'auth/email-already-in-use' });
+    mountAndFillForm('existente@test.com');
+    cy.get('ion-button[type="submit"]').click();
+    cy.get('@registerStub').should('have.been.called');
+    cy.get('@toastErrorStub').should('have.been.calledWith', 'El email ya está registrado.');
+  });
+
+  it('should show error toast when email format is invalid', () => {
+    authServiceMock.register.rejects({ code: 'auth/invalid-email' });
+    mountAndFillForm('invalido@test.com');
+    cy.get('ion-button[type="submit"]').click();
+    cy.get('@toastErrorStub').should('have.been.calledWith', 'El formato del email no es válido.');
+  });
+
+  it('should show error toast when password is too weak', () => {
+    authServiceMock.register.rejects({ code: 'auth/weak-password' });
+    mountAndFillForm('debil@test.com');
+    cy.get('ion-button[type="submit"]').click();
+    cy.get('@toastErrorStub').should('have.been.calledWith', 'La contraseña es muy débil.');
+  });
+
+  it('should show generic error toast on unknown error', () => {
+    authServiceMock.register.rejects({ code: 'auth/unknown-error' });
+    mountAndFillForm('otro@test.com');
+    cy.get('ion-button[type="submit"]').click();
+    cy.get('@toastErrorStub').should('have.been.calledWith', 'Error al registrar. Inténtalo de nuevo.');
+  });
 });

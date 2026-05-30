@@ -117,13 +117,15 @@ describe('PlayersPublicPage', () => {
       expect(component.currentPage()).toBe(1);
     });
 
-    it('clearFilters() debería limpiar el término y resetear la página', () => {
-      component.searchTerm.set('algo');
-      component.currentPage.set(3);
-      component.clearFilters();
-      expect(component.searchTerm()).toBe('');
-      expect(component.currentPage()).toBe(1);
-    });
+    it('clearFilters() debería limpiar el término y resetear la página', waitForAsync(() => {
+      fixture.whenStable().then(() => {
+        component.searchTerm.set('algo');
+        component.currentPage.set(3);
+        component.clearFilters();
+        expect(component.searchTerm()).toBe('');
+        expect(component.currentPage()).toBe(1);
+      });
+    }));
   });
 
   // =========================================================================

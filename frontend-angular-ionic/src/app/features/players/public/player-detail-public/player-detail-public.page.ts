@@ -1,4 +1,4 @@
-﻿import { Component, Input, inject, OnInit, OnDestroy, ChangeDetectorRef, effect, signal, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, Input, inject, OnInit, OnDestroy, ChangeDetectorRef, effect, signal, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -71,21 +71,16 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
   public isRequestingPermission = false;
   private activePermissionModal: any = null;
 
-  // LÃ³gica de "Ver mÃ¡s"
   public isSummaryExpanded = false;
 
-  // Compatibilidad con pruebas antiguas
   get isOwner(): boolean {
-    // El ownership ya no se gestiona aquÃ­; devolver false por defecto.
     return false;
   }
 
   get isLoggedIn(): boolean {
-    // La autenticaciÃ³n ya no se usa directamente; devolver false por defecto.
     return false;
   }
 
-  // LÃ³gica de Centro de Comentarios
   public newComment = '';
   public newRating = 0;
   public isSubmittingComment = false;
@@ -94,7 +89,6 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
   public editingContent = '';
   public editingRating = 5;
 
-  // LÃ³gica de Media Flip
   public showCutout = false;
 
   toggleCardView() {
@@ -110,11 +104,9 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
   nameFocused: boolean = false;
   commentFocused: boolean = false;
 
-  // PaginaciÃ³n de comentarios (Estilo Players)
   currentPage: number = 1;
   pageSize: number = 5;
 
-  // Control de Swiper de Stats
   currentStatPage: number = 0;
   private statsInterval: any;
 
@@ -145,7 +137,7 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
 
 
   pageTitle = 'Detalle de Jugador';
-  pageSubtitle = 'InformaciÃ³n bÃ¡sica del jugador';
+  pageSubtitle = 'Información básica del jugador';
   breadcrumbs = [
     { label: '', url: '/auth/login', icon: 'log-in-outline' },
     { label: 'Jugadores', url: '/players-public', icon: '' },
@@ -153,14 +145,12 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
   ];
 
   async ngOnInit() {
-    // Iniciar Autoplay de Stats
     this.startStatsAutoplay();
-    // Verificar permisos de geolocalizaciÃ³n iniciales
     this.checkGeoPermission();
   }
 
   /**
-   * LÃ³gica disparada por el BOTÃ“N de la card.
+   * Lógica disparada por el BOTÓN de la card.
    * Pide permiso DIRECTAMENTE sin pasar por el modal.
    */
   public async checkPermissionsOnboarding() {
@@ -191,14 +181,12 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
     const lastPrompt = localStorage.getItem('last_permission_prompt_player_detail_public');
     const now = Date.now();
 
-    // 1. RE-VERIFICACIÃ“N REAL: Consultar al navegador directamente antes de abrir
     const isGrantedReal = await this.locationService.isGeolocationPermissionGranted();
     if (isGrantedReal) {
       this.hasGeoPermission.set(true);
       return;
     }
 
-    // 2. Si es automÃ¡tico y hay cooldown de 24h, no molestamos
     if (isAuto && lastPrompt && (now - parseInt(lastPrompt)) < 24 * 60 * 60 * 1000) {
       return;
     }
@@ -219,7 +207,7 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Verifica el estado real de la geolocalizaciÃ³n en el navegador
+   * Verifica el estado real de la geolocalización en el navegador
    */
   async checkGeoPermission() {
     const granted = await this.locationService.isGeolocationPermissionGranted();
@@ -322,7 +310,7 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
       autor_name: this.anonymousName || 'Invitado',
       user_id: null
     };
-    // Intentar capturar ubicaciÃ³n si tenemos permiso
+    // Intentar capturar ubicación si tenemos permiso
     if (this.hasGeoPermission()) {
       const cachedCoords = this.userCoords();
       if (cachedCoords) {
@@ -342,14 +330,13 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
             coordinates: [coordinates.coords.longitude, coordinates.coords.latitude]
           };
         } catch {
-          // ubicaciÃ³n no disponible, el comentario se envÃ­a sin coordenadas
         }
       }
     }
 
     this.playerService.addPublicComment(this.player._id, commentData).subscribe({
       next: () => {
-        this.toastService.showSuccess('Â¡Gracias por tu comentario!');
+        this.toastService.showSuccess('¡Gracias por tu comentario!');
         this.newComment = '';
         this.newRating = 0;
         this.isSubmittingComment = false;
@@ -363,7 +350,6 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
   }
 
 
-  // --- LÃ“GICA DE PAGINACIÃ“N (Estilo Players) ---
   totalPages(): number {
     if (!this.player?.comments) return 0;
     return Math.ceil(this.player.comments.length / this.pageSize);
@@ -401,11 +387,9 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
     const width = event.target.offsetWidth;
     this.currentStatPage = Math.round(scrollLeft / (width * 0.9)); // Ajuste por el gap
 
-    // Si el usuario hace scroll manual, pausamos y reiniciamos el autoplay
     this.startStatsAutoplay();
   }
 
-  // --- LÃ“GICA DE DRAG PARA ESCRITORIO ---
   isDragging = false;
   startX = 0;
   scrollLeftStart = 0;
@@ -479,9 +463,9 @@ export class PlayerDetailPublicPage implements OnInit, OnDestroy {
       component: ConfirmModalComponent,
       cssClass: 'premium-modal',
       componentProps: {
-        title: 'Ãšnete a FÃºtbol Club',
-        message: 'Si quieres conocer todas las funcionalidades de nuestro sitio. Â¡RegÃ­strate ahora!',
-        confirmText: 'SÃ­, quiero registrarme',
+        title: 'Únete a Fútbol Club',
+        message: 'Si quieres conocer todas las funcionalidades de nuestro sitio. ¡Regístrate ahora!',
+        confirmText: 'Sí, quiero registrarme',
         cancelText: 'No, gracias',
         type: 'info'
       }

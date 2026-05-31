@@ -127,6 +127,9 @@ export class ProfilePage implements OnInit {
     const newVal = this.useSpringBoot;
 
     await this.toastService.showSuccess(`Backend cambiado a ${newVal ? 'Java' : 'Node'} al instante`);
+
+    // 3. Navegar a home para limpiar datos en cache del backend anterior
+    await this.router.navigate(['/home'], { replaceUrl: true });
   }
 
   async sendPasswordReset() {

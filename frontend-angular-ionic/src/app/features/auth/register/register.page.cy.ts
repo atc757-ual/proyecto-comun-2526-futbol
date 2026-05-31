@@ -195,12 +195,13 @@ describe('RegisterPage Component Tests with Cypress', () => {
 
   // --- Validación del Flujo de Registro ---
 
-  it('should register successfully and show success toast', () => {
+  it('should register successfully and open confirmation modal', () => {
     authServiceMock.register.resolves();
     mountAndFillForm('nuevo@test.com');
     cy.get('ion-button[type="submit"]').click();
-    cy.get('@registerStub').should('have.been.calledWith', 'Alex Test', 'nuevo@test.com', 'password123');
-    cy.get('@toastSuccessStub').should('have.been.called');
+    cy.get('@registerStub').should('have.been.calledWith', 'nuevo@test.com', 'password123', 'Alex Test');
+    // El flujo de éxito abre un ConfirmModal en lugar de un toast
+    cy.wrap(modalCtrlMock.create).should('have.been.called');
   });
 
   it('should show error toast when email is already registered', () => {

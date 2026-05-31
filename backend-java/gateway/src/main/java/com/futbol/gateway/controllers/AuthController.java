@@ -71,7 +71,7 @@ public class AuthController {
             syncRequest.put("name", name);
             syncRequest.put("isAdmin", isAdmin);
 
-            ApiResult<Object> syncResponse = userServiceClient.syncUser(syncRequest);
+            ApiResult<Object> syncResponse = userServiceClient.syncUser("true", syncRequest);
             Object userData = syncResponse != null ? syncResponse.getData() : null;
 
             String token = jwtUtil.generateToken(uid, isAdmin ? "admin" : "user", isInitialAdmin);
@@ -109,7 +109,7 @@ public class AuthController {
         if (authError != null) return authError;
 
         try {
-            return ResponseEntity.ok(userServiceClient.searchUsers(email != null ? email : ""));
+            return ResponseEntity.ok(userServiceClient.searchUsers("true", email != null ? email : ""));
         } catch (Exception e) {
             return buildErrorResponse(401, "Token inválido o expirado");
         }
@@ -138,7 +138,7 @@ public class AuthController {
         try {
             Map<String, String> request = new HashMap<>();
             request.put("email", email);
-            return ResponseEntity.ok(userServiceClient.makeAdmin(request));
+            return ResponseEntity.ok(userServiceClient.makeAdmin("true", request));
         } catch (Exception e) {
             return buildErrorResponse(500, "Error interno al promover usuario");
         }
@@ -167,7 +167,7 @@ public class AuthController {
         try {
             Map<String, String> request = new HashMap<>();
             request.put("email", email);
-            return ResponseEntity.ok(userServiceClient.removeAdmin(request));
+            return ResponseEntity.ok(userServiceClient.removeAdmin("true", request));
         } catch (Exception e) {
             return buildErrorResponse(500, "Error interno al revocar rol");
         }
@@ -198,7 +198,7 @@ public class AuthController {
             Map<String, Object> request = new HashMap<>();
             request.put("email", email);
             request.put("disabled", disabled);
-            return ResponseEntity.ok(userServiceClient.toggleStatus(request));
+            return ResponseEntity.ok(userServiceClient.toggleStatus("true", request));
         } catch (Exception e) {
             return buildErrorResponse(500, "Error interno al cambiar estado del usuario");
         }

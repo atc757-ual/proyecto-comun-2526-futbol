@@ -14,6 +14,12 @@ spring:
             allowedMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
             allowedHeaders: ["Authorization", "Content-Type", "X-User-Role", "X-Transaction-Id", "Accept"]
       routes:
+        # Java Auth / User Microservice
+        - id: user-client-route
+          uri: lb://USER-CLIENT
+          predicates:
+            - Path=/api/auth/**,/api/users/**
+
         # Java Player Microservice
         - id: player-client-route
           uri: lb://PLAYER-CLIENT

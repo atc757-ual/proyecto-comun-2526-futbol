@@ -144,7 +144,7 @@
 
             <div class="btn-group" *ngIf="selectedUser()">
               <!-- BOTÓN HACER ADMIN (Solo si es 'user') -->
-              <ion-button mode="ios" shape="round" expand="block" (click)="promoteUser()"
+              <ion-button mode="ios" shape="round" expand="block" (click)="promoteUser()" (keydown.enter)="promoteUser()"
                 *ngIf="selectedUser()?.role !== 'admin' && selectedUser().is_active === true && selectedUser().email !== authService.currentUser()?.email"
                 [disabled]="isPromoting() || isTogglingStatus() || !targetEmail" class="promote-btn">
                 <ion-spinner class="mr-s" slot="start" *ngIf="isPromoting()"></ion-spinner>
@@ -153,7 +153,7 @@
               </ion-button>
 
               <!-- BOTÓN QUITAR ADMIN (Solo si es 'admin') -->
-              <ion-button mode="ios" shape="round" expand="block" fill="outline" color="danger" (click)="revokeUser()"
+              <ion-button mode="ios" shape="round" expand="block" fill="outline" color="danger" (click)="revokeUser()" (keydown.enter)="revokeUser()"
                 *ngIf="selectedUser()?.role === 'admin' && selectedUser().email !== authService.currentUser()?.email"
                 [disabled]="isPromoting() || isTogglingStatus() || !targetEmail" class="promote-btn">
                 <ion-spinner class="mr-s" slot="start" *ngIf="isPromoting()"></ion-spinner>
@@ -165,7 +165,7 @@
               <ion-button mode="ios" shape="round" expand="block" fill="clear" class="btn-toggle"
                 *ngIf="selectedUser().email !== authService.currentUser()?.email"
                 [class.error]="selectedUser().is_active === true" [class.success]="selectedUser().is_active === false"
-                (click)="toggleUserStatus(selectedUser().is_active === true)"
+                (click)="toggleUserStatus(selectedUser().is_active === true)" (keydown.enter)="toggleUserStatus(selectedUser().is_active === true)"
                 [disabled]="isPromoting() || isTogglingStatus() || !targetEmail">
                 <ion-spinner class="mr-s" slot="start" *ngIf="isTogglingStatus()"></ion-spinner>
                 <ion-icon slot="start" *ngIf="selectedUser().is_active === true" name="ban-outline"
@@ -176,7 +176,7 @@
               </ion-button>
 
               <ion-button class="mt-base promote-btn" shape="round" mode="ios" fill="clear" expand="block"
-                (click)="promoteSelf()" [disabled]="isPromoting()"
+                (click)="promoteSelf()" (keydown.enter)="promoteSelf()" [disabled]="isPromoting()"
                 *ngIf="!firebaseClaims()?.admin && selectedUser().email === authService.currentUser()?.email">
                 <ion-icon slot="start" name="person-add-outline" *ngIf="!isPromoting()"></ion-icon>
                 Autorizar mi propia cuenta

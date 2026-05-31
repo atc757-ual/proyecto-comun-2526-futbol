@@ -13,6 +13,9 @@ const base = document.createElement('base');
 base.href = 'http://localhost:9876/';
 document.head.prepend(base);
 
+// Aumentar timeout para componentes Ionic que cargan chunks asíncronamente
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
+
 // First, initialize the Angular testing environment.
 getTestBed().initTestEnvironment(
   BrowserDynamicTestingModule,

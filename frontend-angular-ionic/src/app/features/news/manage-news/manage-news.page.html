@@ -55,7 +55,7 @@
 
               <div *ngFor="let item of pagedNews; let isLast = last; trackBy: trackByNewsId">
                 <div class="news-admin-item animate-fade-in">
-                  <div class="item-media" (click)="viewNews(item)">
+                  <div class="item-media" (click)="viewNews(item)" (keydown.enter)="viewNews(item)">
                     <img
                       [src]="hasValidImage(item.imageUrl) ? item.imageUrl : FALLBACK_NEWS_IMG"
                       [style.object-fit]="hasValidImage(item.imageUrl) ? 'cover' : 'contain'"
@@ -72,7 +72,7 @@
                     </div>
                   </div>
 
-                  <div class="item-info" (click)="viewNews(item)">
+                  <div class="item-info" (click)="viewNews(item)" (keydown.enter)="viewNews(item)">
                     <h3 class="item-title">{{ item.title }}</h3>
                     <p class="item-summary hide-on-phone">{{ item.summary }}</p>
 
@@ -180,7 +180,7 @@
                 </div>
 
                 <ion-button mode="ios" shape="round" expand="block" class="btn-white-success mt-base "
-                  [disabled]="!selectedBulkFile || isUploadingBulk" (click)="confirmBulkUpload()">
+                  [disabled]="!selectedBulkFile || isUploadingBulk" (click)="confirmBulkUpload()" (keydown.enter)="confirmBulkUpload()">
                   <ion-spinner name="crescent" *ngIf="isUploadingBulk" slot="start"></ion-spinner>
                   {{ isUploadingBulk ? 'Subiendo...' : 'Confirmar Subida' }}
                 </ion-button>

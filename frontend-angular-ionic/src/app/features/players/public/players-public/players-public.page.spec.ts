@@ -86,12 +86,14 @@ describe('PlayersPublicPage', () => {
       expect(filtered.every(p => p.name.includes('Jugador 1'))).toBeTrue();
     });
 
-    it('debería filtrar por equipo', () => {
-      component.searchTerm.set('Equipo 0');
-      const filtered = component.filteredPlayers();
-      expect(filtered.length).toBeGreaterThan(0);
-      expect(filtered.every(p => p.team === 'Equipo 0')).toBeTrue();
-    });
+    it('debería filtrar por equipo', waitForAsync(() => {
+      fixture.whenStable().then(() => {
+        component.searchTerm.set('Equipo 0');
+        const filtered = component.filteredPlayers();
+        expect(filtered.length).toBeGreaterThan(0);
+        expect(filtered.every(p => p.team === 'Equipo 0')).toBeTrue();
+      });
+    }));
 
     it('debería filtrar por nacionalidad', () => {
       component.searchTerm.set('Español');

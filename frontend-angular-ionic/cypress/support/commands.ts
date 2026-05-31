@@ -58,7 +58,11 @@ Cypress.Commands.add('dismissUiBlockers', () => {
 Cypress.Commands.add('typeIntoIonInput', (name: string, value: string) => {
 	getActiveIonInput(name).click({ force: true });
 	getActiveIonInput(name).clear({ force: true });
-	getActiveIonInput(name).type(value, { force: true });
+	getActiveIonInput(name)
+		.type(value, { force: true })
+		.trigger('input', { force: true })
+		.trigger('change', { force: true })
+		.blur({ force: true });
 });
 
 export {};

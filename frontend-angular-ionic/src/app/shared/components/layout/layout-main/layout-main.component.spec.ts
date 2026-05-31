@@ -1,12 +1,14 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { LayoutMainComponent } from './layout-main.component';
 import { Router, ActivatedRoute } from '@angular/router';
-import { MenuController, NavController, ActionSheetController, ModalController, IonRouterOutlet } from '@ionic/angular/standalone';
+import { MenuController, NavController, ActionSheetController, ModalController } from '@ionic/angular/standalone';
 import { AuthService } from 'src/app/core/services/auth/auth.service';
 import { PlatformService } from 'src/app/core/services/system/platform.service';
 import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { of, Subject } from 'rxjs';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('LayoutMainComponent', () => {
   let component: LayoutMainComponent;
@@ -77,7 +79,7 @@ describe('LayoutMainComponent', () => {
         { provide: ActivatedRoute, useValue: activatedRouteMock }
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
-    }).overrideComponent(LayoutMainComponent, { remove: { imports: [IonRouterOutlet] } })
+    }).overrideComponent(LayoutMainComponent, { set: { imports: [CommonModule, RouterTestingModule] } })
       .compileComponents();
 
     fixture = TestBed.createComponent(LayoutMainComponent);

@@ -36,7 +36,7 @@
 
               <!-- CAMBIAR CLAVE -->
               <ion-item lines="none" class="action-item" [class.is-yellow]="resetCooldown"
-                [class.is-blue]="!resetCooldown" [class.disabled]="resetCooldown" (click)="sendPasswordReset()">
+                [class.is-blue]="!resetCooldown" [class.disabled]="resetCooldown" (click)="sendPasswordReset()" (keydown.enter)="sendPasswordReset()">
                 <ion-icon slot="start" *ngIf="resetCooldown" name="time-outline"></ion-icon>
                 <ion-icon slot="start" *ngIf="!resetCooldown" name="key-outline"></ion-icon>
                 <ion-label>
@@ -78,7 +78,7 @@
               <div class="separator my-s" *ngIf="!useSpringBoot && isMaster"></div>
 
               <ion-item *ngIf="!useSpringBoot && isMaster" lines="none" class="action-item is-blue" detail="true" button
-                (click)="openNodeStatusDashboard()">
+                (click)="openNodeStatusDashboard()" (keydown.enter)="openNodeStatusDashboard()">
                 <ion-icon slot="start" name="server-outline"></ion-icon>
                 <ion-label>
                   <h3>Dashboard de Estado Node</h3>

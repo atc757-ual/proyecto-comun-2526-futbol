@@ -54,7 +54,8 @@
                   <div *ngFor="let res of pagedResults; trackBy: trackByIndex" class="minimal-result-item" [class.selected]="isSelected(res)"
                     [class.disabled-item]="!isSelected(res) && selectedApiPlayers.length >= 11"
                     [class.already-in-staff]="isInStaff(res.externalId)"
-                    (click)="(!isInStaff(res.externalId) && (isSelected(res) || selectedApiPlayers.length < 11)) && toggleApiSelection(res)">
+                    (click)="(!isInStaff(res.externalId) && (isSelected(res) || selectedApiPlayers.length < 11)) && toggleApiSelection(res)"
+                    (keydown.enter)="(!isInStaff(res.externalId) && (isSelected(res) || selectedApiPlayers.length < 11)) && toggleApiSelection(res)">
 
                     <div class="item-content-wrapper">
                       <ion-avatar class="mini-avatar">
@@ -85,7 +86,7 @@
 
                 <!-- Paginación -->
                 <div class="news-pagination-container animate-fade-in mt-base" *ngIf="totalPages > 1">
-                  <ion-button mode="ios" fill="clear" color="primary" (click)="prevPage()"
+                  <ion-button mode="ios" fill="clear" color="primary" (click)="prevPage()" (keydown.enter)="prevPage()"
                     [disabled]="currentPage === 1" class="nav-btn">
                     <ion-icon name="chevron-back-outline" slot="start"></ion-icon>
                     <span>Anterior</span>
@@ -94,7 +95,7 @@
                     <ion-button mode="ios" *ngFor="let page of getPages()"
                       [fill]="currentPage === page ? 'solid' : 'clear'"
                       [color]="currentPage === page ? 'primary' : 'dark'" class="page-btn"
-                      [class.active]="currentPage === page" (click)="goToPage(page)">
+                      [class.active]="currentPage === page" (click)="goToPage(page)" (keydown.enter)="goToPage(page)">
                       {{ page }}
                     </ion-button>
                   </div>
@@ -314,7 +315,7 @@
                 <span class="f-bold fs-16 text-neutral-8">Jugadores seleccionados ({{ selectedApiPlayers.length
                   }})</span>
                 <ion-button fill="outline" size="small" mode="ios"
-                  class="fs-12 f-semibold text-primary ml-auto  pr-none" (click)="clearSelection()">
+                  class="fs-12 f-semibold text-primary ml-auto  pr-none" (click)="clearSelection()" (keydown.enter)="clearSelection()">
                   Limpiar
                 </ion-button>
               </div>
@@ -474,7 +475,7 @@
                         <div slot="end" class="d-flex ai-center gap-xs upload-media-actions">
                           <!-- Si existe previsualización -->
                           <ng-container *ngIf="previews[type.key]">
-                            <div class="mini-preview-circle" (click)="openImageViewer(previews[type.key]!, type.label)">
+                            <div class="mini-preview-circle" (click)="openImageViewer(previews[type.key]!, type.label)" (keydown.enter)="openImageViewer(previews[type.key]!, type.label)">
                               <img [src]="getSafeUrl(previews[type.key])" (error)="handleImageError($event, type.key)"
                                 referrerpolicy="no-referrer">
                             </div>
@@ -487,7 +488,7 @@
                           <!-- Si NO existe previsualización -->
                           <ng-container *ngIf="!previews[type.key]">
                             <ion-button fill="clear" size="small" class="margin-none"
-                              (click)="fileInputGeneric.click()">
+                              (click)="fileInputGeneric.click()" (keydown.enter)="fileInputGeneric.click()">
                               <ion-icon slot="icon-only" name="image-outline" class="fs-22 text-primary"></ion-icon>
                             </ion-button>
                             <ion-button fill="clear" size="small" class="margin-none" (click)="takePhoto(type.key)"

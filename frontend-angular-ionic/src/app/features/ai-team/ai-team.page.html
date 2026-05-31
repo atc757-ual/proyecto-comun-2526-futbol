@@ -64,7 +64,7 @@
               </div>
               <!-- Botón de acción -->
               <div class="col-6 col-sm-12 mx-auto">
-                <ion-button *ngIf="hasPlayers" (click)="generateTeam()" [disabled]="isGenerating" expand="block"
+                <ion-button *ngIf="hasPlayers" (click)="generateTeam()" (keydown.enter)="generateTeam()" [disabled]="isGenerating" expand="block"
                   shape="round" mode="ios" color="primary" class="f-semibold futbol-btn-primary py-s h-auto">
                   <ion-icon name="sparkles-outline" slot="start"></ion-icon>
                   <ion-label class="fs-16 pl-s">Mi equipo ideal</ion-label>

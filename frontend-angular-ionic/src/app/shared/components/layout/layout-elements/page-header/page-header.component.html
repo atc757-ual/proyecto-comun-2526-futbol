@@ -84,7 +84,7 @@
           </ng-container>
 
           <!-- public: logo navigates to home or login -->
-          <div *ngIf="mode === 'public'" class="logo-box clickable" (click)="onLogoClick($event)">
+          <div *ngIf="mode === 'public'" class="logo-box clickable" (click)="onLogoClick($event)" (keydown.enter)="onLogoClick($event)">
             <div class="logo-ball-blue"><ion-icon name="football"></ion-icon></div>
             <span class="main-logo-text">Fútbol Club</span>
           </div>

@@ -1,21 +1,21 @@
 <div class="news-pagination-container animate-fade-in my-base" *ngIf="totalPages > 1">
-  <ion-button mode="ios" fill="clear" color="primary" (click)="onPrev()" [disabled]="currentPage === 1" class="nav-btn">
+  <ion-button mode="ios" fill="clear" color="primary" (click)="onPrev()" (keydown.enter)="onPrev()" [disabled]="currentPage === 1" class="nav-btn">
     <ion-icon name="chevron-back-outline" slot="start"></ion-icon>
     <span>Anterior</span>
   </ion-button>
-  
+
   <div class="page-indicators">
-    <ion-button mode="ios" *ngFor="let page of getPages()" 
+    <ion-button mode="ios" *ngFor="let page of getPages()"
       fill="clear"
-      color="dark" 
+      color="dark"
       class="page-btn"
-      [class.active]="currentPage === page" 
-      (click)="onGoTo(page)">
+      [class.active]="currentPage === page"
+      (click)="onGoTo(page)" (keydown.enter)="onGoTo(page)">
       {{ page }}
     </ion-button>
   </div>
-  
-  <ion-button mode="ios" fill="clear" color="primary" (click)="onNext()" [disabled]="currentPage === totalPages" class="nav-btn">
+
+  <ion-button mode="ios" fill="clear" color="primary" (click)="onNext()" (keydown.enter)="onNext()" [disabled]="currentPage === totalPages" class="nav-btn">
     <span>Siguiente</span>
     <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
   </ion-button>

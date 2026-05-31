@@ -2,11 +2,13 @@ import { ComponentFixture, TestBed, waitForAsync, fakeAsync, tick } from '@angul
 import { LayoutPublicComponent } from './layout-public.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { MenuController, NavController, ModalController, IonRouterOutlet } from '@ionic/angular/standalone';
+import { MenuController, NavController, ModalController } from '@ionic/angular/standalone';
 import { PlatformService } from 'src/app/core/services/system/platform.service';
 import { NavigationService, APP_PAGES } from 'src/app/core/services/ui/navigation.service';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Auth } from '@angular/fire/auth';
+import { PreferencesPlugin } from 'src/app/core/plugins/preferences-plugin';
 
 describe('LayoutPublicComponent', () => {
   let component: LayoutPublicComponent;
@@ -49,10 +51,19 @@ describe('LayoutPublicComponent', () => {
             currentUser: null,
             app: { options: {} }
           }
+        },
+        {
+          provide: PreferencesPlugin,
+          useValue: {
+            get: jasmine.createSpy('get').and.returnValue(Promise.resolve(null)),
+            set: jasmine.createSpy('set').and.returnValue(Promise.resolve()),
+            remove: jasmine.createSpy('remove').and.returnValue(Promise.resolve()),
+            clear: jasmine.createSpy('clear').and.returnValue(Promise.resolve())
+          }
         }
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
-    }).overrideComponent(LayoutPublicComponent, { remove: { imports: [IonRouterOutlet] } })
+    }).overrideComponent(LayoutPublicComponent, { set: { imports: [CommonModule, RouterTestingModule] } })
       .compileComponents();
 
     fixture   = TestBed.createComponent(LayoutPublicComponent);

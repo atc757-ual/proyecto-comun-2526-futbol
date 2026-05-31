@@ -12,7 +12,7 @@
       <ion-breadcrumbs>
         <ion-breadcrumb *ngFor="let item of breadcrumbs; let last = last"
           [routerLink]="(item.url === '/login' || (item.url === '/home' && !authService.currentUser())) ? null : (item.url || null)"
-          [routerDirection]="item.url === '/login' ? 'root' : 'back'" (click)="onBreadcrumbClick($event, item)"
+          [routerDirection]="item.url === '/login' ? 'root' : 'back'" (click)="onBreadcrumbClick($event, item)" (keydown.enter)="onBreadcrumbClick($event, item)"
           [class.active-breadcrumb]="last" [class.has-url]="!!item.url">
           <ion-icon *ngIf="item.icon" slot="start" [name]="item.icon"></ion-icon>
           {{ item.label }}

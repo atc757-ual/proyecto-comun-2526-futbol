@@ -8,6 +8,7 @@ import { NavController, ModalController, ActionSheetController } from '@ionic/an
 import { Router, ActivatedRoute } from '@angular/router';
 import { CUSTOM_ELEMENTS_SCHEMA, signal } from '@angular/core';
 import { of, Subject } from 'rxjs';
+import { PreferencesPlugin } from 'src/app/core/plugins/preferences-plugin';
 
 describe('PageNavigationComponent', () => {
   let component: PageNavigationComponent;
@@ -56,6 +57,13 @@ describe('PageNavigationComponent', () => {
         { provide: ActionSheetController, useValue: actionSheetCtrlMock },
         { provide: Router,       useValue: { url: '/home', navigate: jasmine.createSpy(), events: of() } },
         { provide: ActivatedRoute, useValue: { snapshot: { queryParams: {}, params: {} }, events: new Subject() } },
+        { provide: PreferencesPlugin, useValue: {
+            get: jasmine.createSpy('get').and.returnValue(Promise.resolve(null)),
+            set: jasmine.createSpy('set').and.returnValue(Promise.resolve()),
+            remove: jasmine.createSpy('remove').and.returnValue(Promise.resolve()),
+            clear: jasmine.createSpy('clear').and.returnValue(Promise.resolve())
+          }
+        },
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
     }).compileComponents();

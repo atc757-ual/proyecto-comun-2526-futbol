@@ -33,7 +33,7 @@ describe('JavaPlayerService', () => {
   });
 
   it('deletePlayer() should make DELETE to /players/:id', () => {
-    service.deletePlayer('1').subscribe();
+    service.deletePlayer('1').subscribe(res => expect(res).toBeDefined());
     http.expectOne({ method: 'DELETE', url: `${base}/1` }).flush(null);
   });
 

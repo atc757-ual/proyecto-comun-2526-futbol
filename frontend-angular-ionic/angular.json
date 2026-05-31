@@ -27,6 +27,11 @@
                 "output": "assets"
               },
               {
+                "glob": "manifest.webmanifest",
+                "input": "src",
+                "output": "/"
+              },
+              {
                 "glob": "leaflet.css",
                 "input": "node_modules/leaflet/dist",
                 "output": "assets/leaflet"
@@ -145,6 +150,11 @@
                 "glob": "**/*",
                 "input": "src/assets",
                 "output": "assets"
+              },
+              {
+                "glob": "manifest.webmanifest",
+                "input": "src",
+                "output": "/"
               },
               {
                 "glob": "leaflet.css",

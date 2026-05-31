@@ -29,7 +29,7 @@
       mode="ios" size="small" fill="solid" shape="round"
       class="btn-white-error"
       [disabled]="isCapturing"
-      (click)="requestPermission.emit()">
+      (click)="requestPermission.emit()" (keydown.enter)="requestPermission.emit()">
       <ion-spinner *ngIf="isCapturing" name="crescent" slot="start"></ion-spinner>
       <span *ngIf="!isCapturing">Permitir</span>
     </ion-button>

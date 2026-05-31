@@ -167,7 +167,7 @@
                       <ion-button mode="ios" *ngFor="let page of getPages(); trackBy: trackByIndex"
                         [fill]="currentPage() === page ? 'solid' : 'clear'"
                         [color]="currentPage() === page ? 'primary' : 'dark'" class="page-btn"
-                        [class.active]="currentPage() === page" (click)="goToPage(page)">
+                        [class.active]="currentPage() === page" (click)="goToPage(page)" (keydown.enter)="goToPage(page)">
                         {{ page }}
                       </ion-button>
                     </div>

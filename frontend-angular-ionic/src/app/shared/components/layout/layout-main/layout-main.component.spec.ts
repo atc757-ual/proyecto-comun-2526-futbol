@@ -7,6 +7,8 @@ import { PlatformService } from 'src/app/core/services/system/platform.service';
 import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { of, Subject } from 'rxjs';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('LayoutMainComponent', () => {
   let component: LayoutMainComponent;
@@ -77,7 +79,7 @@ describe('LayoutMainComponent', () => {
         { provide: ActivatedRoute, useValue: activatedRouteMock }
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
-    }).overrideComponent(LayoutMainComponent, { remove: { imports: [IonRouterOutlet] } })
+    }).overrideComponent(LayoutMainComponent, { set: { imports: [CommonModule, RouterTestingModule] } })
       .compileComponents();
 
     fixture = TestBed.createComponent(LayoutMainComponent);

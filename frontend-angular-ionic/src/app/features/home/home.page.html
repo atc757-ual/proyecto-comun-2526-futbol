@@ -42,10 +42,10 @@
 
       <!-- Navegación Externa Garantizada -->
       <ng-container *ngIf="!isLoadingFeatured">
-        <div class="custom-swiper-button custom-prev" role="button" aria-label="Anterior">
+        <div class="custom-swiper-button custom-prev" role="button" aria-label="Anterior" tabindex="0" (keydown.enter)="$any($event.target).click()">
           <ion-icon name="chevron-back" aria-hidden="true"></ion-icon>
         </div>
-        <div class="custom-swiper-button custom-next" role="button" aria-label="Siguiente">
+        <div class="custom-swiper-button custom-next" role="button" aria-label="Siguiente" tabindex="0" (keydown.enter)="$any($event.target).click()">
           <ion-icon name="chevron-forward" aria-hidden="true"></ion-icon>
         </div>
       </ng-container>

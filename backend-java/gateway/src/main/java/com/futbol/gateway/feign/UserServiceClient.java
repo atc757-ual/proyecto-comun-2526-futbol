@@ -10,23 +10,37 @@ import java.util.Map;
 public interface UserServiceClient {
 
     @PostMapping("/api/users/sync")
-    ApiResult<Object> syncUser(@RequestBody Map<String, Object> body);
+    ApiResult<Object> syncUser(
+        @RequestHeader("X-Gateway-Validated") String validated,
+        @RequestBody Map<String, Object> body);
 
     @GetMapping("/api/users/firebase/{firebaseUid}")
-    ApiResult<Object> getUserByFirebaseUid(@PathVariable("firebaseUid") String firebaseUid);
+    ApiResult<Object> getUserByFirebaseUid(
+        @RequestHeader("X-Gateway-Validated") String validated,
+        @PathVariable("firebaseUid") String firebaseUid);
 
     @GetMapping("/api/users/email/{email}")
-    ApiResult<Object> getUserByEmail(@PathVariable("email") String email);
+    ApiResult<Object> getUserByEmail(
+        @RequestHeader("X-Gateway-Validated") String validated,
+        @PathVariable("email") String email);
 
     @GetMapping("/api/users/search")
-    ApiResult<Object> searchUsers(@RequestParam(value = "email", required = false) String email);
+    ApiResult<Object> searchUsers(
+        @RequestHeader("X-Gateway-Validated") String validated,
+        @RequestParam(value = "email", required = false) String email);
 
     @PostMapping("/api/users/make-admin")
-    ApiResult<Object> makeAdmin(@RequestBody Map<String, String> body);
+    ApiResult<Object> makeAdmin(
+        @RequestHeader("X-Gateway-Validated") String validated,
+        @RequestBody Map<String, String> body);
 
     @PostMapping("/api/users/remove-admin")
-    ApiResult<Object> removeAdmin(@RequestBody Map<String, String> body);
+    ApiResult<Object> removeAdmin(
+        @RequestHeader("X-Gateway-Validated") String validated,
+        @RequestBody Map<String, String> body);
 
     @PostMapping("/api/users/toggle-status")
-    ApiResult<Object> toggleStatus(@RequestBody Map<String, Object> body);
+    ApiResult<Object> toggleStatus(
+        @RequestHeader("X-Gateway-Validated") String validated,
+        @RequestBody Map<String, Object> body);
 }

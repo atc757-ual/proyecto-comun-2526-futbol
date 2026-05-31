@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, fakeAsync, tick, flush } from '@angular/core/testing';
 import { Router, ActivatedRoute } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { ActionSheetController, ModalController } from '@ionic/angular/standalone';
+import { ActionSheetController, ModalController, NavController } from '@ionic/angular/standalone';
 import { IonicModule } from '@ionic/angular';
 import { Auth } from '@angular/fire/auth';
 import { ProfilePage } from './profile.page';
@@ -20,7 +20,7 @@ describe('ProfilePage', () => {
   let modalCtrlMock: jasmine.SpyObj<ModalController>;
   let actionSheetCtrlMock: jasmine.SpyObj<ActionSheetController>;
   let routerMock: jasmine.SpyObj<Router>;
-
+  let navCtrlMock: jasmine.SpyObj<NavController>;
 
   const authMock = {
     currentUser: {
@@ -54,7 +54,7 @@ describe('ProfilePage', () => {
     modalCtrlMock = jasmine.createSpyObj('ModalController', ['create']);
     actionSheetCtrlMock = jasmine.createSpyObj('ActionSheetController', ['create']);
     routerMock = jasmine.createSpyObj('Router', ['navigate']);
-
+    navCtrlMock = jasmine.createSpyObj('NavController', ['navigateForward', 'navigateRoot']);
 
     authServiceMock.isAdmin.and.returnValue(false);
     authServiceMock.isMasterAdmin.and.returnValue(false);
@@ -80,6 +80,7 @@ describe('ProfilePage', () => {
         { provide: ModalController, useValue: modalCtrlMock },
         { provide: ActionSheetController, useValue: actionSheetCtrlMock },
 
+        { provide: NavController, useValue: navCtrlMock },
         { provide: Router, useValue: routerMock },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => null } } } }
       ]

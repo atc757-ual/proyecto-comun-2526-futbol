@@ -43,7 +43,7 @@
 
               <span class="pill-sep" *ngIf="selectedLeague">/</span>
 
-              <ion-chip class="nav-pill" [class.is-active]="!selectedTeam" (click)="backToTeams()" (keydown.enter)="backToTeams()" tabindex="0"
+              <ion-chip class="nav-pill" [class.is-active]="!selectedTeam" (click)="backToTeams()" (keydown.enter)="backToTeams()"
                 *ngIf="selectedLeague">
                 <ion-icon name="trophy-outline"></ion-icon>
                 <ion-label>{{ selectedLeague.strLeague }}</ion-label>
@@ -53,7 +53,7 @@
 
               <span class="pill-sep" *ngIf="selectedTeam">/</span>
 
-              <ion-chip class="nav-pill is-active" *ngIf="selectedTeam" (click)="backToTeams()" (keydown.enter)="backToTeams()" tabindex="0">
+              <ion-chip class="nav-pill is-active" *ngIf="selectedTeam" (click)="backToTeams()" (keydown.enter)="backToTeams()">
                 <ion-icon name="shield-outline"></ion-icon>
                 <ion-label>{{ selectedTeam.strTeam }}</ion-label>
                 <ion-icon name="close-circle" (click)="backToTeams(); $event.stopPropagation()"></ion-icon>
@@ -89,7 +89,7 @@
                   <div class="section-header py-s border-bottom mb-s">
                     <h3 class="f-bold text-neutral-9 fs-14 m-0">Ligas encontradas</h3>
                   </div>
-                  <div *ngFor="let league of pagedResults; trackBy: trackByLeagueId" (click)="selectLeague(league)" (keydown.enter)="selectLeague(league)" tabindex="0" role="button"
+                  <div *ngFor="let league of pagedResults; trackBy: trackByLeagueId" (click)="selectLeague(league)" (keydown.enter)="selectLeague(league)"
                     class="minimal-result-item animate-fade-in">
                     <div class="item-content-wrapper">
                       <div class="mini-avatar">
@@ -118,7 +118,7 @@
                       {{ selectedLeague ? 'Clubes en ' + selectedLeague.strLeague : 'Clubes encontrados' }}
                     </h3>
                   </div>
-                  <div *ngFor="let team of pagedResults; trackBy: trackByTeamId" (click)="selectTeam(team)" (keydown.enter)="selectTeam(team)" tabindex="0" role="button"
+                  <div *ngFor="let team of pagedResults; trackBy: trackByTeamId" (click)="selectTeam(team)" (keydown.enter)="selectTeam(team)"
                     class="minimal-result-item animate-fade-in">
                     <div class="item-content-wrapper">
                       <div class="mini-avatar">
@@ -156,7 +156,7 @@
                     [class.selected]="selectedPlayers.has(player.idPlayer)"
                     [class.already-in-staff]="isAlreadyAdded(player.strPlayer)"
                     (click)="!isAlreadyAdded(player.strPlayer) && togglePlayer(player)"
-                    (keydown.enter)="!isAlreadyAdded(player.strPlayer) && togglePlayer(player)" tabindex="0" role="button">
+                    (keydown.enter)="!isAlreadyAdded(player.strPlayer) && togglePlayer(player)">
 
                     <div class="item-content-wrapper">
                       <div class="mini-avatar">

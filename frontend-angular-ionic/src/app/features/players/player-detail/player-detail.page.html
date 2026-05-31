@@ -418,7 +418,7 @@
               <div class="player-hero-container">
                 <!-- BOTÓN DE ACCIÓN (CROSS-FADE TRIGGER) -->
                 <div class="card-action-trigger" data-html2canvas-ignore="true" *ngIf="player.images?.cutout"
-                  (click)="toggleCardView(); $event.stopPropagation()" (keydown.enter)="toggleCardView()" tabindex="0" role="button">
+                  (click)="toggleCardView(); $event.stopPropagation()" (keydown.enter)="toggleCardView()">
                   <ion-icon [name]="showCutout ? 'person-outline' : 'sync-outline'"></ion-icon>
                   <span>{{ showCutout ? 'VER PERFIL' : 'VER ACCIÓN' }}</span>
                 </div>

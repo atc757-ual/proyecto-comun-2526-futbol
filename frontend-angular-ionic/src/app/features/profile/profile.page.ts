@@ -11,7 +11,7 @@ import { RouterModule, Router } from '@angular/router';
 import {
   IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonItem, IonIcon,
   IonLabel, IonSpinner, IonBadge, IonButton, IonToggle,
-  ActionSheetController, ModalController, NavController
+  ActionSheetController, ModalController
 } from '@ionic/angular/standalone';
 import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { AuthService } from 'src/app/core/services/auth/auth.service';
@@ -53,7 +53,6 @@ export class ProfilePage implements OnInit {
   private readonly modalCtrl = inject(ModalController);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly logger = inject(LoggerService);
-  private readonly navCtrl = inject(NavController);
   public platformService = inject(PlatformService);
 
   private readonly fallbackAvatar = 'https://ui-avatars.com/api/?name=User&background=e2e8f0&color=0f172a&bold=true';
@@ -128,9 +127,6 @@ export class ProfilePage implements OnInit {
     const newVal = this.useSpringBoot;
 
     await this.toastService.showSuccess(`Backend cambiado a ${newVal ? 'Java' : 'Node'} al instante`);
-
-    // 3. navigateRoot limpia el stack de Ionic y fuerza reinicializacion del home
-    await this.navCtrl.navigateRoot('/home', { animated: false });
   }
 
   async sendPasswordReset() {

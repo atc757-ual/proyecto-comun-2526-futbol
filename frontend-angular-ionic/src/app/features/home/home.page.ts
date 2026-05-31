@@ -15,7 +15,7 @@ import { RouterModule, Router } from '@angular/router';
 import { LayoutService } from 'src/app/core/services/ui/layout.service';
 import { AuthService } from 'src/app/core/services/auth/auth.service';
 import { Auth } from '@angular/fire/auth';
-import { Subscription, timer, Subject, takeUntil, take } from 'rxjs';
+import { Subscription, timer, Subject, takeUntil, take, skip } from 'rxjs';
 import { TsdbLiveScore } from 'src/app/core/models/tsdb.model';
 import { NewsItem } from 'src/app/core/models/news.model';
 import { PermissionModalComponent } from 'src/app/shared/components/modals/permission-modal/permission-modal.component';
@@ -27,6 +27,7 @@ import { NEWS_SERVICE_TOKEN } from 'src/app/core/services/news/news.service.toke
 import { LocationPlugin } from 'src/app/core/plugins/location-plugin';
 import { TourService } from 'src/app/core/services/ui/tour.service';
 import { LoggerService } from '../../core/services/system/logger.service';
+import { PlatformService } from '../../core/services/system/platform.service';
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
@@ -49,6 +50,7 @@ export class HomePage implements OnInit, OnDestroy {
   private readonly locationPlugin = inject(LocationPlugin);
   private readonly tourService = inject(TourService);
   private readonly logger = inject(LoggerService);
+  private readonly platformService = inject(PlatformService);
   private refreshSub?: Subscription;
   private readonly destroy$ = new Subject<void>();
   // Propiedades públicas de estado
@@ -94,6 +96,12 @@ export class HomePage implements OnInit, OnDestroy {
     this.loadLiveScores();
     this.loadMyPlayers();
     this.loadTVScheduleByCountry();
+
+    // Recargar jugadores cuando cambia el backend
+    this.platformService.useJavaBackend$.pipe(
+      takeUntil(this.destroy$),
+      skip(1)
+    ).subscribe(() => this.loadMyPlayers());
 
     // Tour guiado: solo se muestra la primera vez
     if (this.tourService.isTourDone()) {

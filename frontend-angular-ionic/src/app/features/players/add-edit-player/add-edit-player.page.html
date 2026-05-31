@@ -55,7 +55,7 @@
                     [class.disabled-item]="!isSelected(res) && selectedApiPlayers.length >= 11"
                     [class.already-in-staff]="isInStaff(res.externalId)"
                     (click)="(!isInStaff(res.externalId) && (isSelected(res) || selectedApiPlayers.length < 11)) && toggleApiSelection(res)"
-                    (keydown.enter)="(!isInStaff(res.externalId) && (isSelected(res) || selectedApiPlayers.length < 11)) && toggleApiSelection(res)" tabindex="0">
+                    (keydown.enter)="(!isInStaff(res.externalId) && (isSelected(res) || selectedApiPlayers.length < 11)) && toggleApiSelection(res)" tabindex="0" role="button">
 
                     <div class="item-content-wrapper">
                       <ion-avatar class="mini-avatar">
@@ -475,7 +475,7 @@
                         <div slot="end" class="d-flex ai-center gap-xs upload-media-actions">
                           <!-- Si existe previsualización -->
                           <ng-container *ngIf="previews[type.key]">
-                            <div class="mini-preview-circle" (click)="openImageViewer(previews[type.key]!, type.label)" (keydown.enter)="openImageViewer(previews[type.key]!, type.label)" tabindex="0">
+                            <div class="mini-preview-circle" (click)="openImageViewer(previews[type.key]!, type.label)" (keydown.enter)="openImageViewer(previews[type.key]!, type.label)" tabindex="0" role="button">
                               <img [src]="getSafeUrl(previews[type.key])" (error)="handleImageError($event, type.key)"
                                 referrerpolicy="no-referrer">
                             </div>

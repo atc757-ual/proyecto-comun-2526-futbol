@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync, fakeAsync, tick } from '@angul
 import { LayoutPublicComponent } from './layout-public.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { MenuController, NavController, ModalController, IonRouterOutlet } from '@ionic/angular/standalone';
+import { MenuController, NavController, ModalController } from '@ionic/angular/standalone';
 import { PlatformService } from 'src/app/core/services/system/platform.service';
 import { NavigationService, APP_PAGES } from 'src/app/core/services/ui/navigation.service';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';

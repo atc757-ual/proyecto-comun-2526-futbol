@@ -44,7 +44,10 @@ export class AddEditNewsPage implements OnInit {
 
   getSafeUrl(url: string | null | undefined): SafeResourceUrl | string {
     if (!url) return '';
-    if (url.startsWith('data:image/') || url.startsWith('blob:')) {
+    // Solo se permite bypass para URLs generadas internamente por FileReader (data:image/)
+    // o por el navegador (blob:). Nunca para URLs introducidas por el usuario.
+    const isSafeOrigin = url.startsWith('data:image/') || url.startsWith('blob:');
+    if (isSafeOrigin) {
       return this.sanitizer.bypassSecurityTrustResourceUrl(url);
     }
     return url;

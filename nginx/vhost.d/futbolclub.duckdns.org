@@ -75,15 +75,9 @@ location /docs/gateway/v3/ {
 }
 
 # Swagger — Jugadores
-location /docs/players/ {
-    proxy_pass http://football-player-client:8081/;
+location = /docs/players/ {
+    proxy_pass http://football-player-client:8081/swagger-ui/index.html;
     proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header Accept-Encoding "";
-    sub_filter 'src="/swagger-ui/' 'src="/docs/players/swagger-ui/';
-    sub_filter 'href="/swagger-ui/' 'href="/docs/players/swagger-ui/';
-    sub_filter '"/v3/' '"/docs/players/v3/';
-    sub_filter_once off;
 }
 location /docs/players/swagger-ui/ {
     proxy_pass http://football-player-client:8081/swagger-ui/;
@@ -95,15 +89,9 @@ location /docs/players/v3/ {
 }
 
 # Swagger — Comentarios
-location /docs/comments/ {
-    proxy_pass http://football-comment-client:8082/;
+location = /docs/comments/ {
+    proxy_pass http://football-comment-client:8082/swagger-ui/index.html;
     proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header Accept-Encoding "";
-    sub_filter 'src="/swagger-ui/' 'src="/docs/comments/swagger-ui/';
-    sub_filter 'href="/swagger-ui/' 'href="/docs/comments/swagger-ui/';
-    sub_filter '"/v3/' '"/docs/comments/v3/';
-    sub_filter_once off;
 }
 location /docs/comments/swagger-ui/ {
     proxy_pass http://football-comment-client:8082/swagger-ui/;
@@ -115,15 +103,9 @@ location /docs/comments/v3/ {
 }
 
 # Swagger — Usuarios
-location /docs/users/ {
-    proxy_pass http://football-user-client:8083/;
+location = /docs/users/ {
+    proxy_pass http://football-user-client:8083/swagger-ui/index.html;
     proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header Accept-Encoding "";
-    sub_filter 'src="/swagger-ui/' 'src="/docs/users/swagger-ui/';
-    sub_filter 'href="/swagger-ui/' 'href="/docs/users/swagger-ui/';
-    sub_filter '"/v3/' '"/docs/users/v3/';
-    sub_filter_once off;
 }
 location /docs/users/swagger-ui/ {
     proxy_pass http://football-user-client:8083/swagger-ui/;
@@ -135,15 +117,9 @@ location /docs/users/v3/ {
 }
 
 # Swagger — External Client
-location /docs/external/ {
-    proxy_pass http://football-external-client:8085/;
+location = /docs/external/ {
+    proxy_pass http://football-external-client:8085/swagger-ui/index.html;
     proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header Accept-Encoding "";
-    sub_filter 'src="/swagger-ui/' 'src="/docs/external/swagger-ui/';
-    sub_filter 'href="/swagger-ui/' 'href="/docs/external/swagger-ui/';
-    sub_filter '"/v3/' '"/docs/external/v3/';
-    sub_filter_once off;
 }
 location /docs/external/swagger-ui/ {
     proxy_pass http://football-external-client:8085/swagger-ui/;
@@ -155,8 +131,15 @@ location /docs/external/v3/ {
 }
 
 # Swagger — CORBA Bridge
-location /docs/corba/ {
-    proxy_pass http://football-corba-bridge:8080/corba-bridge/;
+location = /docs/corba/ {
+    proxy_pass http://football-corba-bridge:8080/corba-bridge/swagger-ui/index.html;
     proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
+}
+location /docs/corba/swagger-ui/ {
+    proxy_pass http://football-corba-bridge:8080/corba-bridge/swagger-ui/;
+    proxy_set_header Host $host;
+}
+location /docs/corba/v3/ {
+    proxy_pass http://football-corba-bridge:8080/corba-bridge/v3/;
+    proxy_set_header Host $host;
 }

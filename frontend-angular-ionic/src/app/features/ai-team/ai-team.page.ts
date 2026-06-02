@@ -126,16 +126,24 @@ export class AiTeamPage implements OnInit {
         if (data) {
           // 1. Matching para el Once Ideal
           if (data.idealEleven) {
-            data.idealEleven = data.idealEleven.map(aiPlayer => {
-              const matchedLocal = this.localPlayers.find(lp =>
-                lp.name.toLowerCase().includes(aiPlayer.name.toLowerCase()) ||
-                aiPlayer.name.toLowerCase().includes(lp.name.toLowerCase())
-              );
-              return {
-                ...aiPlayer,
-                image_url: matchedLocal ? matchedLocal.image_url : undefined
-              };
-            });
+            const seen = new Set<string>();
+            data.idealEleven = data.idealEleven
+              .filter(aiPlayer => {
+                const key = aiPlayer.name.toLowerCase().trim();
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+              })
+              .map(aiPlayer => {
+                const matchedLocal = this.localPlayers.find(lp =>
+                  lp.name.toLowerCase().includes(aiPlayer.name.toLowerCase()) ||
+                  aiPlayer.name.toLowerCase().includes(lp.name.toLowerCase())
+                );
+                return {
+                  ...aiPlayer,
+                  image_url: matchedLocal ? matchedLocal.image_url : undefined
+                };
+              });
           }
 
           // 2. Matching para el Jugador Estrella
@@ -169,13 +177,13 @@ export class AiTeamPage implements OnInit {
 
   private resolveZone(player: { position?: string; role?: string }): string {
     const pos = (player.position || '').toUpperCase().trim();
+    if (pos === 'PO' || pos === 'DF' || pos === 'MC' || pos === 'DL') return pos;
     const role = (player.role || '').toUpperCase().trim();
-
-    if (pos === 'PO' || pos === 'POR' || pos === 'GK' || pos === 'GOALKEEPER' || pos.includes('PORT') || pos.includes('ARQ') || role.includes('PORT') || role.includes('GOAL')) return 'PO';
-    if (pos === 'DF' || pos === 'DEF' || pos === 'DEFENSA' || pos === 'DEFENDER' || pos.includes('BACK') || pos.includes('LAT') || role.includes('DEF') || role.includes('BACK') || role.includes('LAT')) return 'DF';
-    if (pos === 'MC' || pos === 'MED' || pos === 'MID' || pos === 'MIDFIELDER' || pos === 'CENTROCAMPISTA' || pos.includes('VOL') || pos.includes('MED') || role.includes('MID') || role.includes('MED') || role.includes('VOL') || role.includes('CENTRO')) return 'MC';
-    if (pos === 'DL' || pos === 'DEL' || pos === 'DELANTERO' || pos === 'FORWARD' || pos === 'ATTACKER' || pos === 'ATT' || pos === 'FWD' || pos.includes('WING') || pos.includes('STRI') || pos.includes('EXT') || role.includes('FORW') || role.includes('ATT') || role.includes('STRI') || role.includes('EXT') || role.includes('DEL')) return 'DL';
-    return pos || 'MC';
+    if (pos.includes('PORT') || pos.includes('ARQ') || role.includes('PORT') || role.includes('GOAL')) return 'PO';
+    if (pos.includes('BACK') || pos.includes('LAT') || role.includes('DEF') || role.includes('BACK') || role.includes('LAT')) return 'DF';
+    if (pos.includes('MED') || pos.includes('VOL') || role.includes('MID') || role.includes('VOL') || role.includes('CENTRO')) return 'MC';
+    if (pos.includes('WING') || pos.includes('STRI') || pos.includes('EXT') || role.includes('FORW') || role.includes('ATT') || role.includes('STRI') || role.includes('DEL')) return 'DL';
+    return 'MC';
   }
 
   public getPlayersByZone(zone: string) {

@@ -126,16 +126,24 @@ export class AiTeamPage implements OnInit {
         if (data) {
           // 1. Matching para el Once Ideal
           if (data.idealEleven) {
-            data.idealEleven = data.idealEleven.map(aiPlayer => {
-              const matchedLocal = this.localPlayers.find(lp =>
-                lp.name.toLowerCase().includes(aiPlayer.name.toLowerCase()) ||
-                aiPlayer.name.toLowerCase().includes(lp.name.toLowerCase())
-              );
-              return {
-                ...aiPlayer,
-                image_url: matchedLocal ? matchedLocal.image_url : undefined
-              };
-            });
+            const seen = new Set<string>();
+            data.idealEleven = data.idealEleven
+              .filter(aiPlayer => {
+                const key = aiPlayer.name.toLowerCase().trim();
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+              })
+              .map(aiPlayer => {
+                const matchedLocal = this.localPlayers.find(lp =>
+                  lp.name.toLowerCase().includes(aiPlayer.name.toLowerCase()) ||
+                  aiPlayer.name.toLowerCase().includes(lp.name.toLowerCase())
+                );
+                return {
+                  ...aiPlayer,
+                  image_url: matchedLocal ? matchedLocal.image_url : undefined
+                };
+              });
           }
 
           // 2. Matching para el Jugador Estrella

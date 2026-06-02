@@ -87,6 +87,26 @@ location /docs/players/v3/ {
     proxy_pass http://football-player-client:8081/v3/;
     proxy_set_header Host $host;
 }
+location /docs/players/swagger-ui.css {
+    proxy_pass http://football-player-client:8081/swagger-ui/swagger-ui.css;
+    proxy_set_header Host $host;
+}
+location /docs/players/swagger-ui-bundle.js {
+    proxy_pass http://football-player-client:8081/swagger-ui/swagger-ui-bundle.js;
+    proxy_set_header Host $host;
+}
+location /docs/players/swagger-ui-standalone-preset.js {
+    proxy_pass http://football-player-client:8081/swagger-ui/swagger-ui-standalone-preset.js;
+    proxy_set_header Host $host;
+}
+location /docs/players/swagger-initializer.js {
+    proxy_pass http://football-player-client:8081/swagger-ui/swagger-initializer.js;
+    proxy_set_header Host $host;
+}
+location /docs/players/index.css {
+    proxy_pass http://football-player-client:8081/swagger-ui/index.css;
+    proxy_set_header Host $host;
+}
 
 # Swagger — Comentarios
 location = /docs/comments/ {
@@ -99,6 +119,26 @@ location /docs/comments/swagger-ui/ {
 }
 location /docs/comments/v3/ {
     proxy_pass http://football-comment-client:8082/v3/;
+    proxy_set_header Host $host;
+}
+location /docs/comments/swagger-ui.css {
+    proxy_pass http://football-comment-client:8082/swagger-ui/swagger-ui.css;
+    proxy_set_header Host $host;
+}
+location /docs/comments/swagger-ui-bundle.js {
+    proxy_pass http://football-comment-client:8082/swagger-ui/swagger-ui-bundle.js;
+    proxy_set_header Host $host;
+}
+location /docs/comments/swagger-ui-standalone-preset.js {
+    proxy_pass http://football-comment-client:8082/swagger-ui/swagger-ui-standalone-preset.js;
+    proxy_set_header Host $host;
+}
+location /docs/comments/swagger-initializer.js {
+    proxy_pass http://football-comment-client:8082/swagger-ui/swagger-initializer.js;
+    proxy_set_header Host $host;
+}
+location /docs/comments/index.css {
+    proxy_pass http://football-comment-client:8082/swagger-ui/index.css;
     proxy_set_header Host $host;
 }
 
@@ -115,6 +155,26 @@ location /docs/users/v3/ {
     proxy_pass http://football-user-client:8083/v3/;
     proxy_set_header Host $host;
 }
+location /docs/users/swagger-ui.css {
+    proxy_pass http://football-user-client:8083/swagger-ui/swagger-ui.css;
+    proxy_set_header Host $host;
+}
+location /docs/users/swagger-ui-bundle.js {
+    proxy_pass http://football-user-client:8083/swagger-ui/swagger-ui-bundle.js;
+    proxy_set_header Host $host;
+}
+location /docs/users/swagger-ui-standalone-preset.js {
+    proxy_pass http://football-user-client:8083/swagger-ui/swagger-ui-standalone-preset.js;
+    proxy_set_header Host $host;
+}
+location /docs/users/swagger-initializer.js {
+    proxy_pass http://football-user-client:8083/swagger-ui/swagger-initializer.js;
+    proxy_set_header Host $host;
+}
+location /docs/users/index.css {
+    proxy_pass http://football-user-client:8083/swagger-ui/index.css;
+    proxy_set_header Host $host;
+}
 
 # Swagger — External Client
 location = /docs/external/ {
@@ -129,6 +189,26 @@ location /docs/external/v3/ {
     proxy_pass http://football-external-client:8085/v3/;
     proxy_set_header Host $host;
 }
+location /docs/external/swagger-ui.css {
+    proxy_pass http://football-external-client:8085/swagger-ui/swagger-ui.css;
+    proxy_set_header Host $host;
+}
+location /docs/external/swagger-ui-bundle.js {
+    proxy_pass http://football-external-client:8085/swagger-ui/swagger-ui-bundle.js;
+    proxy_set_header Host $host;
+}
+location /docs/external/swagger-ui-standalone-preset.js {
+    proxy_pass http://football-external-client:8085/swagger-ui/swagger-ui-standalone-preset.js;
+    proxy_set_header Host $host;
+}
+location /docs/external/swagger-initializer.js {
+    proxy_pass http://football-external-client:8085/swagger-ui/swagger-initializer.js;
+    proxy_set_header Host $host;
+}
+location /docs/external/index.css {
+    proxy_pass http://football-external-client:8085/swagger-ui/index.css;
+    proxy_set_header Host $host;
+}
 
 # Swagger — CORBA Bridge
 location = /docs/corba/ {
@@ -141,5 +221,35 @@ location /docs/corba/swagger-ui/ {
 }
 location /docs/corba/v3/ {
     proxy_pass http://football-corba-bridge:8080/corba-bridge/v3/;
+    proxy_set_header Host $host;
+}
+location /docs/corba/swagger-ui.css {
+    proxy_pass http://football-corba-bridge:8080/corba-bridge/swagger-ui/swagger-ui.css;
+    proxy_set_header Host $host;
+}
+location /docs/corba/swagger-ui-bundle.js {
+    proxy_pass http://football-corba-bridge:8080/corba-bridge/swagger-ui/swagger-ui-bundle.js;
+    proxy_set_header Host $host;
+}
+location /docs/corba/swagger-ui-standalone-preset.js {
+    proxy_pass http://football-corba-bridge:8080/corba-bridge/swagger-ui/swagger-ui-standalone-preset.js;
+    proxy_set_header Host $host;
+}
+location /docs/corba/swagger-initializer.js {
+    proxy_pass http://football-corba-bridge:8080/corba-bridge/swagger-ui/swagger-initializer.js;
+    proxy_set_header Host $host;
+}
+location /docs/corba/index.css {
+    proxy_pass http://football-corba-bridge:8080/corba-bridge/swagger-ui/index.css;
+    proxy_set_header Host $host;
+}
+
+# Assets genéricos Swagger (fallback)
+location /swagger-ui/ {
+    proxy_pass http://football-player-client:8081/swagger-ui/;
+    proxy_set_header Host $host;
+}
+location /v3/ {
+    proxy_pass http://football-player-client:8081/v3/;
     proxy_set_header Host $host;
 }

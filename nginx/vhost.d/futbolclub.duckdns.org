@@ -21,3 +21,131 @@ location /corba-api/ {
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
 }
+
+# Swagger Node.js
+location /api-docs {
+    proxy_pass http://football-backend-node:3000/api-docs;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+}
+location /api-docs/ {
+    proxy_pass http://football-backend-node:3000/api-docs/;
+    proxy_set_header Host $host;
+}
+
+# Panel de estado Pug (Node.js)
+location /status {
+    proxy_pass http://football-backend-node:3000/status;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+}
+location = /status.css {
+    proxy_pass http://football-backend-node:3000/status.css;
+    proxy_set_header Host $host;
+}
+
+# Eureka Dashboard
+location /eureka/ {
+    proxy_pass http://football-eureka-server:8761/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header Accept-Encoding "";
+    sub_filter 'href="/' 'href="/eureka/';
+    sub_filter 'src="/' 'src="/eureka/';
+    sub_filter 'action="/' 'action="/eureka/';
+    sub_filter_once off;
+}
+
+# Swagger — Gateway (WebFlux)
+location = /docs/gateway/ {
+    proxy_pass http://football-gateway:8080/swagger-ui.html;
+    proxy_set_header Host $host;
+}
+location /docs/gateway/webjars/ {
+    proxy_pass http://football-gateway:8080/webjars/;
+    proxy_set_header Host $host;
+}
+location /docs/gateway/v3/ {
+    proxy_pass http://football-gateway:8080/v3/;
+    proxy_set_header Host $host;
+}
+
+# Swagger — Jugadores
+location = /docs/players/ {
+    proxy_pass http://football-player-client:8081/swagger-ui/index.html;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Prefix /docs/players;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+location /docs/players/swagger-ui/ {
+    proxy_pass http://football-player-client:8081/swagger-ui/;
+    proxy_set_header Host $host;
+}
+location /docs/players/v3/ {
+    proxy_pass http://football-player-client:8081/v3/;
+    proxy_set_header Host $host;
+}
+location /swagger-ui/ {
+    proxy_pass http://football-player-client:8081/swagger-ui/;
+    proxy_set_header Host $host;
+}
+location /v3/ {
+    proxy_pass http://football-player-client:8081/v3/;
+    proxy_set_header Host $host;
+}
+
+# Swagger — Comentarios
+location = /docs/comments/ {
+    proxy_pass http://football-comment-client:8082/swagger-ui/index.html;
+    proxy_set_header Host $host;
+}
+location /docs/comments/swagger-ui/ {
+    proxy_pass http://football-comment-client:8082/swagger-ui/;
+    proxy_set_header Host $host;
+}
+location /docs/comments/v3/ {
+    proxy_pass http://football-comment-client:8082/v3/;
+    proxy_set_header Host $host;
+}
+
+# Swagger — Usuarios
+location = /docs/users/ {
+    proxy_pass http://football-user-client:8083/swagger-ui/index.html;
+    proxy_set_header Host $host;
+}
+location /docs/users/swagger-ui/ {
+    proxy_pass http://football-user-client:8083/swagger-ui/;
+    proxy_set_header Host $host;
+}
+location /docs/users/v3/ {
+    proxy_pass http://football-user-client:8083/v3/;
+    proxy_set_header Host $host;
+}
+
+# Swagger — External Client
+location = /docs/external/ {
+    proxy_pass http://football-external-client:8085/swagger-ui/index.html;
+    proxy_set_header Host $host;
+}
+location /docs/external/swagger-ui/ {
+    proxy_pass http://football-external-client:8085/swagger-ui/;
+    proxy_set_header Host $host;
+}
+location /docs/external/v3/ {
+    proxy_pass http://football-external-client:8085/v3/;
+    proxy_set_header Host $host;
+}
+
+# Swagger — CORBA Bridge
+location = /docs/corba/ {
+    proxy_pass http://football-corba-bridge:8080/corba-bridge/swagger-ui/index.html;
+    proxy_set_header Host $host;
+}
+location /docs/corba/swagger-ui/ {
+    proxy_pass http://football-corba-bridge:8080/corba-bridge/swagger-ui/;
+    proxy_set_header Host $host;
+}
+location /docs/corba/v3/ {
+    proxy_pass http://football-corba-bridge:8080/corba-bridge/v3/;
+    proxy_set_header Host $host;
+}

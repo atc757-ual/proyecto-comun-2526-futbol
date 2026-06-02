@@ -25,6 +25,7 @@ management:
         include: health,info
 
 server:
+  forward-headers-strategy: native
   servlet:
     encoding:
       charset: UTF-8

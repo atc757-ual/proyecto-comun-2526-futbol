@@ -36,7 +36,7 @@ const analyzeMyTeam = async (req, res) => {
             return sendApiResult(res, 429, "¡FootballAI está recargando pilas! 🔋 Mañana tendremos más consejos para ti.");
         }
 
-        return sendApiResult(res, 500, "Lo sentimos, el entrenador IA no está disponible en este momento. Revisa tu conexión o inténtalo más tarde.");
+        return sendApiResult(res, 500, `Lo sentimos, el entrenador IA no está disponible en este momento. Revisa tu conexión o inténtalo más tarde. [${errorMessage}]`);
     }
 };
 

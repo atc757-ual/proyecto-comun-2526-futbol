@@ -69,9 +69,9 @@ class AIService {
 
             // Configuro las opciones de mi disyuntor de IA
             const aiBreakerOptions = {
-                timeout: 30000,               // 30 segundos — los LLM pueden tardar bastante en responder
+                timeout: 60000,               // 60 segundos — prompts grandes pueden tardar más
                 errorThresholdPercentage: 50,  // Si el 50% de las peticiones fallan, abro el circuito
-                resetTimeout: 30000           // Tras 30 segundos en abierto, paso a semiabierto para probar disponibilidad
+                resetTimeout: 60000           // Tras 60 segundos en abierto, paso a semiabierto para probar disponibilidad
             };
 
             // Inicializo el Circuit Breaker para las peticiones de IA

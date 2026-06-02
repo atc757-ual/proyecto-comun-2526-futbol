@@ -11,10 +11,10 @@ const analyzeMyTeam = async (req, res) => {
     try {
         const firebaseUid = req.user.firebaseUid;
 
-        // 1. Limitamos a los 30 jugadores más recientes para optimizar el prompt y evitar costes/errores
+        // 1. Limitamos a los 15 jugadores más recientes para reducir tamaño del prompt y evitar timeouts
         const players = await Player.find({ user_id: firebaseUid })
                                     .sort({ updated_at: -1 })
-                                    .limit(30);
+                                    .limit(15);
 
         if (!players || players.length === 0) {
             return sendApiResult(res, 404, "No tienes jugadores registrados para analizar.");

@@ -59,19 +59,14 @@ location /eureka/ {
     sub_filter_once off;
 }
 
-# Swagger — Gateway
+# Swagger — Gateway (WebFlux usa swagger-ui.html)
 location /docs/gateway/ {
-    proxy_pass http://football-gateway:8080/;
+    proxy_pass http://football-gateway:8080/swagger-ui.html;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header Accept-Encoding "";
-    sub_filter 'src="/swagger-ui/' 'src="/docs/gateway/swagger-ui/';
-    sub_filter 'href="/swagger-ui/' 'href="/docs/gateway/swagger-ui/';
-    sub_filter '"/v3/' '"/docs/gateway/v3/';
-    sub_filter_once off;
 }
-location /docs/gateway/swagger-ui/ {
-    proxy_pass http://football-gateway:8080/swagger-ui/;
+location /docs/gateway/webjars/ {
+    proxy_pass http://football-gateway:8080/webjars/;
     proxy_set_header Host $host;
 }
 location /docs/gateway/v3/ {

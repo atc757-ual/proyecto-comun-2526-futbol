@@ -101,6 +101,9 @@ export class LoginPage {
           return 'No se pudo verificar tu identidad con el servidor. Inténtalo de nuevo.';
         case 404:
           return 'El servidor de autenticación no está disponible en este momento. Inténtalo más tarde.';
+        case 502:
+        case 503:
+          return 'El servidor no está disponible en este momento. Inténtalo más tarde.';
         case 0:
           return 'Sin conexión con el servidor. Comprueba tu conexión a internet.';
         default:

@@ -27,10 +27,13 @@ location /api-docs {
     proxy_pass http://football-backend-node:3000/api-docs;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
 }
 location /api-docs/ {
     proxy_pass http://football-backend-node:3000/api-docs/;
     proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
 }
 
 # Panel de estado Pug (Node.js)
@@ -56,10 +59,11 @@ location /eureka/ {
     sub_filter_once off;
 }
 
-# Swagger — Gateway (WebFlux)
-location = /docs/gateway/ {
+# Swagger — Gateway (WebFlux usa swagger-ui.html)
+location /docs/gateway/ {
     proxy_pass http://football-gateway:8080/swagger-ui.html;
     proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
 }
 location /docs/gateway/webjars/ {
     proxy_pass http://football-gateway:8080/webjars/;
@@ -74,22 +78,12 @@ location /docs/gateway/v3/ {
 location = /docs/players/ {
     proxy_pass http://football-player-client:8081/swagger-ui/index.html;
     proxy_set_header Host $host;
-    proxy_set_header X-Forwarded-Prefix /docs/players;
-    proxy_set_header X-Forwarded-Proto $scheme;
 }
 location /docs/players/swagger-ui/ {
     proxy_pass http://football-player-client:8081/swagger-ui/;
     proxy_set_header Host $host;
 }
 location /docs/players/v3/ {
-    proxy_pass http://football-player-client:8081/v3/;
-    proxy_set_header Host $host;
-}
-location /swagger-ui/ {
-    proxy_pass http://football-player-client:8081/swagger-ui/;
-    proxy_set_header Host $host;
-}
-location /v3/ {
     proxy_pass http://football-player-client:8081/v3/;
     proxy_set_header Host $host;
 }

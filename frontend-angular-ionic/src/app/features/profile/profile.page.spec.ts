@@ -79,6 +79,7 @@ describe('ProfilePage', () => {
         { provide: ToastService, useValue: toastServiceMock },
         { provide: ModalController, useValue: modalCtrlMock },
         { provide: ActionSheetController, useValue: actionSheetCtrlMock },
+
         { provide: NavController, useValue: navCtrlMock },
         { provide: Router, useValue: routerMock },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => null } } } }

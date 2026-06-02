@@ -69,6 +69,7 @@ export class AuthService {
           await this.syncUserWithBackend();
         } catch (err) {
           this.logger.error('[AUTH] Error en auto-sincronización', err);
+          await signOut(this.auth);
         }
       }
     });
@@ -108,7 +109,13 @@ export class AuthService {
       throw { code: 'auth/email-not-verified', message: 'Debes verificar tu correo electrónico antes de iniciar sesión. Por favor, revisa tu bandeja de entrada.' };
     }
 
-    await this.syncUserWithBackend();
+    try {
+      await this.syncUserWithBackend();
+    } catch (err) {
+      // Si el backend falla, cerramos la sesión de Firebase para evitar acceso sin JWT
+      await signOut(this.auth);
+      throw err;
+    }
 
     // Verifico si el usuario ha sido inhabilitado administrativamente en el backend
     const userData = this.userData();

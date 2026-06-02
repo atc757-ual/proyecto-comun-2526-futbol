@@ -1,5 +1,8 @@
 docker-compose.override.yml
 
+# Presentacion local (no subir al repo)
+presentacion/
+
 # Build artifacts
 node_modules/
 dist/

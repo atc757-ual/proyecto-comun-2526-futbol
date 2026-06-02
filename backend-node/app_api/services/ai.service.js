@@ -18,6 +18,7 @@ class AIService {
                 apiVersion: "v1beta",
                 temperature: 0.2,
                 maxOutputTokens: 4096,
+                timeout: 60000,
             });
         }
 

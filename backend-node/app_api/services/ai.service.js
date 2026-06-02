@@ -28,7 +28,7 @@ class AIService {
                 formation: z.string().describe("La formación táctica sugerida (ej: 4-3-3, 4-4-2) o 'Incompleta' si hay muy pocos jugadores"),
                 idealEleven: z.array(z.object({
                     name: z.string(),
-                    position: z.string().describe("Posición específica simplificada (PO, DF, MC, DL)"),
+                    position: z.enum(['PO', 'DF', 'MC', 'DL']).describe("Posición (PO=Portero, DF=Defensa, MC=Centrocampista, DL=Delantero)"),
                     role: z.string().describe("Rol táctico detallado (ej: Portero, Central Izquierdo, Extremo Derecho)")
                 })).describe("Los jugadores elegidos para el equipo titular (máximo 11)"),
                 starPlayer: z.string().describe("El jugador estrella del equipo"),

@@ -167,26 +167,20 @@ export class AiTeamPage implements OnInit {
     });
   }
 
+  private resolveZone(player: { position?: string; role?: string }): string {
+    const pos = (player.position || '').toUpperCase().trim();
+    const role = (player.role || '').toUpperCase().trim();
+
+    if (pos === 'PO' || pos === 'POR' || pos === 'GK' || pos === 'GOALKEEPER' || pos.includes('PORT') || pos.includes('ARQ') || role.includes('PORT') || role.includes('GOAL')) return 'PO';
+    if (pos === 'DF' || pos === 'DEF' || pos === 'DEFENSA' || pos === 'DEFENDER' || pos.includes('BACK') || pos.includes('LAT') || role.includes('DEF') || role.includes('BACK') || role.includes('LAT')) return 'DF';
+    if (pos === 'MC' || pos === 'MED' || pos === 'MID' || pos === 'MIDFIELDER' || pos === 'CENTROCAMPISTA' || pos.includes('VOL') || pos.includes('MED') || role.includes('MID') || role.includes('MED') || role.includes('VOL') || role.includes('CENTRO')) return 'MC';
+    if (pos === 'DL' || pos === 'DEL' || pos === 'DELANTERO' || pos === 'FORWARD' || pos === 'ATTACKER' || pos === 'ATT' || pos === 'FWD' || pos.includes('WING') || pos.includes('STRI') || pos.includes('EXT') || role.includes('FORW') || role.includes('ATT') || role.includes('STRI') || role.includes('EXT') || role.includes('DEL')) return 'DL';
+    return pos || 'MC';
+  }
+
   public getPlayersByZone(zone: string) {
     if (!this.analysisData || !this.analysisData.idealEleven) return [];
-    return this.analysisData.idealEleven.filter(p => {
-      const pos = (p.position || '').toUpperCase().trim();
-      const role = (p.role || '').toUpperCase().trim();
-
-      // Normalizar zona solicitada: PO, DF, MC, DL
-      switch (zone) {
-        case 'PO':
-          return pos === 'PO' || pos === 'POR' || pos === 'GK' || pos === 'GOALKEEPER' || pos.includes('PORT') || pos.includes('ARQ') || role.includes('PORT') || role.includes('GOAL');
-        case 'DF':
-          return pos === 'DF' || pos === 'DEF' || pos === 'DEFENSA' || pos === 'DEFENDER' || pos.includes('BACK') || pos.includes('LAT') || role.includes('DEF') || role.includes('BACK') || role.includes('LAT');
-        case 'MC':
-          return pos === 'MC' || pos === 'MED' || pos === 'MID' || pos === 'MIDFIELDER' || pos === 'CENTROCAMPISTA' || pos.includes('VOL') || pos.includes('MED') || role.includes('MID') || role.includes('MED') || role.includes('VOL') || role.includes('CENTRO');
-        case 'DL':
-          return pos === 'DL' || pos === 'DEL' || pos === 'DELANTERO' || pos === 'FORWARD' || pos === 'ATTACKER' || pos === 'ATT' || pos === 'FWD' || pos.includes('WING') || pos.includes('STRI') || pos.includes('EXT') || role.includes('FORW') || role.includes('ATT') || role.includes('STRI') || role.includes('EXT') || role.includes('DEL');
-        default:
-          return pos === zone;
-      }
-    });
+    return this.analysisData.idealEleven.filter(p => this.resolveZone(p) === zone);
   }
 
   getPositionLabel(position: string): string {

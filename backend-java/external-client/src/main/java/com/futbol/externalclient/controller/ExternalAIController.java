@@ -86,6 +86,11 @@ public class ExternalAIController {
             mapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             com.futbol.externalclient.dto.PlayerAnalysisResponse analysis = mapper.readValue(cleanJson, com.futbol.externalclient.dto.PlayerAnalysisResponse.class);
 
+            // Normalizar position de cada jugador a PO/DF/MC/DL
+            if (analysis.getIdealEleven() != null) {
+                analysis.getIdealEleven().forEach(p -> p.setPosition(normalizePosition(p.getPosition())));
+            }
+
             logger.info("[AI] Análisis completado exitosamente. Formación: {}", analysis.getFormation());
             return ApiResult.success("Análisis de equipo local (Java) completado", analysis);
 
@@ -93,5 +98,15 @@ public class ExternalAIController {
             logger.error("[AI] Error en análisis - Tipo: {}, Mensaje: {}", e.getClass().getSimpleName(), e.getMessage(), e);
             return ApiResult.error("500", "Error orquestando IA local (Java): " + e.getMessage());
         }
+    }
+
+    private String normalizePosition(String raw) {
+        if (raw == null) return "MC";
+        String p = raw.toUpperCase().trim();
+        if (p.equals("PO") || p.equals("POR") || p.equals("GK") || p.equals("GOALKEEPER") || p.contains("PORT") || p.contains("ARQ")) return "PO";
+        if (p.equals("DF") || p.equals("DEF") || p.equals("DEFENSA") || p.equals("DEFENDER") || p.contains("BACK") || p.contains("LAT")) return "DF";
+        if (p.equals("MC") || p.equals("MED") || p.equals("MID") || p.equals("MIDFIELDER") || p.equals("CENTROCAMPISTA") || p.contains("VOL") || p.contains("CENTRO")) return "MC";
+        if (p.equals("DL") || p.equals("DEL") || p.equals("DELANTERO") || p.equals("FORWARD") || p.equals("ATTACKER") || p.equals("ATT") || p.equals("FWD") || p.contains("WING") || p.contains("STRI") || p.contains("EXT")) return "DL";
+        return "MC";
     }
 }

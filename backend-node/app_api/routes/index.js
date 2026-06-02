@@ -16,16 +16,18 @@ const { authorizeRequest, isAdmin, isMaster } = require('../middleware/auth.midd
  * /geo:
  *   get:
  *     summary: Geocodificación inversa - obtiene ubicación desde coordenadas
- *     description: Convierte coordenadas (lat, lng) en dirección legible
+ *     description: Convierte coordenadas (lat, lng) en dirección legible usando Nominatim/OpenStreetMap
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: query
- *         name: latitude
+ *         name: lat
  *         required: true
  *         schema:
  *           type: number
  *         description: Latitud
  *       - in: query
- *         name: longitude
+ *         name: lng
  *         required: true
  *         schema:
  *           type: number
@@ -42,8 +44,10 @@ const { authorizeRequest, isAdmin, isMaster } = require('../middleware/auth.midd
  *                   $ref: '#/components/schemas/ApiResultMeta'
  *                 data:
  *                   $ref: '#/components/schemas/Location'
+ *       401:
+ *         description: Token JWT ausente o inválido
  */
-router.get('/geo', ctrlGeocoding.reverseGeocode);
+router.get('/geo', authorizeRequest, ctrlGeocoding.reverseGeocode);
 
 // ... (en la sección de comentarios públicos)
 

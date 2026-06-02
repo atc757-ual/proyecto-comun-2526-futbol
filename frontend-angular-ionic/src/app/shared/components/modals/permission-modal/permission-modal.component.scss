@@ -104,7 +104,11 @@
 
     .icon-circle {
 
-      &.location,
+      &.location{
+          background: var(--color-success);
+        color: var(--color-neutral-0);
+        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.1);
+      }
       &.camera {
         background: var(--color-primary);
         color: var(--color-neutral-0);

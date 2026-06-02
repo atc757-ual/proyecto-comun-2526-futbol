@@ -103,10 +103,11 @@ public class ExternalAIController {
     private String normalizePosition(String raw) {
         if (raw == null) return "MC";
         String p = raw.toUpperCase().trim();
-        if (p.equals("PO") || p.equals("POR") || p.equals("GK") || p.equals("GOALKEEPER") || p.contains("PORT") || p.contains("ARQ")) return "PO";
-        if (p.equals("DF") || p.equals("DEF") || p.equals("DEFENSA") || p.equals("DEFENDER") || p.contains("BACK") || p.contains("LAT")) return "DF";
-        if (p.equals("MC") || p.equals("MED") || p.equals("MID") || p.equals("MIDFIELDER") || p.equals("CENTROCAMPISTA") || p.contains("VOL") || p.contains("CENTRO")) return "MC";
-        if (p.equals("DL") || p.equals("DEL") || p.equals("DELANTERO") || p.equals("FORWARD") || p.equals("ATTACKER") || p.equals("ATT") || p.equals("FWD") || p.contains("WING") || p.contains("STRI") || p.contains("EXT")) return "DL";
+        if (p.equals("PO") || p.equals("DF") || p.equals("MC") || p.equals("DL")) return p;
+        if (p.contains("PORT") || p.contains("ARQ")) return "PO";
+        if (p.contains("BACK") || p.contains("LAT")) return "DF";
+        if (p.contains("MED") || p.contains("VOL") || p.contains("CENTRO")) return "MC";
+        if (p.contains("WING") || p.contains("STRI") || p.contains("EXT") || p.contains("DEL") || p.contains("FORW") || p.contains("ATT")) return "DL";
         return "MC";
     }
 }
